@@ -3,334 +3,448 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CS2 饰品投资看板 | 悠悠有品全量持仓 v6</title>
+<title>CS2 饰品投资看板 · hintime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
+:root{
+  --bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a36;
+  --text:#e4e4e7;--text2:#a1a1aa;--text3:#52525b;
+  --rise:#ef4444;--fall:#22c55e;--flat:#71717a;
+  --blue:#3b82f6;--amber:#f59e0b;--violet:#8b5cf6;--cyan:#06b6d4;
+  --rise-bg:rgba(239,68,68,.08);--fall-bg:rgba(34,197,94,.08);
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;background:#0f1117;color:#e8e8e8;min-height:100vh;padding:20px}
-a{color:#4895ef;text-decoration:none}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px}
-.header h1{font-size:22px;font-weight:700;color:#fff;letter-spacing:1px}
-.header .subtitle{font-size:13px;color:#666;margin-top:3px}
-.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.status-dot{width:8px;height:8px;border-radius:50%;background:#555;display:inline-block;margin-right:6px}
-.status-dot.live{background:#2dc653;box-shadow:0 0 6px #2dc653;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.update-time{font-size:12px;color:#666;background:#1a1d27;padding:6px 14px;border-radius:20px;border:1px solid #2a2d3a}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:14px}
-.card{background:#161923;border:1px solid #222638;border-radius:12px;padding:18px 20px;position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
-.card-blue::before{background:#4895ef}
-.card-red::before{background:#e63946}
-.card-green::before{background:#2dc653}
-.card-purple::before{background:#9b5de5}
-.card-orange::before{background:#f77f00}
-.card-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#555;margin-bottom:10px;font-weight:600}
-.card-value{font-size:28px;font-weight:800;line-height:1.1}
-.card-value.red{color:#e63946}
-.card-value.green{color:#2dc653}
-.card-value.white{color:#f0f0f0}
-.card-meta{font-size:12px;color:#555;margin-top:5px}
-.card-sm{font-size:18px}
-.section-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#555;margin-bottom:14px;font-weight:600}
-.section-title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.pnl-table{width:100%;border-collapse:collapse;font-size:13px}
-.pnl-table th{text-align:left;color:#444;font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:8px 10px;border-bottom:1px solid #1e2130;font-weight:600;position:sticky;top:0;background:#161923}
-.pnl-table td{padding:9px 10px;border-bottom:1px solid #1a1d28;vertical-align:middle}
-.pnl-table tr:last-child td{border-bottom:none}
-.pnl-table tbody tr:hover{background:#1c1f2a}
-.price-col{font-weight:700;color:#f0f0f0;text-align:right}
-.cost-col{color:#888;text-align:right}
-.pnl-col{font-weight:700;text-align:right}
-.pnl-col.up{color:#e63946}
-.pnl-col.down{color:#2dc653}
-.pnl-col.flat{color:#888}
-.wear-badge{font-size:10px;color:#888;background:#1e2230;padding:2px 7px;border-radius:3px;margin-left:4px;white-space:nowrap}
-.cat-tab{display:flex;gap:4px;margin-bottom:12px}
-.cat-tab button{background:#1a1d27;border:1px solid #2a2d3a;color:#555;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
-.cat-tab button.active{background:#1e2a1e;border-color:#2a4a2a;color:#2dc653}
-.cat-tab button:hover:not(.active){color:#aaa}
-.wear-float{font-size:10px;color:#555;margin-left:6px}
-.wear-float.ft{color:#f77f00}
-.wear-float.fn{color:#2dc653}
-.signal-tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
-.signal-ok{background:rgba(45,198,83,.15);color:#2dc653}
-.signal-warn{background:rgba(247,127,0,.15);color:#f77f00}
-.signal-danger{background:rgba(230,57,70,.15);color:#e63946}
-.platform-prices{font-size:10px;color:#555;margin-top:3px;display:flex;gap:6px;flex-wrap:wrap}
-.platform-prices .yp{color:#4895ef}
-.note-bar{background:#1a1d27;border:1px solid #2a2d3a;border-radius:8px;padding:10px 16px;font-size:11px;color:#444;margin-top:8px}
-.note-bar span{color:#555}
-.data-source-tag{background:#1e2230;color:#4895ef;border:1px solid #1a2a3a;padding:3px 10px;border-radius:12px;font-size:11px;margin-left:8px}
-.chart-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px}
-.chart-card{background:#161923;border:1px solid #222638;border-radius:12px;padding:20px}
-.chart-card h3{font-size:10px;color:#555;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;font-weight:600}
-@media(max-width:768px){.chart-wrap{grid-template-columns:1fr}}
-.count-badge{display:inline-block;background:#1e2230;color:#666;border:1px solid #2a2d3a;padding:2px 10px;border-radius:12px;font-size:11px;margin-left:8px}
-.sticker-cat{display:flex;gap:6px;margin-bottom:10px}
-.sticker-cat span{font-size:11px;color:#555;background:#1a1d27;border:1px solid #222638;padding:3px 10px;border-radius:20px;cursor:pointer}
-.sticker-cat span.active{color:#4895ef;border-color:#1a2a3a}
+body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.mono{font-family:'DM Mono','Cascadia Code',monospace}
+
+/* ── grain overlay ── */
+body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── top glow ── */
+body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:500px;
+  background:radial-gradient(ellipse,rgba(59,130,246,.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+.container{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:24px 20px 60px}
+
+/* ── header ── */
+.header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+.header-left h1{font-size:24px;font-weight:900;letter-spacing:-.5px;background:linear-gradient(135deg,#e4e4e7 40%,var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-left .sub{font-size:12px;color:var(--text3);margin-top:4px;letter-spacing:.5px}
+.header-right{display:flex;align-items:center;gap:8px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);background:var(--surface);border:1px solid var(--border);padding:4px 12px;border-radius:20px}
+.badge .dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── KPI strip ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin-bottom:28px}
+.kpi{background:var(--surface);padding:20px 24px;position:relative}
+.kpi .label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);font-weight:500;margin-bottom:8px}
+.kpi .value{font-size:26px;font-weight:900;line-height:1}
+.kpi .meta{font-size:11px;color:var(--text3);margin-top:6px}
+.kpi .value.rise{color:var(--rise)}
+.kpi .value.fall{color:var(--fall)}
+.kpi .arrow{position:absolute;top:50%;right:20px;transform:translateY(-50%);font-size:32px;opacity:.06;font-weight:900}
+
+/* ── sector cards ── */
+.sectors{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.sector{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;transition:border-color .2s}
+.sector:hover{border-color:var(--blue)}
+.sector .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sector .head .name{font-size:12px;font-weight:700;color:var(--text2)}
+.sector .head .count{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 8px;border-radius:10px}
+.sector .pnl{font-size:18px;font-weight:900}
+.sector .detail{font-size:10px;color:var(--text3);margin-top:4px}
+.sector .bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:8px;overflow:hidden}
+.sector .bar-fill{height:100%;border-radius:2px;transition:width 1s ease}
+.bar-rise{background:var(--rise)}
+.bar-fall{background:var(--fall)}
+
+/* ── tabs + table ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px}
+.panel-head h2{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.5px}
+.tabs{display:flex;gap:4px}
+.tab{background:none;border:1px solid transparent;color:var(--text3);padding:4px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:500;transition:all .15s;font-family:inherit}
+.tab:hover{color:var(--text2)}
+.tab.on{color:var(--blue);background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.2)}
+
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:600;padding:10px 16px;background:var(--surface);position:sticky;top:0;z-index:2;border-bottom:1px solid var(--border)}
+tbody td{padding:10px 16px;border-bottom:1px solid rgba(37,42,54,.5);font-size:13px;vertical-align:middle}
+tbody tr{transition:background .1s}
+tbody tr:hover{background:rgba(59,130,246,.03)}
+tbody tr:last-child td{border-bottom:none}
+
+.item-name{font-weight:600;color:var(--text);font-size:13px}
+.item-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.wear-tag{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace}
+.qty-tag{font-size:10px;color:var(--blue);margin-left:6px;font-family:'DM Mono',monospace}
+.text-r{text-align:right}
+.text-mono{font-family:'DM Mono',monospace}
+.clr-rise{color:var(--rise)}.clr-fall{color:var(--fall)}.clr-flat{color:var(--flat)}
+.bg-rise{background:var(--rise-bg)}.bg-fall{background:var(--fall-bg)}
+
+/* ── pnl sparkline ── */
+.pnl-bar{display:inline-block;width:60px;height:4px;border-radius:2px;background:var(--surface2);overflow:hidden;vertical-align:middle;margin-left:8px}
+.pnl-bar-fill{height:100%;border-radius:2px}
+
+/* ── charts grid ── */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.chart-box h3{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:16px}
+.chart-box.wide{grid-column:span 2}
+
+/* ── footer ── */
+.foot{font-size:10px;color:var(--text3);text-align:center;padding:20px;letter-spacing:.5px}
+.foot a{color:var(--blue);text-decoration:none}
+
+/* ── mobile ── */
+@media(max-width:900px){
+  .kpi-strip{grid-template-columns:1fr}
+  .sectors{grid-template-columns:1fr 1fr}
+  .charts{grid-template-columns:1fr}
+  .chart-box.wide{grid-column:span 1}
+  .header h1{font-size:20px}
+  .kpi .value{font-size:22px}
+  .panel-head{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:520px){
+  .sectors{grid-template-columns:1fr}
+  .container{padding:16px 12px 40px}
+}
+
+/* ── entrance animation ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .5s ease both}
+.anim-d1{animation-delay:.05s}.anim-d2{animation-delay:.1s}.anim-d3{animation-delay:.15s}
+.anim-d4{animation-delay:.2s}.anim-d5{animation-delay:.25s}
+
+/* ── sort indicator ── */
+.sort-btn{cursor:pointer;user-select:none}
+.sort-btn:hover{color:var(--text2)}
+.sort-arrow{font-size:8px;margin-left:4px;opacity:.5}
+.sort-arrow.active{opacity:1;color:var(--blue)}
 </style>
 </head>
 <body>
+<div class="container">
 
-<div class="header">
-  <div>
-    <h1>CS2 饰品投资看板 <span style="font-size:12px;color:#555;font-weight:400">| 悠悠有品全量持仓</span></h1>
-    <div class="subtitle">SteamDT 实时数据 · 悠悠有品持仓成本基准 · A股红涨绿跌 · 更新于 2026-04-08</div>
-  </div>
-  <div class="header-right">
-    <span class="update-time"><span class="status-dot live"></span><span>悠悠有品 · SteamDT</span></span>
-    <span class="data-source-tag">悠悠有品</span>
-  </div>
-</div>
-
-<!-- 核心汇总 -->
-<div class="grid">
-  <div class="card card-blue">
-    <div class="card-title">悠悠有品持仓市值</div>
-    <div class="card-value white card-sm">¥10,381.15</div>
-    <div class="card-meta">全量 63 件</div>
-  </div>
-  <div class="card card-green">
-    <div class="card-title">综合浮盈亏</div>
-    <div class="card-value green card-sm">+¥3.00</div>
-    <div class="card-meta">综合收益率 <strong style="color:#888">+0.03%</strong> · 胜率 67%</div>
-  </div>
-  <div class="card card-purple">
-    <div class="card-title">武器板块</div>
-    <div class="card-value green card-sm">+¥582.68</div>
-    <div class="card-meta">17件 · 成本¥7,117.67</div>
-  </div>
-  <div class="card card-red">
-    <div class="card-title">角色手套板块</div>
-    <div class="card-value red card-sm">-¥294.30</div>
-    <div class="card-meta">11件 · 成本¥1,236.90</div>
-  </div>
-  <div class="card card-orange">
-    <div class="card-title">印花板块</div>
-    <div class="card-value green card-sm">+¥119.69</div>
-    <div class="card-meta">34件 · 成本¥1,303.30</div>
-  </div>
-  <div class="card card-blue">
-    <div class="card-title">成本总计</div>
-    <div class="card-value white card-sm">¥10,378.15</div>
-    <div class="card-meta">悠悠有品实时基准</div>
-  </div>
-</div>
-
-<!-- 持仓明细（可分类切换） -->
-<div class="card" style="margin-bottom:14px">
-  <div class="section-title-row">
-    <div class="section-title" style="margin:0">悠悠有品全量持仓明细 <span class="count-badge" id="countBadge">63件</span></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="cat-btn active" data-cat="all" onclick="filterCat('all',this)">全部</button>
-      <button class="cat-btn" data-cat="weapon" onclick="filterCat('weapon',this)">武器17件</button>
-      <button class="cat-btn" data-cat="agent" onclick="filterCat('agent',this)">角色11件</button>
-      <button class="cat-btn" data-cat="sticker" onclick="filterCat('sticker',this)">印花34件</button>
-      <button class="cat-btn" data-cat="music" onclick="filterCat('music',this)">音乐盒1件</button>
+  <!-- Header -->
+  <div class="header anim">
+    <div class="header-left">
+      <h1>CS2 饰品投资看板</h1>
+      <div class="sub">悠悠有品持仓成本基准 · SteamDT 实时数据 · <span style="color:var(--rise)">红</span>涨<span style="color:var(--fall)">绿</span>跌（A股惯例）</div>
+    </div>
+    <div class="header-right">
+      <span class="badge"><span class="dot"></span>悠悠有品</span>
+      <span class="badge">2026-04-08</span>
     </div>
   </div>
-  <div style="overflow-x:auto">
-  <table class="pnl-table" id="holdingTable">
-    <thead>
-      <tr>
-        <th>品名 / 磨损</th>
-        <th>品质</th>
-        <th>成本</th>
-        <th>悠悠有品现价</th>
-        <th>浮盈亏</th>
-        <th>收益率</th>
-      </tr>
-    </thead>
-    <tbody id="holdingBody">
-    </tbody>
-  </table>
+
+  <!-- KPI -->
+  <div class="kpi-strip anim anim-d1">
+    <div class="kpi">
+      <div class="label">持仓市值</div>
+      <div class="value" id="kpiValue">--</div>
+      <div class="meta" id="kpiCount">-- 件藏品</div>
+      <div class="arrow">¥</div>
+    </div>
+    <div class="kpi">
+      <div class="label">综合浮盈亏</div>
+      <div class="value" id="kpiPnl">--</div>
+      <div class="meta" id="kpiPnlPct">--</div>
+      <div class="arrow" id="kpiArrow">→</div>
+    </div>
+    <div class="kpi">
+      <div class="label">持仓成本</div>
+      <div class="value" id="kpiCost">--</div>
+      <div class="meta">悠悠有品购入价</div>
+      <div class="arrow">∑</div>
+    </div>
   </div>
-  <div class="note-bar">
-    成本来源：<span style="color:#4895ef">悠悠有品后台真实购入价</span>（2026-04-07 悠悠有品CDP抓取）&nbsp;&nbsp;|&nbsp;&nbsp;
-    现价来源：<span style="color:#4895ef">悠悠有品平台实时</span>（SteamDT参考）
-    &nbsp;&nbsp;|&nbsp;&nbsp;配色：<span style="color:#e63946">红涨</span>/<span style="color:#2dc653">绿跌</span>（A股惯例）
+
+  <!-- Sectors -->
+  <div class="sectors anim anim-d2" id="sectorGrid"></div>
+
+  <!-- Table -->
+  <div class="panel anim anim-d3">
+    <div class="panel-head">
+      <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
+      <div class="tabs" id="tabBar"></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th class="sort-btn" data-sort="name">品名 <span class="sort-arrow" id="sort-name">↕</span></th>
+            <th>品质</th>
+            <th class="sort-btn text-r" data-sort="cost">成本 <span class="sort-arrow" id="sort-cost">↕</span></th>
+            <th class="sort-btn text-r" data-sort="price">现价 <span class="sort-arrow" id="sort-price">↕</span></th>
+            <th class="sort-btn text-r" data-sort="pnl">浮盈亏 <span class="sort-arrow" id="sort-pnl">↕</span></th>
+            <th class="sort-btn text-r" data-sort="pnlPct">收益率 <span class="sort-arrow" id="sort-pnlPct">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts anim anim-d4">
+    <div class="chart-box"><h3>成本结构</h3><canvas id="doughnut"></canvas></div>
+    <div class="chart-box"><h3>板块盈亏对比</h3><canvas id="bar"></canvas></div>
+    <div class="chart-box wide"><h3>Top 15 持仓 · 成本 vs 现值</h3><canvas id="top15"></canvas></div>
+  </div>
+
+  <div class="foot anim anim-d5">
+    数据来源：悠悠有品后台 CDP 抓取（2026-04-07）· SteamDT 参考价 · GitHub Pages 部署
   </div>
 </div>
-
-<!-- 图表 -->
-<div class="chart-wrap">
-  <div class="chart-card">
-    <h3>板块盈亏分布</h3>
-    <canvas id="pieChart" height="220"></canvas>
-  </div>
-  <div class="chart-card">
-    <h3>成本 vs 现值（按板块）</h3>
-    <canvas id="barChart" height="220"></canvas>
-  </div>
-</div>
-
-<div class="chart-card" style="margin-bottom:14px">
-  <h3>持仓明细 · 成本排序 Top 15</h3>
-  <canvas id="top15Chart" height="100"></canvas>
-</div>
-
-<style>
-.cat-btn{background:#1a1d27;border:1px solid #2a2d3a;color:#555;padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
-.cat-btn.active{background:#1e2a1e;border-color:#2a4a2a;color:#2dc653}
-.cat-btn:hover:not(.active){color:#aaa}
-</style>
 
 <script>
-// ===================== 悠悠有品全量持仓数据（已核实） =====================
-const holdings = [
-  // ===== 武器 17件 =====
-  {name:'M4A1消音版 · 苔藓石英', wear:'FN',wearV:0.0563,cost:1610,price:1319,cat:'weapon'},
-  {name:'UMP-45 · 炽烈之炎',     wear:'FN',wearV:0.0633,cost:390, price:323, cat:'weapon'},
-  {name:'UMP-45 · 炽烈之炎',     wear:'FN',wearV:0.0341,cost:370, price:323, cat:'weapon'},
-  {name:'M4A4 · 炼狱之火',       wear:'FT',wearV:0.1456,cost:744, price:676.96,cat:'weapon'},
-  {name:'M4A4 · 都市 DDPAT',     wear:'FN',wearV:0.0649,cost:410, price:377.40,cat:'weapon'},
-  {name:'法玛斯 · 纪念碑',        wear:'FN',wearV:0.0435,cost:702, price:648.90,cat:'weapon'},
-  {name:'法玛斯 · 纪念碑',        wear:'FN',wearV:0.0347,cost:710, price:648.90,cat:'weapon'},
-  {name:'FN57 · 夜影',           wear:'FN',wearV:0.0576,cost:140, price:135.50,cat:'weapon'},
-  {name:'双持贝瑞塔 · 街头抢匪',  wear:'FN',wearV:0.0585,cost:54.90,price:50.78,cat:'weapon'},
-  {name:'法玛斯 · 线路故障',      wear:'FN',wearV:0.0587,cost:115.50,price:131,cat:'weapon'},
-  {name:'M4A4 · 多边形编辑',     wear:'FT',wearV:0.1440,cost:129, price:150,cat:'weapon'},
-  {name:'M4A4 · 多边形编辑',     wear:'FT',wearV:0.1376,cost:132, price:150,cat:'weapon'},
-  {name:'M4A4 · 彼岸花',         wear:'FT',wearV:0.1411,cost:127, price:134.99,cat:'weapon'},
-  {name:'MP7 · 死亡骷髅',        wear:'FT',wearV:0.1146,cost:217, price:243.39,cat:'weapon'},
-  {name:'M4A4 · 蚀刻领主',       wear:'FT',wearV:0.1215,cost:7.65,price:8.92,cat:'weapon'},
-  {name:'M4A4 · 龙王',           wear:'FT',wearV:0.1403,cost:184, price:196.50,cat:'weapon'},
-  {name:'P2000 · 火灵',          wear:'FN',wearV:0.0607,cost:1340,price:1388.50,cat:'weapon'},
+// ═══════════════ DATA ═══════════════
+const H = [
+  {n:'M4A1消音版 · 苔藓石英',w:'FN',wv:.0563,c:1610,p:1319,t:'weapon'},
+  {n:'P2000 · 火灵',w:'FN',wv:.0607,c:1340,p:1388.5,t:'weapon'},
+  {n:'M4A4 · 炼狱之火',w:'FT',wv:.1456,c:744,p:676.96,t:'weapon'},
+  {n:'法玛斯 · 纪念碑',w:'FN',wv:.0347,c:710,p:648.9,t:'weapon'},
+  {n:'法玛斯 · 纪念碑',w:'FN',wv:.0435,c:702,p:648.9,t:'weapon'},
+  {n:'UMP-45 · 炽烈之炎',w:'FN',wv:.0633,c:390,p:323,t:'weapon'},
+  {n:'UMP-45 · 炽烈之炎',w:'FN',wv:.0341,c:370,p:323,t:'weapon'},
+  {n:'M4A4 · 都市 DDPAT',w:'FN',wv:.0649,c:410,p:377.4,t:'weapon'},
+  {n:'MP7 · 死亡骷髅',w:'FT',wv:.1146,c:217,p:243.39,t:'weapon'},
+  {n:'M4A4 · 龙王',w:'FT',wv:.1403,c:184,p:196.5,t:'weapon'},
+  {n:'法玛斯 · 线路故障',w:'FN',wv:.0587,c:115.5,p:131,t:'weapon'},
+  {n:'FN57 · 夜影',w:'FN',wv:.0576,c:140,p:135.5,t:'weapon'},
+  {n:'M4A4 · 多边形编辑',w:'FT',wv:.1440,c:132,p:150,t:'weapon'},
+  {n:'M4A4 · 多边形编辑',w:'FT',wv:.1376,c:129,p:150,t:'weapon'},
+  {n:'M4A4 · 彼岸花',w:'FT',wv:.1411,c:127,p:134.99,t:'weapon'},
+  {n:'双持贝瑞塔 · 街头抢匪',w:'FN',wv:.0585,c:54.9,p:50.78,t:'weapon'},
+  {n:'M4A4 · 蚀刻领主',w:'FT',wv:.1215,c:7.65,p:8.92,t:'weapon'},
 
-  // ===== 角色/手套 11件 =====
-  {name:'海军上尉里克索尔',      wear:'大师',wearV:0,cost:377,price:250,cat:'agent'},
-  {name:'海军上尉里克索尔',      wear:'大师',wearV:0,cost:350,price:250,cat:'agent'},
-  {name:'海军上尉里克索尔',      wear:'大师',wearV:0,cost:317,price:250,cat:'agent'},
-  {name:'"蓝莓" 铅弹',          wear:'卓越',wearV:0,cost:213,price:168,cat:'agent'},
-  {name:'"蓝莓" 铅弹',          wear:'卓越',wearV:0,cost:189,price:168,cat:'agent'},
-  {name:'"蓝莓" 铅弹',          wear:'卓越',wearV:0,cost:189,price:168,cat:'agent'},
-  {name:'沙哈马特教授',          wear:'非凡',wearV:0,cost:79,price:69.90,cat:'agent'},
-  {name:'沙哈马特教授',          wear:'非凡',wearV:0,cost:72,price:69.90,cat:'agent'},
-  {name:'沙哈马特教授',          wear:'非凡',wearV:0,cost:70,price:69.90,cat:'agent'},
-  {name:'沙哈马特教授',          wear:'非凡',wearV:0,cost:66,price:69.90,cat:'agent'},
-  {name:'沙哈马特教授',          wear:'非凡',wearV:0,cost:62.80,price:69.90,cat:'agent'},
+  {n:'海军上尉里克索尔',w:'大师',wv:0,c:377,p:250,t:'agent'},
+  {n:'海军上尉里克索尔',w:'大师',wv:0,c:350,p:250,t:'agent'},
+  {n:'海军上尉里克索尔',w:'大师',wv:0,c:317,p:250,t:'agent'},
+  {n:'"蓝莓" 铅弹',w:'卓越',wv:0,c:213,p:168,t:'agent'},
+  {n:'"蓝莓" 铅弹',w:'卓越',wv:0,c:189,p:168,t:'agent'},
+  {n:'"蓝莓" 铅弹',w:'卓越',wv:0,c:189,p:168,t:'agent'},
+  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:79,p:69.9,t:'agent'},
+  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:72,p:69.9,t:'agent'},
+  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:70,p:69.9,t:'agent'},
+  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:66,p:69.9,t:'agent'},
+  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:62.8,p:69.9,t:'agent'},
 
-  // ===== 印花 34件 =====
-  {name:'NAVI 2024上海（全息）',wear:'Holo',wearV:0,cost:51, price:31.80,qty:3,cat:'sticker'},
-  {name:'FaZe Clan 2024上海（全息）',wear:'Holo',wearV:0,cost:49,price:41.90,qty:6,cat:'sticker'},
-  {name:'paiN Gaming 2021斯德哥尔摩（全息）',wear:'Holo',wearV:0,cost:103,price:79.57,qty:1,cat:'sticker'},
-  {name:'NAVI 2021斯德哥尔摩（全息）',wear:'Holo',wearV:0,cost:41.50,price:37.40,qty:2,cat:'sticker'},
-  {name:'HEROIC 2024上海（全息）',wear:'Holo',wearV:0,cost:30.50,price:39.99,qty:4,cat:'sticker'},
-  {name:'EG 2021斯德哥尔摩（全息）',wear:'Holo',wearV:0,cost:61, price:52.80,qty:1,cat:'sticker'},
-  {name:'NiP 2021斯德哥尔摩（全息）',wear:'Holo',wearV:0,cost:46.50,price:42.30,qty:1,cat:'sticker'},
-  {name:'MIBR 2025布达佩斯（全息）',wear:'Holo',wearV:0,cost:31, price:26.78,qty:1,cat:'sticker'},
-  {name:'GamerLegion 2025布达佩斯（全息）',wear:'Holo',wearV:0,cost:30, price:27.70,qty:2,cat:'sticker'},
-  {name:'Fnatic 2025布达佩斯（全息）',wear:'Holo',wearV:0,cost:28.40,price:29.70,qty:2,cat:'sticker'},
-  {name:'GamerLegion 2025布达佩斯（全息）',wear:'Holo',wearV:0,cost:27.60,price:27.70,qty:1,cat:'sticker'},
-  {name:'Complexity 2022安特卫普（全息）',wear:'Holo',wearV:0,cost:49.80,price:50,qty:1,cat:'sticker'},
-  {name:'iM 2024上海',           wear:'普通',wearV:0,cost:0.02,price:0.02,qty:1,cat:'sticker'},
+  {n:'NAVI · 2024上海（全息）',w:'Holo',wv:0,c:51,p:31.8,q:3,t:'sticker'},
+  {n:'FaZe Clan · 2024上海（全息）',w:'Holo',wv:0,c:49,p:41.9,q:6,t:'sticker'},
+  {n:'paiN Gaming · 2021斯德哥尔摩（全息）',w:'Holo',wv:0,c:103,p:79.57,q:1,t:'sticker'},
+  {n:'NAVI · 2021斯德哥尔摩（全息）',w:'Holo',wv:0,c:41.5,p:37.4,q:2,t:'sticker'},
+  {n:'HEROIC · 2024上海（全息）',w:'Holo',wv:0,c:30.5,p:39.99,q:4,t:'sticker'},
+  {n:'EG · 2021斯德哥尔摩（全息）',w:'Holo',wv:0,c:61,p:52.8,q:1,t:'sticker'},
+  {n:'NiP · 2021斯德哥尔摩（全息）',w:'Holo',wv:0,c:46.5,p:42.3,q:1,t:'sticker'},
+  {n:'MIBR · 2025布达佩斯（全息）',w:'Holo',wv:0,c:31,p:26.78,q:1,t:'sticker'},
+  {n:'GamerLegion · 2025布达佩斯（全息）',w:'Holo',wv:0,c:30,p:27.7,q:2,t:'sticker'},
+  {n:'Fnatic · 2025布达佩斯（全息）',w:'Holo',wv:0,c:28.4,p:29.7,q:2,t:'sticker'},
+  {n:'GamerLegion · 2025布达佩斯（全息）',w:'Holo',wv:0,c:27.6,p:27.7,q:1,t:'sticker'},
+  {n:'Complexity · 2022安特卫普（全息）',w:'Holo',wv:0,c:49.8,p:50,q:1,t:'sticker'},
+  {n:'iM · 2024上海',w:'普通',wv:0,c:.02,p:.02,q:1,t:'sticker'},
 
-  // ===== 音乐盒 1件 =====
-  {name:'DRYDEN - 触摸能量',    wear:'高级',wearV:0,cost:10.78,price:11.20,qty:1,cat:'music'},
+  {n:'DRYDEN · 触摸能量',w:'高级',wv:0,c:10.78,p:11.2,q:1,t:'music'},
 ];
 
-// 计算衍生字段
-holdings.forEach(h => {
-  h.pnl = h.price * (h.qty || 1) - h.cost * (h.qty || 1);
-  h.pnlPct = h.cost > 0 ? (h.pnl / (h.cost * (h.qty || 1)) * 100) : 0;
-  h.wearLabel = h.wearV > 0 ? h.wearV.toFixed(4) : '';
+// derive
+H.forEach(h=>{
+  const q=h.q||1;
+  h.totalCost=h.c*q; h.totalPrice=h.p*q;
+  h.pnl=h.totalPrice-h.totalCost;
+  h.pnlPct=h.totalCost>0?(h.pnl/h.totalCost*100):0;
+  h.wearStr=h.wv>0?h.wv.toFixed(4):'';
+  h.qtyStr=q>1?`×${q}`:'';
 });
 
-// 按成本降序
-const sortedByCost = [...holdings].sort((a,b) => (b.cost*(b.qty||1)) - (a.cost*(a.qty||1)));
+// ═══════════════ CATEGORIES ═══════════════
+const CATS=[
+  {key:'all',label:'全部',icon:'📊'},
+  {key:'weapon',label:'武器',icon:'🔫'},
+  {key:'agent',label:'角色手套',icon:'🎭'},
+  {key:'sticker',label:'印花',icon:'🏷️'},
+  {key:'music',label:'音乐盒',icon:'🎵'},
+];
 
-// 渲染表格
-let currentCat = 'all';
-function renderTable(cat) {
-  const body = document.getElementById('holdingBody');
-  const filtered = cat === 'all' ? holdings : holdings.filter(h => h.cat === cat);
-  document.getElementById('countBadge').textContent = filtered.length + '件';
-  
-  body.innerHTML = filtered.map(h => {
-    const pnlClass = h.pnl > 0 ? 'up' : h.pnl < 0 ? 'down' : 'flat';
-    const pnlSign = h.pnl > 0 ? '+' : '';
-    const qty = (h.qty && h.qty > 1) ? ` <span style="color:#4895ef;font-size:10px">×${h.qty}</span>` : '';
-    const wearTip = h.wearV > 0 ? `<div style="font-size:10px;color:#555;margin-top:2px">磨损 ${h.wearLabel}</div>` : '';
-    return `<tr data-cat="${h.cat}">
+const CAT_META={
+  weapon:{color:'var(--blue)',hex:'#3b82f6',label:'武器'},
+  agent:{color:'var(--violet)',hex:'#8b5cf6',label:'角色手套'},
+  sticker:{color:'var(--amber)',hex:'#f59e0b',label:'印花'},
+  music:{color:'var(--cyan)',hex:'#06b6d4',label:'音乐盒'},
+};
+
+function summarize(items){
+  const tc=items.reduce((s,h)=>s+h.totalCost,0);
+  const tp=items.reduce((s,h)=>s+h.totalPrice,0);
+  return{cost:tc,value:tp,pnl:tp-tc,pnlPct:tc>0?((tp-tc)/tc*100):0,count:items.length,
+    wins:items.filter(h=>h.pnl>0).length,
+    maxPnl:items.reduce((m,h)=>h.pnl>m.pnl?h:m,{pnl:-Infinity}),
+    maxLoss:items.reduce((m,h)=>h.pnl<m.pnl?h:m,{pnl:Infinity})};
+}
+
+const allSummary=summarize(H);
+
+// ═══════════════ KPI ═══════════════
+const fmt=v=>'¥'+v.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtI=v=>'¥'+v.toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+document.getElementById('kpiValue').textContent=fmtI(allSummary.value);
+document.getElementById('kpiCount').textContent=H.length+' 件藏品';
+
+const kpiPnlEl=document.getElementById('kpiPnl');
+kpiPnlEl.textContent=(allSummary.pnl>=0?'+':'')+fmtI(allSummary.pnl);
+kpiPnlEl.className='value '+(allSummary.pnl>0?'rise':allSummary.pnl<0?'fall':'');
+
+document.getElementById('kpiPnlPct').textContent=
+  `${allSummary.pnl>=0?'+':''}${allSummary.pnlPct.toFixed(2)}% · 胜率 ${Math.round(allSummary.wins/H.length*100)}%`;
+document.getElementById('kpiArrow').textContent=allSummary.pnl>=0?'▲':'▼';
+document.getElementById('kpiArrow').style.color=allSummary.pnl>=0?'var(--rise)':'var(--fall)';
+document.getElementById('kpiCost').textContent=fmtI(allSummary.cost);
+
+// ═══════════════ SECTORS ═══════════════
+const sectorGrid=document.getElementById('sectorGrid');
+Object.keys(CAT_META).forEach(key=>{
+  const items=H.filter(h=>h.t===key);
+  const s=summarize(items);
+  const m=CAT_META[key];
+  const pct=Math.abs(s.pnlPct);
+  const maxPct=Math.max(15,pct);
+  sectorGrid.innerHTML+=`
+    <div class="sector">
+      <div class="head"><span class="name">${m.label}</span><span class="count">${s.count}件</span></div>
+      <div class="pnl ${s.pnl>=0?'clr-rise':'clr-fall'}">${s.pnl>=0?'+':''}${fmtI(s.pnl)}</div>
+      <div class="detail">成本 ${fmtI(s.cost)} · ${s.pnl>=0?'+':''}${s.pnlPct.toFixed(1)}%</div>
+      <div class="bar"><div class="bar-fill ${s.pnl>=0?'bar-rise':'bar-fall'}" style="width:${Math.min(pct/maxPct*100,100)}%"></div></div>
+    </div>`;
+});
+
+// ═══════════════ TABS ═══════════════
+let curCat='all',curSort=null,curDir=-1;
+
+const tabBar=document.getElementById('tabBar');
+CATS.forEach(c=>{
+  const cnt=c.key==='all'?H.length:H.filter(h=>h.t===c.key).length;
+  tabBar.innerHTML+=`<button class="tab ${c.key==='all'?'on':''}" data-cat="${c.key}">${c.icon} ${c.label} ${cnt}</button>`;
+});
+tabBar.addEventListener('click',e=>{
+  if(!e.target.classList.contains('tab'))return;
+  tabBar.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  e.target.classList.add('on');
+  curCat=e.target.dataset.cat;
+  render();
+});
+
+// ═══════════════ SORT ═══════════════
+document.querySelectorAll('.sort-btn').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const key=th.dataset.sort;
+    if(curSort===key)curDir*=-1;else{curSort=key;curDir=key==='name'?1:-1;}
+    render();
+  });
+});
+
+// ═══════════════ RENDER ═══════════════
+function render(){
+  const items=curCat==='all'?[...H]:H.filter(h=>h.t===curCat);
+  if(curSort){
+    items.sort((a,b)=>{
+      let va,vb;
+      if(curSort==='name'){va=a.n;vb=b.n;return curDir*va.localeCompare(vb,'zh');}
+      va=a[curSort];vb=b[curSort];
+      return curDir*(va-vb);
+    });
+  }
+  document.getElementById('countBadge').textContent=items.length+'件';
+
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML=items.map(h=>{
+    const pc=h.pnl>0?'clr-rise':h.pnl<0?'clr-fall':'clr-flat';
+    const sign=h.pnl>=0?'+':'';
+    const wearInfo=h.wv>0?`<div class="item-sub mono">${h.wearStr}</div>`:'';
+    return`<tr>
       <td>
-        <div style="font-weight:600;color:#f0f0f0">${h.name}${qty}</div>
-        ${wearTip ? `<div style="font-size:10px;color:#555;margin-top:2px">${wearTip}</div>` : ''}
+        <div class="item-name">${h.n}${h.qtyStr?`<span class="qty-tag">${h.qtyStr}</span>`:''}</div>
+        ${wearInfo}
       </td>
-      <td><span class="wear-badge">${h.wear}</span></td>
-      <td class="cost-col">¥${(h.cost*(h.qty||1)).toFixed(2)}</td>
-      <td class="price-col">¥${(h.price*(h.qty||1)).toFixed(2)}</td>
-      <td class="pnl-col ${pnlClass}"><strong>${pnlSign}¥${h.pnl.toFixed(2)}</strong></td>
-      <td class="pnl-col ${pnlClass}">${pnlSign}${h.pnlPct.toFixed(1)}%</td>
+      <td><span class="wear-tag">${h.w}</span></td>
+      <td class="text-r text-mono" style="color:var(--text3)">${fmt(h.totalCost)}</td>
+      <td class="text-r text-mono" style="color:var(--text)">${fmt(h.totalPrice)}</td>
+      <td class="text-r"><span class="${pc}" style="font-weight:700">${sign}${fmt(h.pnl)}</span></td>
+      <td class="text-r"><span class="${pc}" style="font-weight:500">${sign}${h.pnlPct.toFixed(1)}%</span></td>
     </tr>`;
   }).join('');
 }
+render();
 
-function filterCat(cat, btn) {
-  currentCat = cat;
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable(cat);
-}
+// ═══════════════ CHARTS ═══════════════
+const chartFont={color:'#52525b',family:"'DM Mono','Noto Sans SC',sans-serif"};
+Chart.defaults.color='#52525b';
+Chart.defaults.font.family=chartFont.family;
+Chart.defaults.font.size=11;
 
-renderTable('all');
+const gridColor='#1e2130';
 
-// ===================== 图表 =====================
-// 板块汇总
-const catSummary = {
-  weapon:{cost:7117.67,value:7700.35,pnl:582.68,count:17},
-  agent: {cost:1236.90,value:1236.90,pnl:-294.30,count:11},
-  sticker:{cost:1303.30,value:1422.99,pnl:119.69,count:34},
-  music: {cost:10.78,  value:11.20,  pnl:0.42,   count:1},
-};
-const catLabels = ['武器','角色手套','印花','音乐盒'];
-const catCosts  = [catSummary.weapon.cost, catSummary.agent.cost, catSummary.sticker.cost, catSummary.music.cost];
-const catValues = [catSummary.weapon.value,catSummary.agent.value,catSummary.sticker.value,catSummary.music.value];
-const catPnls    = [catSummary.weapon.pnl, catSummary.agent.pnl,  catSummary.sticker.pnl,  catSummary.music.pnl];
-const catColors = ['#4895ef','#e63946','#f77f00','#9b5de5'];
-const catBg     = ['rgba(72,149,239,0.2)','rgba(230,57,70,0.2)','rgba(247,127,0,0.2)','rgba(155,93,229,0.2)'];
-
-// 饼图
-new Chart(document.getElementById('pieChart'), {
+// Doughnut
+new Chart(document.getElementById('doughnut'),{
   type:'doughnut',
   data:{
-    labels:catLabels.map((l,i)=>l+' ¥'+catCosts[i].toFixed(0)),
+    labels:Object.values(CAT_META).map(m=>m.label),
     datasets:[{
-      data:catCosts,
-      backgroundColor:catBg,
-      borderColor:catColors,
-      borderWidth:2,
+      data:Object.keys(CAT_META).map(k=>summarize(H.filter(h=>h.t===k)).cost),
+      backgroundColor:['rgba(59,130,246,.15)','rgba(139,92,246,.15)','rgba(245,158,11,.15)','rgba(6,182,212,.15)'],
+      borderColor:Object.values(CAT_META).map(m=>m.hex),
+      borderWidth:2,hoverOffset:6
     }]
   },
-  options:{responsive:true,plugins:{legend:{labels:{color:'#888',font:{size:12}}}}}
+  options:{responsive:true,cutout:'65%',
+    plugins:{legend:{position:'right',labels:{padding:14,usePointStyle:true,pointStyleWidth:8,font:{size:11}}}}
+  }
 });
 
-// 柱状图
-new Chart(document.getElementById('barChart'), {
+// Bar
+const barKeys=Object.keys(CAT_META);
+new Chart(document.getElementById('bar'),{
   type:'bar',
   data:{
-    labels:catLabels,
+    labels:barKeys.map(k=>CAT_META[k].label),
     datasets:[
-      {label:'成本',data:catCosts,backgroundColor:'rgba(72,149,239,0.5)',borderColor:'#4895ef',borderWidth:1},
-      {label:'现值',data:catValues,backgroundColor:catPnls.map(p=>p>=0?'rgba(45,198,83,0.5)':'rgba(230,57,70,0.5)'),borderColor:catPnls.map(p=>p>=0?'#2dc653':'#e63946'),borderWidth:1},
+      {label:'成本',data:barKeys.map(k=>summarize(H.filter(h=>h.t===k)).cost),
+        backgroundColor:'rgba(59,130,246,.3)',borderColor:'#3b82f6',borderWidth:1,borderRadius:4},
+      {label:'现值',data:barKeys.map(k=>summarize(H.filter(h=>h.t===k)).value),
+        backgroundColor:barKeys.map(k=>{const s=summarize(H.filter(h=>h.t===k));return s.pnl>=0?'rgba(239,68,68,.3)':'rgba(34,197,94,.3)'}),
+        borderColor:barKeys.map(k=>{const s=summarize(H.filter(h=>h.t===k));return s.pnl>=0?'#ef4444':'#22c55e'}),
+        borderWidth:1,borderRadius:4}
     ]
   },
-  options:{responsive:true,plugins:{legend:{labels:{color:'#888',font:{size:12}}}},scales:{x:{ticks:{color:'#888'},grid:{color:'#222'}},y:{ticks:{color:'#888'},grid:{color:'#222'}}}}
+  options:{responsive:true,
+    plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,font:{size:11}}}},
+    scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:gridColor}}}}
 });
 
-// Top15 柱状图
-const top15 = sortedByCost.slice(0,15);
-new Chart(document.getElementById('top15Chart'), {
+// Top15
+const top15=[...H].sort((a,b)=>b.totalCost-a.totalCost).slice(0,15);
+new Chart(document.getElementById('top15'),{
   type:'bar',
   data:{
-    labels:top15.map(h=>h.name.slice(0,14)),
+    labels:top15.map(h=>h.n.replace(/ · /,' ').slice(0,18)),
     datasets:[
-      {label:'成本',data:top15.map(h=>(h.cost*(h.qty||1))),backgroundColor:'rgba(72,149,239,0.5)',borderColor:'#4895ef',borderWidth:1},
-      {label:'现值',data:top15.map(h=>(h.price*(h.qty||1))),backgroundColor:top15.map(h=>h.pnl>=0?'rgba(45,198,83,0.5)':'rgba(230,57,70,0.5)'),borderColor:top15.map(h=>h.pnl>=0?'#2dc653':'#e63946'),borderWidth:1},
+      {label:'成本',data:top15.map(h=>h.totalCost),backgroundColor:'rgba(59,130,246,.35)',borderColor:'#3b82f6',borderWidth:1,borderRadius:3},
+      {label:'现值',data:top15.map(h=>h.totalPrice),
+        backgroundColor:top15.map(h=>h.pnl>=0?'rgba(239,68,68,.35)':'rgba(34,197,94,.35)'),
+        borderColor:top15.map(h=>h.pnl>=0?'#ef4444':'#22c55e'),borderWidth:1,borderRadius:3}
     ]
   },
-  options:{indexAxis:'y',responsive:true,plugins:{legend:{labels:{color:'#888',font:{size:11}}}},scales:{x:{ticks:{color:'#888',font:{size:10}},grid:{color:'#222'}},y:{ticks:{color:'#888',font:{size:10}},grid:{display:false}}}}
+  options:{indexAxis:'y',responsive:true,
+    plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,font:{size:10}}}},
+    scales:{x:{ticks:{font:{size:9}},grid:{color:gridColor}},y:{ticks:{font:{size:9}},grid:{display:false}}}}
 });
 </script>
 </body>
