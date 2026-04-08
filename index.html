@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
 :root{
   --bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a36;
@@ -39,7 +40,26 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* ── refresh button ── */
+/* ── market index ── */
+.market-index{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px}
+.mi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.mi-left{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.mi-title{font-size:14px;font-weight:800;color:var(--text)}
+.mi-sub{font-size:11px;color:var(--text3)}
+.mi-right{display:flex;align-items:baseline;gap:8px}
+.mi-num{font-size:32px;font-weight:900;font-family:'DM Mono',monospace;letter-spacing:-1px}
+.mi-chg{font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
+.mi-chart{height:200px;margin-bottom:14px}
+.mi-items{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.mi-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;transition:border-color .2s}
+.mi-item:hover{border-color:var(--blue)}
+.mi-item-name{font-size:10px;color:var(--text3);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi-item-price{font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
+.mi-item-chg{font-size:10px;font-weight:600;font-family:'DM Mono',monospace;margin-top:2px}
+.clr-up{color:var(--rise)}.clr-dn{color:var(--fall)}
+
+@media(max-width:900px){.mi-items{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.mi-items{grid-template-columns:repeat(2,1fr)}}
 .refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:11px;font-family:inherit;font-weight:500;padding:6px 16px;border-radius:20px;cursor:pointer;transition:all .2s;letter-spacing:.3px}
 .refresh-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.06)}
 .refresh-btn:active{transform:scale(.96)}
@@ -157,6 +177,22 @@ tbody tr:last-child td{border-bottom:none}
     </div>
   </div>
 
+  <!-- Market Index -->
+  <div class="market-index anim anim-d0" id="marketSection">
+    <div class="mi-header">
+      <div class="mi-left">
+        <span class="mi-title">CS2 大盘指数</span>
+        <span class="mi-sub">6只热门饰品等权 · 基期1000</span>
+      </div>
+      <div class="mi-right" id="miValue">
+        <span class="mi-num" id="miNum">--</span>
+        <span class="mi-chg" id="miChg">--</span>
+      </div>
+    </div>
+    <div class="mi-chart" id="indexChart"></div>
+    <div class="mi-items" id="miItems"></div>
+  </div>
+
   <!-- KPI -->
   <div class="kpi-strip anim anim-d1">
     <div class="kpi">
@@ -207,6 +243,7 @@ tbody tr:last-child td{border-bottom:none}
 
   <!-- Charts -->
   <div class="charts anim anim-d4">
+    <div class="chart-box wide"><h3>大盘K线 · 点击下方卡片切换</h3><div id="klineChart" style="height:360px"></div></div>
     <div class="chart-box"><h3>成本结构</h3><canvas id="doughnut"></canvas></div>
     <div class="chart-box"><h3>板块盈亏对比</h3><canvas id="bar"></canvas></div>
     <div class="chart-box wide"><h3>Top 15 持仓 · 成本 vs 现值</h3><canvas id="top15"></canvas></div>
@@ -466,6 +503,90 @@ document.getElementById('refreshBtn').addEventListener('click',()=>{
   document.querySelector('.container').style.opacity='.4';
   setTimeout(()=>location.reload(),500);
 });
+
+// ═══════════════ MARKET INDEX (ECharts) ═══════════════
+(async()=>{
+  try{
+    const r=await fetch('market.json');
+    const D=await r.json();
+    renderMarket(D);
+  }catch(e){
+    console.warn('market.json load failed',e);
+    document.getElementById('marketSection').style.display='none';
+  }
+})();
+
+function renderMarket(D){
+  const idx=D.index;
+  const clr=idx.change>=0?'var(--rise)':'var(--fall)';
+  const sign=idx.change>=0?'+':'';
+  document.getElementById('miNum').textContent=idx.latest.toFixed(2);
+  document.getElementById('miNum').style.color=clr;
+  document.getElementById('miChg').textContent=`${sign}${idx.change.toFixed(2)}%`;
+  document.getElementById('miChg').style.color=clr;
+
+  // Index line chart
+  const ec=echarts.init(document.getElementById('indexChart'),null,{renderer:'canvas'});
+  ec.setOption({
+    backgroundColor:'transparent',
+    grid:{top:10,right:50,bottom:25,left:50},
+    xAxis:{type:'category',data:idx.dates,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#52525b',fontSize:10,interval:6},axisTick:{show:false}},
+    yAxis:{type:'value',min:Math.floor(idx.min.value*0.995),max:Math.ceil(idx.max.value*1.005),splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#52525b',fontSize:10}},
+    tooltip:{trigger:'axis',backgroundColor:'#1a1e28',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:12},
+      formatter:function(p){const v=p[0];const c=v.value>=(v.dataIndex>0?idx.values[v.dataIndex-1]:v.value)?'var(--rise)':'var(--fall)';return`<b>${v.name}</b><br/><span style="color:${c};font-weight:700">${v.value.toFixed(2)}</span>`}},
+    series:[{type:'line',data:idx.values,symbol:'none',lineStyle:{color:'#3b82f6',width:2},
+      areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(59,130,246,0.15)'},{offset:1,color:'rgba(59,130,246,0)'}])},
+      markLine:{silent:true,symbol:'none',lineStyle:{color:'#2a2d38',type:'dashed'},data:[{yAxis:1000,label:{formatter:'基线 1000',color:'#52525b',fontSize:10}}]},
+      markPoint:{data:[{type:'max',name:'高',symbol:'pin',symbolSize:32,itemStyle:{color:'#ef4444'},label:{color:'#fff',fontSize:9,formatter:function(p){return p.value.toFixed(0)}}},{type:'min',name:'低',symbol:'pin',symbolSize:32,itemStyle:{color:'#22c55e'},label:{color:'#fff',fontSize:9,formatter:function(p){return p.value.toFixed(0)}}}]}]
+  });
+  window.addEventListener('resize',()=>ec.resize());
+
+  // K-line chart for selected item
+  const itemNames=Object.keys(D.items);
+  const defaultItem=itemNames[0];
+  const klineEc=echarts.init(document.getElementById('klineChart'),null,{renderer:'canvas'});
+
+  function renderKline(name){
+    const item=D.items[name];
+    if(!item)return;
+    const kl=item.kline;
+    const dates=kl.map(k=>{const d=new Date(k[0]*1000);return(d.getMonth()+1)+'-'+d.getDate()});
+    const ohlc=kl.map(k=>[k[1],k[2],k[3],k[4]]); // open,close,high,low
+    klineEc.setOption({
+      backgroundColor:'transparent',
+      grid:{top:15,right:50,bottom:30,left:60},
+      xAxis:{type:'category',data:dates,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#52525b',fontSize:9,interval:8},axisTick:{show:false}},
+      yAxis:{type:'value',scale:true,splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#52525b',fontSize:9}},
+      tooltip:{trigger:'axis',backgroundColor:'#1a1e28',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11},
+        formatter:function(p){const d=p[0];return`<b>${d.name}</b><br/>开 ${d.data[1]}<br/>收 <span style="color:${d.data[1]>d.data[2]?'var(--fall)':'var(--rise)'};font-weight:700">${d.data[2]}</span><br/>高 ${d.data[3]}<br/>低 ${d.data[4]}`}},
+      series:[{type:'candlestick',data:ohlc,itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e'}}]
+    },true);
+  }
+  renderKline(defaultItem);
+
+  // Item selector buttons
+  const miItems=document.getElementById('miItems');
+  itemNames.forEach((name,i)=>{
+    const item=D.items[name];
+    const chg=item.change;
+    const chgCls=chg>0?'clr-up':chg<0?'clr-dn':'';
+    const chgSign=chg>0?'+':'';
+    miItems.innerHTML+=`
+      <div class="mi-item ${i===0?'mi-item-active':''}" data-name="${name}" style="${i===0?'border-color:var(--blue)':''}">
+        <div class="mi-item-name">${name}</div>
+        <div class="mi-item-price ${chgCls}">&yen;${item.latest.toFixed(1)}</div>
+        <div class="mi-item-chg ${chgCls}">${chgSign}${chg.toFixed(2)}%</div>
+      </div>`;
+  });
+  miItems.addEventListener('click',e=>{
+    const card=e.target.closest('.mi-item');
+    if(!card)return;
+    miItems.querySelectorAll('.mi-item').forEach(c=>c.style.borderColor='var(--border)');
+    card.style.borderColor='var(--blue)';
+    renderKline(card.dataset.name);
+  });
+  window.addEventListener('resize',()=>klineEc.resize());
+}
 </script>
 </body>
 </html>
