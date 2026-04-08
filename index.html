@@ -39,6 +39,14 @@ body::after{content:'';position:fixed;top:-200px;left:50%;transform:translateX(-
 .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
+/* ── refresh button ── */
+.refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:11px;font-family:inherit;font-weight:500;padding:6px 16px;border-radius:20px;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.refresh-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.06)}
+.refresh-btn:active{transform:scale(.96)}
+.refresh-btn svg{width:13px;height:13px;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.refresh-btn.spinning svg{transform:rotate(360deg)}
+.refresh-btn .last-update{font-size:9px;color:var(--text3);margin-left:2px}
+
 /* ── KPI strip ── */
 .kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin-bottom:28px}
 .kpi{background:var(--surface);padding:20px 24px;position:relative}
@@ -140,6 +148,10 @@ tbody tr:last-child td{border-bottom:none}
       <div class="sub">悠悠有品持仓成本基准 · SteamDT 实时数据 · <span style="color:var(--rise)">红</span>涨<span style="color:var(--fall)">绿</span>跌（A股惯例）</div>
     </div>
     <div class="header-right">
+      <button class="refresh-btn" id="refreshBtn" title="刷新数据">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2.5 12A10 10 0 0 1 19.05 3.5"/><path d="M21.5 12A10 10 0 0 1 4.95 20.5"/></svg>
+        刷新
+      </button>
       <span class="badge"><span class="dot"></span>悠悠有品</span>
       <span class="badge">2026-04-08</span>
     </div>
@@ -445,6 +457,14 @@ new Chart(document.getElementById('top15'),{
   options:{indexAxis:'y',responsive:true,
     plugins:{legend:{labels:{usePointStyle:true,pointStyleWidth:8,font:{size:10}}}},
     scales:{x:{ticks:{font:{size:9}},grid:{color:gridColor}},y:{ticks:{font:{size:9}},grid:{display:false}}}}
+});
+
+// ═══════════════ REFRESH ═══════════════
+document.getElementById('refreshBtn').addEventListener('click',()=>{
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.querySelector('.container').style.opacity='.4';
+  setTimeout(()=>location.reload(),500);
 });
 </script>
 </body>
