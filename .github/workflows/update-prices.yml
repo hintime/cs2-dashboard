@@ -1,0 +1,51 @@
+name: Update CS2 Prices
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Fetch Prices
+        env:
+          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
+        run: |
+          node << 'NODESCRIPT'
+          const https=require('https');
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('market.json','utf8'));
+          const items=d.items.map(i=>i.name);
+          const r={};
+          let done=0;
+          items.forEach(n=>{
+            const req=https.request({
+              hostname:'open.steamdt.com',
+              path:'/open/cs2/v1/price/single?marketHashName='+encodeURIComponent(n),
+              headers:{'Authorization':'Bearer '+process.env.STEAMDT_KEY}
+            },res=>{
+              let d='';
+              res.on('data',c=>d+=c);
+              res.on('end',()=>{
+                try{r[n]=JSON.parse(d).data?.[0]?.sellPrice||null}catch(e){r[n]=null}
+                done++;
+                if(done===items.length){
+                  d.lastUpdated=new Date().toISOString();
+                  d.items=d.items.map(i=>({...i,currentPrice:r[i.name]||i.currentPrice}));
+                  fs.writeFileSync('market.json',JSON.stringify(d,null,2));
+                }
+              });
+            });
+            req.on('error',()=>{r[n]=null;done++});
+            req.end();
+          });
+          NODESCRIPT
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: Auto-update prices'
