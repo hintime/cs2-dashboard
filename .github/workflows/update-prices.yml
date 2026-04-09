@@ -21,28 +21,37 @@ jobs:
           const https=require('https');
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('market.json','utf8'));
-          const items=d.items.map(i=>i.name);
-          const r={};
+          const names=Object.keys(d.items);
+          const prices={};
           let done=0;
-          items.forEach(n=>{
+          names.forEach(n=>{
             const req=https.request({
               hostname:'open.steamdt.com',
               path:'/open/cs2/v1/price/single?marketHashName='+encodeURIComponent(n),
               headers:{'Authorization':'Bearer '+process.env.STEAMDT_KEY}
             },res=>{
-              let d='';
-              res.on('data',c=>d+=c);
+              let body='';
+              res.on('data',c=>body+=c);
               res.on('end',()=>{
-                try{r[n]=JSON.parse(d).data?.[0]?.sellPrice||null}catch(e){r[n]=null}
+                try{
+                  const p=JSON.parse(body).data?.[0]?.sellPrice;
+                  if(p!=null) prices[n]=p;
+                }catch(e){}
                 done++;
-                if(done===items.length){
+                if(done===names.length){
                   d.update_time=new Date().toISOString().replace('T',' ').slice(0,16);
-                  d.items=d.items.map(i=>({...i,currentPrice:r[i.name]||i.currentPrice}));
+                  names.forEach(n=>{
+                    if(prices[n]!=null){
+                      d.items[n].latest=prices[n];
+                      const prev=d.items[n].kline[d.items[n].kline.length-1];
+                      d.items[n].change=prev?(((prices[n]-prev[4])/prev[4])*100).toFixed(2)*1:0;
+                    }
+                  });
                   fs.writeFileSync('market.json',JSON.stringify(d,null,2));
                 }
               });
             });
-            req.on('error',()=>{r[n]=null;done++});
+            req.on('error',()=>{done++});
             req.end();
           });
           NODESCRIPT
