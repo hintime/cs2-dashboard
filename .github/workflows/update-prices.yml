@@ -24,6 +24,8 @@ jobs:
           const names=Object.keys(d.items);
           const prices={};
           let done=0;
+          console.log('Fetching prices for',names.length,'items...');
+          console.log('STEAMDT_KEY set:', process.env.STEAMDT_KEY ? 'YES' : 'NO');
           names.forEach(n=>{
             const req=https.request({
               hostname:'open.steamdt.com',
@@ -35,10 +37,12 @@ jobs:
               res.on('end',()=>{
                 try{
                   const p=JSON.parse(body).data?.[0]?.sellPrice;
+                  console.log(n, '->', p, body.slice(0,80));
                   if(p!=null) prices[n]=p;
-                }catch(e){}
+                }catch(e){console.log(n, 'ERROR:', e.message, body.slice(0,50));}
                 done++;
                 if(done===names.length){
+                  console.log('Prices fetched:', Object.keys(prices).length);
                   d.update_time=new Date().toISOString().replace('T',' ').slice(0,16);
                   names.forEach(n=>{
                     if(prices[n]!=null){
@@ -48,10 +52,11 @@ jobs:
                     }
                   });
                   fs.writeFileSync('market.json',JSON.stringify(d,null,2));
+                  console.log('market.json updated');
                 }
               });
             });
-            req.on('error',()=>{done++});
+            req.on('error',e=>{console.log(n, 'REQUEST ERROR:', e.message);done++;});
             req.end();
           });
           NODESCRIPT
@@ -60,5 +65,9 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add market.json
-          git diff --cached --quiet || git commit -m 'chore: Auto-update prices'
-          git push https://x-access-token:${{ secrets.REPO_TOKEN }}@github.com/hintime/cs2-dashboard.git HEAD:main
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m 'chore: Auto-update prices'
+            git push https://x-access-token:${{ secrets.REPO_TOKEN }}@github.com/hintime/cs2-dashboard.git HEAD:main
+          fi
