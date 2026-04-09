@@ -258,121 +258,79 @@ tbody tr:last-child td{border-bottom:none}
 
 // ═══════════════ DATA ═══════════════
 
-const H = [
+let H = []; // Will be loaded from holdings.json
 
-  {n:'M4A1消音版 · 苔藓石英',w:'FN',wv:.0563,c:1610,p:1319,t:'weapon'},
+// Category mapping
+const CAT_MAP = {
+  '冲锋枪': 'weapon',
+  '步枪': 'weapon', 
+  '手枪': 'weapon',
+  '探员': 'agent',
+  '印花': 'sticker',
+  '音乐盒': 'music'
+};
 
-  {n:'P2000 · 火灵',w:'FN',wv:.0607,c:1340,p:1388.5,t:'weapon'},
+// Wear mapping
+const WEAR_MAP = {
+  '崭新出厂': 'FN',
+  '略有磨损': 'FT',
+  '久经沙场': 'MW',
+  '破损不堪': 'WW',
+  '战痕累累': 'BS'
+};
 
-  {n:'M4A4 · 炼狱之火',w:'FT',wv:.1456,c:744,p:676.96,t:'weapon'},
+// Load holdings data
+async function loadHoldings() {
+  try {
+    const r = await fetch('holdings.json');
+    const D = await r.json();
+    
+    // Convert to internal format
+    H = D.items.map(item => {
+      const t = CAT_MAP[item.category] || 'weapon';
+      const w = item.wear ? (WEAR_MAP[item.wear] || item.wear) : (t === 'sticker' ? 'Holo' : t === 'agent' ? '大师' : '');
+      const q = item.qty || 1;
+      const cost = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost * q;
+      const price = item.price * q;
+      
+      return {
+        n: item.name,
+        w: w,
+        wv: item.wear_value || 0,
+        c: item.cost,
+        p: item.price,
+        t: t,
+        q: q,
+        totalCost: cost,
+        totalPrice: price,
+        pnl: price - cost,
+        pnlPct: cost > 0 ? ((price - cost) / cost * 100) : 0,
+        wearStr: item.wear_value ? item.wear_value.toFixed(4) : '',
+        qtyStr: q > 1 ? `×${q}` : ''
+      };
+    });
+    
+    initDashboard();
+  } catch (e) {
+    console.error('Failed to load holdings.json', e);
+    // Fallback to hardcoded data
+    H = [
+      {n:'MP7 · 死亡骷髅',w:'FT',wv:0.1146,c:217,p:243.39,t:'weapon'},
+      {n:'M4A4 · 都市 DDPAT',w:'FN',wv:0.0649,c:410,p:377.4,t:'weapon'},
+      {n:'FN57 · 夜影',w:'FN',wv:0.0576,c:140,p:135.5,t:'weapon'},
+    ];
+    H.forEach(h => {
+      h.totalCost = h.c; h.totalPrice = h.p;
+      h.pnl = h.p - h.c;
+      h.pnlPct = h.c > 0 ? (h.pnl / h.c * 100) : 0;
+      h.wearStr = h.wv > 0 ? h.wv.toFixed(4) : '';
+      h.qtyStr = '';
+    });
+    initDashboard();
+  }
+}
 
-  {n:'法玛斯 · 纪念碑',w:'FN',wv:.0347,c:710,p:648.9,t:'weapon'},
-
-  {n:'法玛斯 · 纪念碑',w:'FN',wv:.0435,c:702,p:648.9,t:'weapon'},
-
-  {n:'UMP-45 · 炽烈之炎',w:'FN',wv:.0633,c:390,p:323,t:'weapon'},
-
-  {n:'UMP-45 · 炽烈之炎',w:'FN',wv:.0341,c:370,p:323,t:'weapon'},
-
-  {n:'M4A4 · 都市 DDPAT',w:'FN',wv:.0649,c:410,p:377.4,t:'weapon'},
-
-  {n:'MP7 · 死亡骷髅',w:'FT',wv:.1146,c:217,p:243.39,t:'weapon'},
-
-  {n:'M4A4 · 龙王',w:'FT',wv:.1403,c:184,p:196.5,t:'weapon'},
-
-  {n:'法玛斯 · 线路故障',w:'FN',wv:.0587,c:115.5,p:131,t:'weapon'},
-
-  {n:'FN57 · 夜影',w:'FN',wv:.0576,c:140,p:135.5,t:'weapon'},
-
-  {n:'M4A4 · 多边形编辑',w:'FT',wv:.1440,c:132,p:150,t:'weapon'},
-
-  {n:'M4A4 · 多边形编辑',w:'FT',wv:.1376,c:129,p:150,t:'weapon'},
-
-  {n:'M4A4 · 彼岸花',w:'FT',wv:.1411,c:127,p:134.99,t:'weapon'},
-
-  {n:'双持贝瑞塔 · 街头抢匪',w:'FN',wv:.0585,c:54.9,p:50.78,t:'weapon'},
-
-  {n:'M4A4 · 蚀刻领主',w:'FT',wv:.1215,c:7.65,p:8.92,t:'weapon'},
-
-
-
-  {n:'海军上尉里克索尔',w:'大师',wv:0,c:377,p:250,t:'agent'},
-
-  {n:'海军上尉里克索尔',w:'大师',wv:0,c:350,p:250,t:'agent'},
-
-  {n:'海军上尉里克索尔',w:'大师',wv:0,c:317,p:250,t:'agent'},
-
-  {n:'"蓝莓" 铅弹',w:'卓越',wv:0,c:213,p:168,t:'agent'},
-
-  {n:'"蓝莓" 铅弹',w:'卓越',wv:0,c:189,p:168,t:'agent'},
-
-  {n:'"蓝莓" 铅弹',w:'卓越',wv:0,c:189,p:168,t:'agent'},
-
-  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:79,p:69.9,t:'agent'},
-
-  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:72,p:69.9,t:'agent'},
-
-  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:70,p:69.9,t:'agent'},
-
-  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:66,p:69.9,t:'agent'},
-
-  {n:'沙哈马特教授 · 精英分子',w:'非凡',wv:0,c:62.8,p:69.9,t:'agent'},
-
-
-
-  {n:'NAVI · 2024上海（全息）',w:'Holo',wv:0,c:51,p:31.8,q:3,t:'sticker'},
-
-  {n:'FaZe Clan · 2024上海（全息）',w:'Holo',wv:0,c:49,p:41.9,q:6,t:'sticker'},
-
-  {n:'paiN Gaming · 2021斯德哥尔摩（全息）',w:'Holo',wv:0,c:103,p:79.57,q:1,t:'sticker'},
-
-  {n:'NAVI · 2021斯德哥尔摩（全息）',w:'Holo',wv:0,c:41.5,p:37.4,q:2,t:'sticker'},
-
-  {n:'HEROIC · 2024上海（全息）',w:'Holo',wv:0,c:30.5,p:39.99,q:4,t:'sticker'},
-
-  {n:'EG · 2021斯德哥尔摩（全息）',w:'Holo',wv:0,c:61,p:52.8,q:1,t:'sticker'},
-
-  {n:'NiP · 2021斯德哥尔摩（全息）',w:'Holo',wv:0,c:46.5,p:42.3,q:1,t:'sticker'},
-
-  {n:'MIBR · 2025布达佩斯（全息）',w:'Holo',wv:0,c:31,p:26.78,q:1,t:'sticker'},
-
-  {n:'GamerLegion · 2025布达佩斯（全息）',w:'Holo',wv:0,c:30,p:27.7,q:2,t:'sticker'},
-
-  {n:'Fnatic · 2025布达佩斯（全息）',w:'Holo',wv:0,c:28.4,p:29.7,q:2,t:'sticker'},
-
-  {n:'GamerLegion · 2025布达佩斯（全息）',w:'Holo',wv:0,c:27.6,p:27.7,q:1,t:'sticker'},
-
-  {n:'Complexity · 2022安特卫普（全息）',w:'Holo',wv:0,c:49.8,p:50,q:1,t:'sticker'},
-
-  {n:'iM · 2024上海',w:'普通',wv:0,c:.02,p:.02,q:1,t:'sticker'},
-
-
-
-  {n:'DRYDEN · 触摸能量',w:'高级',wv:0,c:10.78,p:11.2,q:1,t:'music'},
-
-];
-
-
-
-// derive
-
-H.forEach(h=>{
-
-  const q=h.q||1;
-
-  h.totalCost=h.c*q; h.totalPrice=h.p*q;
-
-  h.pnl=h.totalPrice-h.totalCost;
-
-  h.pnlPct=h.totalCost>0?(h.pnl/h.totalCost*100):0;
-
-  h.wearStr=h.wv>0?h.wv.toFixed(4):'';
-
-  h.qtyStr=q>1?`×${q}`:'';
-
-});
-
-
+function initDashboard() {
 
 // ═══════════════ CATEGORIES ═══════════════
 
@@ -923,6 +881,11 @@ function renderMarket(D){
   window.addEventListener('resize',()=>klineEc.resize());
 
 }
+
+} // end initDashboard
+
+// Start loading
+loadHoldings();
 
 </script>
 </body>
