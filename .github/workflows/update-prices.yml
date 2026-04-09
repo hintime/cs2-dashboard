@@ -61,6 +61,8 @@ jobs:
           });
           NODESCRIPT
       - name: Commit & Push
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
@@ -69,5 +71,5 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m 'chore: Auto-update prices'
-            git push https://x-access-token:${{ secrets.REPO_TOKEN }}@github.com/hintime/cs2-dashboard.git HEAD:main
+            git push https://x-access-token:${REPO_TOKEN}@github.com/hintime/cs2-dashboard.git HEAD:main
           fi
