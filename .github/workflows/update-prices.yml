@@ -22,117 +22,14 @@ jobs:
         env:
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
         run: |
-          node << 'EOF'
-          const https = require('https');
-          const fs = require('fs');
-          
-          const data = JSON.parse(fs.readFileSync('market.json', 'utf8'));
-          const names = Object.keys(data.items);
-          
-          console.log('Items to fetch:', names);
-          console.log('STEAMDT_KEY set:', process.env.STEAMDT_KEY ? 'YES' : 'NO');
-          
-          if (!process.env.STEAMDT_KEY) {
-            console.log('ERROR: STEAMDT_KEY not set');
-            process.exit(1);
-          }
-          
-          let completed = 0;
-          const total = names.length * 2;
-          
-          function checkDone() {
-            completed++;
-            if (completed >= total) {
-              console.log('\n=== All requests completed ===');
-              data.update_time = new Date().toISOString().replace('T', ' ').slice(0, 16);
-              fs.writeFileSync('market.json', JSON.stringify(data, null, 2));
-              console.log('market.json updated');
-            }
-          }
-          
-          names.forEach(name => {
-            // 1. Fetch price
-            const priceUrl = '/open/cs2/v1/price/single?marketHashName=' + encodeURIComponent(name);
-            const priceReq = https.request({
-              hostname: 'open.steamdt.com',
-              path: priceUrl,
-              method: 'GET',
-              headers: { 'Authorization': 'Bearer ' + process.env.STEAMDT_KEY }
-            }, res => {
-              let body = '';
-              res.on('data', c => body += c);
-              res.on('end', () => {
-                try {
-                  const resp = JSON.parse(body);
-                  if (resp.success && resp.data && resp.data[0]) {
-                    const price = resp.data[0].sellPrice;
-                    data.items[name].latest = price;
-                    console.log('[Price]', name, '->', price);
-                  } else {
-                    console.log('[Price WARN]', name, ':', resp.errorMsg || 'no data');
-                  }
-                } catch (e) {
-                  console.log('[Price ERROR]', name, e.message);
-                }
-                checkDone();
-              });
-            });
-            priceReq.on('error', e => { console.log('[Price REQ ERR]', name, e.message); checkDone(); });
-            priceReq.end();
-            
-            // 2. Fetch K-line
-            const klineBody = JSON.stringify({ marketHashName: name, type: 2, platform: 'BUFF' });
-            const klineReq = https.request({
-              hostname: 'open.steamdt.com',
-              path: '/open/cs2/item/v1/kline',
-              method: 'POST',
-              headers: {
-                'Authorization': 'Bearer ' + process.env.STEAMDT_KEY,
-                'Content-Type': 'application/json'
-              }
-            }, res => {
-              let body = '';
-              res.on('data', c => body += c);
-              res.on('end', () => {
-                try {
-                  const resp = JSON.parse(body);
-                  if (resp.success && resp.data) {
-                    // SteamDT returns [[{timestamp, o, h, l, c, v, ...}]]
-                    const klineData = resp.data;
-                    if (Array.isArray(klineData) && klineData.length > 0) {
-                      data.items[name].kline = klineData;
-                      const last = klineData[klineData.length - 1];
-                      console.log('[K-line]', name, '->', klineData.length, 'points');
-                      // Calculate change from first open to last close
-                      if (klineData.length >= 2) {
-                        const firstOpen = klineData[0][1] || klineData[0].open;
-                        const lastClose = last[4] || last.close;
-                        if (firstOpen && lastClose) {
-                          data.items[name].change = +((lastClose - firstOpen) / firstOpen * 100).toFixed(2);
-                        }
-                      }
-                    }
-                  } else {
-                    console.log('[K-line WARN]', name, ':', resp.errorMsg || 'no data');
-                  }
-                } catch (e) {
-                  console.log('[K-line ERROR]', name, e.message, body.slice(0, 200));
-                }
-                checkDone();
-              });
-            });
-            klineReq.on('error', e => { console.log('[K-line REQ ERR]', name, e.message); checkDone(); });
-            klineReq.write(klineBody);
-            klineReq.end();
-          });
-          EOF
+          node update.mjs
       - name: Show result
         run: |
-          echo "=== market.json content ==="
-          cat market.json
+          echo "=== market.json (first 3000 chars) ==="
+          head -c 3000 market.json
           echo ""
           echo "=== File size ==="
-          wc -l market.json
+          wc -c market.json
       - name: Commit & Push
         run: |
           git config user.name 'github-actions[bot]'
