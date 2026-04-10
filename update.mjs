@@ -139,6 +139,36 @@ try {
   for (const name of names) {
     if (NAME_CN[name]) data.items[name].name_cn = NAME_CN[name];
   }
+  
+  // Compute market index from tracked items
+  const idxItems = data.items;
+  const iNames = Object.keys(idxItems);
+  const allKl = iNames.map(n => idxItems[n].kline).filter(k => k && k.length > 0);
+  if (allKl.length > 0) {
+    const tsSets = allKl.map(k => new Set(k.map(p => p[0])));
+    const cTs = [...tsSets[0]].filter(ts => tsSets.every(s => s.has(ts))).sort((a,b) => a-b);
+    if (cTs.length > 0) {
+      const bI = Math.min(30, cTs.length - 1);
+      const nP = allKl.map(k => {
+        const m = new Map(k.map(p => [p[0], p[4]]));
+        const bp = m.get(cTs[bI]) || m.get(cTs[0]) || 100;
+        return cTs.map(ts => (m.get(ts) || bp) / bp * 100);
+      });
+      const vals = cTs.map((ts, i) => nP.reduce((s, p) => s + p[i], 0) / nP.length);
+      const lt = vals[vals.length - 1];
+      const pv = vals[vals.length - 2] || lt;
+      const ch = (lt - pv) / pv * 100;
+      data.index = {
+        latest: Math.round(lt * 100) / 100,
+        change: Math.round(ch * 100) / 100,
+        dates: cTs.map(ts => { const d = new Date(ts * 1000); return (d.getMonth()+1) + '-' + d.getDate(); }),
+        values: vals.map(v => Math.round(v * 100) / 100),
+        min: Math.round(Math.min(...vals) * 100) / 100,
+        max: Math.round(Math.max(...vals) * 100) / 100
+      };
+      console.log('[Index OK]', lt.toFixed(2), ch.toFixed(2) + '%', vals.length);
+    }
+  }
   fs.writeFileSync('market.json', JSON.stringify(data, null, 2));
   console.log('\n=== Done! market.json updated ===');
 } catch (e) {
