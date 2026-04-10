@@ -152,7 +152,13 @@ try {
         }).on('error',fail);
       });
     }
-    const idxResp = await httpGet('https://api.steamdt.com/user/statistics/v2/chart?type=2&dateType=2');
+    // Fetch daily close prices (type=2) + hourly data (type=1) for real OHLC
+    const [idxResp, hourlyResp] = await Promise.all([
+      httpGet('https://api.steamdt.com/user/statistics/v2/chart?type=2&dateType=2'),
+      httpGet('https://api.steamdt.com/user/statistics/v2/chart?type=1&dateType=2'),
+    ]);
+    
+    // Use daily close prices for line chart
     if (idxResp.success && idxResp.data && idxResp.data.length > 0) {
       const raw = idxResp.data;
       const dates = raw.map(d => {
@@ -171,9 +177,11 @@ try {
         dates,
         values: values.map(v => Math.round(v * 100) / 100),
         min: Math.round(Math.min(...values) * 100) / 100,
-        max: Math.round(Math.max(...values) * 100) / 100
+        max: Math.round(Math.max(...values) * 100) / 100,
+        // hourly data for computing real OHLC (daily aggregates from hourly)
+        hourly: (hourlyResp.success && hourlyResp.data) ? hourlyResp.data : null
       };
-      console.log('[SteamDT Index OK]', latest.toFixed(2), change.toFixed(2)+'%', values.length+'pts');
+      console.log('[SteamDT Index OK]', latest.toFixed(2), change.toFixed(2)+'%', values.length+'daily pts, '+((hourlyResp.data||[]).length)+' hourly pts');
     }
   } catch(e) {
     console.log('[SteamDT Index ERR]', e.message);

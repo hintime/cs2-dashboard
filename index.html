@@ -282,33 +282,158 @@ function initDashboard() {
 })();
 
 function renderMarket(D){
-  const idx = D.index;
-  const clr = idx.change >= 0 ? 'var(--rise)' : 'var(--fall)';
+  var idx = D.index;
+  var clr = idx.change >= 0 ? 'var(--rise)' : 'var(--fall)';
   document.getElementById('miNum').textContent = idx.latest.toFixed(2);
   document.getElementById('miNum').style.color = clr;
   document.getElementById('miChg').textContent = (idx.change>=0?'+':'') + idx.change.toFixed(2) + '%';
   document.getElementById('miChg').style.color = clr;
 
-  // Compute OHLC from 6 items' close prices
-  const itemNames = Object.keys(D.items);
-  const n = itemNames.length;
-  const itemDates = itemNames.map(k => D.items[k].dates || []);
-  const itemCloses = itemNames.map(k => D.items[k].closes || []);
-  // Use first item's dates as reference
-  const refDates = itemDates[0] || idx.dates;
+  // Compute daily OHLC from hourly data
+  var ohlcDates = idx.dates || [];
+  var ohlcValues = idx.values || [];
+  var ohlcData = [], volData = [], volColors = [];
+  var byDay = {};
 
-  // Build OHLC: open=close=avg close of all items; high=max item close; low=min item close
-  const ohlcData = [], volData = [], volColors = [];
-  for (let i = 0; i < refDates.length; i++) {
-    const closes = itemCloses.map(arr => arr[i] || null).filter(v => v !== null);
-    if (closes.length === 0) { ohlcData.push(null); volData.push(0); volColors.push('#52525b'); continue; }
-    const avgClose = closes.reduce((a,b)=>a+b,0)/closes.length;
-    const mx = Math.max(...closes), mn = Math.min(...closes);
-    const up = i > 0 ? avgClose >= (itemCloses[0][i-1] || avgClose) : true;
-    ohlcData.push([avgClose, mx, mn, avgClose]); // [open, high, low, close]
-    volData.push(closes.length); // use count as pseudo-volume
-    volColors.push(up ? '#ef4444' : '#22c55e');
+  // type=1 (hourly) data stored as {dateStr: [ts, price]} pairs
+  if (idx.hourly) {
+    var hourlyPts = idx.hourly; // [[ts_str, price], ...]
+    for (var i = 0; i < hourlyPts.length; i++) {
+      var ts = Number(hourlyPts[i][0]);
+      var price = Number(hourlyPts[i][1]);
+      var d = new Date(ts * 1000);
+      var key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+      if (!byDay[key]) {
+        byDay[key] = { ts: ts, prices: [price] };
+      } else {
+        byDay[key].prices.push(price);
+      }
+    }
+    var days = Object.keys(byDay).sort();
+    for (var j = 0; j < days.length; j++) {
+      var k = days[j];
+      var prices = byDay[k].prices;
+      var o = prices[0], h = Math.max.apply(null, prices), l = Math.min.apply(null, prices), c = prices[prices.length-1];
+      var parts = k.split('-');
+      var dateStr = parseInt(parts[1]) + '-' + parseInt(parts[2]);
+      ohlcDates.push(dateStr);
+      ohlcValues.push(c);
+      ohlcData.push([o, h, l, c]);
+      var vol = prices.length * 10;
+      volData.push(vol);
+      volColors.push(c >= o ? '#ef4444' : '#22c55e');
+    }
+  } else {
+    // Fallback: use close price as all OHLC values
+    for (var k = 0; k < ohlcValues.length; k++) {
+      var c2 = ohlcValues[k];
+      ohlcData.push([c2, c2, c2, c2]);
+      volData.push(100);
+      volColors.push('#52525b');
+    }
   }
+
+  // ── Chart ──
+  var ec = echarts.init(document.getElementById('indexChart'), null, {renderer:'canvas'});
+
+  function renderLine() {
+    document.getElementById('btnLine').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:#3b82f6;color:#fff;border:1px solid #3b82f6';
+    document.getElementById('btnCandle').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)';
+    ec.setOption({
+      backgroundColor:'transparent',
+      grid:{top:10,right:30,bottom:25,left:45},
+      xAxis:{type:'category',data:ohlcDates,
+        axisLine:{lineStyle:{color:'#252a36'}},
+        axisLabel:{color:'#52525b',fontSize:9,interval:Math.max(0, Math.floor(ohlcDates.length/8)-1)},
+        axisTick:{show:false}},
+      yAxis:{type:'value',
+        min:Math.floor(Math.min.apply(null, ohlcValues)*0.995),
+        max:Math.ceil(Math.max.apply(null, ohlcValues)*1.005),
+        splitLine:{lineStyle:{color:'#1e2130'}},
+        axisLabel:{color:'#52525b',fontSize:9}},
+      tooltip:{trigger:'axis',backgroundColor:'#1a1e28',borderColor:'#252a36',
+        textStyle:{color:'#e4e4e7',fontSize:11}},
+      series:[{type:'line',data:ohlcValues,symbol:'none',
+        lineStyle:{color:'#3b82f6',width:2},
+        areaStyle:{color:'#3b82f614'}}]
+    }, true);
+  }
+
+  function renderCandle() {
+    document.getElementById('btnCandle').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:#ef4444;color:#fff;border:1px solid #ef4444';
+    document.getElementById('btnLine').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)';
+    ec.setOption({
+      backgroundColor:'transparent',
+      grid:[
+        {top:12,right:55,bottom:'28%',left:45},
+        {top:'76%',right:55,bottom:26,left:45}
+      ],
+      xAxis:[
+        {type:'category',data:ohlcDates,gridIndex:0,boundaryGap:true,
+          axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{show:false},axisTick:{show:false},splitLine:{show:false}},
+        {type:'category',data:ohlcDates,gridIndex:1,boundaryGap:true,
+          axisLine:{lineStyle:{color:'#252a36'}},
+          axisLabel:{color:'#52525b',fontSize:9,interval:Math.max(0, Math.floor(ohlcDates.length/6)-1)},axisTick:{show:false}}
+      ],
+      yAxis:[
+        {type:'value',gridIndex:0,scale:true,
+          splitLine:{lineStyle:{color:'#1e2130'}},
+          axisLabel:{color:'#52525b',fontSize:9}},
+        {type:'value',gridIndex:1,scale:true,splitLine:{show:false},
+          axisLabel:{color:'#52525b',fontSize:9}}
+      ],
+      tooltip:{
+        trigger:'axis',axisPointer:{type:'cross',crossStyle:{color:'#555'}},
+        backgroundColor:'#1a1e28',borderColor:'#252a36',
+        textStyle:{color:'#e4e4e7',fontSize:11},
+        formatter:function(params){
+          var d = null;
+          for(var i=0;i<params.length;i++){
+            if(params[i].seriesType==='candlestick'){ d=params[i]; break; }
+          }
+          if(!d) return '';
+          var vals = d.value;
+          var o=vals[0],h=vals[1],l=vals[2],c=vals[3];
+          var dtStr = d.axisValue;
+          var isUp = c>=o;
+          var color = isUp ? '#22c55e' : '#ef4444';
+          var pct = ((c-o)/o*100).toFixed(2);
+          var pctStr = isUp ? ('+'+pct+'%') : (pct+'%');
+          return '<div style="font-size:11px"><b>'+dtStr+'</b><br/>'+
+            '开:'+o.toFixed(1)+'  收:'+'<b style="color:'+color+'">'+c.toFixed(1)+'</b><br/>'+
+            '高:'+h.toFixed(1)+'  低:'+l.toFixed(1)+'<br/>'+
+            '<span style="color:'+color+'">'+(isUp?'▲ ':'▼ ')+'</span>'+pctStr+'</div>';
+        }
+      },
+      series:[
+        {type:'candlestick',name:'大盘指数',data:ohlcData,
+          xAxisIndex:0,yAxisIndex:0,
+          itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#22c55e',borderColor0:'#ef4444',borderWidth:1}},
+        {type:'bar',name:'成交量',data:volData,xAxisIndex:1,yAxisIndex:1,
+          itemStyle:{color:volColors},barWidth:'50%'}
+      ],
+      dataZoom:[
+        {type:'inside',xAxisIndex:[0,1],start:0,end:100},
+        {show:false,xAxisIndex:[0,1],start:0,end:100}
+      ]
+    }, true);
+  }
+
+  document.getElementById('btnLine').onclick = renderLine;
+  document.getElementById('btnCandle').onclick = renderCandle;
+
+  // Default to line chart
+  renderLine();
+
+  window.onresize = function(){
+    ec.resize();
+    var dc = window._doughnutChart;
+    if(dc) dc.resize();
+    var bc = window._barChart;
+    if(bc) bc.resize();
+  };
+}
+
 
   // ── Chart instance ──
   const ec = echarts.init(document.getElementById('indexChart'), null, {renderer:'canvas'});
