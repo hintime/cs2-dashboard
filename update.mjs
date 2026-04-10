@@ -72,8 +72,29 @@ async function fetchKline(name) {
     
     if (resp.success && resp.data) {
       let klineArr = resp.data;
+      // Debug: print structure
+      if (typeof klineArr === 'object' && !Array.isArray(klineArr)) {
+        const keys = Object.keys(klineArr);
+        console.log('[K-line debug] object keys:', keys.join(','));
+        // Maybe data is wrapped: { data: [[...]] } or { list: [[...]] }
+        for (const key of keys) {
+          const val = klineArr[key];
+          console.log('[K-line debug]', key, ': type=' + typeof val, Array.isArray(val) ? 'len=' + val.length : '');
+          if (Array.isArray(val) && val.length > 0) {
+            const inner = val[0];
+            console.log('[K-line debug]', key, '[0]:', JSON.stringify(inner).slice(0, 300));
+          } else if (typeof val === 'object' && val !== null) {
+            console.log('[K-line debug]', key, ':', JSON.stringify(val).slice(0, 300));
+          }
+        }
+      }
       if (Array.isArray(klineArr) && klineArr.length > 0 && Array.isArray(klineArr[0])) {
-        klineArr = klineArr.flat();
+        // Check if inner array is also array of arrays (2D)
+        if (Array.isArray(klineArr[0][0])) {
+          console.log('[K-line debug] 2D array, klineArr[0][0]:', JSON.stringify(klineArr[0][0]).slice(0, 200));
+          klineArr = klineArr.flat();
+        }
+        console.log('[K-line debug] sample item:', JSON.stringify(klineArr[0]).slice(0, 300));
       }
       if (Array.isArray(klineArr) && klineArr.length > 0) {
         const kline = klineArr.map(k => {
@@ -82,6 +103,8 @@ async function fetchKline(name) {
         });
         data.items[name].kline = kline;
         console.log('[K-line OK]', name, '->', kline.length, 'points, last:', JSON.stringify(kline[kline.length - 1]));
+      } else if (typeof klineArr === 'object') {
+        console.log('[K-line WARN]', name, ': data is object, not array. Full:', JSON.stringify(klineArr).slice(0, 500));
       } else {
         console.log('[K-line WARN]', name, ': empty data array');
       }
