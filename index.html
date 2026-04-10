@@ -128,7 +128,22 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
 
   <!-- Charts -->
   <div class="charts">
-    <div class="chart-box wide"><h3>日K线 · 选择查看</h3><div id="klineChart" style="height:300px"></div></div>
+    <div class="chart-box wide" id="klineBox">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <h3 id="klineTitle" style="margin:0">日K线</h3>
+          <span id="klineName" style="font-size:13px;font-weight:700;color:var(--text)"></span>
+          <span id="klinePrice" style="font-size:15px;font-weight:900;font-family:'DM Mono',monospace"></span>
+          <span id="klineChg" style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace"></span>
+        </div>
+        <div id="klinePeriod" style="display:flex;gap:4px">
+          <button class="tab on" data-type="2">日K</button>
+          <button class="tab" data-type="3">周K</button>
+          <button class="tab" data-type="1">时K</button>
+        </div>
+      </div>
+      <div id="klineChart" style="height:420px"></div>
+    </div>
     <div class="chart-box"><h3>品类分布</h3><canvas id="doughnut"></canvas></div>
     <div class="chart-box"><h3>品类对比</h3><canvas id="bar"></canvas></div>
   </div>
@@ -306,18 +321,34 @@ function renderMarket(D){
     const item = D.items[name];
     if(!item) return;
     const kl = item.kline;
+    const name_cn = item.name_cn || name;
+    const latest = item.latest;
+    const chg = item.change;
+    const chgStr = (chg>=0?'+':'') + chg.toFixed(2) + '%';
+    const clr = chg>=0 ? 'var(--rise)' : 'var(--fall)';
+
+    // Update title bar
+    document.getElementById('klineName').textContent = name_cn;
+    document.getElementById('klinePrice').textContent = '\u00a5' + latest.toFixed(2);
+    document.getElementById('klineChg').textContent = chgStr;
+    document.getElementById('klineChg').style.color = clr;
+    document.getElementById('klineChg').style.display = 'inline';
+
     const dates = kl.map(k=>{var d=new Date(k[0]*1000);return(d.getMonth()+1)+'-'+d.getDate()});
     
-    // Calculate moving averages
-    const closes = kl.map(k=>k[4]); // close price is index 4
-    const ma5 = [], ma10 = [], ma20 = [], volumes = [], volColors = [];
+    // Close price at index 4; calculate MAs without placeholder dashes
+    const closes = kl.map(k=>k[4]);
+    const ma5=[], ma10=[], ma20=[], volumes=[], volColors=[];
     for(let i=0;i<kl.length;i++){
-      const v = kl[i][5]||0; // volume at index 5
+      const v = kl[i][5]||0;
       volumes.push(v);
-      volColors.push(v>0&&kl[i][2]>=kl[i][1]?'#ef444433':'#22c55e33');
-      if(i<4) ma5.push('-'), ma10.push('-'), ma20.push('-');
-      else if(i<9) ma10.push('-'), ma20.push('-'), ma5.push(closes.slice(i-4,i+1).reduce((a,b)=>a+b,0)/5);
-      else if(i<19) ma20.push('-'), ma10.push(closes.slice(i-9,i+1).reduce((a,b)=>a+b,0)/10), ma5.push(closes.slice(i-4,i+1).reduce((a,b)=>a+b,0)/5);
+      // Volume color: green if close >= open, red if close < open
+      volColors.push(kl[i][4]>=kl[i][1]?'#22c55e':'#ef4444');
+      const c = closes[i];
+      if(i<4)      ma5.push('-'),  ma10.push('-'),  ma20.push('-');
+      else if(i<9) ma10.push('-'), ma20.push('-'),  ma5.push(closes.slice(i-4,i+1).reduce((a,b)=>a+b,0)/5);
+      else if(i<19)ma20.push('-'),  ma10.push(closes.slice(i-9,i+1).reduce((a,b)=>a+b,0)/10),
+                     ma5.push(closes.slice(i-4,i+1).reduce((a,b)=>a+b,0)/5);
       else {
         ma5.push(closes.slice(i-4,i+1).reduce((a,b)=>a+b,0)/5);
         ma10.push(closes.slice(i-9,i+1).reduce((a,b)=>a+b,0)/10);
@@ -328,36 +359,66 @@ function renderMarket(D){
     klEc.setOption({
       backgroundColor:'transparent',
       grid:[
-        {top:15,right:30,height:'50%',left:50},
-        {top:'68%',right:30,height:'18%',left:50}
+        {top:12,right:60,bottom:26,left:60},
+        {top:'76%',right:60,bottom:26,left:60}
       ],
       xAxis:[
-        {type:'category',data:dates,gridIndex:0,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{show:false},axisTick:{show:false}},
-        {type:'category',data:dates,gridIndex:1,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#52525b',fontSize:9},axisTick:{show:false}}
+        {type:'category',data:dates,gridIndex:0,boundaryGap:true,
+          axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{show:false},axisTick:{show:false},
+          splitLine:{show:false}},
+        {type:'category',data:dates,gridIndex:1,boundaryGap:true,
+          axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#52525b',fontSize:9,interval:9},axisTick:{show:false}}
       ],
       yAxis:[
-        {type:'value',gridIndex:0,scale:true,splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#52525b',fontSize:9}},
-        {type:'value',gridIndex:1,scale:true,splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#52525b',fontSize:9}}
+        {type:'value',gridIndex:0,scale:true,
+          splitLine:{lineStyle:{color:'#1e2130'}},
+          axisLabel:{color:'#52525b',fontSize:9,formatter:v=>'\u00a5'+v},
+          markLine:{silent:true,lineStyle:{color:'#f59e0b66',type:'dashed'},symbol:['none','none'],
+            data:[{yAxis:latest,name:'当前价'}]}},
+        {type:'value',gridIndex:1,scale:true,
+          splitLine:{show:false},
+          axisLabel:{color:'#52525b',fontSize:9}}
       ],
-      tooltip:{trigger:'axis',backgroundColor:'#1a1e28',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
+      tooltip:{
+        trigger:'axis',backgroundColor:'#1a1e28',borderColor:'#252a36',
+        textStyle:{color:'#e4e4e7',fontSize:11},axisPointer:{type:'cross',crossStyle:{color:'#555'}},
+        formatter:params=>{
+          const d=params.find(p=>p.seriesType==='candlestick');
+          if(!d)return'';
+          const [o,h,l,c]=d.value;
+          const dt=new Date(dates[d.dataIndex]);
+          const dtStr=dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate();
+          const maVals=params.filter(p=>p.seriesName.startsWith('MA'));
+          const vol=params.find(p=>p.seriesName==='成交量');
+          return`<div style="font-size:11px"><b>${dtStr}</b><br/>
+\u5f00\u76d8 ${o}&nbsp;&nbsp;\u6536\u76d8 <b style="color:${c>=o?'#22c55e':'#ef4444'}">${c}</b><br/>
+\u6700\u9ad8 ${h}&nbsp;&nbsp;\u6700\u4f4e ${l}<br/>`+
+(c>=o?'<span style="color:#22c55e">\u25b2</span>':'<span style="color:#ef4444">\u25bc</span>')+
+`${((c-o)/o*100).toFixed(2)}%`+
+(maVals.length?`<br/>`+maVals.map(m=>`${m.seriesName}: ${m.value}`).join('<br/>'):'')+
+(vol?`<br/>\u6210\u4ea4\u91cf: ${(vol.value/1000).toFixed(1)}K`:'')+`</div>`;
+        }
+      },
       series:[
-        {type:'candlestick',name:'MA',data:kl.map(k=>[k[1],k[2],k[3],k[4]]),xAxisIndex:0,yAxisIndex:0,itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e'}},
-        {type:'line',name:'MA5',data:ma5,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#f59e0b',width:1}},
-        {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#3b82f6',width:1}},
-        {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#8b5cf6',width:1}},
-        {type:'bar',name:'Volume',data:volumes,xAxisIndex:1,yAxisIndex:1,itemStyle:{color:volColors}}
-      ],
-      legend:{show:true,top:0,textStyle:{color:'#52525b',fontSize:10}}
-    },true);
-  }
-  renderKline(defaultItem);
+        {type:'candlestick',name:'K线',data:kl.map(k=>[k[1],k[2],k[3],k[4]]),
+          xAxisIndex:0,yAxisIndex:0,
+          itemStyle:{color:'#22c55e',color0:'#ef4444',borderColor:'#22c55e',borderColor0:'#ef4444',borderWidth:1}},
+        {type:'line',name:'MA5', data:ma5, xAxisIndex:0,yAxisIndex:0,symbol:'none',smooth:true,
+          lineStyle:{color:'#f59e0b',width:1.5},showSymbol:false},
+        {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,symbol:'none',smooth:true,
+          lineStyle:{color:'#3b82f6',width:1.5},showSymbol:false},
+        {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,symbol:'none',smooth:true,
+          lineStyle:{color:'#a855f7',width:1.5},showSymbol:false},
+        {type:'bar',name:'成交量',data:volumes,xAxisIndex:1,yAxisIndex:1,
+          itemStyle:{color:volColors},
 
-  // Item buttons
+  // K-line item buttons
   const mi = document.getElementById('miItems');
   itemNames.forEach((name,i)=>{
     const item = D.items[name];
     const chg = item.change;
-    mi.innerHTML += '<div class="mi-item '+(i===0?'active':'')+'" data-name="'+name+'"><div class="mi-item-name">'+name+'</div><div class="mi-item-price">&yen;'+item.latest.toFixed(1)+'</div><div class="mi-item-chg '+(chg>=0?'clr-up':'clr-dn')+'">'+(chg>=0?'+':'')+chg.toFixed(2)+'%</div></div>';
+    const name_cn = item.name_cn || name;
+    mi.innerHTML += '<div class="mi-item '+(i===0?'active':'')+'" data-name="'+name+'"><div class="mi-item-name" title="'+name+'">'+name_cn+'</div><div class="mi-item-price">&yen;'+item.latest.toFixed(1)+'</div><div class="mi-item-chg '+(chg>=0?'clr-up':'clr-dn')+'">'+(chg>=0?'+':'')+chg.toFixed(2)+'%</div></div>';
   });
   mi.onclick = e => {
     var card = e.target.closest('.mi-item');
@@ -366,7 +427,17 @@ function renderMarket(D){
     card.classList.add('active');
     renderKline(card.dataset.name);
   };
-  window.onresize = function(){ec.resize();kl.resize();};
+
+  // Period tab switching (visual only - daily K-line loads by default)
+  document.querySelectorAll('#klinePeriod .tab').forEach(btn=>{
+    btn.onclick = () => {
+      document.querySelectorAll('#klinePeriod .tab').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+    };
+  });
+
+  window.onresize = function(){ec.resize();klEc.resize();};
+  renderKline(defaultItem);
 }
 
 // Start
