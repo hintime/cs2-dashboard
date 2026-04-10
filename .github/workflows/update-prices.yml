@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24.x'
-      - name: Fetch Prices
+      - name: Fetch Prices & K-line Data
         env:
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
         run: |
@@ -28,11 +28,15 @@ jobs:
           const d=JSON.parse(fs.readFileSync('market.json','utf8'));
           const names=Object.keys(d.items);
           const prices={};
+          let pending=names.length*2; // price + kline for each item
           let done=0;
-          console.log('Fetching prices for',names.length,'items...');
+          
+          console.log('Fetching prices and K-line data for',names.length,'items...');
           console.log('STEAMDT_KEY set:', process.env.STEAMDT_KEY ? 'YES' : 'NO');
+          
           names.forEach(n=>{
-            const req=https.request({
+            // 1. Fetch current price
+            const priceReq=https.request({
               hostname:'open.steamdt.com',
               path:'/open/cs2/v1/price/single?marketHashName='+encodeURIComponent(n),
               headers:{'Authorization':'Bearer '+process.env.STEAMDT_KEY}
@@ -42,28 +46,86 @@ jobs:
               res.on('end',()=>{
                 try{
                   const p=JSON.parse(body).data?.[0]?.sellPrice;
-                  console.log(n, '->', p, body.slice(0,80));
+                  console.log('[Price]', n, '->', p);
                   if(p!=null) prices[n]=p;
-                }catch(e){console.log(n, 'ERROR:', e.message, body.slice(0,50));}
-                done++;
-                if(done===names.length){
-                  console.log('Prices fetched:', Object.keys(prices).length);
-                  d.update_time=new Date().toISOString().replace('T',' ').slice(0,16);
-                  names.forEach(n=>{
-                    if(prices[n]!=null){
-                      d.items[n].latest=prices[n];
-                      const prev=d.items[n].kline[d.items[n].kline.length-1];
-                      d.items[n].change=prev?(((prices[n]-prev[4])/prev[4])*100).toFixed(2)*1:0;
-                    }
-                  });
-                  fs.writeFileSync('market.json',JSON.stringify(d,null,2));
-                  console.log('market.json updated');
-                }
+                }catch(e){console.log('[Price ERROR]', n, e.message);}
+                checkDone();
               });
             });
-            req.on('error',e=>{console.log(n, 'REQUEST ERROR:', e.message);done++;});
-            req.end();
+            priceReq.on('error',e=>{console.log('[Price REQ ERROR]', n, e.message);checkDone();});
+            priceReq.end();
+            
+            // 2. Fetch K-line data with volume
+            const klineReq=https.request({
+              hostname:'open.steamdt.com',
+              path:'/open/cs2/item/v1/kline',
+              method:'POST',
+              headers:{
+                'Authorization':'Bearer '+process.env.STEAMDT_KEY,
+                'Content-Type':'application/json'
+              }
+            },res=>{
+              let body='';
+              res.on('data',c=>body+=c);
+              res.on('end',()=>{
+                try{
+                  const resp=JSON.parse(body);
+                  if(resp.success && resp.data && resp.data[0]){
+                    // SteamDT K-line format: [[timestamp, open, high, low, close, volume, ...], ...]
+                    const klineData=resp.data[0];
+                    console.log('[K-line]', n, '->', klineData.length, 'points, last:', klineData[klineData.length-1]?.slice(0,6));
+                    d.items[n].kline=klineData;
+                  }else{
+                    console.log('[K-line WARN]', n, 'no data or failed');
+                  }
+                }catch(e){console.log('[K-line ERROR]', n, e.message, body.slice(0,100));}
+                checkDone();
+              });
+            });
+            klineReq.on('error',e=>{console.log('[K-line REQ ERROR]', n, e.message);checkDone();});
+            klineReq.write(JSON.stringify({marketHashName:n,type:2,platform:'BUFF'}));
+            klineReq.end();
           });
+          
+          function checkDone(){
+            done++;
+            if(done===pending){
+              console.log('All requests completed. Prices:', Object.keys(prices).length);
+              d.update_time=new Date().toISOString().replace('T',' ').slice(0,16);
+              
+              // Update prices
+              names.forEach(n=>{
+                if(prices[n]!=null){
+                  d.items[n].latest=prices[n];
+                  const kline=d.items[n].kline;
+                  if(kline && kline.length>0){
+                    const lastKline=kline[kline.length-1];
+                    const prevClose=lastKline[4]; // close price
+                    d.items[n].change=((prices[n]-prevClose)/prevClose*100).toFixed(2)*1;
+                  }
+                }
+              });
+              
+              // Update index (portfolio-weighted)
+              // Using the first 6 items as market index
+              const indexItems=names.slice(0,6);
+              let totalValue=0, baseValue=0;
+              indexItems.forEach(n=>{
+                const item=d.items[n];
+                if(item.latest && item.kline && item.kline[0]){
+                  totalValue+=item.latest;
+                  baseValue+=item.kline[0][1] || item.kline[0][0]; // use first open price as base
+                }
+              });
+              if(baseValue>0){
+                d.index.latest=totalValue;
+                d.index.change=((totalValue-baseValue)/baseValue*100).toFixed(2)*1;
+              }
+              
+              fs.writeFileSync('market.json',JSON.stringify(d,null,2));
+              console.log('market.json updated with K-line data including volume');
+            }
+          }
           NODESCRIPT
       - name: Commit & Push
         run: |
@@ -73,6 +135,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m 'chore: Auto-update prices'
+            git commit -m 'chore: Auto-update prices and K-line data from SteamDT'
             git push origin HEAD:main
           fi
