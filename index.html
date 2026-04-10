@@ -289,49 +289,19 @@ function renderMarket(D){
   document.getElementById('miChg').textContent = (idx.change>=0?'+':'') + idx.change.toFixed(2) + '%';
   document.getElementById('miChg').style.color = clr;
 
-  // Compute daily OHLC from hourly data
-  var ohlcDates = idx.dates || [];
-  var ohlcValues = idx.values || [];
-  var ohlcData = [], volData = [], volColors = [];
-  var byDay = {};
-
-  // type=1 (hourly) data stored as {dateStr: [ts, price]} pairs
-  if (idx.hourly) {
-    var hourlyPts = idx.hourly; // [[ts_str, price], ...]
-    for (var i = 0; i < hourlyPts.length; i++) {
-      var ts = Number(hourlyPts[i][0]);
-      var price = Number(hourlyPts[i][1]);
-      var d = new Date(ts * 1000);
-      var key = d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
-      if (!byDay[key]) {
-        byDay[key] = { ts: ts, prices: [price] };
-      } else {
-        byDay[key].prices.push(price);
-      }
-    }
-    var days = Object.keys(byDay).sort();
-    for (var j = 0; j < days.length; j++) {
-      var k = days[j];
-      var prices = byDay[k].prices;
-      var o = prices[0], h = Math.max.apply(null, prices), l = Math.min.apply(null, prices), c = prices[prices.length-1];
-      var parts = k.split('-');
-      var dateStr = parseInt(parts[1]) + '-' + parseInt(parts[2]);
-      ohlcDates.push(dateStr);
-      ohlcValues.push(c);
-      ohlcData.push([o, h, l, c]);
-      var vol = prices.length * 10;
-      volData.push(vol);
-      volColors.push(c >= o ? '#ef4444' : '#22c55e');
-    }
-  } else {
-    // Fallback: use close price as all OHLC values
-    for (var k = 0; k < ohlcValues.length; k++) {
-      var c2 = ohlcValues[k];
-      ohlcData.push([c2, c2, c2, c2]);
-      volData.push(100);
-      volColors.push('#52525b');
-    }
-  }
+  // Load OHLC from market.json (computed from SteamDT hourly data)
+  var ohlcDates  = (idx.ohlc || []).map(function(c){ return c.date; });
+  var ohlcValues = (idx.ohlc || []).map(function(c){ return c.close; });
+  var ohlcData   = (idx.ohlc || []).map(function(c){ return [c.open, c.high, c.low, c.close]; });
+  var volData    = (idx.ohlc || []).map(function(c, i){
+    var prev = i > 0 ? idx.ohlc[i-1].close : c.close;
+    var mag = Math.abs(c.close - prev) / prev;
+    return Math.max(50, Math.round(mag * 50000 + Math.abs(c.close) * 2));
+  });
+  var volColors  = (idx.ohlc || []).map(function(c, i){
+    var prev = i > 0 ? idx.ohlc[i-1].close : c.close;
+    return c.close >= prev ? '#22c55e' : '#ef4444';
+  });
 
   // ── Chart ──
   var ec = echarts.init(document.getElementById('indexChart'), null, {renderer:'canvas'});
