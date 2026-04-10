@@ -310,10 +310,11 @@ function renderMarket(D){
     
     // Calculate moving averages
     const closes = kl.map(k=>k[4]); // close price is index 4
-    const ma5 = [], ma10 = [], ma20 = [], volumes = [];
+    const ma5 = [], ma10 = [], ma20 = [], volumes = [], volColors = [];
     for(let i=0;i<kl.length;i++){
       const v = kl[i][5]||0; // volume at index 5
       volumes.push(v);
+      volColors.push(v>0&&kl[i][2]>=kl[i][1]?'#ef444433':'#22c55e33');
       if(i<4) ma5.push('-'), ma10.push('-'), ma20.push('-');
       else if(i<9) ma10.push('-'), ma20.push('-'), ma5.push(closes.slice(i-4,i+1).reduce((a,b)=>a+b,0)/5);
       else if(i<19) ma20.push('-'), ma10.push(closes.slice(i-9,i+1).reduce((a,b)=>a+b,0)/10), ma5.push(closes.slice(i-4,i+1).reduce((a,b)=>a+b,0)/5);
@@ -340,11 +341,11 @@ function renderMarket(D){
       ],
       tooltip:{trigger:'axis',backgroundColor:'#1a1e28',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
       series:[
-        {type:'candlestick',name:'K线',data:kl.map(k=>[k[1],k[2],k[3],k[4]]),xAxisIndex:0,yAxisIndex:0,itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e'}},
+        {type:'candlestick',name:'MA',data:kl.map(k=>[k[1],k[2],k[3],k[4]]),xAxisIndex:0,yAxisIndex:0,itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e'}},
         {type:'line',name:'MA5',data:ma5,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#f59e0b',width:1}},
         {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#3b82f6',width:1}},
         {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#8b5cf6',width:1}},
-        {type:'bar',name:'成交量',data:volumes,xAxisIndex:1,yAxisIndex:1,itemStyle:{color:kl.map(k=>k[2]>=k[1]?'#ef444433':'#22c55e33'})}
+        {type:'bar',name:'Volume',data:volumes,xAxisIndex:1,yAxisIndex:1,itemStyle:{color:volColors}}
       ],
       legend:{show:true,top:0,textStyle:{color:'#52525b',fontSize:10}}
     },true);
