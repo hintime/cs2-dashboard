@@ -6,89 +6,337 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>CS2 饰品投资看板 · v2026.04.10b</title>
+<title>CS2 饰品投资看板 · v2026.04.11</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
 :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a36;--text:#e4e4e7;--text2:#a1a1aa;--text3:#52525b;--rise:#ef4444;--fall:#22c55e;--blue:#3b82f6}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:1280px;margin:0 auto;padding:24px}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
-.header h1{font-size:24px;font-weight:900}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.header h1{font-size:22px;font-weight:900}
+.header .sub{font-size:12px;color:var(--text3);margin-top:4px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);background:var(--surface);border:1px solid var(--border);padding:4px 12px;border-radius:20px}
+.badge .dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.market-index{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px}
+.mi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.mi-title{font-size:14px;font-weight:800}
+.mi-num{font-size:32px;font-weight:900;font-family:'DM Mono',monospace}
+.mi-chg{font-size:14px;font-weight:700;font-family:'DM Mono',monospace}
+.mi-chart{height:180px;margin-bottom:14px}
+.mi-items{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.mi-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:border-color .2s}
+.mi-item:hover,.mi-item.active{border-color:var(--blue)}
+.mi-item-name{font-size:10px;color:var(--text3);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi-item-price{font-size:13px;font-weight:700}
+.mi-item-chg{font-size:10px;margin-top:2px}
+.clr-up{color:var(--rise)}.clr-dn{color:var(--fall)}
+
 .kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin-bottom:28px}
 .kpi{background:var(--surface);padding:20px}
 .kpi .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px}
-.kpi .value{font-size:28px;font-weight:900}
-.kpi .value.rise{color:var(--rise)}
-.kpi .value.fall{color:var(--fall)}
+.kpi .value{font-size:26px;font-weight:900}
+.kpi .value.rise{color:var(--rise)}.kpi .value.fall{color:var(--fall)}
+.kpi .meta{font-size:11px;color:var(--text3);margin-top:6px}
+
+.sectors{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.sector{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.sector .head{display:flex;justify-content:space-between;margin-bottom:10px}
+.sector .name{font-size:12px;font-weight:700;color:var(--text2)}
+.sector .count{font-size:10px;color:var(--text3)}
+.sector .pnl{font-size:18px;font-weight:900;margin-top:8px}
+.sector .detail{font-size:10px;color:var(--text3);margin-top:4px}
+.sector .bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:8px;overflow:hidden}
+.sector .bar-fill{height:100%;border-radius:2px}
+.bar-rise{background:var(--rise)}.bar-fall{background:var(--fall)}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.panel-head h2{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.5px}
+.tabs{display:flex;gap:4px}
+.tab{background:none;border:1px solid transparent;color:var(--text3);padding:4px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:500}
+.tab:hover{color:var(--text2)}
+.tab.on{color:var(--blue);background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.2)}
+
 table{width:100%;border-collapse:collapse}
-thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
-tbody td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px}
+thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:600;padding:10px 16px;background:var(--surface);position:sticky;top:0;z-index:2;border-bottom:1px solid var(--border)}
+tbody td{padding:10px 16px;border-bottom:1px solid rgba(37,42,54,.5);font-size:13px}
 tbody tr:hover{background:rgba(59,130,246,.03)}
 .item-name{font-weight:600}
-.wear-tag{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 6px;border-radius:4px;margin-left:8px}
+.item-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.wear-tag{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 6px;border-radius:4px;margin-left:6px;font-family:'DM Mono',monospace}
 .text-r{text-align:right}
-.clr-rise{color:var(--rise)}.clr-fall{color:var(--fall)}
+.clr-rise{color:var(--rise)}.clr-fall{color:var(--fall)}.mono{font-family:'DM Mono',monospace}
+
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.chart-box h3{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:16px}
+.chart-box.wide{grid-column:span 2}
+
+.foot{font-size:10px;color:var(--text3);text-align:center;padding:20px}
+.refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:6px 16px;border-radius:20px;cursor:pointer}
+.refresh-btn:hover{border-color:var(--blue);color:var(--blue)}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <h1>CS2 饰品投资看板 <span style="font-size:14px;color:var(--text3)">v2026.04.10b</span></h1>
-    <button onclick="location.reload()" style="background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:6px;cursor:pointer">刷新</button>
+    <div>
+      <h1>CS2 饰品投资看板 <span style="font-size:14px;color:var(--text3)">v2026.04.11</span></h1>
+      <div class="sub">数据来源: SteamDT API · GitHub Pages</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="refresh-btn" onclick="location.reload()">刷新</button>
+      <span class="badge"><span class="dot"></span>实时</span>
+      <span class="badge" id="updateTime">--</span>
+    </div>
   </div>
+
+  <!-- Market Index -->
+  <div class="market-index" id="marketSection">
+    <div class="mi-header">
+      <span class="mi-title">CS2 大盘指数</span>
+      <div id="miValue"><span class="mi-num" id="miNum">--</span><span class="mi-chg" id="miChg">--</span></div>
+    </div>
+    <div class="mi-chart" id="indexChart"></div>
+    <div class="mi-items" id="miItems"></div>
+  </div>
+
+  <!-- KPI -->
   <div class="kpi-strip">
-    <div class="kpi"><div class="label">总价值</div><div class="value" id="totalValue">--</div></div>
-    <div class="kpi"><div class="label">总盈亏</div><div class="value" id="totalPnl">--</div></div>
-    <div class="kpi"><div class="label">持仓数</div><div class="value" id="totalCount">--</div></div>
+    <div class="kpi"><div class="label">总价值</div><div class="value" id="totalValue">--</div><div class="meta" id="totalCount">-- 件</div></div>
+    <div class="kpi"><div class="label">总盈亏</div><div class="value" id="totalPnl">--</div><div class="meta" id="totalPnlPct">--</div></div>
+    <div class="kpi"><div class="label">总成本</div><div class="value" id="totalCost">--</div><div class="meta">投入本金</div></div>
   </div>
-  <table>
-    <thead><tr><th>饰品</th><th>磨损</th><th class="text-r">成本</th><th class="text-r">现价</th><th class="text-r">盈亏</th><th class="text-r">盈亏%</th></tr></thead>
-    <tbody id="tbody"></tbody>
-  </table>
+
+  <!-- Sectors -->
+  <div class="sectors" id="sectorGrid"></div>
+
+  <!-- Table -->
+  <div class="panel">
+    <div class="panel-head">
+      <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
+      <div class="tabs" id="tabBar"></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table><thead><tr><th>饰品</th><th>磨损</th><th class="text-r">成本</th><th class="text-r">现价</th><th class="text-r">盈亏</th><th class="text-r">盈亏%</th></tr></thead><tbody id="tbody"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts">
+    <div class="chart-box wide"><h3>日K线 · 选择查看</h3><div id="klineChart" style="height:300px"></div></div>
+    <div class="chart-box"><h3>品类分布</h3><canvas id="doughnut"></canvas></div>
+    <div class="chart-box"><h3>品类对比</h3><canvas id="bar"></canvas></div>
+  </div>
+
+  <div class="foot">数据来源: SteamDT API · GitHub Pages</div>
 </div>
+
 <script>
-let holdings = [];
-async function loadData() {
+// ═══════════════ DATA ═══════════════
+let H = [];
+
+// Category mapping
+const CAT_MAP = {'武器':'weapon','印花':'sticker','音乐':'music','agent':'agent'};
+const CAT_META = {
+  weapon:{color:'#3b82f6',label:'武器'},
+  sticker:{color:'#f59e0b',label:'印花'},
+  music:{color:'#06b6d4',label:'音乐'},
+  agent:{color:'#8b5cf6',label:'角色'}
+};
+
+// Load holdings
+async function loadHoldings() {
   try {
     const r = await fetch('holdings.json');
     const D = await r.json();
-    holdings = D.items.map(item => ({
-      name: item.name,
-      wear: item.wear || '-',
-      cost: (item.costs || [item.cost]).reduce((a,b)=>a+b,0),
-      price: item.price * (item.qty || 1),
-      qty: item.qty || 1
-    }));
+    H = D.items.map(item => {
+      const t = CAT_MAP[item.category] || 'weapon';
+      const w = item.wear ? item.wear.replace('崭新','FN').replace('略有磨损','FT').replace('久经沙场','FT').replace('略有磨损','FT').replace('受损','WW').replace('战痕累累','BS') : '';
+      const q = item.qty || 1;
+      const cost = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost * q;
+      return {n:item.name,w:w,t:t,q:q,c:cost,p:item.price*q,pnl:item.price*q-cost,pnlPct:cost>0?(item.price*q-cost)/cost*100:0};
+    });
   } catch(e) {
-    console.error('Load failed', e);
-    holdings = [
-      {name:'MP7 死亡骷髅',wear:'FT',cost:217,price:243.39,qty:1},
-      {name:'M4A4 都市DDPAT',wear:'FN',cost:410,price:377.4,qty:1}
+    console.error('Load failed',e);
+    H = [
+      {n:'MP7 死亡骷髅',w:'FT',t:'weapon',q:1,c:217,p:243.39,pnl:26.39,pnlPct:12.16},
+      {n:'M4A4 都市DDPAT',w:'FN',t:'weapon',q:1,c:410,p:377.4,pnl:-32.6,pnlPct:-7.95}
     ];
   }
+  initDashboard();
+}
+
+function initDashboard() {
+  // Summary
+  const tc = H.reduce((s,h)=>s+h.c,0);
+  const tp = H.reduce((s,h)=>s+h.p,0);
+  const tpct = tc > 0 ? (tp-tc)/tc*100 : 0;
+  document.getElementById('totalValue').textContent = '¥' + tp.toLocaleString();
+  document.getElementById('totalValue').className = 'value ' + (tp>=tc?'rise':'fall');
+  document.getElementById('totalPnl').textContent = (tp>=tc?'+':'') + '¥' + (tp-tc).toLocaleString();
+  document.getElementById('totalPnl').className = 'value ' + (tp>=tc?'rise':'fall');
+  document.getElementById('totalPnlPct').textContent = (tp>=tc?'+':'') + tpct.toFixed(2) + '% · ' + Math.round(H.filter(h=>h.pnl>0).length/H.length*100) + '% 胜率';
+  document.getElementById('totalCost').textContent = '¥' + tc.toLocaleString();
+  document.getElementById('totalCount').textContent = H.length + ' 件';
+
+  // Sectors
+  const sg = document.getElementById('sectorGrid');
+  Object.keys(CAT_META).forEach(key => {
+    const items = H.filter(h=>h.t===key);
+    const s = items.reduce((ss,hh)=>({c:ss.c+hh.c,p:ss.p+hh.p}),{c:0,p:0});
+    const pnl = s.p - s.c;
+    const pnlPct = s.c > 0 ? pnl/s.c*100 : 0;
+    sg.innerHTML += '<div class="sector"><div class="head"><span class="name">'+CAT_META[key].label+'</span><span class="count">'+items.length+'</span></div><div class="pnl '+(pnl>=0?'clr-rise':'clr-fall')+'">'+(pnl>=0?'+':'')+'¥'+pnl.toLocaleString()+'</div><div class="detail">成本 ¥'+s.c.toLocaleString()+' · '+(pnlPct>=0?'+':'')+pnlPct.toFixed(1)+'%</div><div class="bar"><div class="bar-fill '+(pnl>=0?'bar-rise':'bar-fall')+'" style="width:'+Math.min(Math.abs(pnlPct),100)+'%"></div></div></div>';
+  });
+
+  // Tabs
+  const cats = [
+    {key:'all',label:'全部'},
+    {key:'weapon',label:'武器'},
+    {key:'sticker',label:'印花'},
+    {key:'music',label:'音乐'},
+    {key:'agent',label:'角色'}
+  ];
+  let curCat = 'all';
+  const tb = document.getElementById('tabBar');
+  cats.forEach(c => {
+    const cnt = c.key==='all' ? H.length : H.filter(h=>h.t===c.key).length;
+    tb.innerHTML += '<button class="tab '+(c.key==='all'?'on':'')+'" data-cat="'+c.key+'">'+c.label+' '+cnt+'</button>';
+  });
+  tb.onclick = e => {
+    if(e.target.classList.contains('tab')){
+      tb.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+      e.target.classList.add('on');
+      curCat = e.target.dataset.cat;
+      render();
+    }
+  };
+
+  function render(){
+    const items = curCat==='all' ? H : H.filter(h=>h.t===curCat);
+    document.getElementById('countBadge').textContent = items.length;
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = items.map(h => {
+      const pnlCls = h.pnl>=0?'clr-rise':'clr-fall';
+      return '<tr><td><div class="item-name">'+h.n+(h.q>1?'<span class="wear-tag">x'+h.q+'</span>':'')+'</div></td><td><span class="wear-tag">'+h.w+'</span></td><td class="text-r mono">¥'+h.c.toLocaleString()+'</td><td class="text-r mono">¥'+h.p.toLocaleString()+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toLocaleString()+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
+    }).join('');
+  }
   render();
+
+  // Charts
+  const chartFont = {color:'#52525b',family:"'DM Mono',sans-serif"};
+  Chart.defaults.color = '#52525b';
+  Chart.defaults.font.family = chartFont.family;
+
+  // Doughnut
+  new Chart(document.getElementById('doughnut'),{
+    type:'doughnut',
+    data:{
+      labels:Object.values(CAT_META).map(m=>m.label),
+      datasets:[{
+        data:Object.keys(CAT_META).map(k=>H.filter(h=>h.t===k).reduce((s,h)=>s+h.c,0)),
+        backgroundColor:Object.values(CAT_META).map(m=>m.color+'26'),
+        borderColor:Object.values(CAT_META).map(m=>m.color),
+        borderWidth:2
+      }]
+    },
+    options:{cutout:'65%',plugins:{legend:{position:'right',labels:{padding:14}}}}
+  });
+
+  // Bar
+  const bk = Object.keys(CAT_META);
+  new Chart(document.getElementById('bar'),{
+    type:'bar',
+    data:{
+      labels:bk.map(k=>CAT_META[k].label),
+      datasets:[
+        {label:'成本',data:bk.map(k=>H.filter(h=>h.t===k).reduce((s,h)=>s+h.c,0)),backgroundColor:'#3b82f633',borderColor:'#3b82f6',borderWidth:1},
+        {label:'现价',data:bk.map(k=>H.filter(h=>h.t===k).reduce((s,h)=>s+h.p,0)),backgroundColor:bk.map(k=>{const s=H.filter(h=>h.t===k).reduce((ss,hh)=>({c:ss.c+hh.c,p:ss.p+hh.p}),{c:0,p:0});return s.p>=s.c?'#ef444433':'#22c55e33'}),borderColor:bk.map(k=>{const s=H.filter(h=>h.t===k).reduce((ss,hh)=>({c:ss.c+hh.c,p:ss.p+hh.p}),{c:0,p:0});return s.p>=s.c?'#ef4444':'#22c55e'}),borderWidth:1}
+      ]
+    },
+    options:{responsive:true,scales:{x:{grid:{display:false}},y:{grid:{color:'#1e2130'}}}}
+  });
 }
-function render() {
-  const totalValue = holdings.reduce((s,h)=>s+h.price,0);
-  const totalCost = holdings.reduce((s,h)=>s+h.cost,0);
-  const totalPnl = totalValue - totalCost;
-  const pnlPct = totalCost > 0 ? (totalPnl/totalCost*100) : 0;
-  
-  document.getElementById('totalValue').textContent = '¥' + totalValue.toLocaleString();
-  document.getElementById('totalPnl').textContent = (totalPnl>=0?'+':'') + '¥' + totalPnl.toLocaleString();
-  document.getElementById('totalPnl').className = 'value ' + (totalPnl>=0?'rise':'fall');
-  document.getElementById('totalCount').textContent = holdings.length;
-  
-  const tbody = document.getElementById('tbody');
-  tbody.innerHTML = holdings.map(h => {
-    const pnl = h.price - h.cost;
-    const pnlPct = h.cost > 0 ? (pnl/h.cost*100) : 0;
-    const pnlCls = pnl>=0?'clr-rise':'clr-fall';
-    return '<tr><td class="item-name">'+h.name+(h.qty>1?'<span class="wear-tag">x'+h.qty+'</span>':'')+'</td><td><span class="wear-tag">'+h.wear+'</span></td><td class="text-r">¥'+h.cost.toLocaleString()+'</td><td class="text-r">¥'+h.price.toLocaleString()+'</td><td class="text-r '+pnlCls+'">'+(pnl>=0?'+':'')+'¥'+pnl.toLocaleString()+'</td><td class="text-r '+pnlCls+'">'+(pnlPct>=0?'+':'')+pnlPct.toFixed(1)+'%</td></tr>';
-  }).join('');
+
+// ═══════════════ MARKET INDEX ═══════════════
+(async function loadMarket(){
+  try{
+    const r = await fetch('market.json');
+    const D = await r.json();
+    if(D.update_time){
+      document.getElementById('updateTime').textContent = new Date(D.update_time).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    }
+    renderMarket(D);
+  }catch(e){
+    console.warn('market.json load failed',e);
+    document.getElementById('marketSection').style.display = 'none';
+  }
+})();
+
+function renderMarket(D){
+  const idx = D.index;
+  const clr = idx.change >= 0 ? 'var(--rise)' : 'var(--fall)';
+  document.getElementById('miNum').textContent = idx.latest.toFixed(2);
+  document.getElementById('miNum').style.color = clr;
+  document.getElementById('miChg').textContent = (idx.change>=0?'+':'') + idx.change.toFixed(2) + '%';
+  document.getElementById('miChg').style.color = clr;
+
+  // Index line chart
+  const ec = echarts.init(document.getElementById('indexChart'),null,{renderer:'canvas'});
+  ec.setOption({
+    backgroundColor:'transparent',
+    grid:{top:10,right:30,bottom:25,left:40},
+    xAxis:{type:'category',data:idx.dates,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#52525b',fontSize:9,interval:6},axisTick:{show:false}},
+    yAxis:{type:'value',min:Math.floor(idx.min*0.995),max:Math.ceil(idx.max*1.005),splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#52525b',fontSize:9}},
+    tooltip:{trigger:'axis',backgroundColor:'#1a1e28',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
+    series:[{type:'line',data:idx.values,symbol:'none',lineStyle:{color:'#3b82f6',width:2},areaStyle:{color:'#3b82f614'}}]
+  });
+
+  // K-line
+  const itemNames = Object.keys(D.items);
+  const defaultItem = itemNames[0];
+  const klEc = echarts.init(document.getElementById('klineChart'),null,{renderer:'canvas'});
+
+  function renderKline(name){
+    const item = D.items[name];
+    if(!item) return;
+    const kl = item.kline;
+    const dates = kl.map(k=>{var d=new Date(k[0]*1000);return(d.getMonth()+1)+'-'+d.getDate()});
+    klEc.setOption({
+      backgroundColor:'transparent',
+      grid:{top:15,right:30,bottom:30,left:50},
+      xAxis:{type:'category',data:dates,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#52525b',fontSize:9},axisTick:{show:false}},
+      yAxis:{type:'value',scale:true,splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#52525b',fontSize:9}},
+      tooltip:{trigger:'axis',backgroundColor:'#1a1e28',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
+      series:[{type:'candlestick',data:kl.map(k=>[k[1],k[2],k[3],k[4]]),itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e'}}]
+    },true);
+  }
+  renderKline(defaultItem);
+
+  // Item buttons
+  const mi = document.getElementById('miItems');
+  itemNames.forEach((name,i)=>{
+    const item = D.items[name];
+    const chg = item.change;
+    mi.innerHTML += '<div class="mi-item '+(i===0?'active':'')+'" data-name="'+name+'"><div class="mi-item-name">'+name+'</div><div class="mi-item-price">&yen;'+item.latest.toFixed(1)+'</div><div class="mi-item-chg '+(chg>=0?'clr-up':'clr-dn')+'">'+(chg>=0?'+':'')+chg.toFixed(2)+'%</div></div>';
+  });
+  mi.onclick = e => {
+    var card = e.target.closest('.mi-item');
+    if(!card) return;
+    mi.querySelectorAll('.mi-item').forEach(c=>c.classList.remove('active'));
+    card.classList.add('active');
+    renderKline(card.dataset.name);
+  };
+  window.onresize = function(){ec.resize();kl.resize();};
 }
-loadData();
+
+// Start
+loadHoldings();
 </script>
 </body>
 </html>
