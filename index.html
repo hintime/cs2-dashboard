@@ -410,7 +410,11 @@ function renderMarket(D){
         {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,symbol:'none',smooth:true,
           lineStyle:{color:'#a855f7',width:1.5},showSymbol:false},
         {type:'bar',name:'成交量',data:volumes,xAxisIndex:1,yAxisIndex:1,
-          itemStyle:{color:volColors},
+          itemStyle:{color:volColors}}
+      ],
+      legend:{show:true,top:0,textStyle:{color:'#52525b',fontSize:10}}
+    },true);
+  }
 
   // K-line item buttons
   const mi = document.getElementById('miItems');
