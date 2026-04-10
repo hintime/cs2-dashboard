@@ -186,11 +186,12 @@ try {
   } catch(e) {
     console.log('[SteamDT Index ERR]', e.message);
   }
-    // === Fetch SteamDT Market Index (Daily OHLC from hourly aggregation) ===
+    // === Fetch CSQAQ Market Index K-line (90-day daily OHLC) ===
   try {
-    const sdRaw = await new Promise((resolve, reject) => {
-      const req = https.get('https://api.steamdt.com/user/statistics/v2/chart?type=2&dateType=1&maxTime=', {
-        headers: { 'User-Agent': 'Mozilla/5.0' }
+    const { https } = await import('node:https');
+    const csqaqData = await new Promise((resolve, reject) => {
+      const req = https.get('https://api.csqaq.com/api/v1/sub/kline?type=1day&id=1', {
+        headers: { 'ApiToken': 'HXGPY1R7L5W7K7F3O4K1E2N8', 'User-Agent': 'Mozilla/5.0' }
       }, res => {
         let body = '';
         res.on('data', c => body += c);
@@ -200,36 +201,27 @@ try {
       req.setTimeout(15000, () => { req.destroy(); reject(new Error('timeout')); });
     });
 
-    if (sdRaw.success && Array.isArray(sdRaw.data)) {
-      const byDay = {};
-      for (const pt of sdRaw.data) {
-        const ts = parseInt(pt[0]);
-        const price = parseFloat(pt[1]);
-        const d = new Date(ts * 1000);
-        const key = d.getUTCFullYear() + '-' + (d.getUTCMonth()+1) + '-' + d.getUTCDate();
-        if (!byDay[key]) { byDay[key] = { o: price, h: price, l: price, c: price }; }
-        else {
-          byDay[key].h = Math.max(byDay[key].h, price);
-          byDay[key].l = Math.min(byDay[key].l, price);
-          byDay[key].c = price;
-        }
-      }
-      const days   = Object.keys(byDay).sort().slice(-90);
-      const dates  = days.map(k => k.split('-',1)[1]);
-      const values = days.map(k => Math.round(byDay[k].c * 100) / 100);
-      const ohlc   = days.map(k => {
-        const d = byDay[k];
-        return { date: k.split('-',1)[1], open: d.o, high: d.h, low: d.l, close: d.c };
+    if (csqaqData.code === 200 && Array.isArray(csqaqData.data)) {
+      const kline = csqaqData.data.slice(-90);
+      const ohlc = kline.map(k => {
+        const d = new Date(parseInt(k.t));
+        const dateStr = (d.getUTCMonth()+1) + '-' + d.getUTCDate();
+        return { date: dateStr, open: k.o, high: k.h, low: k.l, close: k.c };
       });
+      const values = ohlc.map(k => Math.round(k.close * 100) / 100);
+      const dates = ohlc.map(k => k.date);
       const lt = values[values.length - 1];
       const pv = values[values.length - 2] || lt;
       data.index = {
-        dates, values, latest: lt, change: Math.round((lt-pv)/pv*10000)/100,
+        dates, values,
+        latest: lt,
+        change: Math.round((lt - pv) / pv * 10000) / 100,
         min: Math.round(Math.min(...values) * 100) / 100,
         max: Math.round(Math.max(...values) * 100) / 100,
-        ohlc
+        ohlc,
+        source: 'csqaq'
       };
-      console.log('[Index OK]', lt.toFixed(2), 'change', ((lt-pv)/pv*100).toFixed(2)+'%', ohlc.length+'candles');
+      console.log('[Index OK] CSQAQ', lt.toFixed(2), 'change', ((lt-pv)/pv*100).toFixed(2)+'%', ohlc.length+'candles');
     }
   } catch(e) { console.log('[Index ERR]', e.message); }
 
