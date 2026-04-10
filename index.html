@@ -292,7 +292,7 @@ function renderMarket(D){
   // Load OHLC from market.json (computed from SteamDT hourly data)
   var ohlcDates  = (idx.ohlc || []).map(function(c){ return c.date; });
   var ohlcValues = (idx.ohlc || []).map(function(c){ return c.close; });
-  var ohlcData   = (idx.ohlc || []).map(function(c){ return [c.open, c.high, c.low, c.close]; });
+  var ohlcData   = (idx.ohlc || []).map(function(c){ return [c.open, c.close, c.low, c.high]; });
   var volData    = (idx.ohlc || []).map(function(c, i){
     var prev = i > 0 ? idx.ohlc[i-1].close : c.close;
     var mag = Math.abs(c.close - prev) / prev;
