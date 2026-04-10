@@ -18,16 +18,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-      - name: Check env
-        run: |
-          echo "STEAMDT_KEY set: ${{ secrets.STEAMDT_KEY != '' }}"
-          echo "GITHUB_TOKEN set: ${{ github.token != '' }}"
-          node --version
       - name: Fetch Prices & K-line Data
         env:
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
-        run: |
-          node update.mjs
+        run: node update.mjs
       - name: Show result
         run: |
           echo "=== market.json (first 3000 chars) ==="

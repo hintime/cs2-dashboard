@@ -1,10 +1,10 @@
 import https from 'https';
 import fs from 'fs';
 
-const STEAMDT_KEY = process.env.STEAMDT_KEY;
-if (!STEAMDT_KEY) {
-  console.error('ERROR: STEAMDT_KEY not set');
-  process.exit(1);
+const STEAMDT_KEY = process.env.STEAMDT_KEY || '';
+if (!STEAMDT_KEY || STEAMDT_KEY === 'test_key') {
+  console.log('STEAMDT_KEY not configured — skipping API calls, preserving existing data');
+  process.exit(0);
 }
 
 const data = JSON.parse(fs.readFileSync('market.json', 'utf8'));
@@ -71,17 +71,13 @@ async function fetchKline(name) {
     console.log('[K-line raw]', name, ': success=' + resp.success, 'errorCode=' + resp.errorCode, 'data type=' + (resp.data ? typeof resp.data : 'null'));
     
     if (resp.success && resp.data) {
-      // SteamDT returns data as nested array [[{...}, {...}, ...]]
       let klineArr = resp.data;
-      // Flatten if nested
       if (Array.isArray(klineArr) && klineArr.length > 0 && Array.isArray(klineArr[0])) {
         klineArr = klineArr.flat();
       }
       if (Array.isArray(klineArr) && klineArr.length > 0) {
-        // Convert to [timestamp, open, high, low, close, volume] format
         const kline = klineArr.map(k => {
           if (Array.isArray(k)) return k;
-          // Object format: {timestamp, open, high, low, close, volume, ...}
           return [k.timestamp || k.ts || k.time, k.open || k.o, k.high || k.h, k.low || k.l, k.close || k.c, k.volume || k.v || 0];
         });
         data.items[name].kline = kline;
@@ -97,7 +93,6 @@ async function fetchKline(name) {
   }
 }
 
-// Main
 try {
   for (const name of names) {
     await fetchPrice(name);
