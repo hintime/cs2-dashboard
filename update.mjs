@@ -140,34 +140,43 @@ try {
     if (NAME_CN[name]) data.items[name].name_cn = NAME_CN[name];
   }
   
-  // Compute market index from tracked items
-  const idxItems = data.items;
-  const iNames = Object.keys(idxItems);
-  const allKl = iNames.map(n => idxItems[n].kline).filter(k => k && k.length > 0);
-  if (allKl.length > 0) {
-    const tsSets = allKl.map(k => new Set(k.map(p => p[0])));
-    const cTs = [...tsSets[0]].filter(ts => tsSets.every(s => s.has(ts))).sort((a,b) => a-b);
-    if (cTs.length > 0) {
-      const bI = Math.min(30, cTs.length - 1);
-      const nP = allKl.map(k => {
-        const m = new Map(k.map(p => [p[0], p[4]]));
-        const bp = m.get(cTs[bI]) || m.get(cTs[0]) || 100;
-        return cTs.map(ts => (m.get(ts) || bp) / bp * 100);
+  
+  }
+    // Fetch SteamDT official market index
+  try {
+    const https2 = require('https');
+    function httpGet(url) {
+      return new Promise((ok,fail) => {
+        https2.get(url, {headers:{'Accept':'application/json'}}, res => {
+          let d=''; res.on('data',c=>d+=c); res.on('end',()=>ok(JSON.parse(d)));
+        }).on('error',fail);
       });
-      const vals = cTs.map((ts, i) => nP.reduce((s, p) => s + p[i], 0) / nP.length);
-      const lt = vals[vals.length - 1];
-      const pv = vals[vals.length - 2] || lt;
-      const ch = (lt - pv) / pv * 100;
-      data.index = {
-        latest: Math.round(lt * 100) / 100,
-        change: Math.round(ch * 100) / 100,
-        dates: cTs.map(ts => { const d = new Date(ts * 1000); return (d.getMonth()+1) + '-' + d.getDate(); }),
-        values: vals.map(v => Math.round(v * 100) / 100),
-        min: Math.round(Math.min(...vals) * 100) / 100,
-        max: Math.round(Math.max(...vals) * 100) / 100
-      };
-      console.log('[Index OK]', lt.toFixed(2), ch.toFixed(2) + '%', vals.length);
     }
+    const idxResp = await httpGet('https://api.steamdt.com/user/statistics/v2/chart?type=2&dateType=2');
+    if (idxResp.success && idxResp.data && idxResp.data.length > 0) {
+      const raw = idxResp.data;
+      const dates = raw.map(d => {
+        const ts = Number(d[0]);
+        const sec = String(ts).length === 13 ? ts/1000 : ts;
+        const dt = new Date(sec * 1000);
+        return (dt.getMonth()+1) + '-' + dt.getDate();
+      });
+      const values = raw.map(d => d[1]);
+      const latest = values[values.length-1];
+      const prev = values[values.length-2] || latest;
+      const change = (latest - prev) / prev * 100;
+      data.index = {
+        latest: Math.round(latest * 100) / 100,
+        change: Math.round(change * 100) / 100,
+        dates,
+        values: values.map(v => Math.round(v * 100) / 100),
+        min: Math.round(Math.min(...values) * 100) / 100,
+        max: Math.round(Math.max(...values) * 100) / 100
+      };
+      console.log('[SteamDT Index OK]', latest.toFixed(2), change.toFixed(2)+'%', values.length+'pts');
+    }
+  } catch(e) {
+    console.log('[SteamDT Index ERR]', e.message);
   }
   fs.writeFileSync('market.json', JSON.stringify(data, null, 2));
   console.log('\n=== Done! market.json updated ===');
