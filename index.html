@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
-:root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a36;--text:#e4e4e7;--text2:#a1a1aa;--text3:#52525b;--rise:#ef4444;--fall:#22c55e;--blue:#3b82f6}
+:root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a36;--text:#e4e4e7;--text2:#a1a1aa;--text3:#52525b;--fall:#ef4444;--rise:#22c55e;--blue:#3b82f6}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:1280px;margin:0 auto;padding:24px}
@@ -343,7 +343,7 @@ function renderMarket(D){
       const v = kl[i][5]||0;
       volumes.push(v);
       // Volume color: green if close >= open, red if close < open
-      volColors.push(kl[i][4]>=kl[i][1]?'#22c55e':'#ef4444');
+      volColors.push(kl[i][4]>=kl[i][1]?'#ef4444':'#22c55e');
       const c = closes[i];
       if(i<4)      ma5.push('-'),  ma10.push('-'),  ma20.push('-');
       else if(i<9) ma10.push('-'), ma20.push('-'),  ma5.push(closes.slice(i-4,i+1).reduce((a,b)=>a+b,0)/5);
@@ -402,7 +402,7 @@ function renderMarket(D){
       series:[
         {type:'candlestick',name:'K线',data:kl.map(k=>[k[1],k[2],k[3],k[4]]),
           xAxisIndex:0,yAxisIndex:0,
-          itemStyle:{color:'#22c55e',color0:'#ef4444',borderColor:'#22c55e',borderColor0:'#ef4444',borderWidth:1}},
+          itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#22c55e',borderColor0:'#ef4444',borderWidth:1}},
         {type:'line',name:'MA5', data:ma5, xAxisIndex:0,yAxisIndex:0,symbol:'none',smooth:true,
           lineStyle:{color:'#f59e0b',width:1.5},showSymbol:false},
         {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,symbol:'none',smooth:true,
