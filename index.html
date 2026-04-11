@@ -293,14 +293,11 @@ function renderMarket(D){
   var ohlcDates  = (idx.ohlc || []).map(function(c){ return c.date; });
   var ohlcValues = (idx.ohlc || []).map(function(c){ return c.close; });
   var ohlcData   = (idx.ohlc || []).map(function(c){ return [c.open, c.close, c.low, c.high]; });
-  var volData    = (idx.ohlc || []).map(function(c, i){
-    var prev = i > 0 ? idx.ohlc[i-1].close : c.close;
-    var mag = Math.abs(c.close - prev) / prev;
-    return Math.max(50, Math.round(mag * 50000 + Math.abs(c.close) * 2));
-  });
+  var volData = (idx.ohlc || []).map(function(c){ return c.vol || 1; });
   var volColors  = (idx.ohlc || []).map(function(c, i){
     var prev = i > 0 ? idx.ohlc[i-1].close : c.close;
-    return c.close >= prev ? '#22c55e' : '#ef4444';
+    var prevClose = idx.ohlc[i-1] ? idx.ohlc[i-1].close : c.close;
+    return c.close >= prevClose ? '#ef4444' : '#22c55e';
   });
 
   // ── Chart ──
@@ -366,7 +363,7 @@ function renderMarket(D){
           var o=vals[0],h=vals[1],l=vals[2],c=vals[3];
           var dtStr = d.axisValue;
           var isUp = c>=o;
-          var color = isUp ? '#22c55e' : '#ef4444';
+          var color = isUp ? '#ef4444' : '#22c55e';
           var pct = ((c-o)/o*100).toFixed(2);
           var pctStr = isUp ? ('+'+pct+'%') : (pct+'%');
           return '<div style="font-size:11px"><b>'+dtStr+'</b><br/>'+
