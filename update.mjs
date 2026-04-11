@@ -71,23 +71,18 @@ async function fetchKline(name, apiName) {
     });
     const resp = JSON.parse(res.body);
     console.log('[K-line raw]', name, ': success=' + resp.success, 'errorCode=' + resp.errorCode);
-    
+
     if (resp.success && resp.data) {
       let klineArr = resp.data;
-      // SteamDT returns data as object (acts as array in some cases)
-      // Actual format per item: ["timestamp_str", open, close, high, low]
       if (typeof klineArr === 'object' && !Array.isArray(klineArr)) {
-        // Try to convert object with numeric keys to array
         const keys = Object.keys(klineArr).sort((a, b) => Number(a) - Number(b));
         if (keys.length > 0 && /^\d+$/.test(keys[0])) {
           klineArr = keys.map(k => klineArr[k]);
         } else {
-          // Empty object (like M4A1-S)
           klineArr = [];
         }
       }
       if (Array.isArray(klineArr) && klineArr.length > 0) {
-        // Convert from [ts_str, open, close, high, low] to [ts_num, open, high, low, close, volume]
         const kline = klineArr.map(k => {
           if (Array.isArray(k)) {
             const ts = Number(k[0]) || 0;
@@ -95,15 +90,18 @@ async function fetchKline(name, apiName) {
             const c = Number(k[2]) || 0;
             const h = Number(k[3]) || 0;
             const l = Number(k[4]) || 0;
-            const v = k[5] != null ? Number(k[5]) : 0;
-            return [ts, o, h, l, c, v];
+            return [ts, o, h, l, c, 0];
           }
-          return [Number(k.timestamp || k.ts || k.time) || 0, Number(k.open || k.o) || 0, Number(k.high || k.h) || 0, Number(k.low || k.l) || 0, Number(k.close || k.c) || 0, Number(k.volume || k.v) || 0];
+          return [Number(k.timestamp || k.ts || k.time) || 0,
+                  Number(k.open || k.o) || 0,
+                  Number(k.high || k.h) || 0,
+                  Number(k.low || k.l) || 0,
+                  Number(k.close || k.c) || 0, 0];
         });
         data.items[name].kline = kline;
-        console.log('[K-line OK]', name, '->', kline.length, 'points, last:', JSON.stringify(kline[kline.length - 1]));
+        console.log('[K-line OK]', name, '->', kline.length, 'points');
       } else {
-        console.log('[K-line WARN]', name, ': no kline data available');
+        console.log('[K-line WARN]', name, ': no data');
       }
     } else {
       console.log('[K-line WARN]', name, ':', resp.errorMsg || 'no data');
@@ -113,12 +111,10 @@ async function fetchKline(name, apiName) {
   }
 }
 
-// Alternative names for items that SteamDT doesn't recognize
 const ALT_NAMES = {
   'M4A1-S | Mecha-Industries (Field-Tested)': 'M4A1-S | Mecha Industries (Field-Tested)',
 };
 
-// Correct Chinese names (fix encoding corruption)
 const NAME_CN = {
   'AK-47 | Redline (Field-Tested)': 'AK-47 红线 FT',
   'AWP | Asiimov (Field-Tested)': 'AWP 二西莫夫 FT',
@@ -135,95 +131,68 @@ try {
     await fetchKline(name, apiName);
   }
   data.update_time = new Date().toISOString().replace('T', ' ').slice(0, 16);
-  // Fix name_cn encoding
   for (const name of names) {
     if (NAME_CN[name]) data.items[name].name_cn = NAME_CN[name];
   }
-  
-  
-  }
-    // Fetch SteamDT official market index
+
+  // === CSQAQ 大盘指数日K线 + 真实成交量 ===
   try {
-    const https2 = require('https');
-    function httpGet(url) {
-      return new Promise((ok,fail) => {
-        https2.get(url, {headers:{'Accept':'application/json'}}, res => {
-          let d=''; res.on('data',c=>d+=c); res.on('end',()=>ok(JSON.parse(d)));
-        }).on('error',fail);
-      });
-    }
-    // Fetch daily close prices (type=2) + hourly data (type=1) for real OHLC
-    const [idxResp, hourlyResp] = await Promise.all([
-      httpGet('https://api.steamdt.com/user/statistics/v2/chart?type=2&dateType=2'),
-      httpGet('https://api.steamdt.com/user/statistics/v2/chart?type=1&dateType=2'),
-    ]);
-    
-    // Use daily close prices for line chart
-    if (idxResp.success && idxResp.data && idxResp.data.length > 0) {
-      const raw = idxResp.data;
-      const dates = raw.map(d => {
-        const ts = Number(d[0]);
-        const sec = String(ts).length === 13 ? ts/1000 : ts;
-        const dt = new Date(sec * 1000);
-        return (dt.getMonth()+1) + '-' + dt.getDate();
-      });
-      const values = raw.map(d => d[1]);
-      const latest = values[values.length-1];
-      const prev = values[values.length-2] || latest;
-      const change = (latest - prev) / prev * 100;
-      data.index = {
-        latest: Math.round(latest * 100) / 100,
-        change: Math.round(change * 100) / 100,
-        dates,
-        values: values.map(v => Math.round(v * 100) / 100),
-        min: Math.round(Math.min(...values) * 100) / 100,
-        max: Math.round(Math.max(...values) * 100) / 100,
-        // hourly data for computing real OHLC (daily aggregates from hourly)
-        hourly: (hourlyResp.success && hourlyResp.data) ? hourlyResp.data : null
-      };
-      console.log('[SteamDT Index OK]', latest.toFixed(2), change.toFixed(2)+'%', values.length+'daily pts, '+((hourlyResp.data||[]).length)+' hourly pts');
-    }
-  } catch(e) {
-    console.log('[SteamDT Index ERR]', e.message);
-  }
-    // === Fetch CSQAQ Market Index K-line (90-day daily OHLC) ===
-  try {
-    const { https } = await import('node:https');
-    const csqaqData = await new Promise((resolve, reject) => {
-      const req = https.get('https://api.csqaq.com/api/v1/sub/kline?type=1day&id=1', {
-        headers: { 'ApiToken': 'HXGPY1R7L5W7K7F3O4K1E2N8', 'User-Agent': 'Mozilla/5.0' }
-      }, res => {
-        let body = '';
-        res.on('data', c => body += c);
-        res.on('end', () => { try { resolve(JSON.parse(body)); } catch(e){ reject(e); } });
-      });
-      req.on('error', reject);
-      req.setTimeout(15000, () => { req.destroy(); reject(new Error('timeout')); });
+    const httpGet2 = (url) => new Promise((ok, fail) => {
+      https.get(url, { headers: { 'ApiToken': 'HXGPY1R7L5W7K7F3O4K1E2N8', 'User-Agent': 'Mozilla/5.0' } }, res => {
+        let b = ''; res.on('data', c => b += c);
+        res.on('end', () => { try { ok(JSON.parse(b)); } catch(e) { fail(e); } });
+      }).on('error', fail).setTimeout(20000, function() { this.destroy(); fail(new Error('timeout')); });
     });
 
-    if (csqaqData.code === 200 && Array.isArray(csqaqData.data)) {
-      const kline = csqaqData.data.slice(-90);
-      const ohlc = kline.map(k => {
-        const d = new Date(parseInt(k.t));
-        const dateStr = (d.getUTCMonth()+1) + '-' + d.getUTCDate();
-        return { date: dateStr, open: k.o, high: k.h, low: k.l, close: k.c };
-      });
-      const values = ohlc.map(k => Math.round(k.close * 100) / 100);
-      const dates = ohlc.map(k => k.date);
-      const lt = values[values.length - 1];
-      const pv = values[values.length - 2] || lt;
-      data.index = {
-        dates, values,
-        latest: lt,
-        change: Math.round((lt - pv) / pv * 10000) / 100,
-        min: Math.round(Math.min(...values) * 100) / 100,
-        max: Math.round(Math.max(...values) * 100) / 100,
-        ohlc,
-        source: 'csqaq'
-      };
-      console.log('[Index OK] CSQAQ', lt.toFixed(2), 'change', ((lt-pv)/pv*100).toFixed(2)+'%', ohlc.length+'candles');
+    const [dailyResp, hourlyResp] = await Promise.all([
+      httpGet2('https://api.csqaq.com/api/v1/sub/kline?type=1day&id=1'),
+      httpGet2('https://api.csqaq.com/api/v1/sub/kline?type=1hour&id=1'),
+    ]);
+
+    // Aggregate hourly -> daily volume (bar count per UTC day)
+    const hourlyVolMap = {};
+    if (hourlyResp && hourlyResp.data) {
+      for (const h of hourlyResp.data) {
+        const ms = parseInt(h.t);
+        const dt = new Date(ms + new Date().getTimezoneOffset() * 60000); // UTC
+        const key = (dt.getUTCMonth() + 1) + '-' + dt.getUTCDate();
+        hourlyVolMap[key] = (hourlyVolMap[key] || 0) + 1;
+      }
     }
-  } catch(e) { console.log('[Index ERR]', e.message); }
+
+    const daily = (dailyResp.data || []).slice(-90);
+    const ohlc = daily.map(k => {
+      const ms = parseInt(k.t);
+      const dt = new Date(ms + new Date().getTimezoneOffset() * 60000);
+      const key = (dt.getUTCMonth() + 1) + '-' + dt.getUTCDate();
+      const o = Math.round(parseFloat(k.o) * 100) / 100;
+      const h = Math.round(parseFloat(k.h) * 100) / 100;
+      const l = Math.round(parseFloat(k.l) * 100) / 100;
+      const c = Math.round(parseFloat(k.c) * 100) / 100;
+      return {
+        date: key,
+        open: o, high: h, low: l, close: c,
+        vol: hourlyVolMap[key] || 1
+      };
+    });
+
+    const values = ohlc.map(k => k.close);
+    const dates  = ohlc.map(k => k.date);
+    const lt = values[values.length - 1];
+    const pv = values[values.length - 2] || lt;
+    data.index = {
+      dates, values,
+      latest: lt,
+      change: Math.round((lt - pv) / pv * 10000) / 100,
+      min: Math.round(Math.min(...values) * 100) / 100,
+      max: Math.round(Math.max(...values) * 100) / 100,
+      ohlc,
+      source: 'csqaq'
+    };
+    console.log('[Index OK] CSQAQ', lt.toFixed(2), 'change', ((lt-pv)/pv*100).toFixed(2) + '%', ohlc.length + ' candles, vol=' + (hourlyVolMap[dates[dates.length-1]] || '?') + '/day');
+  } catch(e) {
+    console.log('[Index ERR]', e.message);
+  }
 
   fs.writeFileSync('market.json', JSON.stringify(data, null, 2));
   console.log('\n=== Done! market.json updated ===');
