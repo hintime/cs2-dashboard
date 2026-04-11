@@ -306,7 +306,7 @@ function renderMarket(D){
     document.getElementById('btnCandle').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)';
     ec.setOption({
       backgroundColor:'transparent',
-      grid:{top:10,right:30,bottom:25,left:55},
+      grid:{top:10,right:30,bottom:25,left:65},
       xAxis:{type:'category',data:ohlcDates,
         axisLine:{lineStyle:{color:'#252a36'}},
         axisLabel:{color:'#9ca3af',fontSize:10,interval:Math.max(0,Math.floor(ohlcDates.length/8)-1)},
@@ -314,9 +314,9 @@ function renderMarket(D){
       yAxis:{type:'value',
         min:Math.floor(Math.min.apply(null,ohlcValues)/20)*20,
         max:Math.ceil(Math.max.apply(null,ohlcValues)/20)*20,
-        interval:20,
+        splitNumber:6,
         splitLine:{lineStyle:{color:'#1e2130'}},
-        axisLabel:{color:'#9ca3af',fontSize:10,formatter:function(v){return v.toFixed(0);}}},
+        axisLabel:{color:'#9ca3af',fontSize:11,formatter:function(v){return v.toFixed(0);}}},
       tooltip:{trigger:'axis',backgroundColor:'#0f1117',borderColor:'#252a36',
         textStyle:{color:'#e4e4e7',fontSize:11}},
       series:[{type:'line',data:ohlcValues,symbol:'none',
@@ -346,8 +346,8 @@ function renderMarket(D){
     ec.setOption({
       backgroundColor:'transparent',
       grid:[
-        {top:10,right:55,bottom:'72%',left:55},
-        {top:'76%',right:55,bottom:40,left:55}
+        {top:10,right:55,bottom:'72%',left:65},
+        {top:'76%',right:55,bottom:40,left:65}
       ],
       xAxis:[
         {type:'category',data:ohlcDates,gridIndex:0,boundaryGap:true,
@@ -362,11 +362,11 @@ function renderMarket(D){
           axisTick:{show:false}}
       ],
       yAxis:[
-        {type:'value',gridIndex:0,min:priceMin,max:priceMax,interval:20,scale:false,
+        {type:'value',gridIndex:0,min:priceMin,max:priceMax,splitNumber:6,scale:false,
           splitLine:{lineStyle:{color:'#1e2130'}},
-          axisLabel:{color:'#9ca3af',fontSize:10,formatter:function(v){return v.toFixed(0);}}},
-        {type:'value',gridIndex:1,min:0,max:volMax*1.15,splitLine:{show:false},
-          axisLabel:{color:'#9ca3af',fontSize:10,
+          axisLabel:{color:'#9ca3af',fontSize:11,formatter:function(v){return v.toFixed(0);}}},
+        {type:'value',gridIndex:1,min:0,max:volMax*1.15,splitNumber:4,splitLine:{show:false},
+          axisLabel:{color:'#9ca3af',fontSize:11,
             formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}}}
       ],
       tooltip:{
