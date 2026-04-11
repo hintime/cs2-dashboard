@@ -294,10 +294,8 @@ function renderMarket(D){
   var ohlcValues = (idx.ohlc || []).map(function(c){ return c.close; });
   var ohlcData = (idx.ohlc || []).map(function(c){ return [c.open, c.close, c.low, c.high]; });
   // volData: array of {value, itemStyle} so each bar has its own color
-  var volData = (idx.ohlc || []).map(function(c, i){
-    var prevClose = idx.ohlc[i-1] ? idx.ohlc[i-1].close : c.close;
-    var barColor = c.close >= prevClose ? '#ef4444' : '#22c55e';
-    return { value: c.vol || 1, itemStyle: { color: barColor } };
+  var volData = (idx.volBar || []).map(function(h, i){
+    return { value: h, itemStyle: { color: (idx.volColor||[])[i]||'#52525b' } };
   });
 
   // ── Chart ──
