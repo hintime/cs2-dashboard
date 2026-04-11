@@ -301,86 +301,122 @@ function renderMarket(D){
   // ── Chart ──
   var ec = echarts.init(document.getElementById('indexChart'), null, {renderer:'canvas'});
 
-  function renderLine() {
+    function renderLine() {
     document.getElementById('btnLine').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:#3b82f6;color:#fff;border:1px solid #3b82f6';
     document.getElementById('btnCandle').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)';
     ec.setOption({
       backgroundColor:'transparent',
-      grid:{top:10,right:30,bottom:25,left:45},
+      grid:{top:10,right:30,bottom:25,left:55},
       xAxis:{type:'category',data:ohlcDates,
         axisLine:{lineStyle:{color:'#252a36'}},
-        axisLabel:{color:'#52525b',fontSize:9,interval:Math.max(0, Math.floor(ohlcDates.length/8)-1)},
+        axisLabel:{color:'#9ca3af',fontSize:10,interval:Math.max(0,Math.floor(ohlcDates.length/8)-1)},
         axisTick:{show:false}},
       yAxis:{type:'value',
-        min:Math.floor(Math.min.apply(null, ohlcValues)*0.995),
-        max:Math.ceil(Math.max.apply(null, ohlcValues)*1.005),
+        min:Math.floor(Math.min.apply(null,ohlcValues)/20)*20,
+        max:Math.ceil(Math.max.apply(null,ohlcValues)/20)*20,
+        interval:20,
         splitLine:{lineStyle:{color:'#1e2130'}},
-        axisLabel:{color:'#52525b',fontSize:9}},
-      tooltip:{trigger:'axis',backgroundColor:'#1a1e28',borderColor:'#252a36',
+        axisLabel:{color:'#9ca3af',fontSize:10,formatter:function(v){return v.toFixed(0);}}},
+      tooltip:{trigger:'axis',backgroundColor:'#0f1117',borderColor:'#252a36',
         textStyle:{color:'#e4e4e7',fontSize:11}},
       series:[{type:'line',data:ohlcValues,symbol:'none',
         lineStyle:{color:'#3b82f6',width:2},
         areaStyle:{color:'#3b82f614'}}]
-    }, true);
+    },true);
   }
 
   function renderCandle() {
     document.getElementById('btnCandle').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:#ef4444;color:#fff;border:1px solid #ef4444';
     document.getElementById('btnLine').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)';
+
+    var closes = (idx.ohlc||[]).map(function(c){return c.close;});
+    function ma(arr,n){
+      return arr.map(function(v,i){
+        if(i<n-1) return '-';
+        var s=0; for(var j=0;j<n;j++) s+=arr[i-j];
+        return Math.round(s/n*100)/100;
+      });
+    }
+    var ma5=ma(closes,5), ma10=ma(closes,10), ma20=ma(closes,20);
+
+    var priceMin = Math.floor(Math.min.apply(null,closes)/20)*20;
+    var priceMax = Math.ceil(Math.max.apply(null,closes)/20)*20;
+    var volMax = Math.max.apply(null,idx.volBar||[1]);
+
     ec.setOption({
       backgroundColor:'transparent',
       grid:[
-        {top:12,right:55,bottom:'68%',left:45},
-        {top:'74%',right:55,bottom:36,left:45}
+        {top:10,right:55,bottom:'72%',left:55},
+        {top:'76%',right:55,bottom:40,left:55}
       ],
       xAxis:[
         {type:'category',data:ohlcDates,gridIndex:0,boundaryGap:true,
-          axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{show:false},axisTick:{show:false},splitLine:{show:false}},
+          axisLine:{lineStyle:{color:'#252a36'}},
+          axisLabel:{show:false},axisTick:{show:false},splitLine:{show:false}},
         {type:'category',data:ohlcDates,gridIndex:1,boundaryGap:true,
           axisLine:{lineStyle:{color:'#252a36'}},
-          axisLabel:{color:'#52525b',fontSize:9,interval:Math.max(0, Math.floor(ohlcDates.length/6)-1)},axisTick:{show:false}}
+          axisLabel:{
+            color:'#9ca3af',fontSize:10,
+            interval:Math.max(0,Math.floor(ohlcDates.length/8)-1)
+          },
+          axisTick:{show:false}}
       ],
       yAxis:[
-        {type:'value',gridIndex:0,scale:true,
+        {type:'value',gridIndex:0,min:priceMin,max:priceMax,interval:20,scale:false,
           splitLine:{lineStyle:{color:'#1e2130'}},
-          axisLabel:{color:'#52525b',fontSize:9}},
-        {type:'value',gridIndex:1,scale:true,splitLine:{show:false},
-          axisLabel:{color:'#52525b',fontSize:9}}
+          axisLabel:{color:'#9ca3af',fontSize:10,formatter:function(v){return v.toFixed(0);}}},
+        {type:'value',gridIndex:1,min:0,max:volMax*1.15,splitLine:{show:false},
+          axisLabel:{color:'#9ca3af',fontSize:10,
+            formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}}}
       ],
       tooltip:{
-        trigger:'axis',axisPointer:{type:'cross',crossStyle:{color:'#555'}},
-        backgroundColor:'#1a1e28',borderColor:'#252a36',
-        textStyle:{color:'#e4e4e7',fontSize:11},
+        trigger:'axis',
+        axisPointer:{type:'cross',crossStyle:{color:'#555'},lineStyle:{color:'#555',type:'dashed'}},
+        backgroundColor:'#0f1117',borderColor:'#252a36',borderWidth:1,
+        padding:[8,12],
+        textStyle:{color:'#e4e4e7',fontSize:11,fontFamily:'monospace'},
         formatter:function(params){
-          var d = null;
+          var candle=null;
           for(var i=0;i<params.length;i++){
-            if(params[i].seriesType==='candlestick'){ d=params[i]; break; }
+            if(params[i].seriesType==='candlestick'){candle=params[i];break;}
           }
-          if(!d) return '';
-          var vals = d.value;
-          var o=vals[0],h=vals[1],l=vals[2],c=vals[3];
-          var dtStr = d.axisValue;
-          var isUp = c>=o;
-          var color = isUp ? '#ef4444' : '#22c55e';
-          var pct = ((c-o)/o*100).toFixed(2);
-          var pctStr = isUp ? ('+'+pct+'%') : (pct+'%');
-          return '<div style="font-size:11px"><b>'+dtStr+'</b><br/>'+
-            '开:'+o.toFixed(1)+'  收:'+'<b style="color:'+color+'">'+c.toFixed(1)+'</b><br/>'+
-            '高:'+h.toFixed(1)+'  低:'+l.toFixed(1)+'<br/>'+
-            '<span style="color:'+color+'">'+(isUp?'▲ ':'▼ ')+'</span>'+pctStr+'</div>';
+          if(!candle) return '';
+          var v=candle.value, o=v[0],h=v[1],l=v[2],c=v[3];
+          var isUp=c>=o;
+          var clr=isUp?'#ef4444':'#22c55e';
+          var pct=((c-o)/o*100).toFixed(2);
+          var pctStr=isUp?('+'+pct+'%'):(pct+'%');
+          var di=candle.dataIndex;
+          var maHtml='';
+          if(ma5[di]!=='-')  maHtml+='<span style="color:#f59e0b">MA5:'+ma5[di].toFixed(0)+'</span> ';
+          if(ma10[di]!=='-') maHtml+='<span style="color:#a78bfa">MA10:'+ma10[di].toFixed(0)+'</span> ';
+          if(ma20[di]!=='-') maHtml+='<span style="color:#34d399">MA20:'+ma20[di].toFixed(0)+'</span>';
+          return '<div style="line-height:1.7">'
+            +'<b style="font-size:12px">'+candle.axisValue+'</b><br/>'
+            +'<span style="color:#9ca3af">开</span>:'+o.toFixed(2)+' <span style="color:#9ca3af">收</span>:<b style="color:'+clr+'">'+c.toFixed(2)+'</b><br/>'
+            +'<span style="color:#9ca3af">高</span>:'+h.toFixed(2)+' <span style="color:#9ca3af">低</span>:'+l.toFixed(2)+'<br/>'
+            +'<span style="color:'+clr+'">'+(isUp?'&#9650; ':'&#9660; ')+'</span>'+pctStr
+            +' <span style="color:#9ca3af">柱:'+((idx.volBar||[])[di]||0)+'</span><br/>'
+            +maHtml+'</div>';
         }
       },
       series:[
-        {type:'candlestick',name:'大盘指数',data:ohlcData,
-          xAxisIndex:0,yAxisIndex:0,
+        {type:'line',name:'MA5',data:ma5,xAxisIndex:0,yAxisIndex:0,
+          smooth:false,symbol:'none',lineStyle:{color:'#f59e0b',width:1,opacity:0.85}},
+        {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,
+          smooth:false,symbol:'none',lineStyle:{color:'#a78bfa',width:1,opacity:0.85}},
+        {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,
+          smooth:false,symbol:'none',lineStyle:{color:'#34d399',width:1,opacity:0.85}},
+        {type:'candlestick',name:'指数',data:ohlcData,xAxisIndex:0,yAxisIndex:0,
           itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e',borderWidth:1}},
-        {type:'bar',name:'成交量',data:volData,xAxisIndex:1,yAxisIndex:1,barWidth:'40%', barGap:'20%'}
+        {type:'bar',name:'波动幅度',data:volData,xAxisIndex:1,yAxisIndex:1,
+          barWidth:'40%',barGap:'25%',animation:true}
       ],
       dataZoom:[
         {type:'inside',xAxisIndex:[0,1],start:0,end:100},
         {show:false,xAxisIndex:[0,1],start:0,end:100}
       ]
-    }, true);
+    },true);
   }
 
   document.getElementById('btnLine').onclick = renderLine;
