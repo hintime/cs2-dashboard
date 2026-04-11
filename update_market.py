@@ -1,155 +1,145 @@
-import http.client, ssl, json, subprocess, time
-from datetime import datetime, timezone, timedelta
+import http.client, ssl, json, subprocess
+from datetime import datetime, timezone
 from collections import defaultdict
 
 ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
-def fetch_json_stdt(path):
-    c = http.client.HTTPSConnection("api.steamdt.com", context=ctx, timeout=15)
-    c.request("GET", path, headers={"User-Agent": "Mozilla/5.0", "Referer": "https://steamdt.com/"})
+def fetch(url, host, token=None):
+    c = http.client.HTTPSConnection(host, context=ctx, timeout=20)
+    h = {"User-Agent": "Mozilla/5.0"}
+    if token:
+        h["ApiToken"] = token
+    else:
+        h["Referer"] = "https://steamdt.com/"
+    c.request("GET", url, headers=h)
     r = c.getresponse()
-    data = json.loads(r.read())
+    d = json.loads(r.read())
     c.close()
-    return data.get("data", data)
+    return d.get("data", d) if isinstance(d, dict) else d
 
-def fetch_json_csqaq(path):
-    c = http.client.HTTPSConnection("api.csqaq.com", context=ctx, timeout=20)
-    c.request("GET", path, headers={"ApiToken": "HXGPY1R7L5W7K7F3O4K1E2N8", "User-Agent": "Mozilla/5.0"})
-    r = c.getresponse()
-    data = json.loads(r.read())
-    c.close()
-    return data.get("data", data)
+# 1. SteamDT: 今日/昨日统计 + 小时线
+stdt_sum   = fetch("/index/statistics/v1/summary",  "api.steamdt.com")
+stdt_daily = fetch("/index/transaction/trend/v1/all", "api.steamdt.com")
 
-# 1. SteamDT summary + transaction trend
-summary      = fetch_json_stdt("/index/statistics/v1/summary")
-stdt_daily   = fetch_json_stdt("/index/transaction/trend/v1/all")
+today_close = float(stdt_sum.get("broadMarketIndex", 0))
+yest_ratio  = float(stdt_sum.get("diffYesterdayRatio", 0))
+yest_close  = today_close / (1 + yest_ratio / 100.0) if yest_ratio else today_close
 
-today_close  = float(summary.get("broadMarketIndex", 0))
-yest_ratio   = float(summary.get("diffYesterdayRatio", 0))
-yest_close   = today_close / (1 + yest_ratio / 100.0) if yest_ratio else today_close
+# SteamDT 今日成交数据
+today_stats = stdt_sum.get("todayStatistics", {})
+yest_stats  = stdt_sum.get("yesterdayStatistics", {})
+today_tov   = float(today_stats.get("turnover", 0))
+today_cnt   = int(today_stats.get("tradeNum", 0))
+yest_tov    = float(yest_stats.get("turnover", 0))
+yest_cnt    = int(yest_stats.get("tradeNum", 0))
 
-print(f"SteamDT today: {today_close}, yest: {yest_close}, ratio: {yest_ratio}")
+# SteamDT 日期映射
+stdt_turnover = {d[0]: float(d[1]) for d in stdt_daily}
+stdt_count    = {d[0]: float(d[2]) for d in stdt_daily}
 
-# 2. CSQAQ 日线（备用：如果限流就用 market.json 里的旧数据）
-csqaq_daily = None
-try:
-    csqaq_daily = fetch_json_csqaq("/api/v1/sub/kline?type=1day&id=1&maxTime=")
-    if csqaq_daily and len(csqaq_daily) > 0:
-        print(f"CSQAQ daily: {len(csqaq_daily)} bars")
-except Exception as e:
-    print(f"CSQAQ daily ERR: {e}")
-    csqaq_daily = None
-
-# 3. 如果 CSQAQ 没数据，用 SteamDT transaction trend 反推价格
-# transaction trend 格式: [[date, turnover, count], ...]
-# 策略: 用 yest_close 和 today_close 做基准，中间日期线性插值
-
-# 生成日期-成交额映射
-stdt_turnover = {}
-stdt_count    = {}
-for item in stdt_daily:
-    stdt_turnover[item[0]] = float(item[1])
-    stdt_count[item[0]]    = float(item[2])
-
-# 4. 用 SteamDT 的 historyMarketIndexList（小时线）聚合日线 OHLC
-hist_hourly = summary.get("historyMarketIndexList", [])
-daily_ohlc_stdt = defaultdict(list)
+# SteamDT 小时线聚合日K（覆盖最近1-2天）
+hist_hourly = stdt_sum.get("historyMarketIndexList", [])
+daily_stdt  = defaultdict(list)
 for item in hist_hourly:
     ts, price = int(item[0]), float(item[1])
-    dt = datetime.fromtimestamp(ts, tz=timezone.utc)
-    key = dt.strftime("%Y-%m-%d")
-    daily_ohlc_stdt[key].append(price)
+    key = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
+    daily_stdt[key].append(price)
 
-# 聚合
 daily_stdt_ohlc = {}
-for date_s, prices in daily_ohlc_stdt.items():
-    daily_stdt_ohlc[date_s] = {
-        "open":  prices[0],
-        "high":  max(prices),
-        "low":   min(prices),
-        "close": prices[-1],
-    }
+for k, prices in daily_stdt.items():
+    daily_stdt_ohlc[k] = {"open": prices[0], "high": max(prices), "low": min(prices), "close": prices[-1]}
 
+print(f"SteamDT today={today_close} yest_close={yest_close:.2f}")
+print(f"SteamDT 今日成交额={today_tov:,.2f} 成交数={today_cnt:,}")
 print(f"SteamDT 小时聚合日K: {list(daily_stdt_ohlc.keys())}")
 
-# 5. 生成日K数据
+# 2. CSQAQ 日线 OHLC（价格）
+csqaq = fetch("/api/v1/sub/kline?type=1day&id=1&maxTime=", "api.csqaq.com", "HXGPY1R7L5W7K7F3O4K1E2N8")
+print(f"CSQAQ 日线: {len(csqaq)} 条")
+if csqaq:
+    first = csqaq[0]
+    last  = csqaq[-1]
+    dt_first = datetime.fromtimestamp(int(first["t"]) / 1000, tz=timezone.utc)
+    dt_last  = datetime.fromtimestamp(int(last["t"])  / 1000, tz=timezone.utc)
+    print(f"  {dt_first.strftime('%Y-%m-%d')} ~ {dt_last.strftime('%Y-%m-%d')}")
+
+# 3. CSQAQ → SteamDT 比例因子
+# 找两者的交集日期：CSQAQ 最后一天 ≈ SteamDT 的昨天
+if csqaq:
+    csq_last = csqaq[-1]
+    csq_ts   = int(csq_last["t"]) / 1000
+    csq_dt   = datetime.fromtimestamp(csq_ts, tz=timezone.utc)
+    csq_date = csq_dt.strftime("%Y-%m-%d")
+    csq_close = float(csq_last["c"])
+
+    stdt_date = dt_last.strftime("%Y-%m-%d")  # same as csq_date
+    stdt_close = float(daily_stdt_ohlc.get(csq_date, {}).get("close", yest_close))
+
+    ratio = stdt_close / csq_close if csq_close else 1.0
+    print(f"  交集日 {csq_date}: CSQAQ={csq_close} SteamDT={stdt_close} ratio={ratio:.4f}")
+else:
+    ratio = 1.0
+
+# 4. 构建日K
 dates  = []
 values = []
 ohlc   = []
 volBar = []
 volColor = []
 
-if csqaq_daily and len(csqaq_daily) > 10:
-    # 用 CSQAQ 日线价格（乘以比例因子转 SteamDT 指数）
-    csq_today = float(csqaq_daily[-1][4]) if isinstance(csqaq_daily[-1], list) else float(csqaq_daily[-1].get("c", 0))
-    ratio = today_close / csq_today if csq_today else 1.0
+for item in csqaq:
+    ts     = int(item["t"])
+    dt     = datetime.fromtimestamp(ts / 1000, tz=timezone.utc)
+    date_s = dt.strftime("%Y-%m-%d")
 
-    for item in csqaq_daily:
-        if isinstance(item, list) and len(item) >= 5:
-            ts_ms    = int(item[0])
-            csq_o    = float(item[1])
-            csq_h    = float(item[2])
-            csq_l    = float(item[3])
-            csq_c    = float(item[4])
-        else:
-            continue
+    # 价格：CSQAQ OHLC × 比例因子
+    price  = float(item["c"]) * ratio
+    op     = float(item["o"]) * ratio
+    hp     = float(item["h"]) * ratio
+    lp     = float(item["l"]) * ratio
 
-        dt     = datetime.fromtimestamp(ts_ms / 1000, tz=timezone.utc)
-        date_s = dt.strftime("%Y-%m-%d")
+    dates.append(date_s[5:])
+    values.append(round(price, 2))
 
-        dates.append(date_s[5:])
-        values.append(round(csq_c * ratio, 2))
+    # 成交量来源：SteamDT transaction trend
+    stdt_tov = stdt_turnover.get(date_s, 0)
+    stdt_cnt = int(stdt_count.get(date_s, 0))
 
-        stdt_tov = stdt_turnover.get(date_s, 0)
-        stdt_cnt = int(stdt_count.get(date_s, 0))
+    ohlc.append({
+        "date":     date_s[5:],
+        "open":     round(op, 2),
+        "high":     round(hp, 2),
+        "low":      round(lp, 2),
+        "close":    round(price, 2),
+        "volume":   stdt_cnt if stdt_cnt > 0 else 0,
+        "turnover": round(stdt_tov, 2) if stdt_tov > 0 else 0,
+    })
 
-        ohlc.append({
-            "date":     date_s[5:],
-            "open":     round(csq_o * ratio, 2),
-            "high":     round(csq_h * ratio, 2),
-            "low":      round(csq_l * ratio, 2),
-            "close":    round(csq_c * ratio, 2),
-            "volume":   stdt_cnt if stdt_cnt > 0 else 0,
-            "turnover": round(stdt_tov, 2) if stdt_tov > 0 else 0,
-        })
-else:
-    # 降级：用 SteamDT transaction trend + 小时线
-    for item in stdt_daily:
-        date_s = item[0]
-        turnover = float(item[1])
-        count    = float(item[2])
+# 5. 如果 SteamDT 今天有小时数据但 CSQAQ 没有今天（后者日线要到晚上才更新）
+# 补上今天的 SteamDT 小时聚合日K
+today_key = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+if today_key not in [d[5:] for d in dates] and today_key in daily_stdt_ohlc:
+    dp  = daily_stdt_ohlc[today_key]
+    dates.append(today_key[5:])
+    values.append(round(dp["close"], 2))
+    ohlc.append({
+        "date":     today_key[5:],
+        "open":     round(dp["open"], 2),
+        "high":     round(dp["high"], 2),
+        "low":      round(dp["low"], 2),
+        "close":    round(dp["close"], 2),
+        "volume":   today_cnt,
+        "turnover": round(today_tov, 2),
+    })
 
-        dp = daily_stdt_ohlc.get(date_s)
-        if dp:
-            index_val = dp["close"]
-            op = dp["open"]
-            hp = dp["high"]
-            lp = dp["low"]
-        else:
-            index_val = values[-1] if values else today_close
-            op = hp = lp = index_val
-
-        dates.append(date_s[5:])
-        values.append(round(index_val, 2))
-        ohlc.append({
-            "date":     date_s[5:],
-            "open":     round(op, 2),
-            "high":     round(hp, 2),
-            "low":      round(lp, 2),
-            "close":    round(index_val, 2),
-            "volume":   int(count),
-            "turnover": round(turnover, 2),
-        })
-
-# volBar / volColor
+# volBar/volColor
 max_vol = max((d.get("volume", 1) for d in ohlc), default=1) or 1
 for i, o in enumerate(ohlc):
-    bar_h = max(20, round(o.get("volume", 0) / max_vol * 150))
-    volBar.append(bar_h)
-    prev_close = values[i-1] if i > 0 else values[0]
-    volColor.append('#ef4444' if values[i] >= prev_close else '#22c55e')
+    volBar.append(max(20, round(o.get("volume", 0) / max_vol * 150)))
+    prev = values[i-1] if i > 0 else values[0]
+    volColor.append('#ef4444' if values[i] >= prev else '#22c55e')
 
 # 6. 最新值
 lt  = values[-1] if values else 0
@@ -158,10 +148,10 @@ chg = round((lt - pv) / pv * 100, 2) if pv else 0
 
 print(f"\n数据验证:")
 print(f"  最新指数: {lt} (涨跌: {chg}%)")
-print(f"  最新日K: {ohlc[-1] if ohlc else None}")
-print(f"  最新成交量: {ohlc[-1].get('volume', 0):,}")
-print(f"  最新成交额: {ohlc[-1].get('turnover', 0):,.2f}")
-print(f"  价格样本 (最近5天): {values[-5:]}")
+print(f"  日期范围: {dates[0]} ~ {dates[-1]} (共 {len(dates)} 天)")
+print(f"  价格样本(最近5天): {values[-5:]}")
+print(f"  成交量样本(最近5天): {[o['volume'] for o in ohlc[-5:]]}")
+print(f"  成交额样本(最近5天): {[o['turnover'] for o in ohlc[-5:]]}")
 
 # 7. 写入 market.json
 mjp = r"C:\Users\Lenovo\cs2-dashboard\market.json"
@@ -178,16 +168,10 @@ mj["index"] = {
     "ohlc":     ohlc,
     "volBar":   volBar,
     "volColor": volColor,
-    "todayStats": {
-        "turnover": round(float(summary.get("todayStatistics", {}).get("turnover") or 0), 2),
-        "count":    int(summary.get("todayStatistics", {}).get("tradeNum") or 0),
-    },
-    "yesterdayStats": {
-        "turnover": round(float(summary.get("yesterdayStatistics", {}).get("turnover") or 0), 2),
-        "count":    int(summary.get("yesterdayStatistics", {}).get("tradeNum") or 0),
-    },
-    "surviveNum": int(summary.get("surviveNum") or 0),
-    "holdersNum": int(summary.get("holdersNum") or 0),
+    "todayStats":    {"turnover": round(today_tov, 2), "count": today_cnt},
+    "yesterdayStats":{"turnover": round(yest_tov,  2), "count": yest_cnt},
+    "surviveNum": int(stdt_sum.get("surviveNum") or 0),
+    "holdersNum": int(stdt_sum.get("holdersNum") or 0),
 }
 
 with open(mjp, "w", encoding="utf-8") as f:
@@ -199,8 +183,9 @@ print(f"\nmarket.json 写入: {len(ohlc)} 根日K")
 repo = r"C:\Users\Lenovo\cs2-dashboard"
 subprocess.run(["git", "-C", repo, "add", "."], check=True, capture_output=True)
 r2 = subprocess.run(["git", "-C", repo, "commit", "-m",
-    "feat: CSQAQ daily OHLC x SteamDT real turnover"],
+    "feat: CSQAQ daily OHLC + SteamDT real turnover, full history restored"],
     capture_output=True)
-print(f"Commit: {'OK' if r2.returncode == 0 else r2.stderr}")
-r3 = subprocess.run(["git", "-C", repo, "push"], capture_output=True)
+msg = r2.stderr.strip() if r2.stderr else r2.stdout.strip()
+print(f"Commit: {msg or 'OK'}")
+r3 = subprocess.run(["git", "-C", repo, "push"], capture_output=True, text=True)
 print(f"Push: {'OK' if r3.returncode == 0 else r3.stderr}")
