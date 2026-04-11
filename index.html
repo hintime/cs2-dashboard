@@ -292,12 +292,12 @@ function renderMarket(D){
   // Load OHLC from market.json (computed from SteamDT hourly data)
   var ohlcDates  = (idx.ohlc || []).map(function(c){ return c.date; });
   var ohlcValues = (idx.ohlc || []).map(function(c){ return c.close; });
-  var ohlcData   = (idx.ohlc || []).map(function(c){ return [c.open, c.close, c.low, c.high]; });
-  var volData = (idx.ohlc || []).map(function(c){ return c.vol || 1; });
-  var volColors  = (idx.ohlc || []).map(function(c, i){
-    var prev = i > 0 ? idx.ohlc[i-1].close : c.close;
+  var ohlcData = (idx.ohlc || []).map(function(c){ return [c.open, c.close, c.low, c.high]; });
+  // volData: array of {value, itemStyle} so each bar has its own color
+  var volData = (idx.ohlc || []).map(function(c, i){
     var prevClose = idx.ohlc[i-1] ? idx.ohlc[i-1].close : c.close;
-    return c.close >= prevClose ? '#ef4444' : '#22c55e';
+    var barColor = c.close >= prevClose ? '#ef4444' : '#22c55e';
+    return { value: c.vol || 1, itemStyle: { color: barColor } };
   });
 
   // ── Chart ──
@@ -376,8 +376,7 @@ function renderMarket(D){
         {type:'candlestick',name:'大盘指数',data:ohlcData,
           xAxisIndex:0,yAxisIndex:0,
           itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e',borderWidth:1}},
-        {type:'bar',name:'成交量',data:volData,xAxisIndex:1,yAxisIndex:1,
-          itemStyle:{color:volColors},barWidth:'50%'}
+        {type:'bar',name:'成交量',data:volData,xAxisIndex:1,yAxisIndex:1,barWidth:'50%'}
       ],
       dataZoom:[
         {type:'inside',xAxisIndex:[0,1],start:0,end:100},
