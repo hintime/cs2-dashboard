@@ -332,8 +332,8 @@ function renderMarket(D){
     ec.setOption({
       backgroundColor:'transparent',
       grid:[
-        {top:12,right:55,bottom:'28%',left:45},
-        {top:'76%',right:55,bottom:26,left:45}
+        {top:12,right:55,bottom:'68%',left:45},
+        {top:'74%',right:55,bottom:36,left:45}
       ],
       xAxis:[
         {type:'category',data:ohlcDates,gridIndex:0,boundaryGap:true,
@@ -376,7 +376,7 @@ function renderMarket(D){
         {type:'candlestick',name:'大盘指数',data:ohlcData,
           xAxisIndex:0,yAxisIndex:0,
           itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e',borderWidth:1}},
-        {type:'bar',name:'成交量',data:volData,xAxisIndex:1,yAxisIndex:1,barWidth:'50%'}
+        {type:'bar',name:'成交量',data:volData,xAxisIndex:1,yAxisIndex:1,barWidth:'40%', barGap:'20%'}
       ],
       dataZoom:[
         {type:'inside',xAxisIndex:[0,1],start:0,end:100},
