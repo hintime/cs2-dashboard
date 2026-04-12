@@ -1,5 +1,5 @@
 import http.client, ssl, json, subprocess
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 ctx.check_hostname = False
@@ -169,15 +169,15 @@ mj["index"] = {
     "holdersNum": int(stdt_sum.get("holdersNum") or 0),
 }
 
-# 8. 更新时间（必须写在 json.dump 之前）
-now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+# 8. 更新时间（必须写在 json.dump 之前）- 北京时间
+now_str = datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M")
 mj["update_time"] = now_str
 
 with open(mjp, "w", encoding="utf-8") as f:
     json.dump(mj, f, ensure_ascii=False, indent=2)
 
 print(f"\nmarket.json 写入: {len(ohlc)} 根日K")
-print(f"更新于: {now_str} UTC")
+print(f"更新于: {now_str} 北京时间")
 
 # 9. Git push
 repo = r"C:\Users\Lenovo\cs2-dashboard"
