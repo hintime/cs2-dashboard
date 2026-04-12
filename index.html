@@ -21,18 +21,18 @@ body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:va
 .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-.market-index{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
-.mi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.mi-title{font-size:14px;font-weight:800}
-.mi-num{font-size:32px;font-weight:900;font-family:'DM Mono',monospace}
-.mi-chg{font-size:14px;font-weight:700;font-family:'DM Mono',monospace}
-.mi-chart{height:270px;margin-bottom:14px}
-.mi-items{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-.mi-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:border-color .2s}
+.market-index{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:36px;margin-bottom:36px}
+.mi-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.mi-title{font-size:21px;font-weight:800}
+.mi-num{font-size:48px;font-weight:900;font-family:'DM Mono',monospace}
+.mi-chg{font-size:21px;font-weight:700;font-family:'DM Mono',monospace}
+.mi-chart{height:405px;margin-bottom:20px}
+.mi-items{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.mi-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:15px;cursor:pointer;transition:border-color .2s}
 .mi-item:hover,.mi-item.active{border-color:var(--blue)}
-.mi-item-name{font-size:10px;color:var(--text3);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mi-item-price{font-size:13px;font-weight:700}
-.mi-item-chg{font-size:10px;margin-top:2px}
+.mi-item-name{font-size:15px;color:var(--text3);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi-item-price{font-size:20px;font-weight:700}
+.mi-item-chg{font-size:15px;margin-top:3px}
 .clr-up{color:var(--rise)}.clr-dn{color:var(--fall)}
 
 .kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:12px;overflow:hidden;margin-bottom:28px}
