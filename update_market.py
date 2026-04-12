@@ -174,6 +174,10 @@ with open(mjp, "w", encoding="utf-8") as f:
 
 print(f"\nmarket.json 写入: {len(ohlc)} 根日K")
 
+# 8.5 更新时间
+now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+mj["update_time"] = now_str
+
 # 9. Git push
 repo = r"C:\Users\Lenovo\cs2-dashboard"
 subprocess.run(["git", "-C", repo, "add", "."], check=True, capture_output=True)
