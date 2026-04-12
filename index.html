@@ -289,10 +289,15 @@ function renderMarket(D){
   document.getElementById('miChg').textContent = (idx.change>=0?'+':'') + idx.change.toFixed(2) + '%';
   document.getElementById('miChg').style.color = clr;
 
-  // Load OHLC from market.json (computed from SteamDT hourly data)
-  var ohlcDates  = (idx.ohlc || []).map(function(c){ return c.date; });
+  // Load OHLC from market.json — use dateFull (YYYY-MM-DD) to avoid year collision
+  var ohlcDates  = (idx.ohlc || []).map(function(c){ return c.dateFull || c.date; });
   var ohlcValues = (idx.ohlc || []).map(function(c){ return c.close; });
   var ohlcData = (idx.ohlc || []).map(function(c){ return [c.open, c.close, c.low, c.high]; });
+  // Smart date formatter: show year only when it changes, otherwise MM-DD
+  var fmtDate = (function(){
+    var lastY = '';
+    return function(v){ var p=v.split('-'), y=p[0], md=p[1]+'-'+p[2]; if(y!==lastY){lastY=y; return y+'/'+md;} return md; };
+  })();
   // volData: array of {value, itemStyle} so each bar has its own color
   var volData = (idx.volBar || []).map(function(h, i){
     return { value: h, itemStyle: { color: (idx.volColor||[])[i]||'#52525b' } };
@@ -309,7 +314,7 @@ function renderMarket(D){
       grid:{top:10,right:30,bottom:25,left:65},
       xAxis:{type:'category',data:ohlcDates,
         axisLine:{lineStyle:{color:'#252a36'}},
-        axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1)},
+        axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},
         axisTick:{show:false}},
       yAxis:{type:'value',
         min:Math.floor(Math.min.apply(null,ohlcValues)/20)*20,
@@ -357,7 +362,8 @@ function renderMarket(D){
           axisLine:{lineStyle:{color:'#252a36'}},
           axisLabel:{
             color:'#9ca3af',fontSize:12,
-            interval:Math.max(0,Math.floor(ohlcDates.length/6)-1)
+            interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),
+            formatter:fmtDate
           },
           axisTick:{show:false}}
       ],
