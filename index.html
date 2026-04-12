@@ -419,8 +419,8 @@ function renderMarket(D){
           barWidth:'40%',barGap:'25%',animation:true}
       ],
       dataZoom:[
-        {type:'inside',xAxisIndex:[0,1],start:0,end:100},
-        {show:false,xAxisIndex:[0,1],start:0,end:100}
+        {type:'inside',xAxisIndex:[0,1],start:Math.max(0,Math.round((1-30/ohlcDates.length)*100)),end:100},
+        {show:false,xAxisIndex:[0,1],start:Math.max(0,Math.round((1-30/ohlcDates.length)*100)),end:100}
       ]
     },true);
   }
