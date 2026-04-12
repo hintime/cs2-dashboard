@@ -2,7 +2,10 @@ name: Update CS2 Prices
 
 on:
   schedule:
+    # Every hour at UTC :00 ( Beijing 08:00 — update at market open)
     - cron: '0 * * * *'
+    # Every day at Beijing 00:00 (UTC 16:00) — force update regardless of price change
+    - cron: '0 16 * * *'
   workflow_dispatch:
 
 permissions:
@@ -34,10 +37,10 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add market.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m 'chore: Auto-update prices and K-line from SteamDT'
-            git pull --rebase origin main
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: Auto-update prices and K-line $(date -u +"%Y-%m-%d %H:%M UTC")'
+            git pull --rebase origin main || true
             git push origin HEAD:main
+          else
+            echo "No price change — skipped"
           fi
