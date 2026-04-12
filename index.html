@@ -372,6 +372,7 @@ function renderMarket(D){
           splitLine:{lineStyle:{color:'#1e2130'}},
           axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
         {type:'value',gridIndex:1,min:0,max:volMax*1.15,splitNumber:5,splitLine:{show:false},
+          position:'right',axisLine:{show:false},
           axisLabel:{color:'#9ca3af',fontSize:12,
             formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}}}
       ],
