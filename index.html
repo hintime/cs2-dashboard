@@ -155,7 +155,7 @@ const CAT_META = {
 // Load holdings
 async function loadHoldings() {
   try {
-    const r = await fetch('holdings.json');
+    const r = await fetch('holdings.json?v=2');
     const D = await r.json();
     H = D.items.map(item => {
       const t = CAT_MAP[item.category] || 'weapon';
