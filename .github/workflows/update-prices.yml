@@ -2,9 +2,9 @@ name: Update CS2 Prices
 
 on:
   schedule:
-    # Every hour at UTC :00 ( Beijing 08:00 — update at market open)
+    # Every hour at UTC :00 = Beijing 08:00 (market open)
     - cron: '0 * * * *'
-    # Every day at Beijing 00:00 (UTC 16:00) — force update regardless of price change
+    # Every day at Beijing 00:00 (UTC 16:00) — always rebuild even if no price change
     - cron: '0 16 * * *'
   workflow_dispatch:
 
@@ -18,13 +18,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+
       - name: Fetch Prices & K-line Data
         env:
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
         run: node update.mjs
+
       - name: Show result
         run: |
           echo "=== market.json (first 3000 chars) ==="
@@ -32,15 +35,40 @@ jobs:
           echo ""
           echo "=== File size ==="
           wc -c market.json
+
+      - name: Bump cache-bust & touch index.html to force Pages rebuild
+        run: |
+          node -e "
+            const fs = require('fs');
+            const html = fs.readFileSync('index.html', 'utf8');
+            const now = new Date().toISOString().replace(/[:.]/g, '-');
+            // Always update cache-bust timestamps in JSON fetch calls
+            let updated = html
+              .replace(/fetch\('market\.json(?:\?[^']+)?'\)/g, \"fetch('market.json?v=\" + now + \"')\")
+              .replace(/fetch\(\"market\.json(?:\?[^'\"]+)?\"\)/g, 'fetch(\"market.json?v=' + now + '\")')
+              .replace(/fetch\('holdings\.json(?:\?[^']+)?'\)/g, \"fetch('holdings.json?v=\" + now + \"')\")
+              .replace(/fetch\(\"holdings\.json(?:\?[^'\"]+)?\"\)/g, 'fetch(\"holdings.json?v=' + now + '\")');
+            fs.writeFileSync('index.html', updated);
+            console.log('Cache-bust updated. File size:', updated.length);
+          "
+
       - name: Commit & Push
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add market.json
+
+          # Always stage index.html (cache-bust changes) + market.json (price changes)
+          git add market.json index.html
+
+          # Commit message always includes timestamp
+          MSG=\"chore: Auto-update $(date -u +'%Y-%m-%d %H:%M UTC') [cache-bust]\"
+
+          # Check if anything actually changed
           if ! git diff --cached --quiet; then
-            git commit -m 'chore: Auto-update prices and K-line $(date -u +"%Y-%m-%d %H:%M UTC")'
+            echo \"Changes detected — committing and pushing\"
+            git commit -m \"$MSG\"
             git pull --rebase origin main || true
             git push origin HEAD:main
           else
-            echo "No price change — skipped"
+            echo \"No price change and no index.html change — skipped\"
           fi
