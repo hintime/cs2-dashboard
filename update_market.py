@@ -169,14 +169,15 @@ mj["index"] = {
     "holdersNum": int(stdt_sum.get("holdersNum") or 0),
 }
 
+# 8. 更新时间（必须写在 json.dump 之前）
+now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+mj["update_time"] = now_str
+
 with open(mjp, "w", encoding="utf-8") as f:
     json.dump(mj, f, ensure_ascii=False, indent=2)
 
 print(f"\nmarket.json 写入: {len(ohlc)} 根日K")
-
-# 8.5 更新时间
-now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
-mj["update_time"] = now_str
+print(f"更新于: {now_str} UTC")
 
 # 9. Git push
 repo = r"C:\Users\Lenovo\cs2-dashboard"
