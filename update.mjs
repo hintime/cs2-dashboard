@@ -85,11 +85,12 @@ async function fetchKline(name, apiName) {
       if (Array.isArray(klineArr) && klineArr.length > 0) {
         const kline = klineArr.map(k => {
           if (Array.isArray(k)) {
+            // SteamDT: [ts, open, close, high, low] -> [ts, open, high, low, close, vol]
             const ts = Number(k[0]) || 0;
-            const o = Number(k[1]) || 0;
-            const c = Number(k[2]) || 0;
-            const h = Number(k[3]) || 0;
-            const l = Number(k[4]) || 0;
+            const o  = Number(k[1]) || 0;  // open
+            const c  = Number(k[2]) || 0;  // close
+            const h  = Number(k[3]) || 0;  // high
+            const l  = Number(k[4]) || 0;  // low
             return [ts, o, h, l, c, 0];
           }
           return [Number(k.timestamp || k.ts || k.time) || 0,
