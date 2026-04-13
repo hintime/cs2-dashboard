@@ -53,6 +53,8 @@ jobs:
           "
 
       - name: Commit & Push
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
@@ -68,7 +70,7 @@ jobs:
             echo \"Changes detected — committing and pushing\"
             git commit -m \"$MSG\"
             git pull --rebase origin main || true
-            git push origin HEAD:main
+            git push https://x-access-token:$GH_PAT@github.com/hintime/cs2-dashboard.git HEAD:main
           else
             echo \"No price change and no index.html change — skipped\"
           fi
