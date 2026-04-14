@@ -66,9 +66,10 @@ jobs:
           echo "File sizes:"
           wc -c market.json index.html
 
-      - name: Push via GitHub REST API
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+      # DISABLED - CSQAQ index updated locally
+      # - name: Push via GitHub REST API
+        # env:
+          # GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           python3 - << 'PYEOF'
           import os, json, base64, urllib.request, urllib.error
@@ -118,7 +119,7 @@ jobs:
                   print(f'FAIL {path}: HTTP {e.code}: {err_body}')
 
           ts = __import__('datetime').datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-          update_file('market.json', f'chore: Auto-update prices {ts}')
-          update_file('index.html', f'chore: Update index.html {ts}')
+          # update_file('market.json', f'chore: Auto-update prices {ts}')
+          # update_file('index.html', f'chore: Update index.html {ts}')
           print('All done.')
           PYEOF
