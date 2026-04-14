@@ -4,7 +4,7 @@ on:
   schedule:
     # Every hour at UTC :00 = Beijing 08:00 (market open)
     - cron: '0 * * * *'
-    # Every day at Beijing 00:00 (UTC 16:00) — always rebuild even if no price change
+    # Every day at Beijing 00:00 (UTC 16:00) -- always rebuild even if no price change
     - cron: '0 16 * * *'
   workflow_dispatch:
 
@@ -44,10 +44,10 @@ jobs:
             const now = new Date().toISOString().replace(/[:.]/g, '-');
             // Always update cache-bust timestamps in JSON fetch calls
             let updated = html
-              .replace(/fetch\('market\.json(?:\?[^']+)?'\)/g, \"fetch('market.json?v=\" + now + \"')\")
-              .replace(/fetch\(\"market\.json(?:\?[^'\"]+)?\"\)/g, 'fetch(\"market.json?v=' + now + '\")')
-              .replace(/fetch\('holdings\.json(?:\?[^']+)?'\)/g, \"fetch('holdings.json?v=\" + now + \"')\")
-              .replace(/fetch\(\"holdings\.json(?:\?[^'\"]+)?\"\)/g, 'fetch(\"holdings.json?v=' + now + '\")');
+              .replace(/fetch\('market\.json(?:\?[^']+)?'\)/g, "fetch('market.json?v=" + now + "')")
+              .replace(/fetch\("market\.json(?:\?[^'"]+)?"\)/g, 'fetch("market.json?v=' + now + '")')
+              .replace(/fetch\('holdings\.json(?:\?[^']+)?'\)/g, "fetch('holdings.json?v=" + now + "')")
+              .replace(/fetch\("holdings\.json(?:\?[^'"]+)?"\)/g, 'fetch("holdings.json?v=' + now + '")');
             fs.writeFileSync('index.html', updated);
             console.log('Cache-bust updated. File size:', updated.length);
           "
@@ -56,21 +56,21 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
+          echo "=== Git diagnostic ==="
+          which git || echo "git not found!"
+          git --version
+          echo "GH_PAT length: ${#GH_PAT}"
+          echo "======================"
+
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-
-          # Always stage index.html (cache-bust changes) + market.json (price changes)
           git add market.json index.html
 
-          # Commit message always includes timestamp
-          MSG=\"chore: Auto-update $(date -u +'%Y-%m-%d %H:%M UTC') [cache-bust]\"
-
-          # Check if anything actually changed
           if ! git diff --cached --quiet; then
-            echo \"Changes detected — committing and pushing\"
-            git commit -m \"$MSG\"
-            git pull --rebase origin main || true
-            git push https://x-access-token:$GH_PAT@github.com/hintime/cs2-dashboard.git HEAD:main
+            MSG="chore: Auto-update $(date -u +'%Y-%m-%d %H:%M UTC') [cache-bust]"
+            echo "Changes detected -- committing and pushing"
+            git commit -m "$MSG"
+            git push https://x-access-token:${GH_PAT}@github.com/hintime/cs2-dashboard.git HEAD:main
           else
-            echo \"No price change and no index.html change — skipped\"
+            echo "No changes -- skipped"
           fi
