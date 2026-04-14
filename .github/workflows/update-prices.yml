@@ -19,6 +19,20 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: Debug - show runner IP and DNS test
+        run: |
+          echo "=== Runner IP ==="
+          curl -s https://httpbin.org/ip || echo "curl failed"
+          echo ""
+          echo "=== DNS test for open.steampdt.com ==="
+          nslookup open.steampdt.com || echo "nslookup failed"
+          echo ""
+          echo "=== DNS test for api.steampdt.com ==="
+          nslookup api.steampdt.com || echo "nslookup failed"
+          echo ""
+          echo "=== curl SteamDT API ==="
+          curl -v --max-time 10 https://open.steampdt.com/ || echo "curl failed"
+
       - name: Fetch Prices & K-line Data
         env:
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
@@ -26,8 +40,9 @@ jobs:
 
       - name: Show result
         run: |
-          echo "=== market.json (first 2000 chars) ==="
-          head -c 2000 market.json
+          echo "=== market.json (first 3000 chars) ==="
+          cat market.json | head -c 3000
+          echo ""
           echo ""
           echo "File sizes:"
           wc -c market.json index.html
