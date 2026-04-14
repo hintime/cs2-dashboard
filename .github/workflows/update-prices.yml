@@ -22,91 +22,82 @@ jobs:
       - name: Fetch Prices & K-line Data
         env:
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: node update.mjs
 
       - name: Show result
         run: |
-          echo "=== market.json (first 3000 chars) ==="
-          cat market.json | head -c 3000
-          echo ""
-          echo "File sizes:"
-          wc -c market.json index.html
+          echo '```json'
+          cat market.json
+          echo ''
+          echo '```'
 
-      - name: Debug Network
+      - name: Network Diagnostics
         env:
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
         run: |
-          echo "=== Runner IP ===" > debug.log
-          curl -s https://httpbin.org/ip >> debug.log 2>&1
-          echo "" >> debug.log
-          echo "=== DNS: open.steampdt.com ===" >> debug.log
-          nslookup open.steampdt.com >> debug.log 2>&1 || echo "nslookup failed" >> debug.log
-          echo "" >> debug.log
-          echo "=== curl open.steampdt.com ===" >> debug.log
-          curl -v --max-time 15 https://open.steampdt.com/ >> debug.log 2>&1 || true
-          echo "" >> debug.log
-          echo "=== POST SteamDT API ===" >> debug.log
-          curl -s --max-time 15 -X POST https://open.steampdt.com/open/cs2/item/v1/item_price \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer $STEAMDT_KEY" \
-            -d '{"app_id":730,"currency":1,"item_name":"AK-47 | Redline (Field-Tested)"}' >> debug.log 2>&1
-          echo "" >> debug.log
-          echo "=== HTTP code ===" >> debug.log
-          curl -s -o /dev/null -w "HTTP:%{http_code}" https://open.steampdt.com/ >> debug.log 2>&1
+          {
+            echo '## CI Network Test Results'
+            echo ''
+            echo '### Runner Info'
+            echo '- Date (UTC): '$(date -u)
+            echo '- Runner IP test:'
+            curl -s --max-time 5 https://httpbin.org/ip || echo "(failed)"
+            echo ''
+            echo '### SteamDT root test'
+            curl -s -o /dev/null -w 'HTTP:%{http_code}' --max-time 10 https://open.steampdt.com/ || echo "(failed)"
+            echo ''
+            echo '### SteamDT K-line API'
+            curl -s --max-time 15 -X POST https://open.steampdt.com/open/cs2/item/v1/kline \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer '"$STEAMDT_KEY" \
+              -d '{"marketHashName":"AK-47 | Redline (Field-Tested)","type":2,"platform":"BUFF"}'
+            echo ''
+            echo '### CSQAQ API'
+            curl -s --max-time 10 'https://api.csqaq.com/api/v1/sub/kline?type=1day&id=1' \
+              -H 'ApiToken: HXGPY1R7L5W7K7F3O4K1E2N8'
+          } > diagnostics.txt
 
-      - name: Push all files via Python
+      - name: Write Summary
+        run: |
+          if [ -f diagnostics.txt ]; then
+            cp diagnostics.txt "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Push via Python
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           python3 - << 'PYEOF'
-import os, json, base64, urllib.request, urllib.error
+import base64, urllib.request, json, ssl, os, datetime
+
 token = os.environ['GH_PAT']
 repo = 'hintime/cs2-dashboard'
-headers = {
-    'Authorization': 'token ' + token,
-    'User-Agent': 'github-actions',
-    'Accept': 'application/vnd.github.v3+json',
-    'Content-Type': 'application/json'
-}
-ssl_ctx = __import__('ssl').create_default_context()
-ssl_ctx.check_hostname = False
-ssl_ctx.verify_mode = __import__('ssl').CERT_NONE
+hdr = {'Authorization': 'token ' + token, 'User-Agent': 'gh-actions', 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json'}
+sc = ssl.create_default_context(); sc.check_hostname=False; sc.verify_mode=ssl.CERT_NONE
 
 def get_sha(path):
-    req = urllib.request.Request(
-        'https://api.github.com/repos/' + repo + '/contents/' + path,
-        headers=headers
-    )
-    r = urllib.request.urlopen(req, timeout=15, context=ssl_ctx)
+    req = urllib.request.Request('https://api.github.com/repos/' + repo + '/contents/' + path, headers=hdr)
+    r = urllib.request.urlopen(req, timeout=15, context=sc)
     return json.loads(r.read())['sha']
 
-def update_file(path, msg):
-    try:
-        sha = get_sha(path)
-        print('sha for ' + path + ': ' + sha[:8])
-    except Exception as e:
-        print('get_sha error: ' + str(e) + ' -- proceeding without sha')
-        sha = None
-    content_bytes = open(path, 'rb').read()
-    b64 = base64.b64encode(content_bytes).decode('ascii')
+def put(path, data_str, msg):
+    try: sha = get_sha(path)
+    except: sha = None
+    b64 = base64.b64encode(data_str.encode()).decode('ascii')
     body = json.dumps({'message': msg, 'content': b64, 'sha': sha}).encode()
-    req = urllib.request.Request(
-        'https://api.github.com/repos/' + repo + '/contents/' + path,
-        data=body,
-        headers=headers,
-        method='PUT'
-    )
+    req = urllib.request.Request('https://api.github.com/repos/' + repo + '/contents/' + path, data=body, headers=hdr, method='PUT')
     try:
-        r = urllib.request.urlopen(req, timeout=15, context=ssl_ctx)
+        r = urllib.request.urlopen(req, timeout=15, context=sc)
         result = json.loads(r.read())
         print('OK ' + path + ': ' + result['commit']['sha'][:8])
     except urllib.error.HTTPError as e:
-        print('FAIL ' + path + ': HTTP ' + str(e.code) + ': ' + e.read().decode()[:200])
+        print('FAIL ' + path + ': ' + str(e.code) + ': ' + e.read().decode()[:200])
 
-import datetime
 ts = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-update_file('market.json', 'chore: Auto-update prices ' + ts)
-update_file('index.html', 'chore: Update index.html ' + ts)
-update_file('debug.log', 'chore: push debug log')
-print('All done.')
+put('market.json', open('market.json', 'r', errors='replace').read(), 'chore: Auto-update prices ' + ts)
+diag = open('diagnostics.txt', 'r', errors='replace').read() if os.path.exists('diagnostics.txt') else ''
+if diag:
+    put('diagnostics.txt', diag, 'chore: CI network diagnostics')
+print('Done.')
 PYEOF
