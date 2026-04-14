@@ -35,6 +35,7 @@ jobs:
 
 
       - name: Get Runner IP and test CSQAQ
+        continue-on-error: true
         run: |
           echo "=== Runner Info ==="
           RUNNER_IP=$(curl -s https://httpbin.org/ip 2>/dev/null || echo "unknown")
