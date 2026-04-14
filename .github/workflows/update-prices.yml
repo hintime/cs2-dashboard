@@ -33,6 +33,24 @@ jobs:
           echo "=== curl SteamDT API ==="
           curl -v --max-time 10 https://open.steampdt.com/ || echo "curl failed"
 
+
+      - name: Get Runner IP and test CSQAQ
+        run: |
+          echo "=== Runner Info ==="
+          RUNNER_IP=$(curl -s https://httpbin.org/ip 2>/dev/null || echo "unknown")
+          echo "Runner IP: $RUNNER_IP"
+          echo "runner_ip=$RUNNER_IP" >> $GITHUB_ENV
+          echo ""
+          echo "=== CSQAQ API Test ==="
+          CSQAQ_CODE=$(curl -s -w "%{http_code}" -o /tmp/csqaq_body.txt --max-time 10 \
+            "https://api.csqaq.com/api/v1/sub/kline?type=1day&id=1" \
+            -H "ApiToken: HXGPY1R7L5W7K7F3O4K1E2N8" \
+            -H "User-Agent: Mozilla/5.0" 2>/dev/null || echo "000")
+          echo "CSQAQ HTTP Code: $CSQAQ_CODE"
+          echo "csqaq_code=$CSQAQ_CODE" >> $GITHUB_ENV
+          echo "CSQAQ Response (first 500 chars):"
+          head -c 500 /tmp/csqaq_body.txt 2>/dev/null || echo "(no response body)"
+
       - name: Fetch Prices & K-line Data
         env:
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
