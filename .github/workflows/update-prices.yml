@@ -2,9 +2,7 @@ name: Update CS2 Prices
 
 on:
   schedule:
-    # Every hour at UTC :00 = Beijing 08:00 (market open)
     - cron: '0 * * * *'
-    # Every day at Beijing 00:00 (UTC 16:00) -- always rebuild even if no price change
     - cron: '0 16 * * *'
   workflow_dispatch:
 
@@ -30,47 +28,33 @@ jobs:
 
       - name: Show result
         run: |
-          echo "=== market.json (first 3000 chars) ==="
-          head -c 3000 market.json
+          echo "=== market.json (first 2000 chars) ==="
+          head -c 2000 market.json
           echo ""
-          echo "=== File size ==="
-          wc -c market.json
+          echo "=== File sizes ==="
+          wc -c market.json index.html
 
-      - name: Bump cache-bust & touch index.html to force Pages rebuild
-        run: |
-          node -e "
-            const fs = require('fs');
-            const html = fs.readFileSync('index.html', 'utf8');
-            const now = new Date().toISOString().replace(/[:.]/g, '-');
-            // Always update cache-bust timestamps in JSON fetch calls
-            let updated = html
-              .replace(/fetch\('market\.json(?:\?[^']+)?'\)/g, "fetch('market.json?v=" + now + "')")
-              .replace(/fetch\("market\.json(?:\?[^'"]+)?"\)/g, 'fetch("market.json?v=' + now + '")')
-              .replace(/fetch\('holdings\.json(?:\?[^']+)?'\)/g, "fetch('holdings.json?v=" + now + "')")
-              .replace(/fetch\("holdings\.json(?:\?[^'"]+)?"\)/g, 'fetch("holdings.json?v=' + now + '")');
-            fs.writeFileSync('index.html', updated);
-            console.log('Cache-bust updated. File size:', updated.length);
-          "
-
-      - name: Commit & Push
+      - name: Commit & Push via gh API
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          echo "=== Git diagnostic ==="
-          which git || echo "git not found!"
-          git --version
-          echo "GH_PAT length: ${#GH_PAT}"
-          echo "======================"
+          # Use gh CLI (pre-installed) with PAT auth
+          echo "$GH_PAT" | gh auth login --with-token
 
+          # Configure git
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add market.json index.html
 
-          if ! git diff --cached --quiet; then
-            MSG="chore: Auto-update $(date -u +'%Y-%m-%d %H:%M UTC') [cache-bust]"
-            echo "Changes detected -- committing and pushing"
-            git commit -m "$MSG"
-            git push https://x-access-token:${GH_PAT}@github.com/hintime/cs2-dashboard.git HEAD:main
+          # Check what changed
+          CHANGED=$(git status --porcelain)
+          echo "Changed files: $CHANGED"
+
+          if [ -n "$CHANGED" ]; then
+            git add market.json index.html
+            TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+            git commit -m "chore: Auto-update $TIMESTAMP"
+            git push
+            echo "Push done!"
           else
             echo "No changes -- skipped"
           fi
