@@ -47,7 +47,26 @@ jobs:
           echo "File sizes:"
           wc -c market.json index.html
 
+
+      - name: CSQAQ API Diagnostic
+        run: |
+          echo "=== CSQAQ IP Whitelist Test ===" >> $GITHUB_ENV
+          echo "=== Runner Date (UTC): $(date -u)" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "Testing CSQAQ daily endpoint..." >> $GITHUB_ENV
+          HTTP_CODE=$(curl -s -o /tmp/csqaq_response.json -w "%{http_code}" --max-time 15             "https://api.csqaq.com/api/v1/sub/kline?type=1day&id=1"             -H "ApiToken: HXGPY1R7L5W7K7F3O4K1E2N8"             -H "User-Agent: GitHubActions/1.0")
+          echo "HTTP Code: $HTTP_CODE" >> $GITHUB_ENV
+          echo "Response (first 500 chars):" >> $GITHUB_ENV
+          head -c 500 /tmp/csqaq_response.json >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "Done testing." >> $GITHUB_ENV
+          # Also show in step output
+          echo "CSQAQ HTTP Code: $HTTP_CODE"
+          echo "CSQAQ Response preview:"
+          head -c 300 /tmp/csqaq_response.json
+
       - name: Push via GitHub REST API
+
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
