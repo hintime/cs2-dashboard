@@ -137,6 +137,10 @@ try {
   }
 
   // === CSQAQ 大盘指数日K线 + 真实成交量 ===
+
+  if (process.env.GITHUB_ACTIONS) {
+    console.log("[CSQAQ] Skipped in CI (IP whitelist required)");
+  } else {
   try {
     const httpGet2 = (url) => new Promise((ok, fail) => {
       https.get(url, { headers: { 'ApiToken': 'HXGPY1R7L5W7K7F3O4K1E2N8', 'User-Agent': 'Mozilla/5.0' } }, res => {
@@ -195,6 +199,7 @@ try {
     console.log('[Index ERR]', e.message);
   }
 
+  } // end GITHUB_ACTIONS check
   fs.writeFileSync('market.json', JSON.stringify(data, null, 2));
   console.log('\n=== Done! market.json updated ===');
 } catch (e) {
