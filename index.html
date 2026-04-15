@@ -161,8 +161,9 @@ async function loadHoldings() {
       const t = CAT_MAP[item.category] || 'weapon';
       const w = item.wear ? item.wear.replace('崭新','FN').replace('略有磨损','FT').replace('久经沙场','FT').replace('略有磨损','FT').replace('受损','WW').replace('战痕累累','BS') : '';
       const q = item.qty || 1;
-      const cost = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost * q;
-      return {n:item.name,w:w,t:t,q:q,c:cost,p:item.price*q,pnl:item.price*q-cost,pnlPct:cost>0?(item.price*q-cost)/cost*100:0};
+      const cost = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost;
+      const mv = item.price;
+      return {n:item.name,w:w,t:t,q:q,c:cost,p:mv,pnl:mv-cost,pnlPct:cost>0?(mv-cost)/cost*100:0};
     });
   } catch(e) {
     console.error('Load failed',e);
