@@ -79,6 +79,12 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
 .foot{font-size:10px;color:var(--text3);text-align:center;padding:20px}
 .refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:6px 16px;border-radius:20px;cursor:pointer}
 .refresh-btn:hover{border-color:var(--blue);color:var(--blue)}
+.edit-cost{cursor:pointer;opacity:.4;margin-left:4px;font-size:11px;transition:opacity .2s}
+.edit-cost:hover{opacity:1}
+.cost-input{width:80px;background:var(--surface2);border:1px solid var(--blue);color:var(--text);padding:3px 6px;border-radius:4px;font-size:12px;font-family:'DM Mono',monospace;text-align:right;outline:none}
+.cost-input:focus{box-shadow:0 0 0 2px rgba(59,130,246,.3)}
+.export-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);color:var(--text3);font-size:11px;padding:4px 12px;border-radius:6px;cursor:pointer;margin-left:8px}
+.export-btn:hover{border-color:var(--blue);color:var(--blue)}
 </style>
 </head>
 <body>
@@ -123,7 +129,10 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
   <div class="panel">
     <div class="panel-head">
       <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
-      <div class="tabs" id="tabBar"></div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <div class="tabs" id="tabBar"></div>
+        <button class="export-btn" id="exportBtn" title="导出编辑后的 holdings.json">📥 导出</button>
+      </div>
     </div>
     <div style="overflow-x:auto">
       <table><thead><tr><th>饰品</th><th>磨损</th><th class="text-r">成本</th><th class="text-r">现价</th><th class="text-r">盈亏</th><th class="text-r">盈亏%</th></tr></thead><tbody id="tbody"></tbody></table>
@@ -143,6 +152,15 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
 <script>
 // ═══════════════ DATA ═══════════════
 let H = [];
+let costOverrides = {};  // {itemName: costPerUnit}
+const LS_KEY = 'cs2_cost_overrides';
+
+// Load overrides from localStorage
+try { costOverrides = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch(e) {}
+
+function saveOverrides() {
+  localStorage.setItem(LS_KEY, JSON.stringify(costOverrides));
+}
 
 // Category mapping
 const CAT_MAP = {'武器':'weapon','印花':'sticker','音乐':'music','agent':'agent'};
@@ -168,7 +186,8 @@ async function loadHoldings() {
       const costU = costTotal / q;
       const priceU = priceTotal / q;
       for (let i = 0; i < q; i++) {
-        H.push({n:item.name, w:w, t:t, q:1, c:costU, p:priceU, pnl:priceU-costU, pnlPct:costU>0?(priceU-costU)/costU*100:0});
+        const cU = costOverrides[item.name] || costU;
+        H.push({n:item.name, w:w, t:t, q:1, c:cU, p:priceU, pnl:priceU-cU, pnlPct:cU>0?(priceU-cU)/cU*100:0});
       }
     });
   } catch(e) {
@@ -239,10 +258,38 @@ function initDashboard() {
     const start = (curPage - 1) * PAGE_SIZE;
     const pageItems = items.slice(start, start + PAGE_SIZE);
     const tbody = document.getElementById('tbody');
-    tbody.innerHTML = pageItems.map(h => {
+    tbody.innerHTML = pageItems.map((h,idx) => {
       const pnlCls = h.pnl>=0?'clr-rise':'clr-fall';
-      return '<tr><td><div class="item-name">'+h.n+'</div></td><td><span class="wear-tag">'+h.w+'</span></td><td class="text-r mono">¥'+h.c.toFixed(2)+'</td><td class="text-r mono">¥'+h.p.toFixed(2)+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
+      const realIdx = start + idx;
+      const edited = costOverrides[h.n] !== undefined;
+      const costHtml = '<span class="cost-val">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'" title="编辑购入价">✏️</span>' + (edited?'<span style="color:var(--blue);font-size:9px;margin-left:2px">已改</span>':'');
+      return '<tr><td><div class="item-name">'+h.n+'</div></td><td><span class="wear-tag">'+h.w+'</span></td><td class="text-r mono">'+costHtml+'</td><td class="text-r mono">¥'+h.p.toFixed(2)+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
     }).join('');
+    // Edit cost handler
+    tbody.querySelectorAll('.edit-cost').forEach(btn => {
+      btn.onclick = function() {
+        const idx = +this.dataset.idx;
+        const item = H[idx];
+        const td = this.parentElement;
+        td.innerHTML = '<input class="cost-input" type="number" step="0.01" value="'+item.c.toFixed(2)+'" data-idx="'+idx+'">';
+        const inp = td.querySelector('.cost-input');
+        inp.focus();
+        inp.select();
+        function save() {
+          const val = parseFloat(inp.value);
+          if (!isNaN(val) && val >= 0) {
+            item.c = val;
+            item.pnl = item.p - val;
+            item.pnlPct = val > 0 ? (item.p - val) / val * 100 : 0;
+            costOverrides[item.n] = val;
+            saveOverrides();
+          }
+          refreshAll();
+        }
+        inp.onblur = save;
+        inp.onkeydown = function(e) { if(e.key==='Enter') save(); if(e.key==='Escape') refreshAll(); };
+      };
+    });
     const pager = document.getElementById('pager');
     if (totalPages <= 1) { pager.innerHTML = ''; return; }
     let html = '<button class="tab" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button>';
@@ -252,9 +299,65 @@ function initDashboard() {
     document.getElementById('pgPrev').onclick = () => { curPage--; render(); };
     document.getElementById('pgNext').onclick = () => { curPage++; render(); };
   }
-  render();
+  // Refresh KPI + sectors + table after cost edit
+  function refreshAll() {
+    const tc = H.reduce((s,h)=>s+h.c,0);
+    const tp = H.reduce((s,h)=>s+h.p,0);
+    const tpct = tc > 0 ? (tp-tc)/tc*100 : 0;
+    document.getElementById('totalValue').textContent = '¥' + tp.toLocaleString();
+    document.getElementById('totalValue').className = 'value ' + (tp>=tc?'rise':'fall');
+    document.getElementById('totalPnl').textContent = (tp>=tc?'+':'') + '¥' + (tp-tc).toLocaleString();
+    document.getElementById('totalPnl').className = 'value ' + (tp>=tc?'rise':'fall');
+    document.getElementById('totalPnlPct').textContent = (tp>=tc?'+':'') + tpct.toFixed(2) + '% · ' + Math.round(H.filter(h=>h.pnl>0).length/H.length*100) + '% 胜率';
+    document.getElementById('totalCost').textContent = '¥' + tc.toLocaleString();
+    // Refresh sectors
+    const sg = document.getElementById('sectorGrid');
+    sg.innerHTML = '';
+    Object.keys(CAT_META).forEach(key => {
+      const items = H.filter(h=>h.t===key);
+      const s = items.reduce((ss,hh)=>({c:ss.c+hh.c,p:ss.p+hh.p}),{c:0,p:0});
+      const pnl = s.p - s.c;
+      const pnlPct = s.c > 0 ? pnl/s.c*100 : 0;
+      sg.innerHTML += '<div class="sector"><div class="head"><span class="name">'+CAT_META[key].label+'</span><span class="count">'+items.length+'</span></div><div class="pnl '+(pnl>=0?'clr-rise':'clr-fall')+'">'+(pnl>=0?'+':'')+'¥'+pnl.toLocaleString()+'</div><div class="detail">成本 ¥'+s.c.toLocaleString()+' · '+(pnlPct>=0?'+':'')+pnlPct.toFixed(1)+'%</div><div class="bar"><div class="bar-fill '+(pnl>=0?'bar-rise':'bar-fall')+'" style="width:'+Math.min(Math.abs(pnlPct),100)+'%"></div></div></div>';
+    });
+    render();
+  }
 
-  // Charts
+  // Export holdings.json with edited costs
+  document.getElementById('exportBtn').onclick = function() {
+    // Rebuild items from H (group by name)
+    const grouped = {};
+    H.forEach(h => {
+      if (!grouped[h.n]) grouped[h.n] = {name:h.n, w:h.w, t:h.t, items:[]};
+      grouped[h.n].items.push(h);
+    });
+    const exportItems = Object.values(grouped).map(g => {
+      const q = g.items.length;
+      const cost = g.items.reduce((s,h)=>s+h.c,0);
+      const price = g.items.reduce((s,h)=>s+h.p,0);
+      const catMap = {weapon:'武器',sticker:'印花',music:'音乐',agent:'角色'};
+      const wearMap = {FN:'崭新出厂',FT:'略有磨损',WW:'受损',BS:'战痕累累'};
+      return {
+        name: g.name,
+        wear: wearMap[g.w] || 'other',
+        wear_value: null,
+        cost: Math.round(cost*100)/100,
+        price: Math.round(price*100)/100,
+        category: catMap[g.t] || '其他',
+        qty: q,
+        market_hash: ''
+      };
+    });
+    const tc = H.reduce((s,h)=>s+h.c,0);
+    const tp = H.reduce((s,h)=>s+h.p,0);
+    const blob = new Blob([JSON.stringify({update_time:new Date().toISOString().slice(0,10),total_cost:Math.round(tc*100)/100,total_market:Math.round(tp*100)/100,items:exportItems},null,2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'holdings.json';
+    a.click();
+  };
+
+  render();
   const chartFont = {color:'#52525b',family:"'DM Mono',sans-serif"};
   Chart.defaults.color = '#52525b';
   Chart.defaults.font.family = chartFont.family;
