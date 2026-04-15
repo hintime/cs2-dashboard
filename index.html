@@ -128,6 +128,7 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
     <div style="overflow-x:auto">
       <table><thead><tr><th>饰品</th><th>磨损</th><th class="text-r">成本</th><th class="text-r">现价</th><th class="text-r">盈亏</th><th class="text-r">盈亏%</th></tr></thead><tbody id="tbody"></tbody></table>
     </div>
+    <div id="pager" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:#71717a"></div>
   </div>
 
   <!-- Charts -->
@@ -157,13 +158,18 @@ async function loadHoldings() {
   try {
     const r = await fetch('holdings.json?v=2');
     const D = await r.json();
-    H = D.items.map(item => {
+    H = [];
+    D.items.forEach(item => {
       const t = CAT_MAP[item.category] || 'weapon';
       const w = item.wear ? item.wear.replace('崭新','FN').replace('略有磨损','FT').replace('久经沙场','FT').replace('略有磨损','FT').replace('受损','WW').replace('战痕累累','BS') : '';
       const q = item.qty || 1;
-      const cost = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost;
-      const mv = item.price;
-      return {n:item.name,w:w,t:t,q:q,c:cost,p:mv,pnl:mv-cost,pnlPct:cost>0?(mv-cost)/cost*100:0};
+      const costTotal = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost;
+      const priceTotal = item.price;
+      const costU = costTotal / q;
+      const priceU = priceTotal / q;
+      for (let i = 0; i < q; i++) {
+        H.push({n:item.name, w:w, t:t, q:1, c:costU, p:priceU, pnl:priceU-costU, pnlPct:costU>0?(priceU-costU)/costU*100:0});
+      }
     });
   } catch(e) {
     console.error('Load failed',e);
@@ -217,18 +223,34 @@ function initDashboard() {
       tb.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
       e.target.classList.add('on');
       curCat = e.target.dataset.cat;
+      curPage = 1;
       render();
     }
   };
 
+  let curPage = 1;
+  const PAGE_SIZE = 30;
+
   function render(){
     const items = curCat==='all' ? H : H.filter(h=>h.t===curCat);
     document.getElementById('countBadge').textContent = items.length;
+    const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+    if (curPage > totalPages) curPage = totalPages;
+    const start = (curPage - 1) * PAGE_SIZE;
+    const pageItems = items.slice(start, start + PAGE_SIZE);
     const tbody = document.getElementById('tbody');
-    tbody.innerHTML = items.map(h => {
+    tbody.innerHTML = pageItems.map(h => {
       const pnlCls = h.pnl>=0?'clr-rise':'clr-fall';
-      return '<tr><td><div class="item-name">'+h.n+(h.q>1?'<span class="wear-tag">x'+h.q+'</span>':'')+'</div></td><td><span class="wear-tag">'+h.w+'</span></td><td class="text-r mono">¥'+h.c.toLocaleString()+'</td><td class="text-r mono">¥'+h.p.toLocaleString()+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toLocaleString()+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
+      return '<tr><td><div class="item-name">'+h.n+'</div></td><td><span class="wear-tag">'+h.w+'</span></td><td class="text-r mono">¥'+h.c.toFixed(2)+'</td><td class="text-r mono">¥'+h.p.toFixed(2)+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
     }).join('');
+    const pager = document.getElementById('pager');
+    if (totalPages <= 1) { pager.innerHTML = ''; return; }
+    let html = '<button class="tab" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button>';
+    html += '<span>' + curPage + ' / ' + totalPages + ' 页</span>';
+    html += '<button class="tab" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
+    pager.innerHTML = html;
+    document.getElementById('pgPrev').onclick = () => { curPage--; render(); };
+    document.getElementById('pgNext').onclick = () => { curPage++; render(); };
   }
   render();
 
