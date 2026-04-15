@@ -154,12 +154,31 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
 let H = [];
 let costOverrides = {};  // {itemName: costPerUnit}
 const LS_KEY = 'cs2_cost_overrides';
-
-// Load overrides from localStorage
-try { costOverrides = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch(e) {}
+const CO_URL = 'cost-overrides.json?v=' + Date.now();  // bust cache
 
 function saveOverrides() {
   localStorage.setItem(LS_KEY, JSON.stringify(costOverrides));
+}
+
+// Load overrides: GitHub file → base, localStorage → override (takes precedence)
+async function loadOverrides() {
+  // 1. Load from GitHub repo (persistent, cross-browser)
+  try {
+    const r = await fetch(CO_URL);
+    if (r.ok) {
+      const remote = await r.json();
+      if (remote && typeof remote === 'object') {
+        Object.assign(costOverrides, remote);
+      }
+    }
+  } catch(e) {}
+  // 2. Load from localStorage (current session edits, takes precedence)
+  try {
+    const local = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    if (local && typeof local === 'object') {
+      Object.assign(costOverrides, local);
+    }
+  } catch(e) {}
 }
 
 // Category mapping
@@ -173,6 +192,7 @@ const CAT_META = {
 
 // Load holdings
 async function loadHoldings() {
+  await loadOverrides();
   try {
     const r = await fetch('holdings.json?v=2');
     const D = await r.json();
@@ -323,38 +343,14 @@ function initDashboard() {
     render();
   }
 
-  // Export holdings.json with edited costs
+  // Export cost-overrides.json for committing to GitHub
   document.getElementById('exportBtn').onclick = function() {
-    // Rebuild items from H (group by name)
-    const grouped = {};
-    H.forEach(h => {
-      if (!grouped[h.n]) grouped[h.n] = {name:h.n, w:h.w, t:h.t, items:[]};
-      grouped[h.n].items.push(h);
-    });
-    const exportItems = Object.values(grouped).map(g => {
-      const q = g.items.length;
-      const cost = g.items.reduce((s,h)=>s+h.c,0);
-      const price = g.items.reduce((s,h)=>s+h.p,0);
-      const catMap = {weapon:'武器',sticker:'印花',music:'音乐',agent:'角色'};
-      const wearMap = {FN:'崭新出厂',FT:'略有磨损',WW:'受损',BS:'战痕累累'};
-      return {
-        name: g.name,
-        wear: wearMap[g.w] || 'other',
-        wear_value: null,
-        cost: Math.round(cost*100)/100,
-        price: Math.round(price*100)/100,
-        category: catMap[g.t] || '其他',
-        qty: q,
-        market_hash: ''
-      };
-    });
-    const tc = H.reduce((s,h)=>s+h.c,0);
-    const tp = H.reduce((s,h)=>s+h.p,0);
-    const blob = new Blob([JSON.stringify({update_time:new Date().toISOString().slice(0,10),total_cost:Math.round(tc*100)/100,total_market:Math.round(tp*100)/100,items:exportItems},null,2)], {type:'application/json'});
+    const blob = new Blob([JSON.stringify(costOverrides, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'holdings.json';
+    a.download = 'cost-overrides.json';
     a.click();
+    alert('已下载 cost-overrides.json\n\n下一步：\n1. 打开 https://github.com/hintime/cs2-dashboard\n2. 点击 Add file → Upload files\n3. 上传 cost-overrides.json（覆盖旧文件）\n4. Commit\n\n这样换浏览器也能保留修改！');
   };
 
   render();
