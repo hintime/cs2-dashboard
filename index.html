@@ -42,16 +42,20 @@ body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:va
 .kpi .value.rise{color:var(--rise)}.kpi .value.fall{color:var(--fall)}
 .kpi .meta{font-size:11px;color:var(--text3);margin-top:6px}
 
-.sectors{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
-.sector{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
-.sector .head{display:flex;justify-content:space-between;margin-bottom:10px}
-.sector .name{font-size:12px;font-weight:700;color:var(--text2)}
-.sector .count{font-size:10px;color:var(--text3)}
-.sector .pnl{font-size:18px;font-weight:900;margin-top:8px}
-.sector .detail{font-size:10px;color:var(--text3);margin-top:4px}
-.sector .bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:8px;overflow:hidden}
-.sector .bar-fill{height:100%;border-radius:2px}
-.bar-rise{background:var(--rise)}.bar-fall{background:var(--fall)}
+.alerts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px}
+.alert-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;transition:border-color .2s}
+.alert-item:hover{border-color:var(--blue)}
+.alert-item.up{border-left:3px solid var(--fall)}
+.alert-item.down{border-left:3px solid var(--rise)}
+.alert-item.flat{border-left:3px solid var(--text3)}
+.alert-name{font-size:13px;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-row{display:flex;justify-content:space-between;align-items:baseline}
+.alert-price{font-size:18px;font-weight:900;font-family:'DM Mono',monospace}
+.alert-chg{font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
+.alert-vol{font-size:10px;color:var(--text3);margin-top:4px}
+.alert-bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:8px;overflow:hidden}
+.alert-bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.alert-up{color:var(--fall)}.alert-dn{color:var(--fall)}.alert-flat{color:var(--text3)}
 
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
 .panel-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
@@ -140,10 +144,10 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
     <div class="kpi"><div class="label">总成本</div><div class="value" id="totalCost">--</div><div class="meta">投入本金</div></div>
   </div>
 
-  <!-- Sectors -->
-  <div class="sectors" id="sectorGrid"></div>
+  <!-- 饰品异动 -->
+<div class="alerts" id="alertsGrid"></div>
 
-  <!-- Table -->
+<!-- Table -->
   <div class="panel">
     <div class="panel-head">
       <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
@@ -157,14 +161,6 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
       <table><thead><tr><th>饰品</th><th>磨损</th><th class="text-r">成本</th><th class="text-r">现价</th><th class="text-r">盈亏</th><th class="text-r">盈亏%</th></tr></thead><tbody id="tbody"></tbody></table>
     </div>
     <div id="pager" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:#71717a"></div>
-  </div>
-
-  <!-- Charts -->
-  <div class="charts">
-<div class="chart-box"><h3>品类分布</h3><canvas id="doughnut"></canvas></div>
-    <div class="chart-box"><h3>品类对比</h3><canvas id="bar"></canvas></div>
-  </div>
-
   <div class="foot">数据来源: SteamDT API · GitHub Pages</div>
 </div>
 
@@ -368,15 +364,6 @@ function initDashboard() {
   document.getElementById('totalCost').textContent = '¥' + tc.toLocaleString();
   document.getElementById('totalCount').textContent = H.length + ' 件';
 
-  // Sectors
-  const sg = document.getElementById('sectorGrid');
-  Object.keys(CAT_META).forEach(key => {
-    const items = H.filter(h=>h.t===key);
-    const s = items.reduce((ss,hh)=>({c:ss.c+hh.c,p:ss.p+hh.p}),{c:0,p:0});
-    const pnl = s.p - s.c;
-    const pnlPct = s.c > 0 ? pnl/s.c*100 : 0;
-    sg.innerHTML += '<div class="sector"><div class="head"><span class="name">'+CAT_META[key].label+'</span><span class="count">'+items.length+'</span></div><div class="pnl '+(pnl>=0?'clr-rise':'clr-fall')+'">'+(pnl>=0?'+':'')+'¥'+pnl.toLocaleString()+'</div><div class="detail">成本 ¥'+s.c.toLocaleString()+' · '+(pnlPct>=0?'+':'')+pnlPct.toFixed(1)+'%</div><div class="bar"><div class="bar-fill '+(pnl>=0?'bar-rise':'bar-fall')+'" style="width:'+Math.min(Math.abs(pnlPct),100)+'%"></div></div></div>';
-  });
 
   // Tabs
   const cats = [
@@ -465,16 +452,7 @@ function initDashboard() {
     document.getElementById('totalPnl').className = 'value ' + (tp>=tc?'rise':'fall');
     document.getElementById('totalPnlPct').textContent = (tp>=tc?'+':'') + tpct.toFixed(2) + '% · ' + Math.round(H.filter(h=>h.pnl>0).length/H.length*100) + '% 胜率';
     document.getElementById('totalCost').textContent = '¥' + tc.toLocaleString();
-    // Refresh sectors
-    const sg = document.getElementById('sectorGrid');
-    sg.innerHTML = '';
-    Object.keys(CAT_META).forEach(key => {
-      const items = H.filter(h=>h.t===key);
-      const s = items.reduce((ss,hh)=>({c:ss.c+hh.c,p:ss.p+hh.p}),{c:0,p:0});
-      const pnl = s.p - s.c;
-      const pnlPct = s.c > 0 ? pnl/s.c*100 : 0;
-      sg.innerHTML += '<div class="sector"><div class="head"><span class="name">'+CAT_META[key].label+'</span><span class="count">'+items.length+'</span></div><div class="pnl '+(pnl>=0?'clr-rise':'clr-fall')+'">'+(pnl>=0?'+':'')+'¥'+pnl.toLocaleString()+'</div><div class="detail">成本 ¥'+s.c.toLocaleString()+' · '+(pnlPct>=0?'+':'')+pnlPct.toFixed(1)+'%</div><div class="bar"><div class="bar-fill '+(pnl>=0?'bar-rise':'bar-fall')+'" style="width:'+Math.min(Math.abs(pnlPct),100)+'%"></div></div></div>';
-    });
+    // sectors removed
     render();
   }
 
@@ -493,34 +471,7 @@ function initDashboard() {
   Chart.defaults.color = '#52525b';
   Chart.defaults.font.family = chartFont.family;
 
-  // Doughnut
-  new Chart(document.getElementById('doughnut'),{
-    type:'doughnut',
-    data:{
-      labels:Object.values(CAT_META).map(m=>m.label),
-      datasets:[{
-        data:Object.keys(CAT_META).map(k=>H.filter(h=>h.t===k).reduce((s,h)=>s+h.c,0)),
-        backgroundColor:Object.values(CAT_META).map(m=>m.color+'26'),
-        borderColor:Object.values(CAT_META).map(m=>m.color),
-        borderWidth:2
-      }]
-    },
-    options:{cutout:'65%',plugins:{legend:{position:'right',labels:{padding:14}}}}
-  });
 
-  // Bar
-  const bk = Object.keys(CAT_META);
-  new Chart(document.getElementById('bar'),{
-    type:'bar',
-    data:{
-      labels:bk.map(k=>CAT_META[k].label),
-      datasets:[
-        {label:'成本',data:bk.map(k=>H.filter(h=>h.t===k).reduce((s,h)=>s+h.c,0)),backgroundColor:'#3b82f633',borderColor:'#3b82f6',borderWidth:1},
-        {label:'现价',data:bk.map(k=>H.filter(h=>h.t===k).reduce((s,h)=>s+h.p,0)),backgroundColor:bk.map(k=>{const s=H.filter(h=>h.t===k).reduce((ss,hh)=>({c:ss.c+hh.c,p:ss.p+hh.p}),{c:0,p:0});return s.p>=s.c?'#ef444433':'#22c55e33'}),borderColor:bk.map(k=>{const s=H.filter(h=>h.t===k).reduce((ss,hh)=>({c:ss.c+hh.c,p:ss.p+hh.p}),{c:0,p:0});return s.p>=s.c?'#ef4444':'#22c55e'}),borderWidth:1}
-      ]
-    },
-    options:{responsive:true,scales:{x:{grid:{display:false}},y:{grid:{color:'#1e2130'}}}}
-  });
 }
 
 // ═══════════════ MARKET INDEX ═══════════════
@@ -537,6 +488,26 @@ function initDashboard() {
     document.getElementById('marketSection').style.display = 'none';
   }
 })();
+
+function renderAlerts(D){
+  const items = D.items;
+  if(!items){return}
+  // Sort by absolute change % (biggest movers first)
+  const sorted = Object.entries(items).sort((a,b)=>Math.abs(b[1].change)-Math.abs(a[1].change));
+  const grid = document.getElementById('alertsGrid');
+  if(!grid){return}
+  if(sorted.length===0){grid.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px">暂无数据</div>';return}
+  grid.innerHTML=sorted.map(([key,item])=>{
+    const chg=item.change||0;
+    const absChg=Math.abs(chg);
+    const dir=chg>0?'up':chg<0?'down':'flat';
+    const cls=dir==='up'?'alert-up':dir==='down'?'alert-dn':'alert-flat';
+    const chgTxt=(chg>=0?'+':'')+chg.toFixed(2)+'%';
+    const barW=Math.min(absChg*10,100);
+    const barColor=dir==='up'?'var(--fall)':dir==='down'?'var(--rise)':'var(--text3)';
+    return '<div class="alert-item '+dir+'"><div class="alert-name" title="'+item.name_cn+'">'+item.name_cn+'</div><div class="alert-row"><span class="alert-price">¥'+item.latest+'</span><span class="alert-chg '+cls+'">'+chgTxt+'</span></div><div class="alert-vol">24h涨跌</div><div class="alert-bar"><div class="alert-bar-fill" style="width:'+barW+'%;background:'+barColor+'"></div></div></div>';
+  }).join('');
+}
 
 function renderMarket(D){
   var idx = D.index;
@@ -683,6 +654,8 @@ function renderMarket(D){
     },true);
   }
 
+  renderAlerts(D);
+
   document.getElementById('btnLine').onclick = renderLine;
   document.getElementById('btnCandle').onclick = renderCandle;
 
@@ -691,10 +664,6 @@ function renderMarket(D){
 
   window.onresize = function(){
     ec.resize();
-    var dc = Chart.getChart(document.getElementById("doughnut"));
-    if(dc) dc.resize();
-    var bc = Chart.getChart(document.getElementById("bar"));
-    if(bc) bc.resize();
   };
 }
 
