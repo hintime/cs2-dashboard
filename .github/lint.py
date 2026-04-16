@@ -83,20 +83,7 @@ def check_market():
     with open(MARKET, encoding="utf-8") as f:
         d = json.load(f)
 
-    # Check index (the main chart data)
-    idx = d.get("index", {})
-    if not idx:
-        raise ValueError("market.json: 'index' is missing or empty (main chart data)")
-    ohlc = idx.get("ohlc", [])
-    if not ohlc:
-        raise ValueError("market.json: index.ohlc is empty - main chart will be blank")
-    for candle in ohlc:
-        for field in ["open", "close", "high", "low"]:
-            v = candle.get(field)
-            if v is None:
-                raise ValueError("index.ohlc candle has null " + field)
-            if not isinstance(v, (int, float)):
-                raise ValueError("index.ohlc candle " + field + " not a number: " + str(v))
+    # K-line check removed (K-line feature disabled)
 
     # Check items - only the fields actually used by the frontend
     items = d.get("items", {})
