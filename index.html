@@ -541,7 +541,7 @@ async function initDashboard() {
 // star system: {good_id} → true/false, stored in localStorage
 const LS_STARRED = 'cs2_steam_starrings';
 let starred = JSON.parse(localStorage.getItem(LS_STARRED) || '{}');
-let alertsData = [];  // full alerts list from market.json.alerts
+let alertsData = marketData.alerts || [];  // full alerts list from market.json.alerts
 let currentTab = 'gainers';
 
 function saveStars() { localStorage.setItem(LS_STARRED, JSON.stringify(starred)); updateWatchCount(); }
@@ -592,9 +592,9 @@ function renderAlertsTab(tab) {
 
   let items = [];
   if (tab === 'gainers') {
-    items = [...alertsData].sort((a, b) => (b.change_rate_7 || 0) - (a.change_rate_7 || 0)).slice(0, 20);
+    items = [...alertsData].sort((a, b) => (a.rate_1 || 0) - (b.rate_1 || 0)).slice(0, 20);
   } else if (tab === 'losers') {
-    items = [...alertsData].sort((a, b) => (a.change_rate_7 || 0) - (b.change_rate_7 || 0)).slice(0, 20);
+    items = [...alertsData].sort((a, b) => (a.rate_1 || 0) - (b.rate_1 || 0)).slice(0, 20);
   } else if (tab === 'watch') {
     const watched = Object.entries(starred).filter(([,v]) => v).map(([k]) => +k);
     if (watched.length === 0) {
@@ -614,7 +614,7 @@ function renderAlertsTab(tab) {
   }
 
   grid.innerHTML = items.map((item, idx) => {
-    const chg = item.change_rate_7 || 0;
+    const chg = item.rate_1 || 0;
     const absChg = Math.abs(chg);
     const dir = chg > 0 ? 'up' : chg < 0 ? 'down' : 'flat';
     const chgTxt = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
@@ -642,7 +642,7 @@ function renderAlerts(D) {
       name: item.name_cn || item.name,
       name_cn: item.name_cn,
       price: item.latest,
-      change_rate_7: item.change || 0,
+      rate_1: item.change || 0,
       change_abs_7: item.change_abs_1 || 0,
     }));
   }
