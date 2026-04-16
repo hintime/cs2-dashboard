@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CS2 Dashboard 数据更新 - 纯标准库 urllib"""
+"""CS2 Dashboard 数据更新 - 纯标准库"""
 import os, json, time, base64, urllib.request, ssl
 from datetime import datetime as dt, timezone
 
@@ -9,7 +9,7 @@ CSQ_KEY = "HXGPY1R7L5W7K7F3O4K1E2N8"
 CSQ_BASE = "https://api.csqaq.com/api/v1"
 GH_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 REPO = "hintime/cs2-dashboard"
-API = "https://api.github.com/repos/" + REPO + "/contents/market.json"
+API_GH = "https://api.github.com/repos/" + REPO + "/contents/market.json"
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
@@ -18,26 +18,29 @@ ctx.verify_mode = ssl.CERT_NONE
 def log(msg):
     print("[" + dt.now().strftime("%H:%M:%S") + "] " + str(msg), flush=True)
 
-def post(url, body, headers=None):
-    data = json.dumps(body).encode("utf-8")
+def do_get(url, headers=None):
+    h = {}
+    if headers:
+        h.update(headers)
+    req = urllib.request.Request(url, headers=h)
+    with urllib.request.urlopen(req, context=ctx, timeout=15) as r:
+        return r.read()
+
+def do_post(url, body, headers=None):
     h = {"Content-Type": "application/json"}
     if headers:
         h.update(headers)
+    data = json.dumps(body).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers=h, method="POST")
     with urllib.request.urlopen(req, context=ctx, timeout=15) as r:
         return r.read()
 
-def get(url, headers=None):
-    req = urllib.request.Request(url, headers=headers or {})
-    with urllib.request.urlopen(req, context=ctx, timeout=15) as r:
-        return r.read()
+log("Token available: " + str(len(GH_TOKEN) > 0))
 
-log("Token: " + str(len(GH_TOKEN) > 0))
-
-# ===大盘指数===
+#大盘指数
 market_index = {}
 try:
-    raw = get(CSQ_BASE + "/market/summary", {"ApiToken": CSQ_KEY})
+    raw = do_get(CSQ_BASE + "/market/summary", {"ApiToken": CSQ_KEY})
     try:
         text = raw.decode("gbk")
     except:
@@ -51,7 +54,7 @@ try:
 except Exception as e:
     log("market_index failed: " + str(e))
 
-# ===K线===
+#K线
 TRACKED = [
     ("AK-47 | Redline (Field-Tested)", "AK-47 Redline FT"),
     ("AWP | Asiimov (Field-Tested)", "AWP Asiimov FT"),
@@ -65,7 +68,7 @@ for name_en, name_cn in TRACKED:
     log("Kline: " + name_cn)
     kline = []
     try:
-        raw = post(
+        raw = do_post(
             STEAM_BASE + "/open/cs2/item/v1/kline",
             {"marketHashName": name_en, "type": 2},
             {"Authorization": "Bearer " + STEAM_KEY}
@@ -90,15 +93,15 @@ for name_en, name_cn in TRACKED:
     time.sleep(0.5)
 log("Items: " + str(len(items)))
 
-# ===异动数据===
+#异动数据
 all_items = {}
 for _try in range(2):
-    for page in range(1, 3):
+    for page in [1, 2]:
         body = {"page_index": page, "page_size": 50,
             "filter": {"type": ["sticker", "normal"], "sort": ["price_up_1d"]},
             "show_recently_price": True}
         try:
-            raw = post(CSQ_BASE + "/info/get_rank_list", body, {"ApiToken": CSQ_KEY})
+            raw = do_post(CSQ_BASE + "/info/get_rank_list", body, {"ApiToken": CSQ_KEY})
             try:
                 text = raw.decode("gbk")
             except:
@@ -130,7 +133,7 @@ for name, item in all_items.items():
         "updated": item.get("updated", "")})
 alerts.sort(key=lambda x: x.get("rate_1", 0), reverse=True)
 
-# ===合并写入===
+#合并写入
 with open("market.json", "r", encoding="utf-8") as f:
     market = json.load(f)
 market["market_index"] = market_index
@@ -143,25 +146,22 @@ with open("market.json", "w", encoding="utf-8") as f:
     json.dump(market, f, ensure_ascii=False, indent=2)
 log("Written: items=" + str(len(items)) + " alerts=" + str(len(alerts)))
 
-# ===推送GitHub===
+#推送GitHub
 if GH_TOKEN:
-    content = json.dumps(market, ensure_ascii=False, indent=2)
-    encoded = base64.b64encode(content.encode("utf-8")).decode()
+    encoded = base64.b64encode(json.dumps(market, ensure_ascii=False, indent=2).encode("utf-8")).decode()
+    req = urllib.request.Request(API_GH + "?ref=main",
+        headers={"Authorization": "Bearer " + GH_TOKEN, "Accept": "application/vnd.github+json"})
     sha = None
     try:
-        req_sha = urllib.request.Request(API + "?ref=main",
-            headers={"Authorization": "Bearer " + GH_TOKEN, "Accept": "application/vnd.github+json"})
-        with urllib.request.urlopen(req_sha, context=ctx, timeout=10) as r:
+        with urllib.request.urlopen(req, context=ctx, timeout=10) as r:
             sha = json.loads(r.read().decode())["sha"]
     except Exception as e:
-        log("Get SHA: " + str(e))
-    body = {"message": "chore: update market data (" + dt.now().strftime("%m-%d %H:%M") + ")",
-        "content": encoded, "branch": "main"}
+        log("Get SHA error: " + str(e))
+    body = {"message": "chore: update market data (" + dt.now().strftime("%m-%d %H:%M") + ")", "content": encoded, "branch": "main"}
     if sha:
         body["sha"] = sha
-    req2 = urllib.request.Request(API, data=json.dumps(body).encode("utf-8"), method="PUT",
-        headers={"Authorization": "Bearer " + GH_TOKEN, "Accept": "application/vnd.github+json",
-                 "Content-Type": "application/json"})
+    req2 = urllib.request.Request(API_GH, data=json.dumps(body).encode("utf-8"), method="PUT",
+        headers={"Authorization": "Bearer " + GH_TOKEN, "Accept": "application/vnd.github+json", "Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req2, context=ctx, timeout=10) as r:
             result = json.loads(r.read().decode())
@@ -169,5 +169,5 @@ if GH_TOKEN:
     except Exception as e:
         log("Push failed: " + str(e))
 else:
-    log("No GITHUB_TOKEN")
+    log("No GITHUB_TOKEN available")
 log("Done!")
