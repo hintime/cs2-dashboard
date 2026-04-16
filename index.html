@@ -322,7 +322,12 @@ const CAT_META = {
 };
 
 // Load holdings
-async function loadHoldings() {
+async function wearCN(w){
+  const map={'FN':'崭新出厂','MW':'略有磨损','FT':'久经沙场','WW':'战地风云','BS':'破损不堪'};
+  return map[w]||w;
+}
+
+function loadHoldings() {
   await loadOverrides();
   try {
     const r = await fetch('holdings.json?v=2');
@@ -405,7 +410,7 @@ function initDashboard() {
       const realIdx = start + idx;
       const edited = costOverrides[h.n + '|' + h.w] !== undefined;
       const costHtml = '<span class="cost-val">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'" title="编辑购入价">✏️</span>' + (edited?'<span style="color:var(--blue);font-size:9px;margin-left:2px">已改</span>':'');
-      return '<tr><td><div class="item-name">'+h.n+'</div></td><td><span class="wear-tag">'+h.w+'</span></td><td class="text-r mono">'+costHtml+'</td><td class="text-r mono">¥'+h.p.toFixed(2)+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
+      return '<tr><td><div class="item-name">'+h.n+'</div></td><td><span class="wear-tag">'+wearCN(h.w)+'</span></td><td class="text-r mono">'+costHtml+'</td><td class="text-r mono">¥'+h.p.toFixed(2)+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
     }).join('');
     // Edit cost handler
     tbody.querySelectorAll('.edit-cost').forEach(btn => {
