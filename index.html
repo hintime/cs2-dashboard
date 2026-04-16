@@ -530,6 +530,7 @@ async function initDashboard() {
     if(D.update_time){
       document.getElementById('updateTime').textContent = new Date(D.update_time).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     }
+    marketData = D;
     renderMarket(D);
   }catch(e){
     console.warn('market.json load failed',e);
@@ -540,6 +541,7 @@ async function initDashboard() {
 // ═══════════════ ALERTS / MONITOR ═══════════════
 // star system: {good_id} → true/false, stored in localStorage
 const LS_STARRED = 'cs2_steam_starrings';
+let marketData = {};
 let starred = JSON.parse(localStorage.getItem(LS_STARRED) || '{}');
 let alertsData = marketData.alerts || [];  // full alerts list from market.json.alerts
 let currentTab = 'gainers';
