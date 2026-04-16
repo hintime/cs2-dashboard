@@ -188,7 +188,7 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
 <script>
 // ═══════════════ DATA ═══════════════
 let H = [];
-let costOverrides = {};  // {itemName: costPerUnit}
+let costOverrides = {};  // {'itemName|wear': costPerUnit}
 const LS_KEY = 'cs2_cost_overrides';
 const CO_URL = 'cost-overrides.json?v=' + Date.now();  // bust cache
 const GH_REPO = 'hintime/cs2-dashboard';
@@ -341,7 +341,7 @@ async function loadHoldings() {
       const costU = costTotal / q;
       const priceU = priceTotal / q;
       for (let i = 0; i < q; i++) {
-        const cU = costOverrides[item.name] || costU;
+        const cU = costOverrides[item.name + '|' + w] || costU;
         H.push({n:item.name, w:w, t:t, q:1, c:cU, p:priceU, pnl:priceU-cU, pnlPct:cU>0?(priceU-cU)/cU*100:0});
       }
     });
@@ -416,7 +416,7 @@ function initDashboard() {
     tbody.innerHTML = pageItems.map((h,idx) => {
       const pnlCls = h.pnl>=0?'clr-rise':'clr-fall';
       const realIdx = start + idx;
-      const edited = costOverrides[h.n] !== undefined;
+      const edited = costOverrides[h.n + '|' + h.w] !== undefined;
       const costHtml = '<span class="cost-val">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'" title="编辑购入价">✏️</span>' + (edited?'<span style="color:var(--blue);font-size:9px;margin-left:2px">已改</span>':'');
       return '<tr><td><div class="item-name">'+h.n+'</div></td><td><span class="wear-tag">'+h.w+'</span></td><td class="text-r mono">'+costHtml+'</td><td class="text-r mono">¥'+h.p.toFixed(2)+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
     }).join('');
@@ -436,7 +436,7 @@ function initDashboard() {
             item.c = val;
             item.pnl = item.p - val;
             item.pnlPct = val > 0 ? (item.p - val) / val * 100 : 0;
-            costOverrides[item.n] = val;
+            costOverrides[item.n + '|' + item.w] = val;
             saveOverrides();
           }
           refreshAll();
