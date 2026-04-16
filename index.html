@@ -57,6 +57,31 @@ body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:va
 .alert-bar-fill{height:100%;border-radius:2px;transition:width .4s}
 .alert-up{color:var(--fall)}.alert-dn{color:var(--fall)}.alert-flat{color:var(--text3)}
 
+/* ── Alerts Panel ── */
+.alert-card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
+.alert-card:hover{border-color:var(--blue);transform:translateY(-1px)}
+.alert-card.up{border-left:3px solid var(--fall)}
+.alert-card.down{border-left:3px solid var(--rise)}
+.alert-card .a-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:24px}
+.alert-card .a-meta{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px}
+.alert-card .a-price{font-size:17px;font-weight:900;font-family:'DM Mono',monospace}
+.alert-card .a-chg{font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
+.alert-card .a-chg.up{color:var(--fall)}.alert-card .a-chg.dn{color:var(--rise)}
+.alert-card .a-period{font-size:10px;color:var(--text3);margin-bottom:8px}
+.alert-card .a-bar{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.alert-card .a-bar-fill{height:100%;border-radius:2px;transition:width .5s}
+.alert-card .a-star{position:absolute;top:8px;right:10px;font-size:14px;cursor:pointer;opacity:.3;transition:opacity .2s;background:none;border:none;color:#f59e0b;padding:0;line-height:1}
+.alert-card .a-star:hover,.alert-card .a-star.on{opacity:1}
+.alert-card .a-tag{position:absolute;top:0;right:0;background:var(--rise);color:#fff;font-size:9px;padding:2px 6px 2px 8px;border-radius:0 10px 0 8px;font-weight:700;opacity:.9}
+
+/* Watch tab empty state */
+.watch-empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:13px}
+.watch-empty p{margin:8px 0 4px;font-size:15px;font-weight:600;color:var(--text2)}
+.watch-hint{font-size:11px;line-height:1.6;color:var(--text3)}
+
+/* Rank number badge */
+.a-rank{position:absolute;bottom:8px;right:10px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
 .panel-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
 .panel-head h2{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.5px}
@@ -85,6 +110,8 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
 .refresh-btn:hover{border-color:var(--blue);color:var(--blue)}
 .edit-cost{cursor:pointer;opacity:.4;margin-left:4px;font-size:11px;transition:opacity .2s}
 .edit-cost:hover{opacity:1}
+.row-star{background:none;border:none;color:#f59e0b;font-size:13px;cursor:pointer;padding:0 4px 0 0;line-height:1;opacity:.5;transition:opacity .2s}
+.row-star:hover{opacity:1}
 .cost-input{width:80px;background:var(--surface2);border:1px solid var(--blue);color:var(--text);padding:3px 6px;border-radius:4px;font-size:12px;font-family:'DM Mono',monospace;text-align:right;outline:none}
 .cost-input:focus{box-shadow:0 0 0 2px rgba(59,130,246,.3)}
 .export-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);color:var(--text3);font-size:11px;padding:4px 12px;border-radius:6px;cursor:pointer;margin-left:8px}
@@ -144,8 +171,24 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
     <div class="kpi"><div class="label">总成本</div><div class="value" id="totalCost">--</div><div class="meta">投入本金</div></div>
   </div>
 
-  <!-- 饰品异动 -->
-<div class="alerts" id="alertsGrid"></div>
+  <!-- 饰品异动监控 -->
+  <div class="panel" id="alertsPanel">
+    <div class="panel-head">
+      <h2>饰品异动 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px">自动扫描 · 全量监控</span></h2>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="tabs" id="alertsTabs">
+          <button class="tab on" data-tab="gainers">🔥 涨幅榜</button>
+          <button class="tab" data-tab="losers">📉 跌幅榜</button>
+          <button class="tab" data-tab="watch">⭐ 自选 <span id="watchCount" style="background:var(--blue);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px">0</span></button>
+        </div>
+        <span id="alertsUpdateTime" style="font-size:10px;color:var(--text3)"></span>
+      </div>
+    </div>
+    <div id="alertsContent" style="padding:12px 16px">
+      <div id="alertsLoading" style="color:var(--text3);font-size:12px;text-align:center;padding:20px">加载中...</div>
+      <div id="alertsGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+    </div>
+  </div>
 
 <!-- Table -->
   <div class="panel">
@@ -323,7 +366,7 @@ const CAT_META = {
 
 // Load holdings
 function wearCN(w){
-  const map={'FN':'崭新出厂','MW':'略有磨损','FT':'略有磨损','WW':'战地风云','BS':'久经沙场'};
+  const map={'FN':'崭新出厂','MW':'略有磨损','FT':'略有磨损','WW':'战地风云','BS':'久经沙场'};  // FN=崭新出厂 MW=略有磨损 FT=略有磨损 WW=战地风云 BS=久经沙场
   return map[w]||w;
 }
 
@@ -335,7 +378,7 @@ async function loadHoldings() {
     H = [];
     D.items.forEach(item => {
       const t = CAT_MAP[item.category] || 'weapon';
-      const w = item.wear ? item.wear.replace('崭新','FN').replace('略有磨损','FT').replace('久经沙场','FT').replace('略有磨损','FT').replace('受损','WW').replace('战痕累累','BS') : '';
+      const w = item.wear ? (item.wear.includes('崭新') ? 'FN' : item.wear.includes('略有磨损') ? 'FT' : item.wear.includes('久经沙场') ? 'FT' : item.wear.includes('受损') ? 'WW' : item.wear.includes('战痕累累') ? 'BS' : '') : '';
       const q = item.qty || 1;
       const costTotal = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost;
       const priceTotal = item.price;
@@ -343,7 +386,7 @@ async function loadHoldings() {
       const priceU = priceTotal / q;
       for (let i = 0; i < q; i++) {
         const cU = costOverrides[item.name + '|' + w] || costU;
-        H.push({n:item.name, w:w, t:t, q:1, c:cU, p:priceU, pnl:priceU-cU, pnlPct:cU>0?(priceU-cU)/cU*100:0});
+        H.push({n:item.name, w:w, t:t, q:1, c:cU, p:priceU, pnl:priceU-cU, pnlPct:cU>0?(priceU-cU)/cU*100:0, gid:item.good_id||0});
       }
     });
   } catch(e) {
@@ -410,7 +453,7 @@ async function initDashboard() {
       const realIdx = start + idx;
       const edited = costOverrides[h.n + '|' + h.w] !== undefined;
       const costHtml = '<span class="cost-val">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'" title="编辑购入价">✏️</span>' + (edited?'<span style="color:var(--blue);font-size:9px;margin-left:2px">已改</span>':'');
-      return '<tr><td><div class="item-name">'+h.n+'</div></td><td><span class="wear-tag">'+wearCN(h.w)+'</span></td><td class="text-r mono">'+costHtml+'</td><td class="text-r mono">¥'+h.p.toFixed(2)+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
+      return '<tr><td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'" onclick="if(h.gid){toggleStar(h.gid,\''+h.n.replace(/'/g,'\\' + "'")+'\')}else{alert('该物品暂无 good_id，请在异动榜中关注')}" style="background:none;border:none;color:#f59e0b;font-size:13px;cursor:pointer;padding:0 4px 0 0;line-height:1">'+ (h.gid && starred[h.gid] ? '★' : '☆') +'</button>'+h.n+'</div></td><td><span class="wear-tag">'+wearCN(h.w)+'</span></td><td class="text-r mono">'+costHtml+'</td><td class="text-r mono">¥'+h.p.toFixed(2)+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
     }).join('');
     // Edit cost handler
     tbody.querySelectorAll('.edit-cost').forEach(btn => {
@@ -494,25 +537,126 @@ async function initDashboard() {
   }
 })();
 
-function renderAlerts(D){
-  const items = D.items;
-  if(!items){return}
-  // Sort by absolute change % (biggest movers first)
-  const sorted = Object.entries(items).sort((a,b)=>Math.abs(b[1].change)-Math.abs(a[1].change));
+// ═══════════════ ALERTS / MONITOR ═══════════════
+// star system: {good_id} → true/false, stored in localStorage
+const LS_STARRED = 'cs2_steam_starrings';
+let starred = JSON.parse(localStorage.getItem(LS_STARRED) || '{}');
+let alertsData = [];  // full alerts list from market.json.alerts
+let currentTab = 'gainers';
+
+function saveStars() { localStorage.setItem(LS_STARRED, JSON.stringify(starred)); updateWatchCount(); }
+
+function updateWatchCount() {
+  const n = Object.keys(starred).filter(k => starred[k]).length;
+  const el = document.getElementById('watchCount');
+  if (el) el.textContent = n;
+}
+
+function toggleStar(goodId, name) {
+  starred[goodId] = !starred[goodId];
+  saveStars();
+  if (currentTab === 'watch') renderAlertsTab('watch');
+  // Update star button in table if present
+  document.querySelectorAll('.row-star[data-gid]').forEach(btn => {
+    if (+btn.dataset.gid === goodId) btn.textContent = starred[goodId] ? '★' : '☆';
+  });
+}
+
+// Load alerts from market.json.alerts
+async function loadAlerts() {
   const grid = document.getElementById('alertsGrid');
-  if(!grid){return}
-  if(sorted.length===0){grid.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px">暂无数据</div>';return}
-  grid.innerHTML=sorted.map(([key,item])=>{
-    const chg=item.change||0;
-    const absChg=Math.abs(chg);
-    const dir=chg>0?'up':chg<0?'down':'flat';
-    const cls=dir==='up'?'alert-up':dir==='down'?'alert-dn':'alert-flat';
-    const chgTxt=(chg>=0?'+':'')+chg.toFixed(2)+'%';
-    const barW=Math.min(absChg*10,100);
-    const barColor=dir==='up'?'var(--fall)':dir==='down'?'var(--rise)':'var(--text3)';
-    return '<div class="alert-item '+dir+'"><div class="alert-name" title="'+item.name_cn+'">'+item.name_cn+'</div><div class="alert-row"><span class="alert-price">¥'+item.latest+'</span><span class="alert-chg '+cls+'">'+chgTxt+'</span></div><div class="alert-vol">24h涨跌</div><div class="alert-bar"><div class="alert-bar-fill" style="width:'+barW+'%;background:'+barColor+'"></div></div></div>';
+  const loading = document.getElementById('alertsLoading');
+  try {
+    const r = await fetch('market.json');
+    const D = await r.json();
+    const alerts = D.alerts || [];
+    if (alerts.length === 0) throw new Error('no alerts');
+    alertsData = alerts;
+    if (D.update_time) {
+      const t = new Date(D.update_time).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+      const el = document.getElementById('alertsUpdateTime');
+      if (el) el.textContent = '更新 ' + t;
+    }
+    if (loading) loading.style.display = 'none';
+    renderAlertsTab('gainers');
+  } catch(e) {
+    if (loading) loading.textContent = '数据加载失败，请刷新重试';
+  }
+}
+
+// Render alerts grid for a given tab
+function renderAlertsTab(tab) {
+  currentTab = tab;
+  const grid = document.getElementById('alertsGrid');
+  if (!grid) return;
+
+  let items = [];
+  if (tab === 'gainers') {
+    items = [...alertsData].sort((a, b) => (b.change_rate_7 || 0) - (a.change_rate_7 || 0)).slice(0, 20);
+  } else if (tab === 'losers') {
+    items = [...alertsData].sort((a, b) => (a.change_rate_7 || 0) - (b.change_rate_7 || 0)).slice(0, 20);
+  } else if (tab === 'watch') {
+    const watched = Object.entries(starred).filter(([,v]) => v).map(([k]) => +k);
+    if (watched.length === 0) {
+      grid.innerHTML = '<div class="watch-empty"><p>⭐ 还没有自选饰品</p>在下方持仓表格中点击 ⭐ 关注你持有的饰品<br>或在涨幅/跌幅榜中点击 ⭐ 加入自选<button class="export-btn" onclick="loadAlerts()" style="margin-top:12px;font-size:12px">刷新异动数据</button></div>';
+      return;
+    }
+    items = alertsData.filter(a => watched.includes(a.good_id));
+    if (items.length === 0) {
+      grid.innerHTML = '<div class="watch-empty"><p>⭐ 自选饰品不在异动数据中</p>可能是 CSQAQ 排行榜未收录该物品<button class="export-btn" onclick="loadAlerts()" style="margin-top:12px;font-size:12px">刷新</button></div>';
+      return;
+    }
+  }
+
+  if (items.length === 0) {
+    grid.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px;text-align:center">暂无数据</div>';
+    return;
+  }
+
+  grid.innerHTML = items.map((item, idx) => {
+    const chg = item.change_rate_7 || 0;
+    const absChg = Math.abs(chg);
+    const dir = chg > 0 ? 'up' : chg < 0 ? 'down' : 'flat';
+    const chgTxt = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
+    const barW = Math.min(absChg * 4, 100);  // 25% = 100% bar
+    const barColor = dir === 'up' ? 'var(--fall)' : dir === 'down' ? 'var(--rise)' : 'var(--text3)';
+    const isStarred = starred[item.good_id];
+    const rank = tab !== 'watch' ? '<span class="a-rank">#' + (idx + 1) + '</span>' : '';
+    return '<div class="alert-card ' + dir + '" onclick="window.open(\'https://buff.163.com/market/cs2#tab=selling\', \'_blank\')">'
+      + rank
+      + '<button class="a-star ' + (isStarred ? 'on' : '') + '" onclick="event.stopPropagation();toggleStar(' + item.good_id + ',\'' + (item.name_cn || item.name).replace(/'/g, '\\' + "'") + '\')">' + (isStarred ? '★' : '☆') + '</button>'
+      + '<div class="a-name" title="' + (item.name_cn || item.name) + '">' + (item.name_cn || item.name) + '</div>'
+      + '<div class="a-meta"><span class="a-price">¥' + (item.price || '--') + '</span><span class="a-chg ' + dir + '">' + chgTxt + '</span></div>'
+      + '<div class="a-period">7日涨跌 · ' + (item.change_abs_7 >= 0 ? '+' : '') + '¥' + (item.change_abs_7 || 0).toFixed(2) + '</div>'
+      + '<div class="a-bar"><div class="a-bar-fill" style="width:' + barW + '%;background:' + barColor + '"></div></div>'
+      + '</div>';
   }).join('');
 }
+
+// Legacy compat: renderAlerts(D) still called by renderMarket
+function renderAlerts(D) {
+  // migrate D.items to alertsData
+  if (D.items) {
+    alertsData = Object.values(D.items).map(item => ({
+      good_id: item.good_id || 0,
+      name: item.name_cn || item.name,
+      name_cn: item.name_cn,
+      price: item.latest,
+      change_rate_7: item.change || 0,
+      change_abs_7: item.change_abs_1 || 0,
+    }));
+  }
+  renderAlertsTab(currentTab);
+}
+
+// Alerts tab switching
+document.getElementById('alertsTabs').onclick = function(e) {
+  const btn = e.target.closest('[data-tab]');
+  if (!btn) return;
+  this.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderAlertsTab(btn.dataset.tab);
+};
 
 function renderMarket(D){
   var idx = D.index;
@@ -675,6 +819,7 @@ function renderMarket(D){
 
 // Start
 loadHoldings().catch(console.error);
+loadAlerts();
 </script>
 </body>
 </html>
