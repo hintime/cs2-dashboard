@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""CS2 Dashboard Lint - Pre-commit validation for index.html and JSON files."""
-import json, sys, re, os
+"""CS2 Dashboard Lint - Pre-commit validation."""
+import json, sys, re
 
 errors = []
 warnings = []
@@ -43,8 +43,7 @@ def check_html_structure():
         raise ValueError("Modal HTML appears AFTER </script> - onclick handlers will fail!")
 
     # 2c. Critical elements must exist
-    required_ids = ["gearBtn", "tokenModal", "tokenSave"]
-    for rid in required_ids:
+    for rid in ["gearBtn", "tokenModal", "tokenSave"]:
         if 'id="' + rid + '"' not in content:
             raise ValueError("Missing required id=\"" + rid + "\"")
 
@@ -52,12 +51,11 @@ def check_html_structure():
     for m in re.finditer(r'<script>(.*?)</script>', content, re.DOTALL):
         src = m.group(1)
         for open_c, close_c in [("{", "}"), ("(", ")"), ("[", "]")]:
-            opens = src.count(open_c)
-            closes = src.count(close_c)
-            if opens != closes:
+            if src.count(open_c) != src.count(close_c):
                 raise ValueError(
                     "Script block: " + open_c + close_c + " imbalance: "
-                    + open_c + "=" + str(opens) + ", " + close_c + "=" + str(closes)
+                    + open_c + "=" + str(src.count(open_c))
+                    + ", " + close_c + "=" + str(src.count(close_c))
                 )
 
 # 3. holdings.json data sanity
@@ -66,30 +64,47 @@ def check_holdings():
         d = json.load(f)
     items = d.get("items", [])
     if not items:
-        warnings.append(HOLDINGS + ": items list is empty")
+        raise ValueError(HOLDINGS + ": items list is empty")
     for item in items:
         if "cost" not in item or "price" not in item:
             raise ValueError("Item missing cost/price field: " + str(item.get("name", "?")))
         if item["cost"] < 0 or item["price"] < 0:
             raise ValueError("Item has negative cost/price: " + str(item.get("name", "?")))
+        # qty should be >= 1
+        qty = item.get("qty", 1)
+        if not isinstance(qty, int) or qty < 1:
+            raise ValueError("Item qty invalid: " + str(item.get("name", "?")))
 
-# 4. market.json data sanity
+# 4. market.json - only check fields actually used by the frontend
+#    Frontend uses: index (ohlc/values/dates/latest/change/min/max),
+#    items[name].latest, items[name].name_cn
+#    Frontend does NOT use items[name].kline (stored but not rendered)
 def check_market():
     with open(MARKET, encoding="utf-8") as f:
         d = json.load(f)
-    if "items" not in d:
-        raise ValueError("market.json missing 'items' key")
-    for name, item in d["items"].items():
-        ohlc = item.get("ohlc", [])
-        if not ohlc:
-            warnings.append("market.json item '" + name + "': ohlc is empty")
-        for candle in ohlc:
-            for field in ["open", "close", "high", "low"]:
-                v = candle.get(field)
-                if v is None:
-                    warnings.append(name + " candle has null " + field)
-                elif not isinstance(v, (int, float)):
-                    raise ValueError(name + " candle " + field + " not a number: " + str(v))
+
+    # Check index (the main chart data)
+    idx = d.get("index", {})
+    if not idx:
+        raise ValueError("market.json: 'index' is missing or empty (main chart data)")
+    ohlc = idx.get("ohlc", [])
+    if not ohlc:
+        raise ValueError("market.json: index.ohlc is empty - main chart will be blank")
+    for candle in ohlc:
+        for field in ["open", "close", "high", "low"]:
+            v = candle.get(field)
+            if v is None:
+                raise ValueError("index.ohlc candle has null " + field)
+            if not isinstance(v, (int, float)):
+                raise ValueError("index.ohlc candle " + field + " not a number: " + str(v))
+
+    # Check items - only the fields actually used by the frontend
+    items = d.get("items", {})
+    if not items:
+        warnings.append("market.json: 'items' is empty - no price data")
+    for name, item in items.items():
+        if item.get("latest") is None:
+            warnings.append("market.json item '" + name + "': latest price is null")
 
 print("Lint: cs2-dashboard")
 check("holdings.json is valid JSON",       lambda: validate_json(HOLDINGS))
