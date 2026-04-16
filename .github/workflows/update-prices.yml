@@ -13,6 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Debug SteamDT API
+        run: |
+          echo "Testing SteamDT from CI..."
+          curl -s -X POST https://open.steamdt.com/open/cs2/item/v1/kline             -H "Authorization: Bearer $STEAMDT_KEY"             -H "Content-Type: application/json"             -d '{"marketHashName":"AK-47 | Redline (Field-Tested)","type":2}'             | python3 -c "import sys,json; d=json.load(sys.stdin); print('success:', d.get('success'), 'err:', d.get('errorCode'), d.get('errorMsg'), 'data_pts:', len(d.get('data',{})) if d.get('data') else 0)"
+
+          echo "Testing price API..."
+          curl -s "https://open.steamdt.com/open/cs2/v1/price/single?marketHashName=AK-47%20%7C%20Redline%20%28Field-Tested%29"             -H "Authorization: Bearer $STEAMDT_KEY"             | python3 -c "import sys,json; d=json.load(sys.stdin); print('success:', d.get('success'), 'data:', str(d.get('data'))[:200])"
+        env:
+          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
+
       - name: Update data
         run: python3 .github/update_data.py
         env:
