@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Run data update script
+      - name: Update data
         run: python3 .github/update_data.py
+        env:
+          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
