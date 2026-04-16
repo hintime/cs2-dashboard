@@ -322,12 +322,12 @@ const CAT_META = {
 };
 
 // Load holdings
-async function wearCN(w){
+function wearCN(w){
   const map={'FN':'崭新出厂','MW':'略有磨损','FT':'久经沙场','WW':'战地风云','BS':'破损不堪'};
   return map[w]||w;
 }
 
-function loadHoldings() {
+async function loadHoldings() {
   await loadOverrides();
   try {
     const r = await fetch('holdings.json?v=2');
@@ -353,10 +353,10 @@ function loadHoldings() {
       {n:'M4A4 都市DDPAT',w:'FN',t:'weapon',q:1,c:410,p:377.4,pnl:-32.6,pnlPct:-7.95}
     ];
   }
-  initDashboard();
+  await initDashboard();
 }
 
-function initDashboard() {
+async function initDashboard() {
   // Summary
   const tc = H.reduce((s,h)=>s+h.c,0);
   const tp = H.reduce((s,h)=>s+h.p,0);
@@ -674,7 +674,7 @@ function renderMarket(D){
 
 
 // Start
-loadHoldings();
+loadHoldings().catch(console.error);
 </script>
 </body>
 </html>
