@@ -1,0 +1,121 @@
+name: Update Alerts
+
+on:
+  schedule:
+    - cron: '30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch & Push Alerts
+        run: |
+          pip install requests
+          python << 'PYEOF'
+import requests, json, time, base64, urllib.request, ssl, urllib.error
+
+TOKEN_CSQ = "${{ secrets.CSQ_API_TOKEN }}"
+TOKEN_GH = "${{ secrets.GH_PAT }}"
+REPO = "hintime/cs2-dashboard"
+BASE_URL = "https://api.csqaq.com/api/v1/info/get_rank_list"
+API_GH = f"https://api.github.com/repos/{REPO}/contents/market.json"
+
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+
+headers = {"ApiToken": TOKEN_CSQ}
+
+def fetch_page(sort_key):
+    all_items = []
+    for page in [1, 2]:
+        body = {
+            "page_index": page, "page_size": 50,
+            "filter": {"type": ["sticker", "normal"], "sort": [sort_key]},
+            "show_recently_price": True
+        }
+        r = requests.post(BASE_URL, headers=headers, json=body, timeout=15)
+        raw = r.content
+        try:
+            text = raw.decode("gbk")
+        except:
+            text = raw.decode("utf-8", errors="replace")
+        d = json.loads(text)
+        items = d.get("data", {}).get("data", [])
+        all_items.extend(items)
+        time.sleep(1.2)
+    return all_items
+
+def fetch_rank(sort_key):
+    items = fetch_page(sort_key)
+    seen = {}
+    for item in items:
+        n = item.get("name", "").strip()
+        if n and n not in seen:
+            seen[n] = item
+    return list(seen.values())
+
+gainers = fetch_rank("price_up_1d")
+losers = fetch_rank("price_down_1d")
+
+all_items = {}
+for item in gainers + losers:
+    n = item.get("name", "").strip()
+    if n and n not in all_items:
+        all_items[n] = item
+
+alerts = []
+for name, item in all_items.items():
+    alerts.append({
+        "id": item.get("id", 0),
+        "name": name,
+        "exterior": item.get("exterior_localized_name", ""),
+        "rarity": item.get("rarity_localized_name", ""),
+        "price": float(item.get("buff_sell_price") or 0),
+        "price_1": float(item.get("recently_price_1") or 0),
+        "price_7": float(item.get("recently_price_7") or 0),
+        "rate_1": float(item.get("buff_price_chg") or 0),
+        "rate_7": float(item.get("sell_price_rate_7") or 0),
+        "rank_num": item.get("rank_num", 0),
+        "statistic": item.get("statistic", 0),
+        "img": item.get("img", ""),
+        "updated": item.get("updated", "")
+    })
+
+alerts.sort(key=lambda x: abs(x.get("rate_1", 0)), reverse=True)
+
+with open("market.json", "r", encoding="utf-8") as f:
+    market = json.load(f)
+market["alerts"] = alerts
+market["alerts_updated"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+with open("market.json", "w", encoding="utf-8") as f:
+    json.dump(market, f, ensure_ascii=False, indent=2)
+print(f"Written {len(alerts)} alerts")
+
+encoded = base64.b64encode(json.dumps(market, ensure_ascii=False, indent=2).encode("utf-8")).decode()
+
+req = urllib.request.Request(f"{API_GH}?ref=main",
+    headers={"Authorization": f"Bearer {TOKEN_GH}", "Accept": "application/vnd.github+json"})
+with urllib.request.urlopen(req, context=ctx, timeout=10) as r:
+    sha = json.loads(r.read().decode())["sha"]
+
+body = {"message": f"chore: update alerts {time.strftime('%m-%d %H:%M')}", "content": encoded, "branch": "main", "sha": sha}
+req2 = urllib.request.Request(API_GH,
+    data=json.dumps(body).encode("utf-8"), method="PUT",
+    headers={"Authorization": f"Bearer {TOKEN_GH}", "Accept": "application/vnd.github+json", "Content-Type": "application/json"})
+with urllib.request.urlopen(req2, context=ctx, timeout=10) as r:
+    result = json.loads(r.read().decode())
+    print("Pushed:", result.get("commit", {}).get("html_url", ""))
+PYEOF
