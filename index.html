@@ -168,6 +168,23 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
   <div class="foot">数据来源: SteamDT API · GitHub Pages</div>
 </div>
 
+<!-- Token Settings Modal -->
+<div class="modal-overlay" id="tokenModal">
+  <div class="modal">
+    <h3>⚙️ GitHub 自动同步设置</h3>
+    <p>配置 GitHub Token 后，编辑购入价会自动同步到仓库，换浏览器也不丢数据。<br>
+    Token 只需要 <b>repo</b> 权限（Fine-grained token 推荐，仅授权 cs2-dashboard 仓库）。<br>
+    <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--blue)">点此创建 Token →</a></p>
+    <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx 或 github_pat_xxxx">
+    <div id="tokenStatus" style="font-size:12px;margin-top:8px;color:var(--text3)"></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" id="tokenCancel">取消</button>
+      <button class="btn-secondary" id="tokenClear" style="color:#ef4444">清除 Token</button>
+      <button class="btn-primary" id="tokenSave">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════ DATA ═══════════════
 let H = [];
@@ -685,22 +702,5 @@ function renderMarket(D){
 // Start
 loadHoldings();
 </script>
-
-<!-- Token Settings Modal -->
-<div class="modal-overlay" id="tokenModal">
-  <div class="modal">
-    <h3>⚙️ GitHub 自动同步设置</h3>
-    <p>配置 GitHub Token 后，编辑购入价会自动同步到仓库，换浏览器也不丢数据。<br>
-    Token 只需要 <b>repo</b> 权限（Fine-grained token 推荐，仅授权 cs2-dashboard 仓库）。<br>
-    <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--blue)">点此创建 Token →</a></p>
-    <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx 或 github_pat_xxxx">
-    <div id="tokenStatus" style="font-size:12px;margin-top:8px;color:var(--text3)"></div>
-    <div class="modal-btns">
-      <button class="btn-secondary" id="tokenCancel">取消</button>
-      <button class="btn-secondary" id="tokenClear" style="color:#ef4444">清除 Token</button>
-      <button class="btn-primary" id="tokenSave">保存</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
