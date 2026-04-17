@@ -1,0 +1,26 @@
+name: Update ECO Prices
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # 每小时更新
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deps
+        run: pip install pycryptodome
+
+      - name: Update holdings prices
+        env:
+          ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
+        run: python update_prices_eco.py
