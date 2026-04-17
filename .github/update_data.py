@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Fetch CSQAQ alerts and push to market.json"""
-import urllib.request, json, ssl, base64, time, os
+"""Fetch CSQAQ alerts + SteamDT K-lines and push to market.json"""
+import urllib.request, json, ssl, base64, time, os, socket
 from datetime import datetime, timezone
 
 ctx = ssl.create_default_context()
@@ -12,27 +12,98 @@ GH_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 STEAM_KEY = os.environ.get("STEAMDT_KEY", "")
 REPO = "hintime/cs2-dashboard"
 
+# SteamDT: use IP direct to bypass DNS issues in CI
+STEAMDT_HOST = "open.steamdt.com"
+STEAMDT_IP = "8.153.108.156"  # Resolved locally
+
 def log(msg):
     print("[ok] " + str(msg), flush=True)
 
-# --- IP 检测步骤 ---
+def steamdt_request(path, body=None):
+    """Make request to SteamDT using IP direct + Host header"""
+    url = f"https://{STEAMDT_IP}{path}"
+    headers = {
+        "Host": STEAMDT_HOST,
+        "Authorization": f"Bearer {STEAM_KEY}",
+        "User-Agent": "Mozilla/5.0",
+        "Content-Type": "application/json"
+    }
+    if body:
+        req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=headers, method="POST")
+    else:
+        req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=15, context=ctx) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except Exception as e:
+        return {"success": False, "errorMsg": str(e)}
+
+# --- IP 检测 ---
 log("=== CI Runner IP 检测 ===")
 try:
     req_ip = urllib.request.Request("https://api.ipify.org", headers={"User-Agent": "curl/7.68.0"})
     with urllib.request.urlopen(req_ip, timeout=10, context=ctx) as r:
         ip = r.read().decode().strip()
         log(f"CI Runner IP: {ip}")
-        # 同时查 SteamDT DNS
-    log("SteamDT DNS 解析:")
-    import socket
-    try:
-        ips = socket.getaddrinfo("open.steampdt.com", 443)
-        for r in ips:
-            log(f"  -> {r[4][0]}")
-    except Exception as e:
-        log(f"  DNS failed: {e}")
 except Exception as e:
     log(f"IP 检测失败: {e}")
+
+# --- SteamDT K-lines ---
+log("Fetching SteamDT K-lines...")
+ITEMS = [
+    "AK-47 | Redline (Field-Tested)",
+    "AWP | Asiimov (Field-Tested)",
+    "M4A4 | Asiimov (Battle-Scarred)",
+    "M4A1-S | Mecha-Industries (Field-Tested)",
+    "USP-S | Kill Confirmed (Field-Tested)",
+    "Glock-18 | Fade (Factory New)"
+]
+
+kline_data = {}
+for name in ITEMS:
+    log(f"  K-line: {name[:30]}...")
+    resp = steamdt_request("/open/cs2/item/v1/kline", {
+        "marketHashName": name,
+        "type": 2,  # Daily K
+        "platform": "BUFF"
+    })
+    if resp.get("success"):
+        raw = resp.get("data", [])
+        # Parse K-line: data is [[{ts, o, c, h, l, v}, ...]]
+        if raw and isinstance(raw, list) and len(raw) > 0:
+            # raw[0] is the array of points
+            points = raw[0] if isinstance(raw[0], list) else raw
+            parsed = []
+            for p in points:
+                if isinstance(p, dict):
+                    parsed.append([p.get("t", 0), p.get("o", 0), p.get("h", 0), p.get("l", 0), p.get("c", 0), p.get("v", 0)])
+                elif isinstance(p, list) and len(p) >= 5:
+                    # Format: [ts, open, close, high, low] or [ts, open, high, low, close]
+                    parsed.append([p[0], p[1], p[3] if len(p) > 3 else p[1], p[4] if len(p) > 4 else p[1], p[2] if len(p) > 2 else p[1], 0])
+            kline_data[name] = parsed
+            log(f"    -> {len(parsed)} points")
+        else:
+            log(f"    -> no data")
+    else:
+        log(f"    -> failed: {resp.get('errorMsg', '?')}")
+
+# --- SteamDT prices ---
+log("Fetching SteamDT prices...")
+price_data = {}
+for name in ITEMS:
+    resp = steamdt_request(f"/open/cs2/v1/price/single?marketHashName={urllib.parse.quote(name)}")
+    if resp.get("success"):
+        data = resp.get("data", [])
+        if data:
+            # Find BUFF price
+            for p in data:
+                if p.get("platform") == "BUFF":
+                    price_data[name] = {
+                        "price": p.get("sellPrice", 0),
+                        "count": p.get("sellCount", 0)
+                    }
+                    log(f"  {name[:30]}: ¥{p.get('sellPrice', 0)}")
+                    break
 
 # --- CSQAQ 异动数据 ---
 log("Fetching CSQAQ alerts...")
@@ -73,41 +144,54 @@ for page in range(1, 5):
                     "rarity": item.get("rarity_localized_name", ""),
                     "rank_num": item.get("rank_num", 0) or 0,
                 })
-        log("page " + str(page) + ": total=" + str(len(all_alerts)))
+        log(f"CSQAQ page {page}: total={len(all_alerts)}")
         if len(items) < 25:
             break
     except Exception as e:
         log(f"CSQAQ page {page} failed: {e}")
-        break
     time.sleep(1.2)
 
-log("CSQAQ alerts: " + str(len(all_alerts)))
+log(f"CSQAQ alerts: {len(all_alerts)}")
 
-# Load market.json from GitHub
+# --- Load and update market.json ---
 req_mj = urllib.request.Request(
-    "https://api.github.com/repos/" + REPO + "/contents/market.json?ref=main",
-    headers={"Authorization": "Bearer " + GH_TOKEN, "Accept": "application/vnd.github+json"}
+    f"https://api.github.com/repos/{REPO}/contents/market.json?ref=main",
+    headers={"Authorization": f"Bearer {GH_TOKEN}", "Accept": "application/vnd.github+json"}
 )
 with urllib.request.urlopen(req_mj, context=ctx, timeout=10) as r:
     mj_data = json.loads(r.read().decode())
     mj_content = json.loads(base64.b64decode(mj_data["content"]).decode("utf-8"))
 
+# Update alerts
 mj_content["alerts"] = all_alerts
 mj_content["alerts_updated"] = datetime.now(timezone.utc).isoformat()
 
-items_count = len(mj_content.get("items", []))
-log("Existing items (K-lines): " + str(items_count))
+# Update items with K-lines and prices
+items_list = mj_content.get("items", [])
+for item in items_list:
+    name = item.get("name", "")
+    if name in kline_data:
+        item["kline"] = kline_data[name]
+    if name in price_data:
+        item["price"] = price_data[name]["price"]
+        item["count"] = price_data[name]["count"]
 
+mj_content["items"] = items_list
+mj_content["items_updated"] = datetime.now(timezone.utc).isoformat()
+
+log(f"Items with K-lines: {sum(1 for i in items_list if i.get('kline'))}")
+
+# --- Push to GitHub ---
 new_content = base64.b64encode(
     json.dumps(mj_content, ensure_ascii=False, indent=2).encode("utf-8")
 ).decode()
 
 sha = mj_data["sha"]
 req_push = urllib.request.Request(
-    "https://api.github.com/repos/" + REPO + "/contents/market.json",
-    data=json.dumps({"message": "fix: CSQAQ alerts UTF-8 decode", "content": new_content, "sha": sha, "branch": "main"}).encode("utf-8"),
+    f"https://api.github.com/repos/{REPO}/contents/market.json",
+    data=json.dumps({"message": "update: K-lines + alerts", "content": new_content, "sha": sha, "branch": "main"}).encode("utf-8"),
     method="PUT",
-    headers={"Authorization": "Bearer " + GH_TOKEN, "Accept": "application/vnd.github+json", "Content-Type": "application/json"}
+    headers={"Authorization": f"Bearer {GH_TOKEN}", "Accept": "application/vnd.github+json", "Content-Type": "application/json"}
 )
 try:
     with urllib.request.urlopen(req_push, context=ctx, timeout=10) as r:
@@ -116,4 +200,4 @@ try:
 except Exception as e:
     log(f"Push failed: {e}")
 
-log("Done! alerts=" + str(len(all_alerts)))
+log(f"Done! alerts={len(all_alerts)}, items={len(items_list)}")
