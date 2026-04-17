@@ -362,8 +362,8 @@ async function loadAll() {
   await loadOverrides();
 
   const [holdingsR, marketR] = await Promise.all([
-    fetch('holdings.json?v=3').then(r => r.json()).catch(() => null),
-    fetch('market.json').then(r => r.json()).catch(() => null)
+    fetch('holdings.json?v=' + Date.now()).then(r => r.json()).catch(() => null),
+    fetch('market.json?v=' + Date.now()).then(r => r.json()).catch(() => null)
   ]);
 
   // ── Process holdings ──
