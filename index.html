@@ -3,11 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>CS2 饰品投资看板 · v2026.04.11</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<title>CS2 饰品投资看板 · v2026.04.18</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <style>
 :root{--bg:#0a0c10;--surface:#12151c;--surface2:#1a1e28;--border:#252a36;--text:#e4e4e7;--text2:#a1a1aa;--text3:#52525b;--fall:#22c55e;--rise:#ef4444;--blue:#3b82f6}
@@ -43,21 +39,6 @@ body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:va
 .kpi .meta{font-size:11px;color:var(--text3);margin-top:6px}
 
 .alerts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px}
-.alert-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;transition:border-color .2s}
-.alert-item:hover{border-color:var(--blue)}
-.alert-item.up{border-left:3px solid var(--fall)}
-.alert-item.down{border-left:3px solid var(--rise)}
-.alert-item.flat{border-left:3px solid var(--text3)}
-.alert-name{font-size:13px;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.alert-row{display:flex;justify-content:space-between;align-items:baseline}
-.alert-price{font-size:18px;font-weight:900;font-family:'DM Mono',monospace}
-.alert-chg{font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
-.alert-vol{font-size:10px;color:var(--text3);margin-top:4px}
-.alert-bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:8px;overflow:hidden}
-.alert-bar-fill{height:100%;border-radius:2px;transition:width .4s}
-.alert-up{color:var(--fall)}.alert-dn{color:var(--fall)}.alert-flat{color:var(--text3)}
-
-/* ── Alerts Panel ── */
 .alert-card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
 .alert-card:hover{border-color:var(--blue);transform:translateY(-1px)}
 .alert-card.up{border-left:3px solid var(--fall)}
@@ -73,14 +54,10 @@ body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:va
 .alert-card .a-star{position:absolute;top:8px;right:10px;font-size:14px;cursor:pointer;opacity:.3;transition:opacity .2s;background:none;border:none;color:#f59e0b;padding:0;line-height:1}
 .alert-card .a-star:hover,.alert-card .a-star.on{opacity:1}
 .alert-card .a-tag{position:absolute;top:0;right:0;background:var(--rise);color:#fff;font-size:9px;padding:2px 6px 2px 8px;border-radius:0 10px 0 8px;font-weight:700;opacity:.9}
+.a-rank{position:absolute;bottom:8px;right:10px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 
-/* Watch tab empty state */
 .watch-empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:13px}
 .watch-empty p{margin:8px 0 4px;font-size:15px;font-weight:600;color:var(--text2)}
-.watch-hint{font-size:11px;line-height:1.6;color:var(--text3)}
-
-/* Rank number badge */
-.a-rank{position:absolute;bottom:8px;right:10px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
 .panel-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
@@ -91,25 +68,17 @@ body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:va
 .tab.on{color:var(--blue);background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.2)}
 
 table{width:100%;border-collapse:collapse}
-thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:600;padding:10px 16px;background:var(--surface);position:sticky;top:0;z-index:2;border-bottom:1px solid var(--border)}
+thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:600;padding:10px 16px;background:var(--surface);position:sticky;top:0;z-index:2;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+thead th:hover{background:var(--surface2)}
 tbody td{padding:10px 16px;border-bottom:1px solid rgba(37,42,54,.5);font-size:13px}
 tbody tr{transition:background .15s}
 tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
 tbody tr:hover{background:rgba(59,130,246,.08)}
 .item-name{font-weight:600}
-.item-sub{font-size:10px;color:var(--text3);margin-top:2px}
 .wear-tag{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 6px;border-radius:4px;margin-left:6px;font-family:'DM Mono',monospace}
 .text-r{text-align:right}
-thead th{cursor:pointer;user-select:none}
-thead th:hover{background:var(--surface2)}
-.sort-asc::after{content:' ↑'}
-.sort-desc::after{content:' ↓'}
+.sort-asc::after{content:' ↑'}.sort-desc::after{content:' ↓'}
 .clr-rise{color:var(--rise)}.clr-fall{color:var(--fall)}.mono{font-family:'DM Mono',monospace}
-
-.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
-.chart-box h3{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:16px}
-.chart-box.wide{grid-column:span 2}
 
 .foot{font-size:10px;color:var(--text3);text-align:center;padding:20px}
 .refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:6px 16px;border-radius:20px;cursor:pointer}
@@ -125,9 +94,8 @@ thead th:hover{background:var(--surface2)}
 .gear-btn{display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid var(--border);color:var(--text3);font-size:14px;width:28px;height:28px;border-radius:6px;cursor:pointer;margin-left:4px}
 .gear-btn:hover{border-color:var(--blue);color:var(--blue)}
 .sync-status{font-size:10px;color:var(--text3);margin-left:4px;opacity:0;transition:opacity .3s}
-.sync-status.show{opacity:1}
-.sync-status.ok{color:#22c55e}
-.sync-status.err{color:#ef4444}
+.sync-status.show{opacity:1}.sync-status.ok{color:#22c55e}.sync-status.err{color:#ef4444}
+
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.show{opacity:1;pointer-events:auto}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:420px;max-width:90vw}
@@ -145,8 +113,8 @@ thead th:hover{background:var(--surface2)}
 <div class="container">
   <div class="header">
     <div>
-      <h1>CS2 饰品投资看板 <span style="font-size:14px;color:var(--text3)">v2026.04.11</span></h1>
-      <div class="sub">数据来源: SteamDT API · GitHub Pages</div>
+      <h1>CS2 饰品投资看板 <span style="font-size:14px;color:var(--text3)">v2026.04.18</span></h1>
+      <div class="sub">数据来源: ECOSteam · GitHub Pages</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <button class="refresh-btn" onclick="location.reload()">刷新</button>
@@ -156,28 +124,25 @@ thead th:hover{background:var(--surface2)}
     </div>
   </div>
 
-  <!-- Market Index -->
   <div class="market-index" id="marketSection">
     <div class="mi-header">
       <span class="mi-title">CS2 大盘指数</span>
-      <div id="miValue"><span class="mi-num" id="miNum">--</span><span class="mi-chg" id="miChg">--</span></div>
+      <div><span class="mi-num" id="miNum">--</span><span class="mi-chg" id="miChg">--</span></div>
     </div>
     <div id="miPeriod" style="display:flex;gap:6px;margin-bottom:14px">
-      <button class="tab on" id="btnLine" style="font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)">折线图</button>
-      <button class="tab" id="btnCandle" style="font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)">K线图</button>
+      <button class="tab on" id="btnLine">折线图</button>
+      <button class="tab" id="btnCandle">K线图</button>
     </div>
     <div class="mi-chart" id="indexChart"></div>
     <div class="mi-items" id="miItems"></div>
   </div>
 
-  <!-- KPI -->
   <div class="kpi-strip">
     <div class="kpi"><div class="label">总价值</div><div class="value" id="totalValue">--</div><div class="meta" id="totalCount">-- 件</div></div>
     <div class="kpi"><div class="label">总盈亏</div><div class="value" id="totalPnl">--</div><div class="meta" id="totalPnlPct">--</div></div>
     <div class="kpi"><div class="label">总成本</div><div class="value" id="totalCost">--</div><div class="meta">投入本金</div></div>
   </div>
 
-  <!-- 饰品异动监控 -->
   <div class="panel" id="alertsPanel">
     <div class="panel-head">
       <h2>饰品异动 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px">自动扫描 · 全量监控</span></h2>
@@ -196,7 +161,6 @@ thead th:hover{background:var(--surface2)}
     </div>
   </div>
 
-<!-- Table -->
   <div class="panel">
     <div class="panel-head">
       <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
@@ -210,10 +174,11 @@ thead th:hover{background:var(--surface2)}
       <table><thead><tr><th data-col="n">饰品</th><th data-col="w">磨损</th><th data-col="c" class="text-r">成本</th><th data-col="p" class="text-r">现价</th><th data-col="pnl" class="text-r">盈亏</th><th data-col="pnlPct" class="text-r">盈亏%</th></tr></thead><tbody id="tbody"></tbody></table>
     </div>
     <div id="pager" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:#71717a"></div>
-  <div class="foot">数据来源: SteamDT API · GitHub Pages</div>
+  </div>
+
+  <div class="foot">数据来源: ECOSteam · GitHub Pages</div>
 </div>
 
-<!-- Token Settings Modal -->
 <div class="modal-overlay" id="tokenModal">
   <div class="modal">
     <h3>⚙️ GitHub 自动同步设置</h3>
@@ -231,503 +196,446 @@ thead th:hover{background:var(--surface2)}
 </div>
 
 <script>
-// ═══════════════ DATA ═══════════════
+(function(){
+'use strict';
+
+// ═══════════════ DOM CACHE ═══════════════
+const $ = id => document.getElementById(id);
+const DOM = {
+  miNum:$('miNum'), miChg:$('miChg'), miItems:$('miItems'),
+  totalValue:$('totalValue'), totalPnl:$('totalPnl'), totalPnlPct:$('totalPnlPct'),
+  totalCost:$('totalCost'), totalCount:$('totalCount'),
+  countBadge:$('countBadge'), tbody:$('tbody'), pager:$('pager'),
+  tabBar:$('tabBar'), alertsGrid:$('alertsGrid'), alertsLoading:$('alertsLoading'),
+  alertsUpdateTime:$('alertsUpdateTime'), watchCount:$('watchCount'),
+  syncStatus:$('syncStatus'), updateTime:$('updateTime'),
+  marketSection:$('marketSection'), indexChart:$('indexChart'),
+  btnLine:$('btnLine'), btnCandle:$('btnCandle'),
+  tokenModal:$('tokenModal'), tokenInput:$('tokenInput'), tokenStatus:$('tokenStatus')
+};
+
+// ═══════════════ STATE ═══════════════
 let H = [];
-let costOverrides = {};  // {'itemName|wear': costPerUnit}
+let costOverrides = {};
+let marketData = null;
+let alertsData = [];
+let currentTab = 'gainers';
+let curCat = 'all';
+let curPage = 1;
+let sortCol = 'pnlPct', sortDir = 'desc';
+let ec = null;  // ECharts instance
+let filteredCache = null;  // cache filtered results
+let filterCacheKey = '';
+
+const PAGE_SIZE = 30;
 const LS_KEY = 'cs2_cost_overrides';
-const CO_URL = 'cost-overrides.json?v=' + Date.now();  // bust cache
+const LS_TOKEN_KEY = 'cs2_gh_token';
+const LS_STARRED = 'cs2_steam_starrings';
 const GH_REPO = 'hintime/cs2-dashboard';
 const GH_API = 'https://api.github.com/repos/' + GH_REPO + '/contents/cost-overrides.json';
-const LS_TOKEN_KEY = 'cs2_gh_token';
+
 let ghToken = localStorage.getItem(LS_TOKEN_KEY) || '';
 let syncTimer = null;
+let starred = JSON.parse(localStorage.getItem(LS_STARRED) || '{}');
 
-function saveOverrides() {
+const CAT_MAP = {'武器':'weapon','印花':'sticker','音乐':'music','agent':'agent'};
+
+function wearCN(w){
+  const m={'FN':'崭新出厂','MW':'略有磨损','FT':'略有磨损','WW':'战地风云','BS':'久经沙场'};
+  return m[w]||w;
+}
+
+// ═══════════════ OVERRIDES PERSISTENCE ═══════════════
+function saveOverrides(){
   localStorage.setItem(LS_KEY, JSON.stringify(costOverrides));
-  // Auto-sync to GitHub if token configured
-  if (ghToken) scheduleSync();
+  if(ghToken) scheduleSync();
 }
 
-function scheduleSync() {
+function scheduleSync(){
   clearTimeout(syncTimer);
-  syncTimer = setTimeout(syncToGitHub, 2000); // debounce 2s
+  syncTimer = setTimeout(syncToGitHub, 2000);
 }
 
-async function syncToGitHub() {
-  if (!ghToken) return;
-  const statusEl = document.getElementById('syncStatus');
-  statusEl.textContent = '⏳ 同步中...';
-  statusEl.className = 'sync-status show';
+async function syncToGitHub(){
+  if(!ghToken) return;
+  const el = DOM.syncStatus;
+  el.textContent = '⏳ 同步中...';
+  el.className = 'sync-status show';
   try {
-    // Get current file SHA
     const getR = await fetch(GH_API, {
-      headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json' }
+      headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}
     });
     let sha = null;
-    if (getR.ok) {
-      const fileData = await getR.json();
-      sha = fileData.sha;
-    }
-    // Update/create file
+    if(getR.ok){ sha = (await getR.json()).sha; }
     const body = {
-      message: 'auto: update cost overrides from dashboard',
-      content: btoa(unescape(encodeURIComponent(JSON.stringify(costOverrides, null, 2)))),
-      branch: 'main'
+      message:'auto: update cost overrides from dashboard',
+      content:btoa(unescape(encodeURIComponent(JSON.stringify(costOverrides,null,2)))),
+      branch:'main'
     };
-    if (sha) body.sha = sha;
+    if(sha) body.sha = sha;
     const putR = await fetch(GH_API, {
-      method: 'PUT',
-      headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      method:'PUT',
+      headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify(body)
     });
-    if (putR.ok) {
-      statusEl.textContent = '✅ 已同步';
-      statusEl.className = 'sync-status show ok';
-      setTimeout(() => { statusEl.className = 'sync-status'; }, 3000);
+    if(putR.ok){
+      el.textContent = '✅ 已同步';
+      el.className = 'sync-status show ok';
+      setTimeout(()=>{ el.className='sync-status'; },3000);
     } else {
       const err = await putR.json();
-      statusEl.textContent = '❌ 失败: ' + (err.message || putR.status);
-      statusEl.className = 'sync-status show err';
+      el.textContent = '❌ 失败: '+(err.message||putR.status);
+      el.className = 'sync-status show err';
     }
   } catch(e) {
-    statusEl.textContent = '❌ 网络错误';
-    statusEl.className = 'sync-status show err';
+    el.textContent = '❌ 网络错误';
+    el.className = 'sync-status show err';
   }
 }
 
-// Token modal handlers
-document.getElementById('gearBtn').onclick = function() {
-  document.getElementById('tokenInput').value = ghToken;
-  document.getElementById('tokenStatus').textContent = ghToken ? '✅ 已配置 Token' : '⚠️ 未配置，编辑不会自动同步';
-  document.getElementById('tokenModal').classList.add('show');
-};
-document.getElementById('tokenCancel').onclick = function() {
-  document.getElementById('tokenModal').classList.remove('show');
-};
-document.getElementById('tokenClear').onclick = function() {
-  ghToken = '';
-  localStorage.removeItem(LS_TOKEN_KEY);
-  document.getElementById('tokenInput').value = '';
-  document.getElementById('tokenStatus').textContent = '🗑️ Token 已清除';
-};
-document.getElementById('tokenSave').onclick = async function() {
-  const token = document.getElementById('tokenInput').value.trim();
-  if (!token) { document.getElementById('tokenStatus').textContent = '⚠️ 请输入 Token'; return; }
-  // Validate token
-  document.getElementById('tokenStatus').textContent = '⏳ 验证中...';
+async function loadOverrides(){
   try {
-    const r = await fetch('https://api.github.com/repos/' + GH_REPO, {
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
-    });
-    if (r.ok) {
-      ghToken = token;
-      localStorage.setItem(LS_TOKEN_KEY, token);
-      document.getElementById('tokenStatus').textContent = '✅ Token 有效，已保存！编辑购入价将自动同步。';
-      setTimeout(() => { document.getElementById('tokenModal').classList.remove('show'); }, 1500);
-    } else {
-      document.getElementById('tokenStatus').textContent = '❌ Token 无效或无权限（需要 repo 权限）';
-    }
-  } catch(e) {
-    document.getElementById('tokenStatus').textContent = '❌ 网络错误';
-  }
-};
-// Close modal on overlay click
-document.getElementById('tokenModal').onclick = function(e) {
-  if (e.target === this) this.classList.remove('show');
-};
-
-function saveOverrides() {
-  localStorage.setItem(LS_KEY, JSON.stringify(costOverrides));
-}
-
-// Load overrides: GitHub file → base, localStorage → override (takes precedence)
-async function loadOverrides() {
-  // 1. Load from GitHub repo (persistent, cross-browser)
+    const r = await fetch('cost-overrides.json');
+    if(r.ok){ const remote = await r.json(); if(remote&&typeof remote==='object') Object.assign(costOverrides,remote); }
+  } catch(e){}
   try {
-    const r = await fetch(CO_URL);
-    if (r.ok) {
-      const remote = await r.json();
-      if (remote && typeof remote === 'object') {
-        Object.assign(costOverrides, remote);
-      }
-    }
-  } catch(e) {}
-  // 2. Load from localStorage (current session edits, takes precedence)
-  try {
-    const local = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
-    if (local && typeof local === 'object') {
-      Object.assign(costOverrides, local);
-    }
-  } catch(e) {}
+    const local = JSON.parse(localStorage.getItem(LS_KEY)||'{}');
+    if(local&&typeof local==='object') Object.assign(costOverrides,local);
+  } catch(e){}
 }
 
-// Category mapping
-const CAT_MAP = {'武器':'weapon','印花':'sticker','音乐':'music','agent':'agent'};
-const CAT_META = {
-  weapon:{color:'#3b82f6',label:'武器'},
-  sticker:{color:'#f59e0b',label:'印花'},
-  music:{color:'#06b6d4',label:'音乐'},
-  agent:{color:'#8b5cf6',label:'角色'}
-};
-
-// Load holdings
-function wearCN(w){
-  const map={'FN':'崭新出厂','MW':'略有磨损','FT':'略有磨损','WW':'战地风云','BS':'久经沙场'};  // FN=崭新出厂 MW=略有磨损 FT=略有磨损 WW=战地风云 BS=久经沙场
-  return map[w]||w;
-}
-
-async function loadHoldings() {
-  await loadOverrides();
-  try {
-    const r = await fetch('holdings.json?v=2');
-    const D = await r.json();
-    H = [];
-    D.items.forEach(item => {
-      const t = CAT_MAP[item.category] || 'weapon';
-      const w = item.wear ? (item.wear.includes('崭新') ? 'FN' : item.wear.includes('略有磨损') ? 'FT' : item.wear.includes('久经沙场') ? 'FT' : item.wear.includes('受损') ? 'WW' : item.wear.includes('战痕累累') ? 'BS' : '') : '';
-      const q = item.qty || 1;
-      const costTotal = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost;
-      const priceTotal = item.price * (item.qty || 1);
-      const costU = costTotal / q;
-      const priceU = priceTotal / q;
-      for (let i = 0; i < q; i++) {
-        const cU = costOverrides[item.name + '|' + w] || costU;
-        H.push({n:item.name, w:w, t:t, q:1, c:cU, p:priceU, pnl:priceU-cU, pnlPct:cU>0?(priceU-cU)/cU*100:0, gid:item.id||0});
-      }
-    });
-  } catch(e) {
-    console.error('Load failed',e);
-    H = [
-      {n:'MP7 死亡骷髅',w:'FT',t:'weapon',q:1,c:217,p:243.39,pnl:26.39,pnlPct:12.16},
-      {n:'M4A4 都市DDPAT',w:'FN',t:'weapon',q:1,c:410,p:377.4,pnl:-32.6,pnlPct:-7.95}
-    ];
-  }
-  await initDashboard();
-}
-
-async function initDashboard() {
-  // Summary
-  const tc = H.reduce((s,h)=>s+h.c,0);
-  const tp = H.reduce((s,h)=>s+h.p,0);
-  const tpct = tc > 0 ? (tp-tc)/tc*100 : 0;
-  document.getElementById('totalValue').textContent = '¥' + tp.toLocaleString();
-  document.getElementById('totalValue').className = 'value ' + (tp>=tc?'rise':'fall');
-  document.getElementById('totalPnl').textContent = (tp>=tc?'+':'') + '¥' + (tp-tc).toLocaleString();
-  document.getElementById('totalPnl').className = 'value ' + (tp>=tc?'rise':'fall');
-  document.getElementById('totalPnlPct').textContent = (tp>=tc?'+':'') + tpct.toFixed(2) + '% · ' + Math.round(H.filter(h=>h.pnl>0).length/H.length*100) + '% 胜率';
-  document.getElementById('totalCost').textContent = '¥' + tc.toLocaleString();
-  document.getElementById('totalCount').textContent = H.length + ' 件';
-
-
-  // Tabs
-  const cats = [
-    {key:'all',label:'全部'},
-    {key:'weapon',label:'武器'},
-    {key:'sticker',label:'印花'},
-    {key:'music',label:'音乐'},
-    {key:'agent',label:'角色'}
-  ];
-  let curCat = 'all';
-  const tb = document.getElementById('tabBar');
-  cats.forEach(c => {
-    const cnt = c.key==='all' ? H.length : H.filter(h=>h.t===c.key).length;
-    tb.innerHTML += '<button class="tab '+(c.key==='all'?'on':'')+'" data-cat="'+c.key+'">'+c.label+' '+cnt+'</button>';
-  });
-  tb.onclick = e => {
-    if(e.target.classList.contains('tab')){
-      tb.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
-      e.target.classList.add('on');
-      curCat = e.target.dataset.cat;
-      curPage = 1;
-      render();
-    }
-  };
-
-  let curPage = 1;
-  const PAGE_SIZE = 30;
-  let sortCol = 'pnlPct', sortDir = 'desc';
-  const headers = document.querySelectorAll('thead th');
-  headers.forEach((th, i) => {
-    th.onclick = () => {
-      const cols = ['n','w','c','p','pnl','pnlPct'];
-      const col = th.dataset.col || cols[i];
-      if (!col) return;
-      if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-      else { sortCol = col; sortDir = 'desc'; }
-      headers.forEach(h => h.className = '');
-      th.className = sortDir === 'asc' ? 'sort-asc' : 'sort-desc';
-      render();
-    };
-  });
-  // Default sort indicator
-  headers[5].className = 'sort-desc';
-
-  function render(){
-    const itemsRaw = curCat==='all' ? H : H.filter(h=>h.t===curCat);
-    const items = itemsRaw.filter(h=>h.w && h.w.includes('战痕累累') ? false : true).sort((a,b) => {
-      const av = a[sortCol] || 0, bv = b[sortCol] || 0;
-      return sortDir === 'asc' ? av - bv : bv - av;
-    });
-    document.getElementById('countBadge').textContent = items.length;
-    const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
-    if (curPage > totalPages) curPage = totalPages;
-    const start = (curPage - 1) * PAGE_SIZE;
-    const pageItems = items.slice(start, start + PAGE_SIZE);
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = pageItems.map((h,idx) => {
-      const pnlCls = h.pnl>=0?'clr-rise':'clr-fall';
-      const realIdx = start + idx;
-      const edited = costOverrides[h.n + '|' + h.w] !== undefined;
-      const costHtml = '<span class="cost-val">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'" title="编辑购入价">✏️</span>' + (edited?'<span style="color:var(--blue);font-size:9px;margin-left:2px">已改</span>':'');
-      return '<tr><td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'" data-name="'+h.n.replace(/"/g,'&quot;')+'" style="background:none;border:none;color:#f59e0b;font-size:13px;cursor:pointer;padding:0 4px 0 0;line-height:1">'+ (h.gid && starred[h.gid] ? '★' : '☆') +'</button>'+h.n+'</div></td><td><span class="wear-tag">'+wearCN(h.w)+'</span></td><td class="text-r mono">'+costHtml+'</td><td class="text-r mono">¥'+h.p.toFixed(2)+'</td><td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td><td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td></tr>';
-    }).join('');
-    // Edit cost handler
-    tbody.querySelectorAll('.edit-cost').forEach(btn => {
-      btn.onclick = function() {
-        const idx = +this.dataset.idx;
-        const item = H[idx];
-        const td = this.parentElement;
-        td.innerHTML = '<input class="cost-input" type="number" step="0.01" value="'+item.c.toFixed(2)+'" data-idx="'+idx+'">';
-        const inp = td.querySelector('.cost-input');
-        inp.focus();
-        inp.select();
-        function save() {
-          const val = parseFloat(inp.value);
-          if (!isNaN(val) && val >= 0) {
-            item.c = val;
-            item.pnl = item.p - val;
-            item.pnlPct = val > 0 ? (item.p - val) / val * 100 : 0;
-            costOverrides[item.n + '|' + item.w] = val;
-            saveOverrides();
-          }
-          refreshAll();
-        }
-        inp.onblur = save;
-        inp.onkeydown = function(e) { if(e.key==='Enter') save(); if(e.key==='Escape') refreshAll(); };
-      };
-    });
-    const pager = document.getElementById('pager');
-    if (totalPages <= 1) { pager.innerHTML = ''; return; }
-    let html = '<button class="tab" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button>';
-    html += '<span>' + curPage + ' / ' + totalPages + ' 页</span>';
-    html += '<button class="tab" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
-    pager.innerHTML = html;
-    document.getElementById('pgPrev').onclick = () => { curPage--; render(); };
-    document.getElementById('pgNext').onclick = () => { curPage++; render(); };
-  }
-  // Refresh KPI + sectors + table after cost edit
-  function refreshAll() {
-    const tc = H.reduce((s,h)=>s+h.c,0);
-    const tp = H.reduce((s,h)=>s+h.p,0);
-    const tpct = tc > 0 ? (tp-tc)/tc*100 : 0;
-    document.getElementById('totalValue').textContent = '¥' + tp.toLocaleString();
-    document.getElementById('totalValue').className = 'value ' + (tp>=tc?'rise':'fall');
-    document.getElementById('totalPnl').textContent = (tp>=tc?'+':'') + '¥' + (tp-tc).toLocaleString();
-    document.getElementById('totalPnl').className = 'value ' + (tp>=tc?'rise':'fall');
-    document.getElementById('totalPnlPct').textContent = (tp>=tc?'+':'') + tpct.toFixed(2) + '% · ' + Math.round(H.filter(h=>h.pnl>0).length/H.length*100) + '% 胜率';
-    document.getElementById('totalCost').textContent = '¥' + tc.toLocaleString();
-    // sectors removed
-    render();
-  }
-
-  // Export cost-overrides.json for committing to GitHub
-  document.getElementById('exportBtn').onclick = function() {
-    const blob = new Blob([JSON.stringify(costOverrides, null, 2)], {type:'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'cost-overrides.json';
-    a.click();
-    alert('已下载 cost-overrides.json\n\n下一步：\n1. 打开 https://github.com/hintime/cs2-dashboard\n2. 点击 Add file → Upload files\n3. 上传 cost-overrides.json（覆盖旧文件）\n4. Commit\n\n这样换浏览器也能保留修改！');
-  };
-
-  render();
-  const chartFont = {color:'#52525b',family:"'DM Mono',sans-serif"};
-  Chart.defaults.color = '#52525b';
-  Chart.defaults.font.family = chartFont.family;
-
-
-}
-
-// ═══════════════ MARKET INDEX ═══════════════
-(async function loadMarket(){
-  try{
-    const r = await fetch('market.json');
-    const D = await r.json();
-    if(D.update_time){
-      document.getElementById('updateTime').textContent = new Date(D.update_time).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-    }
-    marketData = D;
-    renderMarket(D);
-  }catch(e){
-    console.warn('market.json load failed',e);
-    document.getElementById('marketSection').style.display = 'none';
-  }
-})();
-
-// ═══════════════ ALERTS / MONITOR ═══════════════
-// star system: {good_id} → true/false, stored in localStorage
-const LS_STARRED = 'cs2_steam_starrings';
-let marketData = {};
-let starred = JSON.parse(localStorage.getItem(LS_STARRED) || '{}');
-let alertsData = marketData.alerts || [];  // full alerts list from market.json.alerts
-let currentTab = 'gainers';
-
-function saveStars() { localStorage.setItem(LS_STARRED, JSON.stringify(starred)); updateWatchCount(); }
-
-function updateWatchCount() {
-  const n = Object.keys(starred).filter(k => starred[k]).length;
-  const el = document.getElementById('watchCount');
-  if (el) el.textContent = n;
-}
-
-function toggleStar(goodId, name) {
+// ═══════════════ STAR SYSTEM ═══════════════
+function saveStars(){ localStorage.setItem(LS_STARRED,JSON.stringify(starred)); updateWatchCount(); }
+function updateWatchCount(){ DOM.watchCount.textContent = Object.keys(starred).filter(k=>starred[k]).length; }
+function toggleStar(goodId){
   starred[goodId] = !starred[goodId];
   saveStars();
-  if (currentTab === 'watch') renderAlertsTab('watch');
-  // Update star button in table if present
-  document.querySelectorAll('.row-star[data-gid]').forEach(btn => {
-    if (+btn.dataset.gid === goodId) btn.textContent = starred[goodId] ? '★' : '☆';
-  });
+  if(currentTab==='watch') renderAlertsTab('watch');
+  document.querySelectorAll('.row-star[data-gid="'+goodId+'"]').forEach(b=>{ b.textContent=starred[goodId]?'★':'☆'; });
 }
 
-// Load alerts from market.json.alerts
-async function loadAlerts() {
-  const grid = document.getElementById('alertsGrid');
-  const loading = document.getElementById('alertsLoading');
-  try {
-    const r = await fetch('market.json');
-    const D = await r.json();
-    const alerts = D.alerts || [];
-    if (alerts.length === 0) throw new Error('no alerts');
-    alertsData = alerts;
-    if (D.update_time) {
-      const t = new Date(D.update_time).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
-      const el = document.getElementById('alertsUpdateTime');
-      if (el) el.textContent = '更新 ' + t;
-    }
-    if (loading) loading.style.display = 'none';
-    renderAlertsTab('gainers');
-  } catch(e) {
-    if (loading) loading.textContent = '数据加载失败，请刷新重试';
+// ═══════════════ LOAD DATA (single fetch) ═══════════════
+async function loadAll(){
+  await loadOverrides();
+
+  // Parallel fetch holdings + market
+  const [holdingsR, marketR] = await Promise.all([
+    fetch('holdings.json?v=2').then(r=>r.json()).catch(()=>null),
+    fetch('market.json').then(r=>r.json()).catch(()=>null)
+  ]);
+
+  // Process holdings
+  if(holdingsR){
+    H = [];
+    holdingsR.items.forEach(item => {
+      const t = CAT_MAP[item.category]||'weapon';
+      const w = item.wear ? (item.wear.includes('崭新')?'FN':item.wear.includes('略有磨损')?'FT':item.wear.includes('久经沙场')?'FT':item.wear.includes('受损')?'WW':item.wear.includes('战痕累累')?'BS':'') : '';
+      const q = item.qty||1;
+      const costTotal = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost;
+      const priceTotal = item.price * q;
+      const costU = costTotal / q;
+      const priceU = priceTotal / q;
+      for(let i=0;i<q;i++){
+        const cU = costOverrides[item.name+'|'+w]||costU;
+        H.push({n:item.name,w:w,t:t,q:1,c:cU,p:priceU,pnl:priceU-cU,pnlPct:cU>0?(priceU-cU)/cU*100:0,gid:item.id||0});
+      }
+    });
   }
+
+  // Process market
+  if(marketR){
+    marketData = marketR;
+    if(marketR.update_time){
+      DOM.updateTime.textContent = new Date(marketR.update_time).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    }
+    alertsData = marketR.alerts || [];
+    if(alertsData.length && DOM.alertsLoading) DOM.alertsLoading.style.display='none';
+  } else {
+    DOM.marketSection.style.display = 'none';
+  }
+
+  initDashboard();
+  if(marketData) renderMarket(marketData);
+  renderAlertsTab('gainers');
 }
 
-// Render alerts grid for a given tab
-function renderAlertsTab(tab) {
+// ═══════════════ DASHBOARD INIT ═══════════════
+function initDashboard(){
+  updateKPI();
+  buildTabs();
+  render();
+}
+
+function updateKPI(){
+  const tc = H.reduce((s,h)=>s+h.c,0);
+  const tp = H.reduce((s,h)=>s+h.p,0);
+  const tpct = tc>0?(tp-tc)/tc*100:0;
+  const isUp = tp>=tc;
+  DOM.totalValue.textContent = '¥'+tp.toLocaleString();
+  DOM.totalValue.className = 'value '+(isUp?'rise':'fall');
+  DOM.totalPnl.textContent = (isUp?'+':'')+'¥'+(tp-tc).toLocaleString();
+  DOM.totalPnl.className = 'value '+(isUp?'rise':'fall');
+  DOM.totalPnlPct.textContent = (isUp?'+':'')+tpct.toFixed(2)+'% · '+Math.round(H.filter(h=>h.pnl>0).length/H.length*100)+'% 胜率';
+  DOM.totalCost.textContent = '¥'+tc.toLocaleString();
+  DOM.totalCount.textContent = H.length+' 件';
+}
+
+function buildTabs(){
+  const cats = [{key:'all',label:'全部'},{key:'weapon',label:'武器'},{key:'sticker',label:'印花'},{key:'music',label:'音乐'},{key:'agent',label:'角色'}];
+  let html = '';
+  cats.forEach(c => {
+    const cnt = c.key==='all'?H.length:H.filter(h=>h.t===c.key).length;
+    html += '<button class="tab '+(c.key==='all'?'on':'')+'" data-cat="'+c.key+'">'+c.label+' '+cnt+'</button>';
+  });
+  DOM.tabBar.innerHTML = html;
+}
+
+// ═══════════════ TABLE RENDER ═══════════════
+function getFiltered(){
+  const key = curCat+'|'+sortCol+'|'+sortDir;
+  if(filteredCache && filterCacheKey===key) return filteredCache;
+  const raw = curCat==='all'?H:H.filter(h=>h.t===curCat);
+  filteredCache = raw.filter(h=>!(h.w&&h.w==='BS')).sort((a,b)=>{
+    const av=a[sortCol]||0, bv=b[sortCol]||0;
+    return sortDir==='asc'?av-bv:bv-av;
+  });
+  filterCacheKey = key;
+  return filteredCache;
+}
+
+function invalidateCache(){ filteredCache=null; filterCacheKey=''; }
+
+function render(){
+  const items = getFiltered();
+  DOM.countBadge.textContent = items.length;
+  const totalPages = Math.max(1,Math.ceil(items.length/PAGE_SIZE));
+  if(curPage>totalPages) curPage = totalPages;
+  const start = (curPage-1)*PAGE_SIZE;
+  const pageItems = items.slice(start,start+PAGE_SIZE);
+
+  // Build table rows
+  const frag = document.createDocumentFragment();
+  pageItems.forEach((h,idx) => {
+    const realIdx = start+idx;
+    const pnlCls = h.pnl>=0?'clr-rise':'clr-fall';
+    const edited = costOverrides[h.n+'|'+h.w]!==undefined;
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'" data-name="'+h.n.replace(/"/g,'&quot;')+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+h.n+'</div></td>'+
+      '<td><span class="wear-tag">'+wearCN(h.w)+'</span></td>'+
+      '<td class="text-r mono"><span class="cost-val">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'" title="编辑购入价">✏️</span>'+(edited?'<span style="color:var(--blue);font-size:9px;margin-left:2px">已改</span>':'')+'</td>'+
+      '<td class="text-r mono">¥'+h.p.toFixed(2)+'</td>'+
+      '<td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td>'+
+      '<td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td>';
+    frag.appendChild(tr);
+  });
+  DOM.tbody.innerHTML = '';
+  DOM.tbody.appendChild(frag);
+
+  // Pager
+  if(totalPages<=1){ DOM.pager.innerHTML=''; return; }
+  DOM.pager.innerHTML = '<button class="tab" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span>'+curPage+' / '+totalPages+' 页</span><button class="tab" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
+  $('pgPrev').onclick = ()=>{ curPage--; render(); };
+  $('pgNext').onclick = ()=>{ curPage++; render(); };
+}
+
+// ═══════════════ EVENT HANDLERS ═══════════════
+
+// Category tabs
+DOM.tabBar.onclick = e => {
+  const btn = e.target.closest('.tab');
+  if(!btn) return;
+  DOM.tabBar.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  curCat = btn.dataset.cat;
+  curPage = 1;
+  invalidateCache();
+  render();
+};
+
+// Sort headers
+document.querySelectorAll('thead th').forEach(th => {
+  th.onclick = () => {
+    const col = th.dataset.col;
+    if(!col) return;
+    if(sortCol===col) sortDir = sortDir==='asc'?'desc':'asc';
+    else { sortCol=col; sortDir='desc'; }
+    document.querySelectorAll('thead th').forEach(h=>h.className='');
+    th.className = sortDir==='asc'?'sort-asc':'sort-desc';
+    invalidateCache();
+    render();
+  };
+});
+// Default sort indicator
+document.querySelectorAll('thead th')[5].className = 'sort-desc';
+
+// Edit cost (delegated)
+DOM.tbody.onclick = function(e){
+  // Star click
+  const starBtn = e.target.closest('.row-star');
+  if(starBtn){
+    const gid = +starBtn.dataset.gid;
+    if(gid) toggleStar(gid);
+    return;
+  }
+  // Edit cost click
+  const editBtn = e.target.closest('.edit-cost');
+  if(!editBtn) return;
+  const idx = +editBtn.dataset.idx;
+  const item = H[idx];
+  const td = editBtn.parentElement;
+  td.innerHTML = '<input class="cost-input" type="number" step="0.01" value="'+item.c.toFixed(2)+'" data-idx="'+idx+'">';
+  const inp = td.querySelector('.cost-input');
+  inp.focus();
+  inp.select();
+  function save(){
+    const val = parseFloat(inp.value);
+    if(!isNaN(val)&&val>=0){
+      item.c = val;
+      item.pnl = item.p-val;
+      item.pnlPct = val>0?(item.p-val)/val*100:0;
+      costOverrides[item.n+'|'+item.w] = val;
+      saveOverrides();
+    }
+    invalidateCache();
+    updateKPI();
+    render();
+  }
+  inp.onblur = save;
+  inp.onkeydown = function(e){ if(e.key==='Enter') save(); if(e.key==='Escape'){ invalidateCache(); render(); } };
+};
+
+// Export
+$('exportBtn').onclick = function(){
+  const blob = new Blob([JSON.stringify(costOverrides,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cost-overrides.json';
+  a.click();
+};
+
+// Token modal
+$('gearBtn').onclick = function(){
+  DOM.tokenInput.value = ghToken;
+  DOM.tokenStatus.textContent = ghToken?'✅ 已配置 Token':'⚠️ 未配置，编辑不会自动同步';
+  DOM.tokenModal.classList.add('show');
+};
+$('tokenCancel').onclick = ()=> DOM.tokenModal.classList.remove('show');
+$('tokenClear').onclick = function(){
+  ghToken=''; localStorage.removeItem(LS_TOKEN_KEY);
+  DOM.tokenInput.value='';
+  DOM.tokenStatus.textContent='🗑️ Token 已清除';
+};
+$('tokenSave').onclick = async function(){
+  const token = DOM.tokenInput.value.trim();
+  if(!token){ DOM.tokenStatus.textContent='⚠️ 请输入 Token'; return; }
+  DOM.tokenStatus.textContent='⏳ 验证中...';
+  try {
+    const r = await fetch('https://api.github.com/repos/'+GH_REPO,{headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}});
+    if(r.ok){
+      ghToken=token; localStorage.setItem(LS_TOKEN_KEY,token);
+      DOM.tokenStatus.textContent='✅ Token 有效，已保存！';
+      setTimeout(()=>DOM.tokenModal.classList.remove('show'),1500);
+    } else { DOM.tokenStatus.textContent='❌ Token 无效或无权限'; }
+  } catch(e){ DOM.tokenStatus.textContent='❌ 网络错误'; }
+};
+DOM.tokenModal.onclick = function(e){ if(e.target===this) this.classList.remove('show'); };
+
+// ═══════════════ ALERTS ═══════════════
+function renderAlertsTab(tab){
   currentTab = tab;
-  const grid = document.getElementById('alertsGrid');
-  if (!grid) return;
+  const grid = DOM.alertsGrid;
+  if(!grid) return;
 
   let items = [];
-  if (tab === 'gainers') {
-    items = [...alertsData].sort((a, b) => (b.rate_1 || 0) - (a.rate_1 || 0)).slice(0, 20);
-  } else if (tab === 'losers') {
-    items = [...alertsData].sort((a, b) => (a.rate_1 || 0) - (b.rate_1 || 0)).slice(0, 20);
-  } else if (tab === 'watch') {
-    const watched = Object.entries(starred).filter(([,v]) => v).map(([k]) => +k);
-    if (watched.length === 0) {
-      grid.innerHTML = '<div class="watch-empty"><p>⭐ 还没有自选饰品</p>在下方持仓表格中点击 ⭐ 关注你持有的饰品<br>或在涨幅/跌幅榜中点击 ⭐ 加入自选<button class="export-btn" onclick="loadAlerts()" style="margin-top:12px;font-size:12px">刷新异动数据</button></div>';
+  if(tab==='gainers'){
+    items = alertsData.slice().sort((a,b)=>(b.rate_1||0)-(a.rate_1||0)).slice(0,20);
+  } else if(tab==='losers'){
+    items = alertsData.slice().sort((a,b)=>(a.rate_1||0)-(b.rate_1||0)).slice(0,20);
+  } else if(tab==='watch'){
+    const watched = Object.keys(starred).filter(k=>starred[k]).map(Number);
+    if(!watched.length){
+      grid.innerHTML='<div class="watch-empty"><p>⭐ 还没有自选饰品</p>在涨幅/跌幅榜中点击 ⭐ 加入自选</div>';
       return;
     }
-    items = alertsData.filter(a => watched.includes(a.id) && (!a.exterior || !a.exterior.includes('战痕累累')));
-    if (items.length === 0) {
-      grid.innerHTML = '<div class="watch-empty"><p>⭐ 自选饰品不在异动数据中</p>可能是 CSQAQ 排行榜未收录该物品<button class="export-btn" onclick="loadAlerts()" style="margin-top:12px;font-size:12px">刷新</button></div>';
+    items = alertsData.filter(a=>watched.includes(a.id)&&!(a.exterior&&a.exterior.includes('战痕累累')));
+    if(!items.length){
+      grid.innerHTML='<div class="watch-empty"><p>⭐ 自选饰品不在异动数据中</p></div>';
       return;
     }
   }
 
-  if (items.length === 0) {
-    grid.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px;text-align:center">暂无数据</div>';
+  if(!items.length){
+    grid.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px;text-align:center">暂无数据</div>';
     return;
   }
 
-  grid.innerHTML = items.map((item, idx) => {
-    const chg = item.rate_1 || 0;
+  const frag = document.createDocumentFragment();
+  items.forEach((item,idx) => {
+    const chg = item.rate_1||0;
     const absChg = Math.abs(chg);
-    const dir = chg > 0 ? 'up' : chg < 0 ? 'down' : 'flat';
-    const chgTxt = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
-    const barW = Math.min(absChg * 4, 100);  // 25% = 100% bar
-    const barColor = dir === 'up' ? 'var(--fall)' : dir === 'down' ? 'var(--rise)' : 'var(--text3)';
+    const dir = chg>0?'up':chg<0?'down':'flat';
+    const chgTxt = (chg>=0?'+':'')+chg.toFixed(2)+'%';
+    const barW = Math.min(absChg*4,100);
+    const barColor = dir==='up'?'var(--fall)':dir==='down'?'var(--rise)':'var(--text3)';
     const isStarred = starred[item.id];
-    const rank = tab !== 'watch' ? '<span class="a-rank">#' + (idx + 1) + '</span>' : '';
-    return '<div class="alert-card ' + dir + '" onclick="window.open(\'https://buff.163.com/market/cs2#tab=selling\', \'_blank\')">'
-      + rank
-      + '<button class="a-star ' + (isStarred ? 'on' : '') + '" onclick="event.stopPropagation();toggleStar(' + item.id + ',\'' + (item.name_cn || item.name).replace(/'/g, '\\' + "'") + '\')">' + (isStarred ? '★' : '☆') + '</button>'
-      + '<div class="a-name" title="' + (item.name_cn || item.name) + '">' + (item.name_cn || item.name) + '</div>'
-      + '<div class="a-meta"><span class="a-price">¥' + (item.price || '--') + '</span><span class="a-chg ' + dir + '">' + chgTxt + '</span></div>'
-      + '<div class="a-period">7日涨跌 · ' + (item.rate_7 >= 0 ? '+' : '') + '¥' + (item.rate_7 || 0).toFixed(2) + '</div>'
-      + '<div class="a-bar"><div class="a-bar-fill" style="width:' + barW + '%;background:' + barColor + '"></div></div>'
-      + '</div>';
-  }).join('');
-}
+    const rank = tab!=='watch'?'<span class="a-rank">#'+(idx+1)+'</span>':'';
 
-// Legacy compat: renderAlerts(D) still called by renderMarket
-function renderAlerts(D) {
-  // migrate D.items to alertsData
-  if (D.items) {
-    alertsData = Object.values(D.items).map(item => ({
-      good_id: item.id || 0,
-      name: item.name_cn || item.name,
-      name_cn: item.name_cn,
-      price: item.latest,
-      rate_1: item.change || 0,
-      rate_7: item.rate_1 || 0,
-    }));
-  }
-  renderAlertsTab(currentTab);
+    const div = document.createElement('div');
+    div.className = 'alert-card '+dir;
+    div.innerHTML =
+      rank+
+      '<button class="a-star '+(isStarred?'on':'')+'" data-aid="'+item.id+'">'+(isStarred?'★':'☆')+'</button>'+
+      '<div class="a-name" title="'+(item.name_cn||item.name)+'">'+(item.name_cn||item.name)+'</div>'+
+      '<div class="a-meta"><span class="a-price">¥'+(item.price||'--')+'</span><span class="a-chg '+dir+'">'+chgTxt+'</span></div>'+
+      '<div class="a-period">7日涨跌 · '+(item.rate_7>=0?'+':'')+((item.rate_7||0).toFixed(2))+'</div>'+
+      '<div class="a-bar"><div class="a-bar-fill" style="width:'+barW+'%;background:'+barColor+'"></div></div>';
+    frag.appendChild(div);
+  });
+  grid.innerHTML = '';
+  grid.appendChild(frag);
 }
 
 // Alerts tab switching
-document.getElementById('alertsTabs').onclick = function(e) {
+$('alertsTabs').onclick = function(e){
   const btn = e.target.closest('[data-tab]');
-  if (!btn) return;
-  this.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  if(!btn) return;
+  this.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   renderAlertsTab(btn.dataset.tab);
 };
 
-// Delegated click handler for table row stars
-document.getElementById('tbody').onclick = function(e) {
-  const btn = e.target.closest('.row-star');
-  if (!btn) return;
-  const gid = +btn.dataset.gid;
-  const name = btn.dataset.name;
-  if (gid) {
-    toggleStar(gid, name);
-    btn.textContent = starred[gid] ? '★' : '☆';
-  } else {
-    alert('该物品暂无 good_id，请在异动榜中关注');
-  }
+// Alerts grid star click (delegated)
+DOM.alertsGrid.onclick = function(e){
+  const btn = e.target.closest('.a-star');
+  if(btn) toggleStar(+btn.dataset.aid);
 };
 
+// ═══════════════ MARKET CHART ═══════════════
 function renderMarket(D){
-  var idx = D.index;
-  var clr = idx.change >= 0 ? 'var(--rise)' : 'var(--fall)';
-  document.getElementById('miNum').textContent = idx.latest.toFixed(2);
-  document.getElementById('miNum').style.color = clr;
-  document.getElementById('miChg').textContent = (idx.change>=0?'+':'') + idx.change.toFixed(2) + '%';
-  document.getElementById('miChg').style.color = clr;
+  const idx = D.index;
+  const clr = idx.change>=0?'var(--rise)':'var(--fall)';
+  DOM.miNum.textContent = idx.latest.toFixed(2);
+  DOM.miNum.style.color = clr;
+  DOM.miChg.textContent = (idx.change>=0?'+':'')+idx.change.toFixed(2)+'%';
+  DOM.miChg.style.color = clr;
 
-  // Load OHLC from market.json — use dateFull (YYYY-MM-DD) to avoid year collision
-  var ohlcDates  = (idx.ohlc || []).map(function(c){ return c.dateFull || c.date; });
-  var ohlcValues = (idx.ohlc || []).map(function(c){ return c.close; });
-  var ohlcData = (idx.ohlc || []).map(function(c){ return [c.open, c.close, c.low, c.high]; });
-  // Smart date formatter: show year only when it changes, otherwise MM-DD
+  const ohlcDates = (idx.ohlc||[]).map(c=>c.dateFull||c.date);
+  const ohlcValues = (idx.ohlc||[]).map(c=>c.close);
+  const ohlcData = (idx.ohlc||[]).map(c=>[c.open,c.close,c.low,c.high]);
+
   var fmtDate = (function(){
-    var lastY = '';
-    return function(v){ var p=v.split('-'), y=p[0], md=p[1]+'-'+p[2]; if(y!==lastY){lastY=y; return y+'/'+md;} return md; };
+    var lastY='';
+    return function(v){ var p=v.split('-'),y=p[0],md=p[1]+'-'+p[2]; if(y!==lastY){lastY=y; return y+'/'+md;} return md; };
   })();
-  // volData: array of {value, itemStyle} so each bar has its own color
-  var volData = (idx.volBar || []).map(function(h, i){
-    return { value: h, itemStyle: { color: (idx.volColor||[])[i]||'#52525b' } };
-  });
 
-  // ── Chart ──
-  var ec = echarts.init(document.getElementById('indexChart'), null, {renderer:'canvas'});
+  const volData = (idx.volBar||[]).map((h,i)=>({value:h,itemStyle:{color:(idx.volColor||[])[i]||'#52525b'}}));
 
-    function renderLine() {
-    document.getElementById('btnLine').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:#3b82f6;color:#fff;border:1px solid #3b82f6';
-    document.getElementById('btnCandle').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)';
+  ec = echarts.init(DOM.indexChart,null,{renderer:'canvas'});
+
+  function renderLine(){
+    DOM.btnLine.className='tab on';
+    DOM.btnCandle.className='tab';
     ec.setOption({
       backgroundColor:'transparent',
       grid:{top:10,right:30,bottom:25,left:65},
@@ -741,19 +649,17 @@ function renderMarket(D){
         splitNumber:4,
         splitLine:{lineStyle:{color:'#1e2130'}},
         axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
-      tooltip:{trigger:'axis',backgroundColor:'#0f1117',borderColor:'#252a36',
-        textStyle:{color:'#e4e4e7',fontSize:11}},
+      tooltip:{trigger:'axis',backgroundColor:'#0f1117',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
       series:[{type:'line',data:ohlcValues,symbol:'none',
         lineStyle:{color:'#3b82f6',width:2},
         areaStyle:{color:'#3b82f614'}}]
     },true);
   }
 
-  function renderCandle() {
-    document.getElementById('btnCandle').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:#ef4444;color:#fff;border:1px solid #ef4444';
-    document.getElementById('btnLine').style.cssText = 'font-size:11px;padding:4px 14px;border-radius:6px;cursor:pointer;background:var(--surface2);color:var(--text2);border:1px solid var(--border)';
-
-    var closes = (idx.ohlc||[]).map(function(c){return c.close;});
+  function renderCandle(){
+    DOM.btnCandle.className='tab on';
+    DOM.btnLine.className='tab';
+    const closes = (idx.ohlc||[]).map(c=>c.close);
     function ma(arr,n){
       return arr.map(function(v,i){
         if(i<n-1) return '-';
@@ -761,82 +667,52 @@ function renderMarket(D){
         return Math.round(s/n*100)/100;
       });
     }
-    var ma5=ma(closes,5), ma10=ma(closes,10), ma20=ma(closes,20);
-
-    var priceMin = Math.floor(Math.min.apply(null,closes)/20)*20;
-    var priceMax = Math.ceil(Math.max.apply(null,closes)/20)*20;
-    var volMax = Math.max.apply(null,idx.volBar||[1]);
-
+    const ma5=ma(closes,5), ma10=ma(closes,10), ma20=ma(closes,20);
+    const priceMin=Math.floor(Math.min.apply(null,closes)/20)*20;
+    const priceMax=Math.ceil(Math.max.apply(null,closes)/20)*20;
+    const volMax=Math.max.apply(null,idx.volBar||[1]);
     ec.setOption({
       backgroundColor:'transparent',
-      grid:[
-        {top:10,right:55,bottom:'50%',left:65},
-        {top:'50%',right:55,bottom:40,left:65}
-      ],
+      grid:[{top:10,right:55,bottom:'50%',left:65},{top:'50%',right:55,bottom:40,left:65}],
       xAxis:[
-        {type:'category',data:ohlcDates,gridIndex:0,boundaryGap:true,
-          axisLine:{lineStyle:{color:'#252a36'}},
-          axisLabel:{show:false},axisTick:{show:false},splitLine:{show:false}},
-        {type:'category',data:ohlcDates,gridIndex:1,boundaryGap:true,
-          axisLine:{lineStyle:{color:'#252a36'}},
-          axisLabel:{
-            color:'#9ca3af',fontSize:12,
-            interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),
-            formatter:fmtDate
-          },
-          axisTick:{show:false}}
+        {type:'category',data:ohlcDates,gridIndex:0,boundaryGap:true,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{show:false},axisTick:{show:false},splitLine:{show:false}},
+        {type:'category',data:ohlcDates,gridIndex:1,boundaryGap:true,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},axisTick:{show:false}}
       ],
       yAxis:[
-        {type:'value',gridIndex:0,min:priceMin,max:priceMax,splitNumber:4,scale:false,
-          splitLine:{lineStyle:{color:'#1e2130'}},
-          axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
-        {type:'value',gridIndex:1,min:0,max:volMax*1.15,splitNumber:5,splitLine:{show:false},
-          position:'right',axisLine:{show:false},
-          axisLabel:{color:'#9ca3af',fontSize:12,
-            formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}}}
+        {type:'value',gridIndex:0,min:priceMin,max:priceMax,splitNumber:4,scale:false,splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
+        {type:'value',gridIndex:1,min:0,max:volMax*1.15,splitNumber:5,splitLine:{show:false},position:'right',axisLine:{show:false},axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}}}
       ],
       tooltip:{
         trigger:'axis',
         axisPointer:{type:'cross',crossStyle:{color:'#555'},lineStyle:{color:'#555',type:'dashed'}},
-        backgroundColor:'#0f1117',borderColor:'#252a36',borderWidth:1,
-        padding:[8,12],
+        backgroundColor:'#0f1117',borderColor:'#252a36',borderWidth:1,padding:[8,12],
         textStyle:{color:'#e4e4e7',fontSize:11,fontFamily:'monospace'},
         formatter:function(params){
           var candle=null;
-          for(var i=0;i<params.length;i++){
-            if(params[i].seriesType==='candlestick'){candle=params[i];break;}
-          }
+          for(var i=0;i<params.length;i++){ if(params[i].seriesType==='candlestick'){candle=params[i];break;} }
           if(!candle) return '';
-          var v=candle.value, o=v[0],h=v[1],l=v[2],c=v[3];
-          var isUp=c>=o;
-          var clr=isUp?'#ef4444':'#22c55e';
+          var v=candle.value,o=v[0],h=v[1],l=v[2],c=v[3];
+          var isUp=c>=o, clr=isUp?'#ef4444':'#22c55e';
           var pct=((c-o)/o*100).toFixed(2);
-          var pctStr=isUp?('+'+pct+'%'):(pct+'%');
           var di=candle.dataIndex;
           var maHtml='';
-          if(ma5[di]!=='-')  maHtml+='<span style="color:#f59e0b">MA5:'+ma5[di].toFixed(0)+'</span> ';
+          if(ma5[di]!=='-') maHtml+='<span style="color:#f59e0b">MA5:'+ma5[di].toFixed(0)+'</span> ';
           if(ma10[di]!=='-') maHtml+='<span style="color:#a78bfa">MA10:'+ma10[di].toFixed(0)+'</span> ';
           if(ma20[di]!=='-') maHtml+='<span style="color:#34d399">MA20:'+ma20[di].toFixed(0)+'</span>';
-          return '<div style="line-height:1.7">'
-            +'<b style="font-size:12px">'+candle.axisValue+'</b><br/>'
+          return '<div style="line-height:1.7"><b style="font-size:12px">'+candle.axisValue+'</b><br/>'
             +'<span style="color:#9ca3af">开</span>:'+o.toFixed(2)+' <span style="color:#9ca3af">收</span>:<b style="color:'+clr+'">'+c.toFixed(2)+'</b><br/>'
             +'<span style="color:#9ca3af">高</span>:'+h.toFixed(2)+' <span style="color:#9ca3af">低</span>:'+l.toFixed(2)+'<br/>'
-            +'<span style="color:'+clr+'">'+(isUp?'&#9650; ':'&#9660; ')+'</span>'+pctStr
+            +'<span style="color:'+clr+'">'+(isUp?'&#9650; ':'&#9660; ')+'</span>'+(isUp?'+':'')+pct+'%'
             +' <span style="color:#9ca3af">柱:'+((idx.volBar||[])[di]||0)+'</span><br/>'
             +maHtml+'</div>';
         }
       },
       series:[
-        {type:'line',name:'MA5',data:ma5,xAxisIndex:0,yAxisIndex:0,
-          smooth:false,symbol:'none',lineStyle:{color:'#f59e0b',width:1,opacity:0.85}},
-        {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,
-          smooth:false,symbol:'none',lineStyle:{color:'#a78bfa',width:1,opacity:0.85}},
-        {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,
-          smooth:false,symbol:'none',lineStyle:{color:'#34d399',width:1,opacity:0.85}},
-        {type:'candlestick',name:'指数',data:ohlcData,xAxisIndex:0,yAxisIndex:0,
-          itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e',borderWidth:1}},
-        {type:'bar',name:'波动幅度',data:volData,xAxisIndex:1,yAxisIndex:1,
-          barWidth:'40%',barGap:'25%',animation:true}
+        {type:'line',name:'MA5',data:ma5,xAxisIndex:0,yAxisIndex:0,smooth:false,symbol:'none',lineStyle:{color:'#f59e0b',width:1,opacity:0.85}},
+        {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,smooth:false,symbol:'none',lineStyle:{color:'#a78bfa',width:1,opacity:0.85}},
+        {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,smooth:false,symbol:'none',lineStyle:{color:'#34d399',width:1,opacity:0.85}},
+        {type:'candlestick',name:'指数',data:ohlcData,xAxisIndex:0,yAxisIndex:0,itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e',borderWidth:1}},
+        {type:'bar',name:'波动幅度',data:volData,xAxisIndex:1,yAxisIndex:1,barWidth:'40%',barGap:'25%'}
       ],
       dataZoom:[
         {type:'inside',xAxisIndex:[0,1],start:Math.max(0,Math.round((1-30/ohlcDates.length)*100)),end:100},
@@ -845,23 +721,23 @@ function renderMarket(D){
     },true);
   }
 
-  renderAlerts(D);
-
-  document.getElementById('btnLine').onclick = renderLine;
-  document.getElementById('btnCandle').onclick = renderCandle;
-
-  // Default to line chart
+  DOM.btnLine.onclick = renderLine;
+  DOM.btnCandle.onclick = renderCandle;
   renderLine();
 
-  window.onresize = function(){
-    ec.resize();
-  };
+  // Debounced resize
+  let resizeRaf = 0;
+  window.addEventListener('resize',()=>{
+    cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(()=>ec&&ec.resize());
+  });
 }
 
+// ═══════════════ START ═══════════════
+updateWatchCount();
+loadAll().catch(console.error);
 
-// Start
-loadHoldings().catch(console.error);
-loadAlerts();
+})();
 </script>
 </body>
 </html>
