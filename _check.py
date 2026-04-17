@@ -1,10 +1,10 @@
-c=open('index.html','r',encoding='utf-8').read()
-print('id=tokenModal:', c.find('id="tokenModal"'))
-print('id=tokenSave:', c.find('id="tokenSave"'))
-print('id=gearBtn:', c.find('id="gearBtn"'))
-print('script count:', c.count('<script'))
-print('tokenModal id line:', c[:c.find('id="tokenModal"')].count('\n')+1 if c.find('id="tokenModal"')>=0 else 'NOT FOUND')
-print('tokenSave id line:', c[:c.find('id="tokenSave"')].count('\n')+1 if c.find('id="tokenSave"')>=0 else 'NOT FOUND')
-print('gearBtn id line:', c[:c.find('id="gearBtn"')].count('\n')+1 if c.find('id="gearBtn"')>=0 else 'NOT FOUND')
-print('last </script> line:', c[:c.rfind('</script>')].count('\n')+1)
-print('file ends with:', repr(c[-50:]))
+import json
+with open('holdings.json', 'r', encoding='utf-8') as f:
+    h = json.load(f)
+items = h['items']
+for it in sorted(items, key=lambda x: x.get('cost',0)*x.get('qty',1), reverse=True)[:10]:
+    ct = it['cost'] * it['qty']
+    pt = it['price'] * it['qty']
+    name = it['name']
+    print(f'{name:40s} qty={it["qty"]} cost={it["cost"]:8.2f} price={it["price"]:8.2f} cost_t={ct:8.2f} price_t={pt:8.2f}')
+print(f'Total cost: {h["total_cost"]}  Total market: {h["total_market"]}')
