@@ -386,7 +386,7 @@ async function loadHoldings() {
       const priceU = priceTotal / q;
       for (let i = 0; i < q; i++) {
         const cU = costOverrides[item.name + '|' + w] || costU;
-        H.push({n:item.name, w:w, t:t, q:1, c:cU, p:priceU, pnl:priceU-cU, pnlPct:cU>0?(priceU-cU)/cU*100:0, gid:item.good_id||0});
+        H.push({n:item.name, w:w, t:t, q:1, c:cU, p:priceU, pnl:priceU-cU, pnlPct:cU>0?(priceU-cU)/cU*100:0, gid:item.id||0});
       }
     });
   } catch(e) {
@@ -594,7 +594,7 @@ function renderAlertsTab(tab) {
 
   let items = [];
   if (tab === 'gainers') {
-    items = [...alertsData].sort((a, b) => (a.rate_1 || 0) - (b.rate_1 || 0)).slice(0, 20);
+    items = [...alertsData].sort((a, b) => (b.rate_1 || 0) - (a.rate_1 || 0)).slice(0, 20);
   } else if (tab === 'losers') {
     items = [...alertsData].sort((a, b) => (a.rate_1 || 0) - (b.rate_1 || 0)).slice(0, 20);
   } else if (tab === 'watch') {
@@ -603,7 +603,7 @@ function renderAlertsTab(tab) {
       grid.innerHTML = '<div class="watch-empty"><p>⭐ 还没有自选饰品</p>在下方持仓表格中点击 ⭐ 关注你持有的饰品<br>或在涨幅/跌幅榜中点击 ⭐ 加入自选<button class="export-btn" onclick="loadAlerts()" style="margin-top:12px;font-size:12px">刷新异动数据</button></div>';
       return;
     }
-    items = alertsData.filter(a => watched.includes(a.good_id));
+    items = alertsData.filter(a => watched.includes(a.id));
     if (items.length === 0) {
       grid.innerHTML = '<div class="watch-empty"><p>⭐ 自选饰品不在异动数据中</p>可能是 CSQAQ 排行榜未收录该物品<button class="export-btn" onclick="loadAlerts()" style="margin-top:12px;font-size:12px">刷新</button></div>';
       return;
@@ -622,11 +622,11 @@ function renderAlertsTab(tab) {
     const chgTxt = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
     const barW = Math.min(absChg * 4, 100);  // 25% = 100% bar
     const barColor = dir === 'up' ? 'var(--fall)' : dir === 'down' ? 'var(--rise)' : 'var(--text3)';
-    const isStarred = starred[item.good_id];
+    const isStarred = starred[item.id];
     const rank = tab !== 'watch' ? '<span class="a-rank">#' + (idx + 1) + '</span>' : '';
     return '<div class="alert-card ' + dir + '" onclick="window.open(\'https://buff.163.com/market/cs2#tab=selling\', \'_blank\')">'
       + rank
-      + '<button class="a-star ' + (isStarred ? 'on' : '') + '" onclick="event.stopPropagation();toggleStar(' + item.good_id + ',\'' + (item.name_cn || item.name).replace(/'/g, '\\' + "'") + '\')">' + (isStarred ? '★' : '☆') + '</button>'
+      + '<button class="a-star ' + (isStarred ? 'on' : '') + '" onclick="event.stopPropagation();toggleStar(' + item.id + ',\'' + (item.name_cn || item.name).replace(/'/g, '\\' + "'") + '\')">' + (isStarred ? '★' : '☆') + '</button>'
       + '<div class="a-name" title="' + (item.name_cn || item.name) + '">' + (item.name_cn || item.name) + '</div>'
       + '<div class="a-meta"><span class="a-price">¥' + (item.price || '--') + '</span><span class="a-chg ' + dir + '">' + chgTxt + '</span></div>'
       + '<div class="a-period">7日涨跌 · ' + (item.change_abs_7 >= 0 ? '+' : '') + '¥' + (item.change_abs_7 || 0).toFixed(2) + '</div>'
@@ -640,7 +640,7 @@ function renderAlerts(D) {
   // migrate D.items to alertsData
   if (D.items) {
     alertsData = Object.values(D.items).map(item => ({
-      good_id: item.good_id || 0,
+      good_id: item.id || 0,
       name: item.name_cn || item.name,
       name_cn: item.name_cn,
       price: item.latest,
