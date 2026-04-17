@@ -2,7 +2,8 @@ name: Update CS2 Data
 
 on:
   schedule:
-    - cron: '30 * * * *'
+    - cron: '0 * * * *'
+    - cron: '0 16 * * *'
   workflow_dispatch:
 
 permissions:
@@ -12,9 +13,14 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix SteamDT DNS
+        run: echo "8.153.108.156 open.steamdt.com" | sudo tee -a /etc/hosts
+
       - name: Update data
-        run: python3 .github/update_data.py
         env:
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        run: python3 .github/update_data.py
