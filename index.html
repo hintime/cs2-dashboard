@@ -41,8 +41,8 @@ body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:va
 .alerts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px}
 .alert-card{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
 .alert-card:hover{border-color:var(--blue);transform:translateY(-1px)}
-.alert-card.up{border-left:3px solid var(--fall)}
-.alert-card.down{border-left:3px solid var(--rise)}
+.alert-card.up{border:1px solid var(--fall);border-left:4px solid var(--fall)}
+.alert-card.down{border:1px solid var(--rise);border-left:4px solid var(--rise)}
 .alert-card .a-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:24px}
 .alert-card .a-meta{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px}
 .alert-card .a-price{font-size:17px;font-weight:900;font-family:'DM Mono',monospace}
