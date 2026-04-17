@@ -603,7 +603,7 @@ function renderAlertsTab(tab) {
       grid.innerHTML = '<div class="watch-empty"><p>⭐ 还没有自选饰品</p>在下方持仓表格中点击 ⭐ 关注你持有的饰品<br>或在涨幅/跌幅榜中点击 ⭐ 加入自选<button class="export-btn" onclick="loadAlerts()" style="margin-top:12px;font-size:12px">刷新异动数据</button></div>';
       return;
     }
-    items = alertsData.filter(a => watched.includes(a.id));
+    items = alertsData.filter(a => watched.includes(a.id) && (!a.exterior || !a.exterior.includes('战痕累累')));
     if (items.length === 0) {
       grid.innerHTML = '<div class="watch-empty"><p>⭐ 自选饰品不在异动数据中</p>可能是 CSQAQ 排行榜未收录该物品<button class="export-btn" onclick="loadAlerts()" style="margin-top:12px;font-size:12px">刷新</button></div>';
       return;
@@ -629,7 +629,7 @@ function renderAlertsTab(tab) {
       + '<button class="a-star ' + (isStarred ? 'on' : '') + '" onclick="event.stopPropagation();toggleStar(' + item.id + ',\'' + (item.name_cn || item.name).replace(/'/g, '\\' + "'") + '\')">' + (isStarred ? '★' : '☆') + '</button>'
       + '<div class="a-name" title="' + (item.name_cn || item.name) + '">' + (item.name_cn || item.name) + '</div>'
       + '<div class="a-meta"><span class="a-price">¥' + (item.price || '--') + '</span><span class="a-chg ' + dir + '">' + chgTxt + '</span></div>'
-      + '<div class="a-period">7日涨跌 · ' + (item.change_abs_7 >= 0 ? '+' : '') + '¥' + (item.change_abs_7 || 0).toFixed(2) + '</div>'
+      + '<div class="a-period">7日涨跌 · ' + (item.rate_7 >= 0 ? '+' : '') + '¥' + (item.rate_7 || 0).toFixed(2) + '</div>'
       + '<div class="a-bar"><div class="a-bar-fill" style="width:' + barW + '%;background:' + barColor + '"></div></div>'
       + '</div>';
   }).join('');
@@ -645,7 +645,7 @@ function renderAlerts(D) {
       name_cn: item.name_cn,
       price: item.latest,
       rate_1: item.change || 0,
-      change_abs_7: item.change_abs_1 || 0,
+      rate_7: item.rate_1 || 0,
     }));
   }
   renderAlertsTab(currentTab);
