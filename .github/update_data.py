@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Fetch CSQAQ alerts + SteamDT K-lines and push to market.json"""
-import urllib.request, json, ssl, base64, time, os, socket
+import urllib.request, urllib.parse, json, ssl, base64, time, os, socket
 from datetime import datetime, timezone
 
 ctx = ssl.create_default_context()
@@ -12,18 +12,13 @@ GH_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 STEAM_KEY = os.environ.get("STEAMDT_KEY", "")
 REPO = "hintime/cs2-dashboard"
 
-# SteamDT: use IP direct to bypass DNS issues in CI
-STEAMDT_HOST = "open.steamdt.com"
-STEAMDT_IP = "8.153.108.156"  # Resolved locally
-
 def log(msg):
     print("[ok] " + str(msg), flush=True)
 
 def steamdt_request(path, body=None):
-    """Make request to SteamDT using IP direct + Host header"""
-    url = f"https://{STEAMDT_IP}{path}"
+    """Make request to SteamDT API"""
+    url = f"https://open.steamdt.com{path}"
     headers = {
-        "Host": STEAMDT_HOST,
         "Authorization": f"Bearer {STEAM_KEY}",
         "User-Agent": "Mozilla/5.0",
         "Content-Type": "application/json"
