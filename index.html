@@ -122,7 +122,7 @@ tbody tr:hover{background:rgba(59,130,246,.08)}
       <button class="refresh-btn" onclick="location.reload()">刷新</button>
       <button class="gear-btn" id="gearBtn" title="设置 GitHub Token">⚙️</button>
       <span class="badge"><span class="dot"></span>实时</span>
-      <span class="badge" id="updateTime">--</span>
+      <span class="badge" id="updateTime" title="数据更新时间">--</span>
     </div>
   </div>
 
@@ -399,8 +399,9 @@ async function loadAll() {
   // ── Process market ──
   if (marketR) {
     marketData = marketR;
-    if (marketR.update_time) {
-      DOM.updateTime.textContent = new Date(marketR.update_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    const ut = marketR.update_time || marketR.alerts_updated || marketR.items_updated;
+    if (ut) {
+      DOM.updateTime.textContent = '更新 ' + new Date(ut).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     }
     alertsData = Array.isArray(marketR.alerts) ? marketR.alerts : [];
     if (marketR.alerts_updated) {
