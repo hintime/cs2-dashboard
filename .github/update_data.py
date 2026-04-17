@@ -58,6 +58,7 @@ kline_data = {}
 for name in ITEMS:
     log(f"  K-line: {name[:30]}...")
     resp = steamdt_request("/open/cs2/item/v1/kline", {
+        "app_id": 730,
         "marketHashName": name,
         "type": 2,  # Daily K
         "platform": "BUFF"
@@ -79,7 +80,7 @@ for name in ITEMS:
 log("Fetching SteamDT prices...")
 price_data = {}
 for name in ITEMS:
-    resp = steamdt_request(f"/open/cs2/v1/price/single?marketHashName={urllib.parse.quote(name)}")
+    resp = steamdt_request(f"/open/cs2/v1/price/single?app_id=730&marketHashName={urllib.parse.quote(name)}")
     if resp.get("success"):
         data = resp.get("data", [])
         if data:
