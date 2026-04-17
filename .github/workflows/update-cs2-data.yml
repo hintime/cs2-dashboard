@@ -1,0 +1,38 @@
+name: Update CS2 Data
+
+on:
+  schedule:
+    - cron: '0 * * * *'    # 每小时更新价格+异动
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install deps
+        run: pip install pycryptodome
+
+      - name: Configure git
+        run: |
+          git config user.email "hintime@users.noreply.github.com"
+          git config user.name "hintime"
+
+      - name: Update ECO prices + CSQAQ alerts
+        env:
+          ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
+          CSQ_API_TOKEN: ${{ secrets.CSQ_API_TOKEN }}
+          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: python update.py all
