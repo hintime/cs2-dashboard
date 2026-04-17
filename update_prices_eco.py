@@ -12,11 +12,16 @@ from Crypto.Hash import SHA256
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 从文件加载私钥
+# 从环境变量或本地文件加载私钥（优先环境变量 ECO_PRIVATE_KEY_B64）
 def load_private_key():
-    key_path = os.path.join(SCRIPT_DIR, 'eco_private_key.txt')
-    with open(key_path, 'r') as f:
-        key_b64 = f.read().strip()
+    key_b64 = os.environ.get('ECO_PRIVATE_KEY_B64')
+    if not key_b64:
+        key_path = os.path.join(SCRIPT_DIR, 'eco_private_key.txt')
+        if os.path.exists(key_path):
+            with open(key_path, 'r') as f:
+                key_b64 = f.read().strip()
+        else:
+            raise FileNotFoundError('ECO private key not found. Set ECO_PRIVATE_KEY_B64 env var or create eco_private_key.txt')
     pem = '-----BEGIN RSA PRIVATE KEY-----\n' + key_b64 + '\n-----END RSA PRIVATE KEY-----'
     return RSA.import_key(pem)
 
