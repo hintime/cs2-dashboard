@@ -64,23 +64,16 @@ for name in ITEMS:
     })
     if resp.get("success"):
         raw = resp.get("data", [])
-        # Parse K-line: data is [[{ts, o, c, h, l, v}, ...]]
-        if raw and isinstance(raw, list) and len(raw) > 0:
-            # raw[0] is the array of points
-            points = raw[0] if isinstance(raw[0], list) else raw
-            parsed = []
-            for p in points:
-                if isinstance(p, dict):
-                    parsed.append([p.get("t", 0), p.get("o", 0), p.get("h", 0), p.get("l", 0), p.get("c", 0), p.get("v", 0)])
-                elif isinstance(p, list) and len(p) >= 5:
-                    # Format: [ts, open, close, high, low] or [ts, open, high, low, close]
-                    parsed.append([p[0], p[1], p[3] if len(p) > 3 else p[1], p[4] if len(p) > 4 else p[1], p[2] if len(p) > 2 else p[1], 0])
-            kline_data[name] = parsed
-            log(f"    -> {len(parsed)} points")
-        else:
-            log(f"    -> no data")
+        # data is flat array of [ts, open, close, high, low] — 5 elements each
+        parsed = []
+        if raw and isinstance(raw, list):
+            for p in raw:
+                if isinstance(p, list) and len(p) >= 5:
+                    parsed.append([int(p[0]), float(p[1]), float(p[2]), float(p[3]), float(p[4]), 0])
+        kline_data[name] = parsed
+        log(f"    -> {len(parsed)} points")
     else:
-        log(f"    -> failed: {resp.get('errorMsg', '?')}")
+        log(f"    -> SteamDT failed: code={resp.get('errorCode')} msg={resp.get('errorMsg')} str={resp.get('errorCodeStr')}")
 
 # --- SteamDT prices ---
 log("Fetching SteamDT prices...")
@@ -144,6 +137,13 @@ for page in range(1, 5):
             break
     except Exception as e:
         log(f"CSQAQ page {page} failed: {e}")
+        # Also try to read error body
+        if hasattr(e, 'read'):
+            try:
+                body = e.read()
+                log(f"  CSQAQ error body: {body.decode('utf-8', errors='replace')[:200]}")
+            except:
+                pass
     time.sleep(1.2)
 
 log(f"CSQAQ alerts: {len(all_alerts)}")
