@@ -387,7 +387,7 @@ async function loadHoldings() {
       const w = item.wear ? (item.wear.includes('崭新') ? 'FN' : item.wear.includes('略有磨损') ? 'FT' : item.wear.includes('久经沙场') ? 'FT' : item.wear.includes('受损') ? 'WW' : item.wear.includes('战痕累累') ? 'BS' : '') : '';
       const q = item.qty || 1;
       const costTotal = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost;
-      const priceTotal = item.price;
+      const priceTotal = item.price * (item.qty || 1);
       const costU = costTotal / q;
       const priceU = priceTotal / q;
       for (let i = 0; i < q; i++) {
