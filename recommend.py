@@ -104,6 +104,16 @@ def fetch_csqaq_alerts():
                         'rate_7': round(float(item.get('sell_price_rate_7') or 0), 2),
                         'rate_30': round(float(item.get('sell_price_rate_30') or 0), 2),
                         'img': item.get('img', ''),
+                        # Multi-platform supply/demand
+                        'buff_sell': int(item.get('buff_sell_num') or 0),
+                        'buff_buy': int(item.get('buff_buy_num') or 0),
+                        'buff_buy_price': float(item.get('buff_buy_price') or 0),
+                        'yyyp_sell': int(item.get('yyyp_sell_num') or 0),
+                        'yyyp_buy': int(item.get('yyyp_buy_num') or 0),
+                        'yyyp_price': float(item.get('yyyp_sell_price') or 0),
+                        'steam_sell': int(item.get('steam_sell_num') or 0),
+                        'steam_buy': int(item.get('steam_buy_num') or 0),
+                        'steam_buy_price': float(item.get('steam_buy_price') or 0),
                     })
                 if len(items) < 50: break
             except Exception as e:
@@ -162,6 +172,15 @@ def generate_recommendations(csqaq_alerts, eco_items):
             'rate_7': alert.get('rate_7', 0),
             'rate_30': alert.get('rate_30', 0),
             'img': alert.get('img', ''),
+            'buff_sell': alert.get('buff_sell', 0),
+            'buff_buy': alert.get('buff_buy', 0),
+            'buff_buy_price': alert.get('buff_buy_price', 0),
+            'yyyp_sell': alert.get('yyyp_sell', 0),
+            'yyyp_buy': alert.get('yyyp_buy', 0),
+            'yyyp_price': alert.get('yyyp_price', 0),
+            'steam_sell': alert.get('steam_sell', 0),
+            'steam_buy': alert.get('steam_buy', 0),
+            'steam_buy_price': alert.get('steam_buy_price', 0),
         }
         if eco_match:
             entry['eco_price'] = float(eco_match.get('Price') or 0)
@@ -203,16 +222,40 @@ def generate_recommendations(csqaq_alerts, eco_items):
     recs['momentum'].sort(key=lambda x: x['_score'], reverse=True)
     recs['momentum'] = recs['momentum'][:20]
 
-    # ── 💎 低估捡漏 (Undervalued) ──
+    # ── 💎 低估捡漏 (Undervalued / Cross-platform Arbitrage) ──
+    # Strategy A: ECO综合价 > 售价 (估值修复空间) — must have BUFF liquidity
     for m in merged + eco_only:
         ep = m.get('eco_price', 0)
         ec = m.get('eco_compre', 0)
         selling = m.get('eco_selling', 0)
-        if ep > 50 and ec > ep * 1.05 and ec < ep * 2.0 and selling > 0 and selling < 200:
+        buff_sell = m.get('buff_sell', 0)
+        if ep > 50 and ec > ep * 1.05 and ec < ep * 2.0 and selling > 0 and selling < 200 and buff_sell > 0:
             ratio = round(ec / ep, 3)
             m['_score'] = ratio
             m['_reason'] = f'综合价/售价={ratio:.1%}'
             recs['undervalued'].append(m)
+    # Strategy B: BUFF求购价 > BUFF售价 (买盘强于卖盘)
+    for m in merged:
+        bp = m.get('price', 0)
+        bbp = m.get('buff_buy_price', 0)
+        if bp > 50 and bbp > bp * 1.01:
+            premium = round(bbp / bp, 3)
+            key = m.get('name', '')
+            if not any(r.get('name') == key for r in recs['undervalued']):
+                m['_score'] = premium
+                m['_reason'] = f'BUFF求购¥{bbp:.0f}>售价¥{bp:.0f} 溢价{premium:.1%}'
+                recs['undervalued'].append(m)
+    # Strategy C: Steam求购价远高于BUFF (跨平台套利)
+    for m in merged:
+        bp = m.get('price', 0)
+        sbp = m.get('steam_buy_price', 0)
+        if bp > 100 and sbp > bp * 1.15:
+            premium = round(sbp / bp, 3)
+            key = m.get('name', '')
+            if not any(r.get('name') == key for r in recs['undervalued']):
+                m['_score'] = premium
+                m['_reason'] = f'Steam求购¥{sbp:.0f}/BUFF¥{bp:.0f} 跨平台溢价{premium:.0%}'
+                recs['undervalued'].append(m)
     recs['undervalued'].sort(key=lambda x: x['_score'], reverse=True)
     recs['undervalued'] = recs['undervalued'][:20]
 
@@ -224,17 +267,36 @@ def generate_recommendations(csqaq_alerts, eco_items):
     recs['oversold'].sort(key=lambda x: x['_score'], reverse=True)
     recs['oversold'] = recs['oversold'][:20]
 
-    # ── ⚡ 供不应求 (Supply Squeeze) ──
-    for m in merged + eco_only:
-        selling = m.get('eco_selling', 0)
-        qg = m.get('eco_qg_total', 0)
-        price = m.get('eco_price', 0) or m.get('price', 0)
-        if selling > 0 and qg > 0 and price > 20:
-            ratio = qg / selling
-            if ratio >= 0.3 and ratio <= 50 and selling < 100:
+    # ── ⚡ 供不应求 (Supply Squeeze) — CSQAQ 多平台供需 ──
+    for m in merged:
+        name_lower = m.get('name', '').lower()
+        # Skip cases/keys/containers
+        if any(kw in name_lower for kw in ('武器箱', '钥匙', '箱', 'key', 'case')):
+            continue
+        buff_sell = m.get('buff_sell', 0)
+        buff_buy = m.get('buff_buy', 0)
+        steam_buy = m.get('steam_buy', 0)
+        price = m.get('price', 0) or m.get('eco_price', 0)
+        if price < 20: continue
+        # BUFF 求购/在售比
+        if buff_sell > 0 and buff_buy > 0:
+            ratio = buff_buy / buff_sell
+            if ratio >= 0.15 and buff_sell < 500:
                 m['_score'] = round(ratio, 2)
-                m['_reason'] = f'求购/在售={ratio:.1%} 在售{selling}件'
+                parts = []
+                parts.append(f'BUFF求购{buff_buy}/在售{buff_sell}={ratio:.0%}')
+                if steam_buy > 50:
+                    parts.append(f'Steam求购{steam_buy}')
+                if m.get('yyyp_buy', 0) > 10:
+                    parts.append(f'悠悠求购{m["yyyp_buy"]}')
+                m['_reason'] = ' · '.join(parts)
                 recs['scarce'].append(m)
+                continue
+        # Steam 求购量异常高（求购>500 且 steam_buy/buff_sell > 5，说明有大量买盘）
+        if steam_buy > 500 and buff_sell > 0 and steam_buy / buff_sell < 200:
+            m['_score'] = round(steam_buy / buff_sell, 2)
+            m['_reason'] = f'Steam求购{steam_buy} · BUFF在售{buff_sell}'
+            recs['scarce'].append(m)
     recs['scarce'].sort(key=lambda x: x['_score'], reverse=True)
     recs['scarce'] = recs['scarce'][:20]
 

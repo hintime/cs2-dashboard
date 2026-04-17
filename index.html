@@ -736,6 +736,22 @@ function renderRecTab(tab) {
       ecoLine = '<span class="r-eco">ECO ¥' + item.eco_price.toFixed(0) + (item.eco_selling ? ' · 在售' + item.eco_selling : '') + '</span>';
     }
 
+    // Supply/demand line (from CSQAQ multi-platform data)
+    let sdLine = '';
+    const sdParts = [];
+    if (item.buff_sell > 0 || item.buff_buy > 0) {
+      sdParts.push('BUFF卖' + (item.buff_sell||0) + '/买' + (item.buff_buy||0));
+    }
+    if (item.yyyp_sell > 0 || item.yyyp_buy > 0) {
+      sdParts.push('悠悠卖' + (item.yyyp_sell||0) + '/买' + (item.yyyp_buy||0));
+    }
+    if (item.steam_buy > 0) {
+      sdParts.push('Steam买' + item.steam_buy);
+    }
+    if (sdParts.length) {
+      sdLine = '<div style="font-size:10px;color:var(--text3);margin-top:2px">' + sdParts.join(' · ') + '</div>';
+    }
+
     let rateLine = '';
     if (item.rate_7 !== undefined && item.rate_7 !== 0) {
       const color = item.rate_7 >= 0 ? 'var(--rise)' : 'var(--fall)';
@@ -748,7 +764,7 @@ function renderRecTab(tab) {
       '<span class="r-badge">' + (REC_BADGES[tab]||'') + '</span>' +
       '<div class="r-name" title="' + displayName + '">' + displayName + '</div>' +
       '<div class="r-prices">' + priceLine + ecoLine + '</div>' +
-      reason + rateLine;
+      sdLine + reason + rateLine;
     frag.appendChild(div);
   });
   grid.innerHTML = '';
