@@ -53,7 +53,6 @@ body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:va
 .alert-card .a-bar-fill{height:100%;border-radius:2px;transition:width .5s}
 .alert-card .a-star{position:absolute;top:8px;right:10px;font-size:14px;cursor:pointer;opacity:.3;transition:opacity .2s;background:none;border:none;color:#f59e0b;padding:0;line-height:1}
 .alert-card .a-star:hover,.alert-card .a-star.on{opacity:1}
-.alert-card .a-tag{position:absolute;top:0;right:0;background:var(--rise);color:#fff;font-size:9px;padding:2px 6px 2px 8px;border-radius:0 10px 0 8px;font-weight:700;opacity:.9}
 .a-rank{position:absolute;bottom:8px;right:10px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 
 .watch-empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:13px}
@@ -107,13 +106,16 @@ tbody tr:hover{background:rgba(59,130,246,.08)}
 .modal-btns button{padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px;border:1px solid var(--border)}
 .modal-btns .btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
 .modal-btns .btn-secondary{background:none;color:var(--text2)}
+
+.no-data{text-align:center;padding:40px 16px;color:var(--text3);font-size:13px}
+.no-data .icon{font-size:32px;margin-bottom:12px;opacity:.4}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <div>
-      <h1>CS2 饰品投资看板 <span style="font-size:14px;color:var(--text3)">v2026.04.18</span></h1>
+      <h1>CS2 饰品投资看板</h1>
       <div class="sub">数据来源: ECOSteam · GitHub Pages</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -124,7 +126,8 @@ tbody tr:hover{background:rgba(59,130,246,.08)}
     </div>
   </div>
 
-  <div class="market-index" id="marketSection">
+  <!-- 大盘指数 — 仅在有数据时渲染 -->
+  <div class="market-index" id="marketSection" style="display:none">
     <div class="mi-header">
       <span class="mi-title">CS2 大盘指数</span>
       <div><span class="mi-num" id="miNum">--</span><span class="mi-chg" id="miChg">--</span></div>
@@ -156,7 +159,6 @@ tbody tr:hover{background:rgba(59,130,246,.08)}
       </div>
     </div>
     <div id="alertsContent" style="padding:12px 16px">
-      <div id="alertsLoading" style="color:var(--text3);font-size:12px;text-align:center;padding:20px">加载中...</div>
       <div id="alertsGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
     </div>
   </div>
@@ -166,12 +168,15 @@ tbody tr:hover{background:rgba(59,130,246,.08)}
       <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
       <div style="display:flex;align-items:center;gap:4px">
         <div class="tabs" id="tabBar"></div>
-        <button class="export-btn" id="exportBtn" title="手动导出 cost-overrides.json">📥 导出</button>
+        <button class="export-btn" id="exportBtn" title="导出 cost-overrides.json">📥 导出</button>
         <span class="sync-status" id="syncStatus"></span>
       </div>
     </div>
     <div style="overflow-x:auto">
-      <table><thead><tr><th data-col="n">饰品</th><th data-col="w">磨损</th><th data-col="c" class="text-r">成本</th><th data-col="p" class="text-r">现价</th><th data-col="pnl" class="text-r">盈亏</th><th data-col="pnlPct" class="text-r">盈亏%</th></tr></thead><tbody id="tbody"></tbody></table>
+      <table><thead><tr>
+        <th data-col="n">饰品</th><th data-col="w">磨损</th><th data-col="c" class="text-r">成本</th>
+        <th data-col="p" class="text-r">现价</th><th data-col="pnl" class="text-r">盈亏</th><th data-col="pnlPct" class="text-r">盈亏%</th>
+      </tr></thead><tbody id="tbody"></tbody></table>
     </div>
     <div id="pager" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:#71717a"></div>
   </div>
@@ -199,6 +204,39 @@ tbody tr:hover{background:rgba(59,130,246,.08)}
 (function(){
 'use strict';
 
+// ═══════════════ CONSTANTS — 唯一真相源 ═══════════════
+// 磨损等级：中文 → 英文缩写 → 中文显示名
+// 与 holdings.json 的 wear 字段对齐（后端已修正：略有磨损=MW, 久经沙场=FT）
+const WEAR_MAP = {
+  'FN': '崭新出厂',
+  'MW': '略有磨损',
+  'FT': '久经沙场',
+  'WW': '战地风云',
+  'BS': '战痕累累'
+};
+
+// 从 holdings.json category 中文 → 前端分类 key
+const CAT_MAP = {
+  '步枪':   'weapon',
+  '手枪':   'weapon',
+  '冲锋枪': 'weapon',
+  '手套':   'gloves',
+  '匕首':   'knives',
+  '印花':   'sticker',
+  '音乐盒': 'music',
+  '其他':   'other'
+};
+
+// 前端分类 key → 中文显示名
+const CAT_LABELS = {
+  'weapon':  '武器',
+  'gloves':  '手套',
+  'knives':  '匕首',
+  'sticker': '印花',
+  'music':   '音乐',
+  'other':   '其他'
+};
+
 // ═══════════════ DOM CACHE ═══════════════
 const $ = id => document.getElementById(id);
 const DOM = {
@@ -206,7 +244,7 @@ const DOM = {
   totalValue:$('totalValue'), totalPnl:$('totalPnl'), totalPnlPct:$('totalPnlPct'),
   totalCost:$('totalCost'), totalCount:$('totalCount'),
   countBadge:$('countBadge'), tbody:$('tbody'), pager:$('pager'),
-  tabBar:$('tabBar'), alertsGrid:$('alertsGrid'), alertsLoading:$('alertsLoading'),
+  tabBar:$('tabBar'), alertsGrid:$('alertsGrid'),
   alertsUpdateTime:$('alertsUpdateTime'), watchCount:$('watchCount'),
   syncStatus:$('syncStatus'), updateTime:$('updateTime'),
   marketSection:$('marketSection'), indexChart:$('indexChart'),
@@ -215,16 +253,17 @@ const DOM = {
 };
 
 // ═══════════════ STATE ═══════════════
-let H = [];
-let costOverrides = {};
-let marketData = null;
-let alertsData = [];
+let H = [];                // holdings items (flattened)
+let costOverrides = {};    // { "饰品名|FN": cost_float }
+let marketData = null;     // raw market.json
+let alertsData = [];       // marketData.alerts
 let currentTab = 'gainers';
 let curCat = 'all';
 let curPage = 1;
-let sortCol = 'pnlPct', sortDir = 'desc';
-let ec = null;  // ECharts instance
-let filteredCache = null;  // cache filtered results
+let sortCol = 'pnlPct';
+let sortDir = 'desc';
+let ec = null;             // ECharts instance
+let filteredCache = null;
 let filterCacheKey = '';
 
 const PAGE_SIZE = 30;
@@ -238,191 +277,218 @@ let ghToken = localStorage.getItem(LS_TOKEN_KEY) || '';
 let syncTimer = null;
 let starred = JSON.parse(localStorage.getItem(LS_STARRED) || '{}');
 
-const CAT_MAP = {'武器':'weapon','印花':'sticker','音乐':'music','agent':'agent'};
+// ═══════════════ HELPERS ═══════════════
+function wearCN(code) { return WEAR_MAP[code] || code || '--'; }
 
-function wearCN(w){
-  const m={'FN':'崭新出厂','MW':'略有磨损','FT':'略有磨损','WW':'战地风云','BS':'久经沙场'};
-  return m[w]||w;
+function overrideKey(name, wear) {
+  // Stable key: name|WEAR_CODE (e.g. "AK-47 红线|FT")
+  // Empty/other wear uses empty string
+  return name + '|' + (wear || '');
+}
+
+function isBS(item) {
+  // Unified BS filter: check both wear code and name
+  return item.w === 'BS' || item.n.includes('战痕累累');
 }
 
 // ═══════════════ OVERRIDES PERSISTENCE ═══════════════
-function saveOverrides(){
+function saveOverrides() {
   localStorage.setItem(LS_KEY, JSON.stringify(costOverrides));
-  if(ghToken) scheduleSync();
+  if (ghToken) scheduleSync();
 }
 
-function scheduleSync(){
+function scheduleSync() {
   clearTimeout(syncTimer);
   syncTimer = setTimeout(syncToGitHub, 2000);
 }
 
-async function syncToGitHub(){
-  if(!ghToken) return;
+async function syncToGitHub() {
+  if (!ghToken) return;
   const el = DOM.syncStatus;
   el.textContent = '⏳ 同步中...';
   el.className = 'sync-status show';
   try {
     const getR = await fetch(GH_API, {
-      headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}
+      headers: {'Authorization':'token '+ghToken, 'Accept':'application/vnd.github.v3+json'}
     });
     let sha = null;
-    if(getR.ok){ sha = (await getR.json()).sha; }
+    if (getR.ok) { sha = (await getR.json()).sha; }
     const body = {
-      message:'auto: update cost overrides from dashboard',
-      content:btoa(unescape(encodeURIComponent(JSON.stringify(costOverrides,null,2)))),
-      branch:'main'
+      message: 'auto: update cost overrides',
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(costOverrides,null,2)))),
+      branch: 'main'
     };
-    if(sha) body.sha = sha;
+    if (sha) body.sha = sha;
     const putR = await fetch(GH_API, {
-      method:'PUT',
-      headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-      body:JSON.stringify(body)
+      method: 'PUT',
+      headers: {'Authorization':'token '+ghToken, 'Accept':'application/vnd.github.v3+json', 'Content-Type':'application/json'},
+      body: JSON.stringify(body)
     });
-    if(putR.ok){
-      el.textContent = '✅ 已同步';
-      el.className = 'sync-status show ok';
-      setTimeout(()=>{ el.className='sync-status'; },3000);
+    if (putR.ok) {
+      el.textContent = '✅ 已同步'; el.className = 'sync-status show ok';
+      setTimeout(() => { el.className = 'sync-status'; }, 3000);
     } else {
       const err = await putR.json();
-      el.textContent = '❌ 失败: '+(err.message||putR.status);
-      el.className = 'sync-status show err';
+      el.textContent = '❌ ' + (err.message||putR.status); el.className = 'sync-status show err';
     }
   } catch(e) {
-    el.textContent = '❌ 网络错误';
-    el.className = 'sync-status show err';
+    el.textContent = '❌ 网络错误'; el.className = 'sync-status show err';
   }
 }
 
-async function loadOverrides(){
+async function loadOverrides() {
   try {
     const r = await fetch('cost-overrides.json');
-    if(r.ok){ const remote = await r.json(); if(remote&&typeof remote==='object') Object.assign(costOverrides,remote); }
-  } catch(e){}
+    if (r.ok) { const remote = await r.json(); if (remote && typeof remote === 'object') Object.assign(costOverrides, remote); }
+  } catch(e) {}
   try {
-    const local = JSON.parse(localStorage.getItem(LS_KEY)||'{}');
-    if(local&&typeof local==='object') Object.assign(costOverrides,local);
-  } catch(e){}
+    const local = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    if (local && typeof local === 'object') Object.assign(costOverrides, local);
+  } catch(e) {}
 }
 
 // ═══════════════ STAR SYSTEM ═══════════════
-function saveStars(){ localStorage.setItem(LS_STARRED,JSON.stringify(starred)); updateWatchCount(); }
-function updateWatchCount(){ DOM.watchCount.textContent = Object.keys(starred).filter(k=>starred[k]).length; }
-function toggleStar(goodId){
+function saveStars() { localStorage.setItem(LS_STARRED, JSON.stringify(starred)); updateWatchCount(); }
+function updateWatchCount() { DOM.watchCount.textContent = Object.keys(starred).filter(k => starred[k]).length; }
+function toggleStar(goodId) {
   starred[goodId] = !starred[goodId];
   saveStars();
-  if(currentTab==='watch') renderAlertsTab('watch');
-  document.querySelectorAll('.row-star[data-gid="'+goodId+'"]').forEach(b=>{ b.textContent=starred[goodId]?'★':'☆'; });
+  if (currentTab === 'watch') renderAlertsTab('watch');
+  document.querySelectorAll('.row-star[data-gid="'+goodId+'"]').forEach(b => { b.textContent = starred[goodId] ? '★' : '☆'; });
 }
 
-// ═══════════════ LOAD DATA (single fetch) ═══════════════
-async function loadAll(){
+// ═══════════════ LOAD DATA ═══════════════
+async function loadAll() {
   await loadOverrides();
 
-  // Parallel fetch holdings + market
   const [holdingsR, marketR] = await Promise.all([
-    fetch('holdings.json?v=2').then(r=>r.json()).catch(()=>null),
-    fetch('market.json').then(r=>r.json()).catch(()=>null)
+    fetch('holdings.json?v=3').then(r => r.json()).catch(() => null),
+    fetch('market.json').then(r => r.json()).catch(() => null)
   ]);
 
-  // Process holdings
-  if(holdingsR){
+  // ── Process holdings ──
+  if (holdingsR && Array.isArray(holdingsR.items)) {
     H = [];
     holdingsR.items.forEach(item => {
-      const t = CAT_MAP[item.category]||'weapon';
-      const w = item.wear ? (item.wear.includes('崭新')?'FN':item.wear.includes('略有磨损')?'FT':item.wear.includes('久经沙场')?'FT':item.wear.includes('受损')?'WW':item.wear.includes('战痕累累')?'BS':'') : '';
-      const q = item.qty||1;
-      const costTotal = item.costs ? item.costs.reduce((a,b)=>a+b,0) : item.cost;
-      const priceTotal = item.price * q;
-      const costU = costTotal / q;
-      const priceU = priceTotal / q;
-      for(let i=0;i<q;i++){
-        const cU = costOverrides[item.name+'|'+w]||costU;
-        H.push({n:item.name,w:w,t:t,q:1,c:cU,p:priceU,pnl:priceU-cU,pnlPct:cU>0?(priceU-cU)/cU*100:0,gid:item.id||0});
+      const catKey = CAT_MAP[item.category] || 'other';
+      const wearCode = item.wear || '';  // FN/MW/FT/WW/BS/other/'' 
+      const q = item.qty || 1;
+      // cost: single number per item (total for qty)
+      const costTotal = item.cost;
+      const pricePerUnit = item.price;   // ECO returns per-unit price
+      const costPerUnit = costTotal / q;
+
+      for (let i = 0; i < q; i++) {
+        const key = overrideKey(item.name, wearCode === 'other' ? '' : wearCode);
+        const cU = costOverrides[key] || costPerUnit;
+        H.push({
+          n: item.name,
+          w: wearCode === 'other' ? '' : wearCode,
+          t: catKey,
+          q: 1,
+          c: cU,
+          p: pricePerUnit,
+          pnl: pricePerUnit - cU,
+          pnlPct: cU > 0 ? (pricePerUnit - cU) / cU * 100 : 0,
+          gid: item.id || 0
+        });
       }
     });
   }
 
-  // Process market
-  if(marketR){
+  // ── Process market ──
+  if (marketR) {
     marketData = marketR;
-    if(marketR.update_time){
-      DOM.updateTime.textContent = new Date(marketR.update_time).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    if (marketR.update_time) {
+      DOM.updateTime.textContent = new Date(marketR.update_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     }
-    alertsData = marketR.alerts || [];
-    if(alertsData.length && DOM.alertsLoading) DOM.alertsLoading.style.display='none';
-  } else {
-    DOM.marketSection.style.display = 'none';
+    alertsData = Array.isArray(marketR.alerts) ? marketR.alerts : [];
+    if (marketR.alerts_updated) {
+      try {
+        DOM.alertsUpdateTime.textContent = new Date(marketR.alerts_updated).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+      } catch(e) {}
+    }
   }
 
   initDashboard();
-  if(marketData) renderMarket(marketData);
+  if (marketData && marketData.index) renderMarket(marketData);
   renderAlertsTab('gainers');
 }
 
 // ═══════════════ DASHBOARD INIT ═══════════════
-function initDashboard(){
+function initDashboard() {
   updateKPI();
   buildTabs();
   render();
 }
 
-function updateKPI(){
-  const tc = H.reduce((s,h)=>s+h.c,0);
-  const tp = H.reduce((s,h)=>s+h.p,0);
-  const tpct = tc>0?(tp-tc)/tc*100:0;
-  const isUp = tp>=tc;
-  DOM.totalValue.textContent = '¥'+tp.toLocaleString();
-  DOM.totalValue.className = 'value '+(isUp?'rise':'fall');
-  DOM.totalPnl.textContent = (isUp?'+':'')+'¥'+(tp-tc).toLocaleString();
-  DOM.totalPnl.className = 'value '+(isUp?'rise':'fall');
-  DOM.totalPnlPct.textContent = (isUp?'+':'')+tpct.toFixed(2)+'% · '+Math.round(H.filter(h=>h.pnl>0).length/H.length*100)+'% 胜率';
-  DOM.totalCost.textContent = '¥'+tc.toLocaleString();
-  DOM.totalCount.textContent = H.length+' 件';
+function updateKPI() {
+  if (!H.length) return;
+  const tc = H.reduce((s,h) => s + h.c, 0);
+  const tp = H.reduce((s,h) => s + h.p, 0);
+  const tpct = tc > 0 ? (tp - tc) / tc * 100 : 0;
+  const isUp = tp >= tc;
+  DOM.totalValue.textContent = '¥' + tp.toLocaleString();
+  DOM.totalValue.className = 'value ' + (isUp ? 'rise' : 'fall');
+  DOM.totalPnl.textContent = (isUp ? '+' : '') + '¥' + (tp - tc).toLocaleString();
+  DOM.totalPnl.className = 'value ' + (isUp ? 'rise' : 'fall');
+  DOM.totalPnlPct.textContent = (isUp ? '+' : '') + tpct.toFixed(2) + '% · ' + Math.round(H.filter(h => h.pnl > 0).length / H.length * 100) + '% 胜率';
+  DOM.totalCost.textContent = '¥' + tc.toLocaleString();
+  DOM.totalCount.textContent = H.length + ' 件';
 }
 
-function buildTabs(){
-  const cats = [{key:'all',label:'全部'},{key:'weapon',label:'武器'},{key:'sticker',label:'印花'},{key:'music',label:'音乐'},{key:'agent',label:'角色'}];
+function buildTabs() {
+  // Build category tabs dynamically from actual data
+  const catCounts = {};
+  H.forEach(h => { catCounts[h.t] = (catCounts[h.t] || 0) + 1; });
+
+  const cats = [{key:'all', label:'全部', count:H.length}];
+  // Show categories that exist in data, in display order
+  ['weapon','gloves','knives','sticker','music','other'].forEach(key => {
+    if (catCounts[key]) cats.push({key, label:CAT_LABELS[key], count:catCounts[key]});
+  });
+
   let html = '';
   cats.forEach(c => {
-    const cnt = c.key==='all'?H.length:H.filter(h=>h.t===c.key).length;
-    html += '<button class="tab '+(c.key==='all'?'on':'')+'" data-cat="'+c.key+'">'+c.label+' '+cnt+'</button>';
+    html += '<button class="tab ' + (c.key === 'all' ? 'on' : '') + '" data-cat="' + c.key + '">' + c.label + ' ' + c.count + '</button>';
   });
   DOM.tabBar.innerHTML = html;
 }
 
 // ═══════════════ TABLE RENDER ═══════════════
-function getFiltered(){
-  const key = curCat+'|'+sortCol+'|'+sortDir;
-  if(filteredCache && filterCacheKey===key) return filteredCache;
-  const raw = curCat==='all'?H:H.filter(h=>h.t===curCat);
-  filteredCache = raw.filter(h=>!(h.w&&h.w==='BS')).sort((a,b)=>{
-    const av=a[sortCol]||0, bv=b[sortCol]||0;
-    return sortDir==='asc'?av-bv:bv-av;
+function getFiltered() {
+  const key = curCat + '|' + sortCol + '|' + sortDir;
+  if (filteredCache && filterCacheKey === key) return filteredCache;
+  let raw = curCat === 'all' ? H : H.filter(h => h.t === curCat);
+  filteredCache = raw.filter(h => !isBS(h)).sort((a,b) => {
+    const av = a[sortCol] || 0, bv = b[sortCol] || 0;
+    if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    return sortDir === 'asc' ? av - bv : bv - av;
   });
   filterCacheKey = key;
   return filteredCache;
 }
 
-function invalidateCache(){ filteredCache=null; filterCacheKey=''; }
+function invalidateCache() { filteredCache = null; filterCacheKey = ''; }
 
-function render(){
+function render() {
   const items = getFiltered();
   DOM.countBadge.textContent = items.length;
-  const totalPages = Math.max(1,Math.ceil(items.length/PAGE_SIZE));
-  if(curPage>totalPages) curPage = totalPages;
-  const start = (curPage-1)*PAGE_SIZE;
-  const pageItems = items.slice(start,start+PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  if (curPage > totalPages) curPage = totalPages;
+  const start = (curPage - 1) * PAGE_SIZE;
+  const pageItems = items.slice(start, start + PAGE_SIZE);
 
-  // Build table rows
   const frag = document.createDocumentFragment();
-  pageItems.forEach((h,idx) => {
-    const realIdx = start+idx;
-    const pnlCls = h.pnl>=0?'clr-rise':'clr-fall';
-    const edited = costOverrides[h.n+'|'+h.w]!==undefined;
+  pageItems.forEach((h, idx) => {
+    const realIdx = start + idx;
+    const pnlCls = h.pnl >= 0 ? 'clr-rise' : 'clr-fall';
+    const key = overrideKey(h.n, h.w);
+    const edited = costOverrides[key] !== undefined;
     const tr = document.createElement('tr');
     tr.innerHTML =
-      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'" data-name="'+h.n.replace(/"/g,'&quot;')+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+h.n+'</div></td>'+
-      '<td><span class="wear-tag">'+wearCN(h.w)+'</span></td>'+
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+h.n+'</div></td>'+
+      '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
       '<td class="text-r mono"><span class="cost-val">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'" title="编辑购入价">✏️</span>'+(edited?'<span style="color:var(--blue);font-size:9px;margin-left:2px">已改</span>':'')+'</td>'+
       '<td class="text-r mono">¥'+h.p.toFixed(2)+'</td>'+
       '<td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td>'+
@@ -432,20 +498,17 @@ function render(){
   DOM.tbody.innerHTML = '';
   DOM.tbody.appendChild(frag);
 
-  // Pager
-  if(totalPages<=1){ DOM.pager.innerHTML=''; return; }
+  if (totalPages <= 1) { DOM.pager.innerHTML = ''; return; }
   DOM.pager.innerHTML = '<button class="tab" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span>'+curPage+' / '+totalPages+' 页</span><button class="tab" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
-  $('pgPrev').onclick = ()=>{ curPage--; render(); };
-  $('pgNext').onclick = ()=>{ curPage++; render(); };
+  $('pgPrev').onclick = () => { curPage--; render(); };
+  $('pgNext').onclick = () => { curPage++; render(); };
 }
 
 // ═══════════════ EVENT HANDLERS ═══════════════
-
-// Category tabs
 DOM.tabBar.onclick = e => {
   const btn = e.target.closest('.tab');
-  if(!btn) return;
-  DOM.tabBar.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  if (!btn) return;
+  DOM.tabBar.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
   curCat = btn.dataset.cat;
   curPage = 1;
@@ -453,142 +516,127 @@ DOM.tabBar.onclick = e => {
   render();
 };
 
-// Sort headers
 document.querySelectorAll('thead th').forEach(th => {
   th.onclick = () => {
     const col = th.dataset.col;
-    if(!col) return;
-    if(sortCol===col) sortDir = sortDir==='asc'?'desc':'asc';
-    else { sortCol=col; sortDir='desc'; }
-    document.querySelectorAll('thead th').forEach(h=>h.className='');
-    th.className = sortDir==='asc'?'sort-asc':'sort-desc';
+    if (!col) return;
+    if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    else { sortCol = col; sortDir = 'desc'; }
+    document.querySelectorAll('thead th').forEach(h => h.className = '');
+    th.className = sortDir === 'asc' ? 'sort-asc' : 'sort-desc';
     invalidateCache();
     render();
   };
 });
-// Default sort indicator
 document.querySelectorAll('thead th')[5].className = 'sort-desc';
 
-// Edit cost (delegated)
-DOM.tbody.onclick = function(e){
-  // Star click
+DOM.tbody.onclick = function(e) {
   const starBtn = e.target.closest('.row-star');
-  if(starBtn){
-    const gid = +starBtn.dataset.gid;
-    if(gid) toggleStar(gid);
-    return;
-  }
-  // Edit cost click
+  if (starBtn) { const gid = +starBtn.dataset.gid; if (gid) toggleStar(gid); return; }
+
   const editBtn = e.target.closest('.edit-cost');
-  if(!editBtn) return;
+  if (!editBtn) return;
   const idx = +editBtn.dataset.idx;
   const item = H[idx];
   const td = editBtn.parentElement;
   td.innerHTML = '<input class="cost-input" type="number" step="0.01" value="'+item.c.toFixed(2)+'" data-idx="'+idx+'">';
   const inp = td.querySelector('.cost-input');
-  inp.focus();
-  inp.select();
-  function save(){
+  inp.focus(); inp.select();
+  function save() {
     const val = parseFloat(inp.value);
-    if(!isNaN(val)&&val>=0){
+    if (!isNaN(val) && val >= 0) {
       item.c = val;
-      item.pnl = item.p-val;
-      item.pnlPct = val>0?(item.p-val)/val*100:0;
-      costOverrides[item.n+'|'+item.w] = val;
+      item.pnl = item.p - val;
+      item.pnlPct = val > 0 ? (item.p - val) / val * 100 : 0;
+      costOverrides[overrideKey(item.n, item.w)] = val;
       saveOverrides();
     }
-    invalidateCache();
-    updateKPI();
-    render();
+    invalidateCache(); updateKPI(); render();
   }
   inp.onblur = save;
-  inp.onkeydown = function(e){ if(e.key==='Enter') save(); if(e.key==='Escape'){ invalidateCache(); render(); } };
+  inp.onkeydown = function(e) { if (e.key === 'Enter') save(); if (e.key === 'Escape') { invalidateCache(); render(); } };
 };
 
-// Export
-$('exportBtn').onclick = function(){
-  const blob = new Blob([JSON.stringify(costOverrides,null,2)],{type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'cost-overrides.json';
-  a.click();
+$('exportBtn').onclick = function() {
+  const blob = new Blob([JSON.stringify(costOverrides, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'cost-overrides.json'; a.click();
 };
 
 // Token modal
-$('gearBtn').onclick = function(){
+$('gearBtn').onclick = function() {
   DOM.tokenInput.value = ghToken;
-  DOM.tokenStatus.textContent = ghToken?'✅ 已配置 Token':'⚠️ 未配置，编辑不会自动同步';
+  DOM.tokenStatus.textContent = ghToken ? '✅ 已配置 Token' : '⚠️ 未配置，编辑不会自动同步';
   DOM.tokenModal.classList.add('show');
 };
-$('tokenCancel').onclick = ()=> DOM.tokenModal.classList.remove('show');
-$('tokenClear').onclick = function(){
-  ghToken=''; localStorage.removeItem(LS_TOKEN_KEY);
-  DOM.tokenInput.value='';
-  DOM.tokenStatus.textContent='🗑️ Token 已清除';
+$('tokenCancel').onclick = () => DOM.tokenModal.classList.remove('show');
+$('tokenClear').onclick = function() {
+  ghToken = ''; localStorage.removeItem(LS_TOKEN_KEY);
+  DOM.tokenInput.value = ''; DOM.tokenStatus.textContent = '🗑️ Token 已清除';
 };
-$('tokenSave').onclick = async function(){
+$('tokenSave').onclick = async function() {
   const token = DOM.tokenInput.value.trim();
-  if(!token){ DOM.tokenStatus.textContent='⚠️ 请输入 Token'; return; }
-  DOM.tokenStatus.textContent='⏳ 验证中...';
+  if (!token) { DOM.tokenStatus.textContent = '⚠️ 请输入 Token'; return; }
+  DOM.tokenStatus.textContent = '⏳ 验证中...';
   try {
-    const r = await fetch('https://api.github.com/repos/'+GH_REPO,{headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}});
-    if(r.ok){
-      ghToken=token; localStorage.setItem(LS_TOKEN_KEY,token);
-      DOM.tokenStatus.textContent='✅ Token 有效，已保存！';
-      setTimeout(()=>DOM.tokenModal.classList.remove('show'),1500);
-    } else { DOM.tokenStatus.textContent='❌ Token 无效或无权限'; }
-  } catch(e){ DOM.tokenStatus.textContent='❌ 网络错误'; }
+    const r = await fetch('https://api.github.com/repos/'+GH_REPO, {headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}});
+    if (r.ok) {
+      ghToken = token; localStorage.setItem(LS_TOKEN_KEY, token);
+      DOM.tokenStatus.textContent = '✅ Token 有效，已保存！';
+      setTimeout(() => DOM.tokenModal.classList.remove('show'), 1500);
+    } else { DOM.tokenStatus.textContent = '❌ Token 无效或无权限'; }
+  } catch(e) { DOM.tokenStatus.textContent = '❌ 网络错误'; }
 };
-DOM.tokenModal.onclick = function(e){ if(e.target===this) this.classList.remove('show'); };
+DOM.tokenModal.onclick = function(e) { if (e.target === this) this.classList.remove('show'); };
 
 // ═══════════════ ALERTS ═══════════════
-function renderAlertsTab(tab){
+function renderAlertsTab(tab) {
   currentTab = tab;
   const grid = DOM.alertsGrid;
-  if(!grid) return;
+  if (!grid) return;
 
-  let items = [];
-  if(tab==='gainers'){
-    items = alertsData.slice().sort((a,b)=>(b.rate_1||0)-(a.rate_1||0)).slice(0,20);
-  } else if(tab==='losers'){
-    items = alertsData.slice().sort((a,b)=>(a.rate_1||0)-(b.rate_1||0)).slice(0,20);
-  } else if(tab==='watch'){
-    const watched = Object.keys(starred).filter(k=>starred[k]).map(Number);
-    if(!watched.length){
-      grid.innerHTML='<div class="watch-empty"><p>⭐ 还没有自选饰品</p>在涨幅/跌幅榜中点击 ⭐ 加入自选</div>';
-      return;
-    }
-    items = alertsData.filter(a=>watched.includes(a.id)&&!(a.exterior&&a.exterior.includes('战痕累累')));
-    if(!items.length){
-      grid.innerHTML='<div class="watch-empty"><p>⭐ 自选饰品不在异动数据中</p></div>';
-      return;
-    }
-  }
-
-  if(!items.length){
-    grid.innerHTML='<div style="color:var(--text3);font-size:13px;padding:20px;text-align:center">暂无数据</div>';
+  if (!alertsData.length) {
+    grid.innerHTML = '<div class="no-data"><div class="icon">📡</div>暂无异动数据<br><span style="font-size:11px">CSQAQ API 恢复后自动加载</span></div>';
     return;
   }
 
+  let items = [];
+  if (tab === 'gainers') {
+    items = alertsData.slice().sort((a,b) => (b.rate_1||0) - (a.rate_1||0)).slice(0, 20);
+  } else if (tab === 'losers') {
+    items = alertsData.slice().sort((a,b) => (a.rate_1||0) - (b.rate_1||0)).slice(0, 20);
+  } else if (tab === 'watch') {
+    const watched = Object.keys(starred).filter(k => starred[k]).map(Number);
+    if (!watched.length) {
+      grid.innerHTML = '<div class="watch-empty"><p>⭐ 还没有自选饰品</p>在涨幅/跌幅榜中点击 ⭐ 加入自选</div>';
+      return;
+    }
+    items = alertsData.filter(a => watched.includes(a.id) && !isBS({w:'', n:a.exterior||''}));
+    if (!items.length) {
+      grid.innerHTML = '<div class="watch-empty"><p>⭐ 自选饰品不在异动数据中</p></div>';
+      return;
+    }
+  }
+
   const frag = document.createDocumentFragment();
-  items.forEach((item,idx) => {
-    const chg = item.rate_1||0;
+  items.forEach((item, idx) => {
+    const chg = item.rate_1 || 0;
     const absChg = Math.abs(chg);
-    const dir = chg>0?'up':chg<0?'down':'flat';
-    const chgTxt = (chg>=0?'+':'')+chg.toFixed(2)+'%';
-    const barW = Math.min(absChg*4,100);
-    const barColor = dir==='up'?'var(--fall)':dir==='down'?'var(--rise)':'var(--text3)';
+    const dir = chg > 0 ? 'up' : chg < 0 ? 'down' : 'flat';
+    const chgTxt = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
+    const barW = Math.min(absChg * 4, 100);
+    const barColor = dir === 'up' ? 'var(--fall)' : dir === 'down' ? 'var(--rise)' : 'var(--text3)';
     const isStarred = starred[item.id];
-    const rank = tab!=='watch'?'<span class="a-rank">#'+(idx+1)+'</span>':'';
+    const rank = tab !== 'watch' ? '<span class="a-rank">#'+(idx+1)+'</span>' : '';
+    const displayName = item.name_cn || item.name || '--';
 
     const div = document.createElement('div');
-    div.className = 'alert-card '+dir;
+    div.className = 'alert-card ' + dir;
     div.innerHTML =
-      rank+
+      rank +
       '<button class="a-star '+(isStarred?'on':'')+'" data-aid="'+item.id+'">'+(isStarred?'★':'☆')+'</button>'+
-      '<div class="a-name" title="'+(item.name_cn||item.name)+'">'+(item.name_cn||item.name)+'</div>'+
+      '<div class="a-name" title="'+displayName+'">'+displayName+'</div>'+
       '<div class="a-meta"><span class="a-price">¥'+(item.price||'--')+'</span><span class="a-chg '+dir+'">'+chgTxt+'</span></div>'+
-      '<div class="a-period">7日涨跌 · '+(item.rate_7>=0?'+':'')+((item.rate_7||0).toFixed(2))+'</div>'+
+      '<div class="a-period">7日 '+(item.rate_7>=0?'+':'')+((item.rate_7||0).toFixed(2))+'%</div>'+
       '<div class="a-bar"><div class="a-bar-fill" style="width:'+barW+'%;background:'+barColor+'"></div></div>';
     frag.appendChild(div);
   });
@@ -596,46 +644,46 @@ function renderAlertsTab(tab){
   grid.appendChild(frag);
 }
 
-// Alerts tab switching
-$('alertsTabs').onclick = function(e){
+$('alertsTabs').onclick = function(e) {
   const btn = e.target.closest('[data-tab]');
-  if(!btn) return;
-  this.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  if (!btn) return;
+  this.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
   renderAlertsTab(btn.dataset.tab);
 };
 
-// Alerts grid star click (delegated)
-DOM.alertsGrid.onclick = function(e){
+DOM.alertsGrid.onclick = function(e) {
   const btn = e.target.closest('.a-star');
-  if(btn) toggleStar(+btn.dataset.aid);
+  if (btn) toggleStar(+btn.dataset.aid);
 };
 
-// ═══════════════ MARKET CHART ═══════════════
-function renderMarket(D){
+// ═══════════════ MARKET CHART (only when index data exists) ═══════════════
+function renderMarket(D) {
   const idx = D.index;
-  const clr = idx.change>=0?'var(--rise)':'var(--fall)';
+  if (!idx || !idx.ohlc || !idx.ohlc.length) return;
+
+  DOM.marketSection.style.display = '';
+  const clr = idx.change >= 0 ? 'var(--rise)' : 'var(--fall)';
   DOM.miNum.textContent = idx.latest.toFixed(2);
   DOM.miNum.style.color = clr;
-  DOM.miChg.textContent = (idx.change>=0?'+':'')+idx.change.toFixed(2)+'%';
+  DOM.miChg.textContent = (idx.change >= 0 ? '+' : '') + idx.change.toFixed(2) + '%';
   DOM.miChg.style.color = clr;
 
-  const ohlcDates = (idx.ohlc||[]).map(c=>c.dateFull||c.date);
-  const ohlcValues = (idx.ohlc||[]).map(c=>c.close);
-  const ohlcData = (idx.ohlc||[]).map(c=>[c.open,c.close,c.low,c.high]);
+  const ohlcDates = idx.ohlc.map(c => c.dateFull || c.date);
+  const ohlcValues = idx.ohlc.map(c => c.close);
+  const ohlcData = idx.ohlc.map(c => [c.open, c.close, c.low, c.high]);
 
-  var fmtDate = (function(){
-    var lastY='';
-    return function(v){ var p=v.split('-'),y=p[0],md=p[1]+'-'+p[2]; if(y!==lastY){lastY=y; return y+'/'+md;} return md; };
+  const fmtDate = (function() {
+    let lastY = '';
+    return function(v) { const p = v.split('-'), y = p[0], md = p[1]+'-'+p[2]; if (y !== lastY) { lastY = y; return y+'/'+md; } return md; };
   })();
 
-  const volData = (idx.volBar||[]).map((h,i)=>({value:h,itemStyle:{color:(idx.volColor||[])[i]||'#52525b'}}));
+  const volData = (idx.volBar||[]).map((h,i) => ({value:h, itemStyle:{color:(idx.volColor||[])[i]||'#52525b'}}));
 
-  ec = echarts.init(DOM.indexChart,null,{renderer:'canvas'});
+  ec = echarts.init(DOM.indexChart, null, {renderer:'canvas'});
 
-  function renderLine(){
-    DOM.btnLine.className='tab on';
-    DOM.btnCandle.className='tab';
+  function renderLine() {
+    DOM.btnLine.className = 'tab on'; DOM.btnCandle.className = 'tab';
     ec.setOption({
       backgroundColor:'transparent',
       grid:{top:10,right:30,bottom:25,left:65},
@@ -646,27 +694,17 @@ function renderMarket(D){
       yAxis:{type:'value',
         min:Math.floor(Math.min.apply(null,ohlcValues)/20)*20,
         max:Math.ceil(Math.max.apply(null,ohlcValues)/20)*20,
-        splitNumber:4,
-        splitLine:{lineStyle:{color:'#1e2130'}},
+        splitNumber:4,splitLine:{lineStyle:{color:'#1e2130'}},
         axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
       tooltip:{trigger:'axis',backgroundColor:'#0f1117',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
-      series:[{type:'line',data:ohlcValues,symbol:'none',
-        lineStyle:{color:'#3b82f6',width:2},
-        areaStyle:{color:'#3b82f614'}}]
-    },true);
+      series:[{type:'line',data:ohlcValues,symbol:'none',lineStyle:{color:'#3b82f6',width:2},areaStyle:{color:'#3b82f614'}}]
+    }, true);
   }
 
-  function renderCandle(){
-    DOM.btnCandle.className='tab on';
-    DOM.btnLine.className='tab';
-    const closes = (idx.ohlc||[]).map(c=>c.close);
-    function ma(arr,n){
-      return arr.map(function(v,i){
-        if(i<n-1) return '-';
-        var s=0; for(var j=0;j<n;j++) s+=arr[i-j];
-        return Math.round(s/n*100)/100;
-      });
-    }
+  function renderCandle() {
+    DOM.btnCandle.className = 'tab on'; DOM.btnLine.className = 'tab';
+    const closes = idx.ohlc.map(c => c.close);
+    function ma(arr,n) { return arr.map(function(v,i) { if (i<n-1) return '-'; var s=0; for (var j=0;j<n;j++) s+=arr[i-j]; return Math.round(s/n*100)/100; }); }
     const ma5=ma(closes,5), ma10=ma(closes,10), ma20=ma(closes,20);
     const priceMin=Math.floor(Math.min.apply(null,closes)/20)*20;
     const priceMax=Math.ceil(Math.max.apply(null,closes)/20)*20;
@@ -682,54 +720,45 @@ function renderMarket(D){
         {type:'value',gridIndex:0,min:priceMin,max:priceMax,splitNumber:4,scale:false,splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
         {type:'value',gridIndex:1,min:0,max:volMax*1.15,splitNumber:5,splitLine:{show:false},position:'right',axisLine:{show:false},axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}}}
       ],
-      tooltip:{
-        trigger:'axis',
-        axisPointer:{type:'cross',crossStyle:{color:'#555'},lineStyle:{color:'#555',type:'dashed'}},
-        backgroundColor:'#0f1117',borderColor:'#252a36',borderWidth:1,padding:[8,12],
-        textStyle:{color:'#e4e4e7',fontSize:11,fontFamily:'monospace'},
-        formatter:function(params){
-          var candle=null;
-          for(var i=0;i<params.length;i++){ if(params[i].seriesType==='candlestick'){candle=params[i];break;} }
-          if(!candle) return '';
+      tooltip:{trigger:'axis',axisPointer:{type:'cross',crossStyle:{color:'#555'},lineStyle:{color:'#555',type:'dashed'}},backgroundColor:'#0f1117',borderColor:'#252a36',borderWidth:1,padding:[8,12],textStyle:{color:'#e4e4e7',fontSize:11,fontFamily:'monospace'},
+        formatter:function(params) {
+          var candle=null; for (var i=0;i<params.length;i++) { if (params[i].seriesType==='candlestick') {candle=params[i];break;} }
+          if (!candle) return '';
           var v=candle.value,o=v[0],h=v[1],l=v[2],c=v[3];
-          var isUp=c>=o, clr=isUp?'#ef4444':'#22c55e';
-          var pct=((c-o)/o*100).toFixed(2);
-          var di=candle.dataIndex;
-          var maHtml='';
-          if(ma5[di]!=='-') maHtml+='<span style="color:#f59e0b">MA5:'+ma5[di].toFixed(0)+'</span> ';
-          if(ma10[di]!=='-') maHtml+='<span style="color:#a78bfa">MA10:'+ma10[di].toFixed(0)+'</span> ';
-          if(ma20[di]!=='-') maHtml+='<span style="color:#34d399">MA20:'+ma20[di].toFixed(0)+'</span>';
-          return '<div style="line-height:1.7"><b style="font-size:12px">'+candle.axisValue+'</b><br/>'
-            +'<span style="color:#9ca3af">开</span>:'+o.toFixed(2)+' <span style="color:#9ca3af">收</span>:<b style="color:'+clr+'">'+c.toFixed(2)+'</b><br/>'
-            +'<span style="color:#9ca3af">高</span>:'+h.toFixed(2)+' <span style="color:#9ca3af">低</span>:'+l.toFixed(2)+'<br/>'
-            +'<span style="color:'+clr+'">'+(isUp?'&#9650; ':'&#9660; ')+'</span>'+(isUp?'+':'')+pct+'%'
-            +' <span style="color:#9ca3af">柱:'+((idx.volBar||[])[di]||0)+'</span><br/>'
-            +maHtml+'</div>';
+          var isUp=c>=o,clr=isUp?'#ef4444':'#22c55e',pct=((c-o)/o*100).toFixed(2);
+          var di=candle.dataIndex,maHtml='';
+          if (ma5[di]!=='-') maHtml+='<span style="color:#f59e0b">MA5:'+ma5[di].toFixed(0)+'</span> ';
+          if (ma10[di]!=='-') maHtml+='<span style="color:#a78bfa">MA10:'+ma10[di].toFixed(0)+'</span> ';
+          if (ma20[di]!=='-') maHtml+='<span style="color:#34d399">MA20:'+ma20[di].toFixed(0)+'</span>';
+          return '<div style="line-height:1.7"><b>'+candle.axisValue+'</b><br/>'+
+            '<span style="color:#9ca3af">开</span>:'+o.toFixed(2)+' <span style="color:#9ca3af">收</span>:<b style="color:'+clr+'">'+c.toFixed(2)+'</b><br/>'+
+            '<span style="color:#9ca3af">高</span>:'+h.toFixed(2)+' <span style="color:#9ca3af">低</span>:'+l.toFixed(2)+'<br/>'+
+            '<span style="color:'+clr+'">'+(isUp?'▲ ':'▼ ')+'</span>'+(isUp?'+':'')+pct+'%'+
+            ' <span style="color:#9ca3af">柱:'+((idx.volBar||[])[di]||0)+'</span><br/>'+maHtml+'</div>';
         }
       },
       series:[
-        {type:'line',name:'MA5',data:ma5,xAxisIndex:0,yAxisIndex:0,smooth:false,symbol:'none',lineStyle:{color:'#f59e0b',width:1,opacity:0.85}},
-        {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,smooth:false,symbol:'none',lineStyle:{color:'#a78bfa',width:1,opacity:0.85}},
-        {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,smooth:false,symbol:'none',lineStyle:{color:'#34d399',width:1,opacity:0.85}},
+        {type:'line',name:'MA5',data:ma5,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#f59e0b',width:1,opacity:0.85}},
+        {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#a78bfa',width:1,opacity:0.85}},
+        {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#34d399',width:1,opacity:0.85}},
         {type:'candlestick',name:'指数',data:ohlcData,xAxisIndex:0,yAxisIndex:0,itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e',borderWidth:1}},
-        {type:'bar',name:'波动幅度',data:volData,xAxisIndex:1,yAxisIndex:1,barWidth:'40%',barGap:'25%'}
+        {type:'bar',name:'波动',data:volData,xAxisIndex:1,yAxisIndex:1,barWidth:'40%',barGap:'25%'}
       ],
       dataZoom:[
         {type:'inside',xAxisIndex:[0,1],start:Math.max(0,Math.round((1-30/ohlcDates.length)*100)),end:100},
         {show:false,xAxisIndex:[0,1],start:Math.max(0,Math.round((1-30/ohlcDates.length)*100)),end:100}
       ]
-    },true);
+    }, true);
   }
 
   DOM.btnLine.onclick = renderLine;
   DOM.btnCandle.onclick = renderCandle;
   renderLine();
 
-  // Debounced resize
   let resizeRaf = 0;
-  window.addEventListener('resize',()=>{
+  window.addEventListener('resize', () => {
     cancelAnimationFrame(resizeRaf);
-    resizeRaf = requestAnimationFrame(()=>ec&&ec.resize());
+    resizeRaf = requestAnimationFrame(() => ec && ec.resize());
   });
 }
 

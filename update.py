@@ -5,6 +5,9 @@ CS2 Dashboard 数据更新脚本
 - ECOSteam API 获取持仓价格 → holdings.json
 - CSQAQ API 获取异动数据 → market.json (alerts)
 - 可选：SteamDT K-lines (需有效 API Key)
+
+统一写入策略：所有数据先写入本地文件，最后一次性 git push 或 GitHub API push，
+避免多次 push 导致 SHA 冲突。
 """
 import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl
 
@@ -18,12 +21,14 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, '..') if SCRIPT_DIR.endswith('.github') else SCRIPT_DIR
 
 MAX_RETRIES = 3
-RETRY_DELAY = 2  # seconds
+RETRY_DELAY = 2
 
-# SSL context (relaxed for CI)
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
+
+# Track which files were modified
+dirty_files = set()
 
 # ═══════════════ ECO SIGNING ═══════════════
 _eco_key = None
@@ -33,8 +38,6 @@ def get_eco_key():
     if _eco_key is not None:
         return _eco_key
     from Crypto.PublicKey import RSA
-    from Crypto.Signature import pkcs1_15
-    from Crypto.Hash import SHA256
     key_b64 = os.environ.get('ECO_PRIVATE_KEY_B64')
     if not key_b64:
         key_path = os.path.join(DATA_DIR, 'eco_private_key.txt')
@@ -48,9 +51,9 @@ def get_eco_key():
     return _eco_key
 
 def sign_eco(params):
-    key = get_eco_key()
     from Crypto.Signature import pkcs1_15
     from Crypto.Hash import SHA256
+    key = get_eco_key()
     sorted_params = sorted(params.items(), key=lambda x: x[0].lower())
     parts = []
     for k, v in sorted_params:
@@ -91,7 +94,7 @@ def http_post(url, body, headers=None, timeout=15):
             time.sleep(RETRY_DELAY)
 
 def http_post_raw(url, body, headers=None, timeout=15):
-    """Return raw bytes for GBK-encoded responses"""
+    """Return parsed JSON, auto-detecting encoding (UTF-8/GBK/Latin-1)"""
     data = json.dumps(body, ensure_ascii=False).encode('utf-8') if isinstance(body, (dict, list)) else body
     hdrs = {'Content-Type': 'application/json'}
     if headers:
@@ -114,7 +117,7 @@ def http_post_raw(url, body, headers=None, timeout=15):
 
 # ═══════════════ ECO PRICES ═══════════════
 def fetch_eco_prices(hash_names):
-    """Batch fetch ECO prices, returns {HashName: price_float}"""
+    """Batch fetch ECO prices → {HashName: price_float}"""
     prices = {}
     batch_size = 100
     for i in range(0, len(hash_names), batch_size):
@@ -134,7 +137,6 @@ def fetch_eco_prices(hash_names):
             if str(result.get('ResultCode')) == '0':
                 for item in (result.get('ResultData') or []):
                     hn = item.get('HashName')
-                    # Use MarketComprePrice (comprehensive) over MinPrice (can be artificially low)
                     raw = item.get('MarketComprePrice') or item.get('MinPrice') or item.get('Price') or '0'
                     try:
                         p = float(raw)
@@ -181,7 +183,7 @@ def fetch_csqaq_alerts():
                     seen_ids.add(item_id)
                     all_alerts.append({
                         'id': item_id,
-                        'name_cn': item.get('name', ''),
+                        'name': item.get('name', ''),
                         'exterior': item.get('exterior_localized_name', ''),
                         'rarity': item.get('rarity_localized_name', ''),
                         'price': float(item.get('buff_sell_price') or 0),
@@ -197,7 +199,6 @@ def fetch_csqaq_alerts():
                 print(f'[WARN] CSQAQ {sort_key} page {page}: {e}', file=sys.stderr)
             time.sleep(0.5)
 
-    # Sort by absolute change, dedup
     all_alerts.sort(key=lambda x: abs(x.get('rate_1', 0)), reverse=True)
     return all_alerts
 
@@ -208,17 +209,16 @@ def fetch_steamdt_klines(items_list):
         print('[INFO] SteamDT key not configured, skipping K-lines')
         return {}
 
-    # Verify key works first
     try:
         test = http_get(
             'https://open.steamdt.com/open/cs2/v1/price/single?marketHashName=AK-47%20%7C%20Redline%20(Field-Tested)',
             headers={'Authorization': f'Bearer {STEAM_KEY}'}
         )
         if not test.get('success'):
-            print(f'[WARN] SteamDT key invalid (code={test.get("errorCode")}), skipping K-lines')
+            print(f'[WARN] SteamDT key invalid (code={test.get("errorCode")}), skipping')
             return {}
     except Exception as e:
-        print(f'[WARN] SteamDT unreachable: {e}, skipping K-lines')
+        print(f'[WARN] SteamDT unreachable: {e}, skipping')
         return {}
 
     kline_data = {}
@@ -233,7 +233,6 @@ def fetch_steamdt_klines(items_list):
             )
             if resp.get('success') and resp.get('data'):
                 raw = resp['data']
-                # Normalize: data can be object with numeric keys or array
                 if isinstance(raw, dict):
                     keys = sorted(raw.keys(), key=lambda x: int(x) if x.isdigit() else x)
                     raw = [raw[k] for k in keys]
@@ -247,15 +246,42 @@ def fetch_steamdt_klines(items_list):
                     print(f'  K-line OK: {name[:35]} → {len(parsed)} pts')
         except Exception as e:
             print(f'  K-line ERR: {name[:35]}: {e}', file=sys.stderr)
-        time.sleep(0.3)  # rate limit
+        time.sleep(0.3)
 
     return kline_data
 
-# ═══════════════ GITHUB PUSH ═══════════════
+# ═══════════════ FILE I/O (track dirty state) ═══════════════
+def read_json(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def write_json(path, data):
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    dirty_files.add(os.path.basename(path))
+
+# ═══════════════ PUSH (single atomic commit) ═══════════════
+def push_all():
+    """Push all dirty files in a single commit — avoids SHA conflicts"""
+    if not dirty_files:
+        print('[INFO] No files changed, skipping push')
+        return
+
+    if os.environ.get('GITHUB_ACTIONS') and GH_TOKEN:
+        # CI: use GitHub Contents API — push files one by one, each getting fresh SHA
+        for filename in sorted(dirty_files):
+            path = os.path.join(DATA_DIR, filename)
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            github_push_file(filename, content, f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%m-%d %H:%M")}')
+    else:
+        # Local: single git commit + push
+        git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+
 def github_push_file(path, content_str, message):
-    """Push a file to GitHub via Contents API"""
+    """Push a single file via GitHub Contents API"""
     if not GH_TOKEN:
-        print('[INFO] No GitHub token, skipping push')
+        print(f'[INFO] No GitHub token, skipping push of {path}')
         return False
     api_url = f'https://api.github.com/repos/{REPO}/contents/{path}'
     headers = {
@@ -263,34 +289,33 @@ def github_push_file(path, content_str, message):
         'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
     }
-    # Get current SHA
+    # Always get fresh SHA before push
     sha = None
     try:
         req = urllib.request.Request(f'{api_url}?ref=main', headers=headers)
         with urllib.request.urlopen(req, timeout=15, context=ctx) as r:
             sha = json.loads(r.read().decode())['sha']
     except Exception:
-        pass  # File might not exist yet
+        pass
 
     b64 = base64.b64encode(content_str.encode('utf-8')).decode('ascii')
-    body = json.dumps({'message': message, 'content': b64, 'branch': 'main'})
+    body_dict = {'message': message, 'content': b64, 'branch': 'main'}
     if sha:
-        body_data = json.loads(body)
-        body_data['sha'] = sha
-        body = json.dumps(body_data)
+        body_dict['sha'] = sha
 
-    req = urllib.request.Request(api_url, data=body.encode('utf-8'), headers=headers, method='PUT')
+    req = urllib.request.Request(api_url, data=json.dumps(body_dict).encode('utf-8'), headers=headers, method='PUT')
     try:
         with urllib.request.urlopen(req, timeout=15, context=ctx) as r:
             result = json.loads(r.read().decode())
             print(f'[OK] Pushed {path}: {result["commit"]["sha"][:8]}')
             return True
     except urllib.error.HTTPError as e:
-        print(f'[ERROR] Push {path} failed: HTTP {e.code}: {e.read().decode()[:200]}', file=sys.stderr)
+        err = e.read().decode()[:300]
+        print(f'[ERROR] Push {path}: HTTP {e.code}: {err}', file=sys.stderr)
         return False
 
 def git_push_locally(files, message):
-    """Push via local git (for local cron or CI with checkout)"""
+    """Push via local git in a single commit"""
     for f in files:
         subprocess.run(['git', 'add', f], check=True, cwd=DATA_DIR)
     subprocess.run(['git', 'commit', '-m', message], check=True, cwd=DATA_DIR)
@@ -300,15 +325,13 @@ def git_push_locally(files, message):
 # ═══════════════ MAIN ═══════════════
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else 'all'
-    # mode: 'all', 'prices', 'alerts', 'klines'
 
     print(f'=== CS2 Dashboard Update ({mode}) ===')
 
     # ── Update ECO prices → holdings.json ──
     if mode in ('all', 'prices'):
         holdings_path = os.path.join(DATA_DIR, 'holdings.json')
-        with open(holdings_path, 'r', encoding='utf-8') as f:
-            holdings = json.load(f)
+        holdings = read_json(holdings_path)
 
         items = holdings.get('items', [])
         hash_names = [it['market_hash'] for it in items if it.get('market_hash')]
@@ -330,23 +353,11 @@ def main():
         holdings['total_market'] = round(total_market, 2)
         holdings['update_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
 
-        with open(holdings_path, 'w', encoding='utf-8') as f:
-            json.dump(holdings, f, ensure_ascii=False, indent=2)
+        write_json(holdings_path, holdings)
 
         pnl = total_market - total_cost
         pnl_pct = pnl / total_cost * 100 if total_cost else 0
         print(f'[ECO] Updated {updated}/{len(hash_names)} | Cost={total_cost:.0f} Market={total_market:.0f} PnL={pnl:+.0f} ({pnl_pct:+.1f}%)')
-
-        if os.environ.get('GITHUB_ACTIONS'):
-            # CI: use GitHub API push
-            github_push_file(
-                'holdings.json',
-                json.dumps(holdings, ensure_ascii=False, indent=2),
-                f'chore: update ECO prices {time.strftime("%m-%d %H:%M")}'
-            )
-        else:
-            # Local: use git push
-            git_push_locally(['holdings.json'], f'chore: update ECO prices {time.strftime("%Y-%m-%d %H:%M")}')
 
     # ── Update CSQAQ alerts → market.json ──
     if mode in ('all', 'alerts'):
@@ -356,22 +367,10 @@ def main():
             print(f'[CSQAQ] Got {len(alerts)} alerts')
 
             market_path = os.path.join(DATA_DIR, 'market.json')
-            with open(market_path, 'r', encoding='utf-8') as f:
-                market = json.load(f)
+            market = read_json(market_path)
             market['alerts'] = alerts
             market['alerts_updated'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-
-            with open(market_path, 'w', encoding='utf-8') as f:
-                json.dump(market, f, ensure_ascii=False, indent=2)
-
-            if os.environ.get('GITHUB_ACTIONS'):
-                github_push_file(
-                    'market.json',
-                    json.dumps(market, ensure_ascii=False, indent=2),
-                    f'chore: update alerts {time.strftime("%m-%d %H:%M")}'
-                )
-            else:
-                git_push_locally(['market.json'], f'chore: update alerts {time.strftime("%Y-%m-%d %H:%M")}')
+            write_json(market_path, market)
         except Exception as e:
             print(f'[CSQAQ] Failed: {e}', file=sys.stderr)
 
@@ -380,8 +379,7 @@ def main():
         print('[SteamDT] Fetching K-lines...')
         try:
             market_path = os.path.join(DATA_DIR, 'market.json')
-            with open(market_path, 'r', encoding='utf-8') as f:
-                market = json.load(f)
+            market = read_json(market_path)
             items_list = market.get('items', [])
             kline_data = fetch_steamdt_klines(items_list)
             if kline_data:
@@ -390,19 +388,12 @@ def main():
                     if name in kline_data:
                         item['kline'] = kline_data[name]
                 market['items'] = items_list
-                with open(market_path, 'w', encoding='utf-8') as f:
-                    json.dump(market, f, ensure_ascii=False, indent=2)
-                if os.environ.get('GITHUB_ACTIONS'):
-                    github_push_file(
-                        'market.json',
-                        json.dumps(market, ensure_ascii=False, indent=2),
-                        f'chore: update K-lines {time.strftime("%m-%d %H:%M")}'
-                    )
-                else:
-                    git_push_locally(['market.json'], f'chore: update K-lines {time.strftime("%Y-%m-%d %H:%M")}')
+                write_json(market_path, market)
         except Exception as e:
             print(f'[SteamDT] K-lines failed: {e}', file=sys.stderr)
 
+    # ── Push all dirty files at once ──
+    push_all()
     print('=== Done ===')
 
 if __name__ == '__main__':
