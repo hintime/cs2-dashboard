@@ -93,11 +93,17 @@ body{font-family:'Noto Sans SC','PingFang SC',system-ui,sans-serif;background:va
 table{width:100%;border-collapse:collapse}
 thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:600;padding:10px 16px;background:var(--surface);position:sticky;top:0;z-index:2;border-bottom:1px solid var(--border)}
 tbody td{padding:10px 16px;border-bottom:1px solid rgba(37,42,54,.5);font-size:13px}
-tbody tr:hover{background:rgba(59,130,246,.03)}
+tbody tr{transition:background .15s}
+tbody tr:nth-child(even){background:rgba(255,255,255,.02)}
+tbody tr:hover{background:rgba(59,130,246,.08)}
 .item-name{font-weight:600}
 .item-sub{font-size:10px;color:var(--text3);margin-top:2px}
 .wear-tag{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 6px;border-radius:4px;margin-left:6px;font-family:'DM Mono',monospace}
 .text-r{text-align:right}
+thead th{cursor:pointer;user-select:none}
+thead th:hover{background:var(--surface2)}
+.sort-asc::after{content:' ↑'}
+.sort-desc::after{content:' ↓'}
 .clr-rise{color:var(--rise)}.clr-fall{color:var(--fall)}.mono{font-family:'DM Mono',monospace}
 
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
@@ -201,7 +207,7 @@ tbody tr:hover{background:rgba(59,130,246,.03)}
       </div>
     </div>
     <div style="overflow-x:auto">
-      <table><thead><tr><th>饰品</th><th>磨损</th><th class="text-r">成本</th><th class="text-r">现价</th><th class="text-r">盈亏</th><th class="text-r">盈亏%</th></tr></thead><tbody id="tbody"></tbody></table>
+      <table><thead><tr><th data-col="n">饰品</th><th data-col="w">磨损</th><th data-col="c" class="text-r">成本</th><th data-col="p" class="text-r">现价</th><th data-col="pnl" class="text-r">盈亏</th><th data-col="pnlPct" class="text-r">盈亏%</th></tr></thead><tbody id="tbody"></tbody></table>
     </div>
     <div id="pager" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:#71717a"></div>
   <div class="foot">数据来源: SteamDT API · GitHub Pages</div>
@@ -439,9 +445,29 @@ async function initDashboard() {
 
   let curPage = 1;
   const PAGE_SIZE = 30;
+  let sortCol = 'pnlPct', sortDir = 'desc';
+  const headers = document.querySelectorAll('thead th');
+  headers.forEach((th, i) => {
+    th.onclick = () => {
+      const cols = ['n','w','c','p','pnl','pnlPct'];
+      const col = th.dataset.col || cols[i];
+      if (!col) return;
+      if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortCol = col; sortDir = 'desc'; }
+      headers.forEach(h => h.className = '');
+      th.className = sortDir === 'asc' ? 'sort-asc' : 'sort-desc';
+      render();
+    };
+  });
+  // Default sort indicator
+  headers[5].className = 'sort-desc';
 
   function render(){
-    const items = (curCat==='all' ? H : H.filter(h=>h.t===curCat)).filter(h=>h.w && h.w.includes('战痕累累') ? false : true);
+    const itemsRaw = curCat==='all' ? H : H.filter(h=>h.t===curCat);
+    const items = itemsRaw.filter(h=>h.w && h.w.includes('战痕累累') ? false : true).sort((a,b) => {
+      const av = a[sortCol] || 0, bv = b[sortCol] || 0;
+      return sortDir === 'asc' ? av - bv : bv - av;
+    });
     document.getElementById('countBadge').textContent = items.length;
     const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
     if (curPage > totalPages) curPage = totalPages;
