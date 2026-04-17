@@ -441,7 +441,7 @@ async function initDashboard() {
   const PAGE_SIZE = 30;
 
   function render(){
-    const items = curCat==='all' ? H : H.filter(h=>h.t===curCat);
+    const items = (curCat==='all' ? H : H.filter(h=>h.t===curCat)).filter(h=>h.w && h.w.includes('战痕累累') ? false : true);
     document.getElementById('countBadge').textContent = items.length;
     const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
     if (curPage > totalPages) curPage = totalPages;
