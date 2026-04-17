@@ -58,11 +58,11 @@ kline_data = {}
 for name in ITEMS:
     log(f"  K-line: {name[:30]}...")
     resp = steamdt_request("/open/cs2/item/v1/kline", {
-        "app_id": 730,
         "marketHashName": name,
-        "type": 2,  # Daily K
+        "type": 2,
         "platform": "BUFF"
     })
+    log(f"    -> raw resp keys: {list(resp.keys())} errorCode={resp.get('errorCode')}")
     if resp.get("success"):
         raw = resp.get("data", [])
         # data is flat array of [ts, open, close, high, low] — 5 elements each
