@@ -165,8 +165,7 @@ tbody tr:hover{background:var(--glow-blue)}
       <div class="sub">数据来源: ECOSteam · CSQAQ · GitHub Pages</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-      <button class="refresh-btn" id="refreshBtn" title="从 GitHub 加载最新数据">↻ 刷新</button>
-      <button class="refresh-btn" id="updateBtn" title="重新从 ECOSteam + CSQAQ 获取最新数据（需1-2分钟）">⚡ 更新数据</button>
+      <button class="refresh-btn" id="refreshBtn" title="刷新数据，同时后台获取最新价格和异动">↻ 刷新</button>
       <button class="gear-btn" id="gearBtn" title="设置 GitHub Token">⚙</button>
       <span class="badge"><span class="dot"></span>实时</span>
       <span class="badge" id="updateTime" title="数据更新时间">--</span>
@@ -351,54 +350,6 @@ let updateTimer = null;
 const WORKFLOW_ID = 'update-cs2-data.yml';
 const WORKFLOW_API = 'https://api.github.com/repos/' + GH_REPO + '/actions/workflows/' + WORKFLOW_ID + '/dispatches';
 const RUNS_API = 'https://api.github.com/repos/' + GH_REPO + '/actions/runs?workflow_id=' + WORKFLOW_ID + '&per_page=1';
-
-async function updateData() {
-  if (!ghToken) {
-    showToast('⚠️ 请先配置 GitHub Token（点击 ⚙️）', 3000);
-    return;
-  }
-  const btn = $('updateBtn');
-  btn.textContent = '⏳ 更新中...';
-  btn.disabled = true;
-
-  try {
-    // 1. 触发本地服务更新异动（后台静默）
-    fetch('http://localhost:8765/update').catch(() => {});
-    
-    // 2. 触发 CI 更新价格
-    console.log('Token prefix:', ghToken.substring(0, 8) + '...');
-    console.log('Workflow API:', WORKFLOW_API);
-    
-    const r = await fetch(WORKFLOW_API, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'token ' + ghToken,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/vnd.github+json'
-      },
-      body: JSON.stringify({ ref: 'main' })
-    });
-
-    if (r.status === 204 || r.ok) {
-      showToast('⏳ 正在获取最新数据（约需 2-3 分钟）...', 4000);
-      await pollWorkflowComplete();
-      await loadAll();
-      const ut = DOM.updateTime.textContent;
-      showToast('✅ 数据已更新 · ' + ut, 3000);
-    } else {
-      const err = await r.json().catch(() => ({}));
-      console.log('GitHub API error:', r.status, err);
-      showToast('❌ 更新失败 (' + r.status + '): ' + (err.message || JSON.stringify(err)), 5000);
-    }
-  } catch(e) {
-    showToast('❌ 网络错误: ' + e.message, 4000);
-  }
-
-  btn.textContent = '⚡ 更新数据';
-  btn.disabled = false;
-  // Reload data from GitHub
-  loadAll();
-}
 
 async function pollWorkflowComplete() {
   const MAX_WAIT = 180000; // 3 min
@@ -740,25 +691,34 @@ $('exportBtn').onclick = function() {
 // Token modal
 $('refreshBtn').onclick = async function() {
   const btn = $('refreshBtn');
-  btn.textContent = '⏳ 加载中...';
+  btn.textContent = '⏳ 刷新中...';
   btn.disabled = true;
-  
+
   const refreshTime = Date.now();
   await loadAll();
-  
+
   // Update badge with refresh time
   const ts = new Date(refreshTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
   DOM.updateTime.textContent = '刷新 ' + ts;
-  
+
   btn.textContent = '↻ 刷新';
   btn.disabled = false;
-  
+
   const items = holdingsData?.items?.length || 0;
   const alerts = alertsData?.length || 0;
   const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
   showToast('✅ ' + ts + ' · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 3000);
+
+  // 后台静默触发更新（不阻塞 UI）
+  if (ghToken) {
+    fetch('http://localhost:8765/update').catch(() => {}); // 本地异动更新
+    fetch(WORKFLOW_API, {
+      method: 'POST',
+      headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
+      body: JSON.stringify({ ref: 'main' })
+    }).catch(() => {}); // CI 价格更新
+  }
 };
-$('updateBtn').onclick = updateData;
 
 $('gearBtn').onclick = function() {
   DOM.tokenInput.value = ghToken;
