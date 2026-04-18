@@ -694,29 +694,34 @@ $('refreshBtn').onclick = async function() {
   btn.textContent = '⏳ 刷新中...';
   btn.disabled = true;
 
-  const refreshTime = Date.now();
-  await loadAll();
+  try {
+    const refreshTime = Date.now();
+    await loadAll();
 
-  // Update badge with refresh time
-  const ts = new Date(refreshTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-  DOM.updateTime.textContent = '刷新 ' + ts;
+    // Update badge with refresh time
+    const ts = new Date(refreshTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    DOM.updateTime.textContent = '刷新 ' + ts;
 
-  btn.textContent = '↻ 刷新';
-  btn.disabled = false;
+    const items = holdingsData?.items?.length || 0;
+    const alerts = alertsData?.length || 0;
+    const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
+    showToast('✅ ' + ts + ' · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 3000);
 
-  const items = holdingsData?.items?.length || 0;
-  const alerts = alertsData?.length || 0;
-  const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
-  showToast('✅ ' + ts + ' · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 3000);
-
-  // 后台静默触发更新（不阻塞 UI）
-  if (ghToken) {
-    fetch('http://localhost:8765/update').catch(() => {}); // 本地异动更新
-    fetch(WORKFLOW_API, {
-      method: 'POST',
-      headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
-      body: JSON.stringify({ ref: 'main' })
-    }).catch(() => {}); // CI 价格更新
+    // 后台静默触发更新（不阻塞 UI）
+    if (ghToken) {
+      fetch('http://localhost:8765/update').catch(() => {}); // 本地异动更新
+      fetch(WORKFLOW_API, {
+        method: 'POST',
+        headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
+        body: JSON.stringify({ ref: 'main' })
+      }).catch(() => {}); // CI 价格更新
+    }
+  } catch (e) {
+    console.error('Refresh failed:', e);
+    showToast('❌ 刷新失败: ' + e.message, 3000);
+  } finally {
+    btn.textContent = '↻ 刷新';
+    btn.disabled = false;
   }
 };
 
