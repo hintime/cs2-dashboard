@@ -161,6 +161,16 @@ def fetch_eco_prices(hash_names):
     
     return prices
 
+# ═══════════════ 排除规则（不感兴趣的饰品类型） ═══════════════
+_EXCLUDE_PREFIXES = ('StatTrak™ ', 'StatTrak ')
+_EXCLUDE_EXTERIORS = {'破损不堪', '战痕累累'}
+
+def _filter_excluded(items):
+    """排除 StatTrak / 破损不堪(BS) / 战痕累累(WW) 饰品"""
+    return [i for i in items
+            if not any(i.get('name','').startswith(p) for p in _EXCLUDE_PREFIXES)
+            and i.get('exterior','') not in _EXCLUDE_EXTERIORS]
+
 # ═══════════════ CSQAQ ALERTS (串行，稳定) ═══════════════
 _cached_alerts = None  # 全局缓存，供 recommendations 复用
 
@@ -227,6 +237,7 @@ def fetch_csqaq_alerts(use_cache=True):
                 })
 
     all_alerts.sort(key=lambda x: abs(x.get('rate_1', 0)), reverse=True)
+    all_alerts = _filter_excluded(all_alerts)
     _cached_alerts = all_alerts
     return all_alerts
 
