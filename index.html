@@ -702,7 +702,7 @@ $('refreshBtn').onclick = async function() {
     const ts = new Date(refreshTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     DOM.updateTime.textContent = '刷新 ' + ts;
 
-    const items = holdingsData?.items?.length || 0;
+    const items = H?.length || 0;
     const alerts = alertsData?.length || 0;
     const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
     showToast('✅ ' + ts + ' · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 3000);
