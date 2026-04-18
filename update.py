@@ -304,10 +304,14 @@ def generate_recommendations(alerts=None):
 
     recs = {'momentum': [], 'undervalued': [], 'oversold': [], 'scarce': []}
 
-    # 🔥 Momentum: 7d up > 5% and 1d still rising
+    # 🔥 Momentum: 7d up > 3% or 1d up > 2%
     for m in merged:
-        if m.get('rate_7', 0) > 5 and m.get('rate_1', 0) > 0 and m.get('price', 0) > 50:
-            m['_score'] = round(m['rate_7'] + m['rate_1'], 2)
+        r7 = m.get('rate_7', 0)
+        r1 = m.get('rate_1', 0)
+        price = m.get('price', 0)
+        if price > 30 and ((r7 > 3 and r1 > 0) or r1 > 2):
+            m['_score'] = round(max(r7, 0) + r1 * 2, 2)
+            m['_reason'] = f'7日+{r7:.1f}% 1日+{r1:.1f}%'
             recs['momentum'].append(m)
     recs['momentum'].sort(key=lambda x: x['_score'], reverse=True)
     recs['momentum'] = recs['momentum'][:20]
