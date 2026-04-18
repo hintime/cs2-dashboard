@@ -153,6 +153,11 @@ def fetch_eco_prices(hash_names):
 # ═══════════════ CSQAQ ALERTS ═══════════════
 def fetch_csqaq_alerts():
     """Fetch price change rankings from CSQAQ"""
+    # Skip in CI environment (IP whitelist blocks GitHub Actions)
+    if os.environ.get('GITHUB_ACTIONS') == 'true':
+        print('[CSQAQ] Skipping in CI (IP whitelist), will use local data')
+        return None  # Return None to indicate skip, not empty
+    
     all_alerts = []
     seen_ids = set()
 
@@ -175,7 +180,6 @@ def fetch_csqaq_alerts():
                 if isinstance(items, dict):
                     items = items.get('data', [])
                 if not items:
-                    print(f'[DEBUG] CSQAQ {sort_key} page {page}: no items, response keys={list(d.keys())}')
                     break
                 for item in items:
                     item_id = item.get('id')
@@ -483,13 +487,16 @@ def main():
         print('[CSQAQ] Fetching alerts...')
         try:
             alerts = fetch_csqaq_alerts()
-            print(f'[CSQAQ] Got {len(alerts)} alerts')
-
-            market_path = os.path.join(DATA_DIR, 'market.json')
-            market = read_json(market_path)
-            market['alerts'] = alerts
-            market['alerts_updated'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-            write_json(market_path, market)
+            if alerts is None:
+                # CI environment skip - preserve existing alerts
+                print('[CSQAQ] Skipped (CI), preserving existing alerts')
+            else:
+                print(f'[CSQAQ] Got {len(alerts)} alerts')
+                market_path = os.path.join(DATA_DIR, 'market.json')
+                market = read_json(market_path)
+                market['alerts'] = alerts
+                market['alerts_updated'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+                write_json(market_path, market)
         except Exception as e:
             print(f'[CSQAQ] Failed: {e}', file=sys.stderr)
 
