@@ -525,11 +525,8 @@ async function loadAll() {
         DOM.alertsUpdateTime.textContent = new Date(marketR.alerts_updated).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
       } catch(e) {}
     }
-    if (marketR.items_updated) {
-      try {
-        DOM.recUpdateTime.textContent = new Date(marketR.items_updated).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-      } catch(e) {}
-    }
+    // 推荐板块显示当前加载时间（随刷新按钮更新）
+    DOM.recUpdateTime.textContent = new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
   } else {
     // no market.json at all — show refresh time
     DOM.updateTime.textContent = '刷新 ' + new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
