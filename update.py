@@ -207,7 +207,7 @@ def fetch_csqaq_alerts(use_cache=True):
         for page in range(1, 4):
             tasks.append((sort_key, page))
     
-    with ThreadPoolExecutor(max_workers=6) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:  # 降低并发避免 429
         futures = [executor.submit(fetch_page, sk, p) for sk, p in tasks]
         for future in as_completed(futures):
             items, sort_key, page = future.result()
