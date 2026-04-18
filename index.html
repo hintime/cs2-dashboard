@@ -723,9 +723,15 @@ $('exportBtn').onclick = function() {
 };
 
 // Token modal
-$('refreshBtn').onclick = function() {
-  loadAll();
-  showToast('🔄 已刷新数据', 1500);
+$('refreshBtn').onclick = async function() {
+  const btn = $('refreshBtn');
+  btn.textContent = '⏳ 加载中...';
+  btn.disabled = true;
+  await loadAll();
+  btn.textContent = '↻ 刷新';
+  btn.disabled = false;
+  const items = holdingsData?.items?.length || 0;
+  showToast('✅ 已拉取 ' + items + ' 条持仓数据', 2500);
 };
 $('updateBtn').onclick = updateData;
 
