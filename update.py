@@ -12,6 +12,7 @@ CS2 Dashboard 数据更新脚本 (优化版)
 - 批量处理
 """
 import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl
+from concurrent.futures import ThreadPoolExecutor
 
 # ═══════════════ CONFIG ═══════════════
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
