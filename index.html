@@ -375,9 +375,10 @@ async function updateData() {
 
     if (r.status === 204 || r.ok) {
       showToast('⏳ 正在获取最新数据（约需 2-3 分钟）...', 4000);
-      // Poll for workflow completion (max 3 min)
       await pollWorkflowComplete();
-      showToast('✅ 数据已更新！', 3000);
+      await loadAll();
+      const ut = DOM.updateTime.textContent;
+      showToast('✅ 数据已更新 · ' + ut, 3000);
     } else {
       const err = await r.json().catch(() => ({}));
       showToast('❌ 更新失败: ' + (err.message || r.status), 4000);
@@ -512,11 +513,12 @@ function toggleStar(goodId) {
 
 // ═══════════════ LOAD DATA ═══════════════
 async function loadAll() {
+  const t0 = Date.now(); // mark refresh time
   await loadOverrides();
 
   const [holdingsR, marketR] = await Promise.all([
-    fetch('holdings.json?v=' + Date.now()).then(r => r.json()).catch(() => null),
-    fetch('market.json?v=' + Date.now()).then(r => r.json()).catch(() => null)
+    fetch('holdings.json?v=' + t0).then(r => r.json()).catch(() => null),
+    fetch('market.json?v=' + t0).then(r => r.json()).catch(() => null)
   ]);
 
   // ── Process holdings ──
@@ -554,7 +556,9 @@ async function loadAll() {
     marketData = marketR;
     const ut = marketR.update_time || marketR.alerts_updated || marketR.items_updated;
     if (ut) {
-      DOM.updateTime.textContent = '更新 ' + new Date(ut).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+      DOM.updateTime.textContent = '数据 ' + new Date(ut).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    } else {
+      DOM.updateTime.textContent = '刷新 ' + new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     }
     alertsData = Array.isArray(marketR.alerts) ? marketR.alerts : [];
     recData = marketR.recommendations || {};
@@ -568,6 +572,9 @@ async function loadAll() {
         DOM.recUpdateTime.textContent = new Date(recData.updated).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
       } catch(e) {}
     }
+  } else {
+    // no market.json at all — show refresh time
+    DOM.updateTime.textContent = '刷新 ' + new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
   }
 
   initDashboard();
@@ -731,6 +738,7 @@ $('refreshBtn').onclick = async function() {
   await loadAll();
   btn.textContent = '↻ 刷新';
   btn.disabled = false;
+  const ts = new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
   const items = holdingsData?.items?.length || 0;
   const alerts = alertsData?.length || 0;
   const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
