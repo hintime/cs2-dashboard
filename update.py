@@ -12,7 +12,6 @@ CS2 Dashboard 数据更新脚本 (优化版)
 - 批量处理
 """
 import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ═══════════════ CONFIG ═══════════════
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
@@ -161,11 +160,11 @@ def fetch_eco_prices(hash_names):
     
     return prices
 
-# ═══════════════ CSQAQ ALERTS (并发) ═══════════════
+# ═══════════════ CSQAQ ALERTS (串行，稳定) ═══════════════
 _cached_alerts = None  # 全局缓存，供 recommendations 复用
 
 def fetch_csqaq_alerts(use_cache=True):
-    """Fetch price change rankings from CSQAQ (并发，带缓存)"""
+    """Fetch price change rankings from CSQAQ (串行，带缓存)"""
     global _cached_alerts
     
     if use_cache and _cached_alerts is not None:
@@ -201,16 +200,10 @@ def fetch_csqaq_alerts(use_cache=True):
             print(f'[WARN] CSQAQ {sort_key} page {page}: {e}', file=sys.stderr)
             return [], sort_key, page
     
-    # 并发拉取所有页面
-    tasks = []
+    # 串行拉取所有页面（降低并发避免 429）
     for sort_key in ('price_up_1d', 'price_down_1d'):
         for page in range(1, 4):
-            tasks.append((sort_key, page))
-    
-    with ThreadPoolExecutor(max_workers=3) as executor:  # 降低并发避免 429
-        futures = [executor.submit(fetch_page, sk, p) for sk, p in tasks]
-        for future in as_completed(futures):
-            items, sort_key, page = future.result()
+            items, _, _ = fetch_page(sort_key, page)
             for item in items:
                 item_id = item.get('id')
                 if item_id in seen_ids:
@@ -357,11 +350,10 @@ def generate_recommendations(alerts=None):
     recs['scarce'].sort(key=lambda x: x['_score'], reverse=True)
     recs['scarce'] = recs['scarce'][:20]
 
-    # Clean internal fields
+    # Clean internal fields (保留 _reason 给前端显示)
     for r in recs.values():
         for item in r:
-            item.pop('_score', None)
-            item.pop('_reason', None)
+            item.pop('_score', None)  # 只清理内部分数字段
 
     return recs
 
