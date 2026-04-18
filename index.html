@@ -362,6 +362,10 @@ async function updateData() {
   btn.disabled = true;
 
   try {
+    // Debug: log token info
+    console.log('Token prefix:', ghToken.substring(0, 8) + '...');
+    console.log('Workflow API:', WORKFLOW_API);
+    
     // Trigger workflow dispatch
     const r = await fetch(WORKFLOW_API, {
       method: 'POST',
@@ -381,7 +385,8 @@ async function updateData() {
       showToast('✅ 数据已更新 · ' + ut, 3000);
     } else {
       const err = await r.json().catch(() => ({}));
-      showToast('❌ 更新失败: ' + (err.message || r.status), 4000);
+      console.log('GitHub API error:', r.status, err);
+      showToast('❌ 更新失败 (' + r.status + '): ' + (err.message || JSON.stringify(err)), 5000);
     }
   } catch(e) {
     showToast('❌ 网络错误: ' + e.message, 4000);
