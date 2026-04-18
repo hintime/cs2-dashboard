@@ -155,6 +155,24 @@ tbody tr:hover{background:var(--glow-blue)}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(99,115,129,.25);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(99,115,129,.4)}
+
+/* ── Changelog ── */
+.cl-section{margin-bottom:16px}
+.cl-section:last-child{margin-bottom:0}
+.cl-section-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.cl-section-title .cl-count{background:var(--blue);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600}
+.cl-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:12px;transition:background .15s}
+.cl-item:hover{background:rgba(255,255,255,.03)}
+.cl-item .cl-name{color:var(--text);font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-item .cl-old{color:var(--text3);font-family:'DM Mono','JetBrains Mono',monospace;font-size:11px;margin:0 8px;text-decoration:line-through}
+.cl-item .cl-new{font-family:'DM Mono','JetBrains Mono',monospace;font-size:12px;font-weight:700;min-width:60px;text-align:right}
+.cl-item .cl-new.up{color:var(--rise)}.cl-item .cl-new.dn{color:var(--fall)}
+.cl-item .cl-tag{font-size:9px;padding:1px 6px;border-radius:4px;font-weight:600;margin-right:8px;flex-shrink:0}
+.cl-item .cl-tag.price{background:rgba(96,165,250,.12);color:var(--blue)}
+.cl-item .cl-tag.alert{background:rgba(248,113,113,.1);color:var(--rise)}
+.cl-item .cl-tag.rec{background:rgba(251,191,36,.1);color:var(--amber)}
+.cl-item .cl-tag.new{background:rgba(52,211,153,.1);color:var(--fall)}
+.cl-empty{color:var(--text3);font-size:12px;padding:8px 0}
 </style>
 </head>
 <body>
@@ -226,6 +244,18 @@ tbody tr:hover{background:var(--glow-blue)}
     <div id="recContent" style="padding:12px 16px">
       <div id="recGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
     </div>
+  </div>
+
+  <!-- ══════════ 更新日志 ══════════ -->
+  <div class="panel" id="changelogPanel" style="display:none">
+    <div class="panel-head">
+      <h2>📋 本次刷新变动</h2>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="changelogTime" style="font-size:10px;color:var(--text3)"></span>
+        <button class="tab" id="changelogClose" style="cursor:pointer">✕ 关闭</button>
+      </div>
+    </div>
+    <div id="changelogContent" style="padding:16px;max-height:400px;overflow-y:auto"></div>
   </div>
 
   <div class="panel">
@@ -304,6 +334,7 @@ const CAT_LABELS = {
 
 // ═══════════════ DOM CACHE ═══════════════
 const $ = id => document.getElementById(id);
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
 const DOM = {
   miNum:$('miNum'), miChg:$('miChg'), miItems:$('miItems'),
   totalValue:$('totalValue'), totalPnl:$('totalPnl'), totalPnlPct:$('totalPnlPct'),
@@ -688,6 +719,129 @@ $('exportBtn').onclick = function() {
 // ═══════════════ REFRESH BUTTON ═══════════════
 // 状态跟踪
 let isUpdating = false;
+let prevSnapshot = null; // 刷新前的数据快照
+
+// 数据快照（用于对比变更）
+function takeSnapshot() {
+  const snap = {
+    holdings: H ? H.map(h => ({n: h.n, w: h.w, c: h.c, p: h.p})) : [],
+    alertsCount: alertsData?.length || 0,
+    alertsTop: (alertsData || []).slice(0, 10).map(a => ({name: a.name, price: a.price, rate_1: a.rate_1, rate_7: a.rate_7})),
+    recs: {}
+  };
+  if (recData) {
+    for (const k of ['momentum','undervalued','oversold','scarce']) {
+      snap.recs[k] = (recData[k] || []).map(r => r.name);
+    }
+  }
+  return snap;
+}
+
+// 对比新旧数据，生成变更列表
+function diffSnapshot(oldSnap, newSnap) {
+  if (!oldSnap) return null;
+  const changes = {prices: [], alerts: [], recs: []};
+
+  // 1. 持仓价格变动
+  const oldMap = {};
+  oldSnap.holdings.forEach(h => { oldMap[h.n + '|' + h.w] = h.p; });
+  newSnap.holdings.forEach(h => {
+    const oldP = oldMap[h.n + '|' + h.w];
+    if (oldP !== undefined && Math.abs(h.p - oldP) > 0.01) {
+      changes.prices.push({name: h.n, wear: h.w, oldPrice: oldP, newPrice: h.p, pct: oldP > 0 ? (h.p - oldP) / oldP * 100 : 0});
+    }
+  });
+  // 按变动绝对值排序
+  changes.prices.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
+
+  // 2. 异动变动
+  if (newSnap.alertsCount !== oldSnap.alertsCount) {
+    changes.alerts.push('异动数量: ' + oldSnap.alertsCount + ' → ' + newSnap.alertsCount);
+  }
+  // 对比涨幅榜前10
+  for (let i = 0; i < Math.min(oldSnap.alertsTop.length, newSnap.alertsTop?.length || 0); i++) {
+    const o = oldSnap.alertsTop[i], n = newSnap.alertsTop[i];
+    if (o && n && (o.name !== n.name || Math.abs(o.rate_1 - n.rate_1) > 0.1)) {
+      changes.alerts.push({type: 'rank', name: n.name, oldRate: o.rate_1, newRate: n.rate_1});
+    }
+  }
+
+  // 3. 推荐变动
+  for (const k of ['momentum','undervalued','oversold','scarce']) {
+    const oldSet = new Set(oldSnap.recs[k] || []);
+    const newSet = new Set(newSnap.recs[k] || []);
+    const added = [...newSet].filter(n => !oldSet.has(n));
+    const removed = [...oldSet].filter(n => !newSet.has(n));
+    if (added.length) changes.recs.push({type: 'added', cat: k, items: added});
+    if (removed.length) changes.recs.push({type: 'removed', cat: k, items: removed});
+  }
+
+  return changes;
+}
+
+const CAT_LABELS = {momentum:'追涨', undervalued:'低估', oversold:'超跌', scarce:'稀缺'};
+
+// 渲染变更日志
+function renderChangelog(changes) {
+  const panel = $('changelogPanel');
+  const content = $('changelogContent');
+  if (!changes || (!changes.prices.length && !changes.alerts.length && !changes.recs.length)) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  let html = '';
+
+  // 价格变动
+  if (changes.prices.length) {
+    html += '<div class="cl-section"><div class="cl-section-title">💰 持仓价格变动 <span class="cl-count">' + changes.prices.length + '</span></div>';
+    changes.prices.slice(0, 20).forEach(c => {
+      const cls = c.pct > 0 ? 'up' : 'dn';
+      const sign = c.pct > 0 ? '+' : '';
+      html += '<div class="cl-item"><span class="cl-tag price">价格</span><span class="cl-name">' + esc(c.name) + (c.wear ? ' <span class="wear-tag">' + c.wear + '</span>' : '') + '</span><span class="cl-old">¥' + c.oldPrice.toFixed(2) + '</span><span class="cl-new ' + cls + '">¥' + c.newPrice.toFixed(2) + ' ' + sign + c.pct.toFixed(1) + '%</span></div>';
+    });
+    if (changes.prices.length > 20) html += '<div class="cl-empty">...还有 ' + (changes.prices.length - 20) + ' 项变动</div>';
+    html += '</div>';
+  }
+
+  // 异动变动
+  if (changes.alerts.length) {
+    html += '<div class="cl-section"><div class="cl-section-title">📊 异动变化 <span class="cl-count">' + changes.alerts.length + '</span></div>';
+    changes.alerts.forEach(a => {
+      if (typeof a === 'string') {
+        html += '<div class="cl-item"><span class="cl-tag alert">异动</span><span class="cl-name">' + a + '</span></div>';
+      } else {
+        const sign1 = a.newRate > 0 ? '+' : '';
+        const sign2 = a.oldRate > 0 ? '+' : '';
+        html += '<div class="cl-item"><span class="cl-tag alert">排名</span><span class="cl-name">' + esc(a.name) + '</span><span class="cl-old">' + sign2 + a.oldRate.toFixed(1) + '%</span><span class="cl-new up">' + sign1 + a.newRate.toFixed(1) + '%</span></div>';
+      }
+    });
+    html += '</div>';
+  }
+
+  // 推荐变动
+  if (changes.recs.length) {
+    html += '<div class="cl-section"><div class="cl-section-title">🎯 推荐变化 <span class="cl-count">' + changes.recs.length + '</span></div>';
+    changes.recs.forEach(r => {
+      const label = CAT_LABELS[r.cat] || r.cat;
+      r.items.slice(0, 5).forEach(name => {
+        const tag = r.type === 'added' ? 'new' : 'alert';
+        const prefix = r.type === 'added' ? '➕' : '➖';
+        html += '<div class="cl-item"><span class="cl-tag ' + tag + '">' + label + '</span><span class="cl-name">' + prefix + ' ' + esc(name) + '</span></div>';
+      });
+      if (r.items.length > 5) html += '<div class="cl-empty">...还有 ' + (r.items.length - 5) + ' 项</div>';
+    });
+    html += '</div>';
+  }
+
+  content.innerHTML = html;
+  $('changelogTime').textContent = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  panel.style.display = 'block';
+  panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+// 关闭按钮
+$('changelogClose').onclick = () => { $('changelogPanel').style.display = 'none'; };
 
 // 轮询检查更新是否完成
 async function pollUpdateComplete(startTime) {
@@ -722,6 +876,9 @@ $('refreshBtn').onclick = async function() {
   const btn = $('refreshBtn');
   const startTime = Date.now();
   isUpdating = true;
+  
+  // 保存刷新前的快照
+  prevSnapshot = takeSnapshot();
   
   // 阶段1：立即加载当前数据
   btn.textContent = '⏳ 加载中...';
@@ -766,6 +923,11 @@ $('refreshBtn').onclick = async function() {
       const alerts = alertsData?.length || 0;
       const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
       showToast('✅ 全量扫描完成 · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 4000);
+      
+      // 对比并显示变更日志
+      const newSnap = takeSnapshot();
+      const changes = diffSnapshot(prevSnapshot, newSnap);
+      renderChangelog(changes);
     } else {
       showToast('⏱️ 扫描超时，数据将在后台更新', 3000);
     }
