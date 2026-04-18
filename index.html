@@ -362,11 +362,13 @@ async function updateData() {
   btn.disabled = true;
 
   try {
-    // Debug: log token info
+    // 1. 触发本地服务更新异动（后台静默）
+    fetch('http://localhost:8765/update').catch(() => {});
+    
+    // 2. 触发 CI 更新价格
     console.log('Token prefix:', ghToken.substring(0, 8) + '...');
     console.log('Workflow API:', WORKFLOW_API);
     
-    // Trigger workflow dispatch
     const r = await fetch(WORKFLOW_API, {
       method: 'POST',
       headers: {
