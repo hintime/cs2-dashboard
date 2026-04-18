@@ -175,6 +175,7 @@ def fetch_csqaq_alerts():
                 if isinstance(items, dict):
                     items = items.get('data', [])
                 if not items:
+                    print(f'[DEBUG] CSQAQ {sort_key} page {page}: no items, response keys={list(d.keys())}')
                     break
                 for item in items:
                     item_id = item.get('id')
