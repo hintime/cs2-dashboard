@@ -735,14 +735,21 @@ $('refreshBtn').onclick = async function() {
   const btn = $('refreshBtn');
   btn.textContent = '⏳ 加载中...';
   btn.disabled = true;
+  
+  const refreshTime = Date.now();
   await loadAll();
+  
+  // Update badge with refresh time
+  const ts = new Date(refreshTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  DOM.updateTime.textContent = '刷新 ' + ts;
+  
   btn.textContent = '↻ 刷新';
   btn.disabled = false;
-  const ts = new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  
   const items = holdingsData?.items?.length || 0;
   const alerts = alertsData?.length || 0;
   const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
-  showToast('✅ 已刷新 ' + items + ' 条持仓 · ' + alerts + ' 条异动 · ' + recs + ' 条推荐', 3000);
+  showToast('✅ ' + ts + ' · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 3000);
 };
 $('updateBtn').onclick = updateData;
 
