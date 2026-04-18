@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CS2 Dashboard 数据更新脚本
+CS2 Dashboard 数据更新脚本 (优化版)
 - ECOSteam API 获取持仓价格 → holdings.json
 - CSQAQ API 获取异动数据 → market.json (alerts)
 - 可选：SteamDT K-lines (需有效 API Key)
 
-统一写入策略：所有数据先写入本地文件，最后一次性 git push 或 GitHub API push，
-避免多次 push 导致 SHA 冲突。
+优化：
+- 并发请求（concurrent.futures）
+- 数据缓存复用（alerts + recommendations 共享）
+- 批量处理
 """
 import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ═══════════════ CONFIG ═══════════════
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
@@ -115,13 +118,14 @@ def http_post_raw(url, body, headers=None, timeout=15):
                 raise
             time.sleep(RETRY_DELAY)
 
-# ═══════════════ ECO PRICES ═══════════════
+# ═══════════════ ECO PRICES (并发) ═══════════════
 def fetch_eco_prices(hash_names):
-    """Batch fetch ECO prices → {HashName: price_float}"""
+    """Batch fetch ECO prices → {HashName: price_float} (并发)"""
     prices = {}
     batch_size = 100
-    for i in range(0, len(hash_names), batch_size):
-        batch = hash_names[i:i+batch_size]
+    batches = [hash_names[i:i+batch_size] for i in range(0, len(hash_names), batch_size)]
+    
+    def fetch_batch(batch, idx):
         params = {
             'PartnerId': PARTNER_ID,
             'Timestamp': str(int(time.time())),
@@ -134,6 +138,7 @@ def fetch_eco_prices(hash_names):
                 'https://openapi.ecosteam.cn/Api/Market/BatchSearchSellingPrice',
                 params, timeout=30
             )
+            batch_prices = {}
             if str(result.get('ResultCode')) == '0':
                 for item in (result.get('ResultData') or []):
                     hn = item.get('HashName')
@@ -143,16 +148,29 @@ def fetch_eco_prices(hash_names):
                     except (ValueError, TypeError):
                         p = 0.0
                     if hn and p > 0:
-                        prices[hn] = p
-            else:
-                print(f'[WARN] ECO ResultCode={result.get("ResultCode")} batch {i//batch_size+1}', file=sys.stderr)
+                        batch_prices[hn] = p
+            return batch_prices
         except Exception as e:
-            print(f'[ERROR] ECO batch {i//batch_size+1}: {e}', file=sys.stderr)
+            print(f'[ERROR] ECO batch {idx}: {e}', file=sys.stderr)
+            return {}
+    
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(fetch_batch, batch, i): i for i, batch in enumerate(batches)}
+        for future in as_completed(futures):
+            prices.update(future.result())
+    
     return prices
 
-# ═══════════════ CSQAQ ALERTS ═══════════════
-def fetch_csqaq_alerts():
-    """Fetch price change rankings from CSQAQ"""
+# ═══════════════ CSQAQ ALERTS (并发) ═══════════════
+_cached_alerts = None  # 全局缓存，供 recommendations 复用
+
+def fetch_csqaq_alerts(use_cache=True):
+    """Fetch price change rankings from CSQAQ (并发，带缓存)"""
+    global _cached_alerts
+    
+    if use_cache and _cached_alerts is not None:
+        return _cached_alerts
+    
     # Skip in CI environment (IP whitelist blocks GitHub Actions)
     if os.environ.get('GITHUB_ACTIONS') == 'true':
         print('[CSQAQ] Skipping in CI (IP whitelist), will use local data')
@@ -160,59 +178,73 @@ def fetch_csqaq_alerts():
     
     all_alerts = []
     seen_ids = set()
-
+    
+    def fetch_page(sort_key, page):
+        body = {
+            'page_index': page,
+            'page_size': 50,
+            'filter': {'type': ['sticker', 'normal'], 'sort': [sort_key]},
+            'show_recently_price': True
+        }
+        try:
+            d = http_post_raw(
+                'https://api.csqaq.com/api/v1/info/get_rank_list',
+                body,
+                headers={'ApiToken': CSQ_KEY},
+                timeout=15
+            )
+            items = d.get('data', {})
+            if isinstance(items, dict):
+                items = items.get('data', [])
+            return items, sort_key, page
+        except Exception as e:
+            print(f'[WARN] CSQAQ {sort_key} page {page}: {e}', file=sys.stderr)
+            return [], sort_key, page
+    
+    # 并发拉取所有页面
+    tasks = []
     for sort_key in ('price_up_1d', 'price_down_1d'):
         for page in range(1, 4):
-            body = {
-                'page_index': page,
-                'page_size': 50,
-                'filter': {'type': ['sticker', 'normal'], 'sort': [sort_key]},
-                'show_recently_price': True
-            }
-            try:
-                d = http_post_raw(
-                    'https://api.csqaq.com/api/v1/info/get_rank_list',
-                    body,
-                    headers={'ApiToken': CSQ_KEY},
-                    timeout=15
-                )
-                items = d.get('data', {})
-                if isinstance(items, dict):
-                    items = items.get('data', [])
-                if not items:
-                    break
-                for item in items:
-                    item_id = item.get('id')
-                    if item_id in seen_ids:
-                        continue
-                    seen_ids.add(item_id)
-                    all_alerts.append({
-                        'id': item_id,
-                        'name': item.get('name', ''),
-                        'exterior': item.get('exterior_localized_name', ''),
-                        'rarity': item.get('rarity_localized_name', ''),
-                        'price': float(item.get('buff_sell_price') or 0),
-                        'rate_1': round(float(item.get('buff_price_chg') or item.get('sell_price_rate_1') or 0), 2),
-                        'rate_7': round(float(item.get('sell_price_rate_7') or 0), 2),
-                        'rate_30': round(float(item.get('sell_price_rate_30') or 0), 2),
-                        'rank_num': item.get('rank_num', 0),
-                        'img': item.get('img', ''),
-                        'buff_sell': int(item.get('buff_sell_num') or 0),
-                        'buff_buy': int(item.get('buff_buy_num') or 0),
-                        'steam_buy': int(item.get('steam_buy_num') or 0),
-                    })
-                if len(items) < 50:
-                    break
-            except Exception as e:
-                print(f'[WARN] CSQAQ {sort_key} page {page}: {e}', file=sys.stderr)
-            time.sleep(0.5)
+            tasks.append((sort_key, page))
+    
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        futures = [executor.submit(fetch_page, sk, p) for sk, p in tasks]
+        for future in as_completed(futures):
+            items, sort_key, page = future.result()
+            for item in items:
+                item_id = item.get('id')
+                if item_id in seen_ids:
+                    continue
+                seen_ids.add(item_id)
+                all_alerts.append({
+                    'id': item_id,
+                    'name': item.get('name', ''),
+                    'exterior': item.get('exterior_localized_name', ''),
+                    'rarity': item.get('rarity_localized_name', ''),
+                    'price': float(item.get('buff_sell_price') or 0),
+                    'rate_1': round(float(item.get('buff_price_chg') or item.get('sell_price_rate_1') or 0), 2),
+                    'rate_7': round(float(item.get('sell_price_rate_7') or 0), 2),
+                    'rate_30': round(float(item.get('sell_price_rate_30') or 0), 2),
+                    'rank_num': item.get('rank_num', 0),
+                    'img': item.get('img', ''),
+                    'buff_sell': int(item.get('buff_sell_num') or 0),
+                    'buff_buy': int(item.get('buff_buy_num') or 0),
+                    'steam_buy': int(item.get('steam_buy_num') or 0),
+                })
 
     all_alerts.sort(key=lambda x: abs(x.get('rate_1', 0)), reverse=True)
+    _cached_alerts = all_alerts
     return all_alerts
 
-# ═══════════════ RECOMMENDATIONS ═══════════════
+# ═══════════════ RECOMMENDATIONS (复用缓存) ═══════════════
+_cached_eco_full = None
+
 def fetch_eco_full():
-    """Fetch full ECO price list (36k+ items)"""
+    """Fetch full ECO price list (36k+ items) - 带缓存"""
+    global _cached_eco_full
+    if _cached_eco_full is not None:
+        return _cached_eco_full
+    
     params = {
         'PartnerId': PARTNER_ID,
         'Timestamp': str(int(time.time())),
@@ -222,12 +254,15 @@ def fetch_eco_full():
     result = http_post('https://openapi.ecosteam.cn/Api/Market/GetHashNameAndPriceList', params, timeout=60)
     if str(result.get('ResultCode')) != '0':
         raise Exception(f"ECO ResultCode={result.get('ResultCode')}")
-    return result.get('ResultData') or []
+    _cached_eco_full = result.get('ResultData') or []
+    return _cached_eco_full
 
-def generate_recommendations():
+def generate_recommendations(alerts=None):
     """Generate recommendations from CSQAQ alerts + ECO full data"""
-    # Fetch CSQAQ alerts (with supply/demand data)
-    alerts = fetch_csqaq_alerts()
+    # 复用已获取的 alerts
+    if alerts is None:
+        alerts = fetch_csqaq_alerts(use_cache=True)
+    
     # Fetch ECO full price list
     eco_items = fetch_eco_full()
 
@@ -483,18 +518,19 @@ def main():
         print(f'[ECO] Updated {updated}/{len(hash_names)} | Cost={total_cost:.0f} Market={total_market:.0f} PnL={pnl:+.0f} ({pnl_pct:+.1f}%)')
 
     # ── Update CSQAQ alerts → market.json ──
+    alerts_data = None
     if mode in ('all', 'alerts'):
         print('[CSQAQ] Fetching alerts...')
         try:
-            alerts = fetch_csqaq_alerts()
-            if alerts is None:
+            alerts_data = fetch_csqaq_alerts()
+            if alerts_data is None:
                 # CI environment skip - preserve existing alerts
                 print('[CSQAQ] Skipped (CI), preserving existing alerts')
             else:
-                print(f'[CSQAQ] Got {len(alerts)} alerts')
+                print(f'[CSQAQ] Got {len(alerts_data)} alerts')
                 market_path = os.path.join(DATA_DIR, 'market.json')
                 market = read_json(market_path)
-                market['alerts'] = alerts
+                market['alerts'] = alerts_data
                 market['alerts_updated'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
                 write_json(market_path, market)
         except Exception as e:
@@ -518,11 +554,11 @@ def main():
         except Exception as e:
             print(f'[SteamDT] K-lines failed: {e}', file=sys.stderr)
 
-    # ── Update Recommendations ──
+    # ── Update Recommendations (复用 alerts) ──
     if mode in ('all', 'alerts'):
         print('[REC] Generating recommendations...')
         try:
-            recs = generate_recommendations()
+            recs = generate_recommendations(alerts=alerts_data)
             total = sum(len(v) for v in recs.values())
             print(f'[REC] {total} recommendations')
 
