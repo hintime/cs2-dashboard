@@ -192,6 +192,9 @@ def fetch_csqaq_alerts():
                         'rate_30': round(float(item.get('sell_price_rate_30') or 0), 2),
                         'rank_num': item.get('rank_num', 0),
                         'img': item.get('img', ''),
+                        'buff_sell': int(item.get('buff_sell_num') or 0),
+                        'buff_buy': int(item.get('buff_buy_num') or 0),
+                        'steam_buy': int(item.get('steam_buy_num') or 0),
                     })
                 if len(items) < 50:
                     break
@@ -201,6 +204,121 @@ def fetch_csqaq_alerts():
 
     all_alerts.sort(key=lambda x: abs(x.get('rate_1', 0)), reverse=True)
     return all_alerts
+
+# ═══════════════ RECOMMENDATIONS ═══════════════
+def fetch_eco_full():
+    """Fetch full ECO price list (36k+ items)"""
+    params = {
+        'PartnerId': PARTNER_ID,
+        'Timestamp': str(int(time.time())),
+        'GameID': '730',
+    }
+    params['Sign'] = sign_eco(params)
+    result = http_post('https://openapi.ecosteam.cn/Api/Market/GetHashNameAndPriceList', params, timeout=60)
+    if str(result.get('ResultCode')) != '0':
+        raise Exception(f"ECO ResultCode={result.get('ResultCode')}")
+    return result.get('ResultData') or []
+
+def generate_recommendations():
+    """Generate recommendations from CSQAQ alerts + ECO full data"""
+    # Fetch CSQAQ alerts (with supply/demand data)
+    alerts = fetch_csqaq_alerts()
+    # Fetch ECO full price list
+    eco_items = fetch_eco_full()
+
+    # Normalize names for matching
+    def norm(s):
+        return s.lower().replace(' ', '').replace('|', '').replace('(', '').replace(')', '').replace('-', '')
+
+    # Build CSQAQ lookup
+    csq_map = {}
+    for a in alerts:
+        key = norm(a.get('name', ''))
+        if key:
+            csq_map[key] = a
+
+    # Merge ECO + CSQAQ
+    merged = []
+    for item in eco_items:
+        gn = item.get('GoodsName', '')
+        key = norm(gn)
+        csq = csq_map.get(key, {})
+        price = float(item.get('Price') or 0)
+        if price < 10:
+            continue
+        merged.append({
+            'name': gn,
+            'hash_name': item.get('HashName', ''),
+            'price': csq.get('price') or price,
+            'rate_1': csq.get('rate_1', 0),
+            'rate_7': csq.get('rate_7', 0),
+            'eco_price': price,
+            'eco_compre': float(item.get('MarketComprePrice') or 0),
+            'eco_selling': int(item.get('SellingTotal') or 0),
+            'eco_qg_total': int(item.get('QGTotal') or 0),
+            'buff_sell': csq.get('buff_sell', 0),
+            'buff_buy': csq.get('buff_buy', 0),
+            'steam_buy': csq.get('steam_buy', 0),
+            'img': csq.get('img', ''),
+        })
+
+    recs = {'momentum': [], 'undervalued': [], 'oversold': [], 'scarce': []}
+
+    # 🔥 Momentum: 7d up > 5% and 1d still rising
+    for m in merged:
+        if m.get('rate_7', 0) > 5 and m.get('rate_1', 0) > 0 and m.get('price', 0) > 50:
+            m['_score'] = round(m['rate_7'] + m['rate_1'], 2)
+            recs['momentum'].append(m)
+    recs['momentum'].sort(key=lambda x: x['_score'], reverse=True)
+    recs['momentum'] = recs['momentum'][:20]
+
+    # 💎 Undervalued: ECO compre > price * 1.05
+    for m in merged:
+        ep = m.get('eco_price', 0)
+        ec = m.get('eco_compre', 0)
+        selling = m.get('eco_selling', 0)
+        if ep > 50 and ec > ep * 1.05 and ec < ep * 2.0 and selling > 0 and selling < 200:
+            ratio = round(ec / ep, 3)
+            m['_score'] = ratio
+            m['_reason'] = f'综合价/售价={ratio:.1%}'
+            recs['undervalued'].append(m)
+    recs['undervalued'].sort(key=lambda x: x['_score'], reverse=True)
+    recs['undervalued'] = recs['undervalued'][:20]
+
+    # 📉 Oversold: 7d down > 8% with buy orders
+    for m in merged:
+        if m.get('rate_7', 0) < -8 and m.get('eco_qg_total', 0) > 0 and m.get('price', 0) > 50:
+            m['_score'] = abs(m['rate_7'])
+            recs['oversold'].append(m)
+    recs['oversold'].sort(key=lambda x: x['_score'], reverse=True)
+    recs['oversold'] = recs['oversold'][:20]
+
+    # ⚡ Scarce: BUFF buy/sell ratio high
+    for m in merged:
+        name_lower = m.get('name', '').lower()
+        if any(kw in name_lower for kw in ('武器箱', '钥匙', '箱', 'key', 'case')):
+            continue
+        buff_sell = m.get('buff_sell', 0)
+        buff_buy = m.get('buff_buy', 0)
+        price = m.get('price', 0) or m.get('eco_price', 0)
+        if price < 20:
+            continue
+        if buff_sell > 0 and buff_buy > 0:
+            ratio = buff_buy / buff_sell
+            if ratio >= 0.15 and buff_sell < 500:
+                m['_score'] = round(ratio, 2)
+                m['_reason'] = f'BUFF求购{buff_buy}/在售{buff_sell}={ratio:.0%}'
+                recs['scarce'].append(m)
+    recs['scarce'].sort(key=lambda x: x['_score'], reverse=True)
+    recs['scarce'] = recs['scarce'][:20]
+
+    # Clean internal fields
+    for r in recs.values():
+        for item in r:
+            item.pop('_score', None)
+            item.pop('_reason', None)
+
+    return recs
 
 # ═══════════════ STEAMDT K-LINES (optional) ═══════════════
 def fetch_steamdt_klines(items_list):
@@ -391,6 +509,21 @@ def main():
                 write_json(market_path, market)
         except Exception as e:
             print(f'[SteamDT] K-lines failed: {e}', file=sys.stderr)
+
+    # ── Update Recommendations ──
+    if mode in ('all', 'alerts'):
+        print('[REC] Generating recommendations...')
+        try:
+            recs = generate_recommendations()
+            total = sum(len(v) for v in recs.values())
+            print(f'[REC] {total} recommendations')
+
+            market_path = os.path.join(DATA_DIR, 'market.json')
+            market = read_json(market_path)
+            market['recommendations'] = recs
+            write_json(market_path, market)
+        except Exception as e:
+            print(f'[REC] Failed: {e}', file=sys.stderr)
 
     # ── Push all dirty files at once ──
     push_all()
