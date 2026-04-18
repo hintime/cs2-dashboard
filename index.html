@@ -708,8 +708,8 @@ $('refreshBtn').onclick = async function() {
     showToast('✅ ' + ts + ' · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 3000);
 
     // 后台静默触发更新（不阻塞 UI）
+    fetch('http://localhost:8765/update').catch(() => {}); // 本地异动更新（无需 Token）
     if (ghToken) {
-      fetch('http://localhost:8765/update').catch(() => {}); // 本地异动更新
       fetch(WORKFLOW_API, {
         method: 'POST',
         headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
