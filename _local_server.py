@@ -31,11 +31,22 @@ class UpdateHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({'status': 'ok'}).encode())
             
         elif parsed.path == '/update':
-            # 触发更新
+            # 触发更新 - 全量扫描模式
             try:
-                # 后台运行 update.py alerts
+                query = parse_qs(parsed.query)
+                mode = query.get('mode', ['alerts'])[0]  # 默认 alerts，支持 full
+                
+                # 全量扫描 = prices + alerts + recommendations
+                if mode == 'full':
+                    script_mode = 'all'
+                    print(f'[Server] Triggering FULL scan (all)...')
+                else:
+                    script_mode = 'alerts'
+                    print(f'[Server] Triggering alerts update...')
+                
+                # 后台运行 update.py
                 subprocess.Popen(
-                    [sys.executable, UPDATE_SCRIPT, 'alerts'],
+                    [sys.executable, UPDATE_SCRIPT, script_mode],
                     cwd=SCRIPT_DIR,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
@@ -45,7 +56,7 @@ class UpdateHandler(http.server.BaseHTTPRequestHandler):
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
-                self.wfile.write(json.dumps({'status': 'triggered', 'mode': 'alerts'}).encode())
+                self.wfile.write(json.dumps({'status': 'triggered', 'mode': mode, 'script_mode': script_mode}).encode())
             except Exception as e:
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json')

@@ -685,40 +685,98 @@ $('exportBtn').onclick = function() {
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'cost-overrides.json'; a.click();
 };
 
-// Token modal
+// ═══════════════ REFRESH BUTTON ═══════════════
+// 状态跟踪
+let isUpdating = false;
+
+// 轮询检查更新是否完成
+async function pollUpdateComplete(startTime) {
+  const MAX_WAIT = 120000; // 2分钟超时
+  const INTERVAL = 5000;   // 5秒轮询一次
+  const start = Date.now();
+  
+  while (Date.now() - start < MAX_WAIT) {
+    await sleep(INTERVAL);
+    try {
+      // 检查 market.json 的更新时间是否比 startTime 新
+      const r = await fetch('market.json?v=' + Date.now());
+      if (r.ok) {
+        const data = await r.json();
+        const updateTime = data.alerts_updated || data.items_updated;
+        if (updateTime) {
+          const updateTs = new Date(updateTime).getTime();
+          // 如果更新时间比开始时间晚，说明更新完成了
+          if (updateTs > startTime) {
+            return true;
+          }
+        }
+      }
+    } catch(e) {}
+  }
+  return false; // 超时
+}
+
 $('refreshBtn').onclick = async function() {
+  if (isUpdating) return; // 防止重复点击
+  
   const btn = $('refreshBtn');
-  btn.textContent = '⏳ 刷新中...';
+  const startTime = Date.now();
+  isUpdating = true;
+  
+  // 阶段1：立即加载当前数据
+  btn.textContent = '⏳ 加载中...';
   btn.disabled = true;
-
+  
   try {
-    const refreshTime = Date.now();
     await loadAll();
-
-    // Update badge with refresh time
-    const ts = new Date(refreshTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-    DOM.updateTime.textContent = '刷新 ' + ts;
-
-    const items = H?.length || 0;
-    const alerts = alertsData?.length || 0;
-    const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
-    showToast('✅ ' + ts + ' · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 3000);
-
-    // 后台静默触发更新（不阻塞 UI）
-    fetch('http://localhost:8765/update').catch(() => {}); // 本地异动更新（无需 Token）
+    const loadTs = new Date(startTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    DOM.updateTime.textContent = '刷新 ' + loadTs;
+    showToast('📊 已加载本地数据，开始全量扫描...', 2000);
+  } catch (e) {
+    console.error('Load failed:', e);
+  }
+  
+  // 阶段2：触发全量扫描（持仓价格 + 异动 + 推荐）
+  btn.textContent = '🔍 扫描全量数据...';
+  
+  try {
+    // 触发本地全量更新
+    fetch('http://localhost:8765/update?mode=full').catch(() => {});
+    
+    // 同时触发 CI 更新（如果有 Token）
     if (ghToken) {
       fetch(WORKFLOW_API, {
         method: 'POST',
         headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
         body: JSON.stringify({ ref: 'main' })
-      }).catch(() => {}); // CI 价格更新
+      }).catch(() => {});
     }
+    
+    // 阶段3：轮询等待更新完成
+    btn.textContent = '⏳ 更新中...';
+    const completed = await pollUpdateComplete(startTime);
+    
+    if (completed) {
+      // 更新完成，重新加载数据
+      await loadAll();
+      const finalTs = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+      DOM.updateTime.textContent = '更新 ' + finalTs;
+      
+      const items = H?.length || 0;
+      const alerts = alertsData?.length || 0;
+      const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
+      showToast('✅ 全量扫描完成 · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 4000);
+    } else {
+      showToast('⏱️ 扫描超时，数据将在后台更新', 3000);
+    }
+    
   } catch (e) {
-    console.error('Refresh failed:', e);
-    showToast('❌ 刷新失败: ' + e.message, 3000);
+    console.error('Update failed:', e);
+    showToast('❌ 更新失败: ' + e.message, 3000);
   } finally {
     btn.textContent = '↻ 刷新';
     btn.disabled = false;
+    isUpdating = false;
   }
 };
 
