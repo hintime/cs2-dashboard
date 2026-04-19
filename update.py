@@ -315,6 +315,19 @@ def fetch_csqaq_alerts(use_cache=True, use_skill='auto'):
                 print(f'[CSQAQ] Skill call also failed: {e}')
                 return []
     
+    # 加载历史数据，用于计算变化量
+    history_file = os.path.join(DATA_DIR, 'history.json')
+    history = {}
+    if os.path.exists(history_file):
+        try:
+            with open(history_file, 'r', encoding='utf-8') as f:
+                h = json.load(f)
+                # 建立 id -> 数据 的映射
+                for item in h.get('alerts', []):
+                    history[item.get('id')] = item
+        except:
+            pass
+    
     # 串行拉取所有页面
     for sort_key in ('price_up_1d', 'price_down_1d'):
         for page in range(1, 3):
@@ -324,6 +337,15 @@ def fetch_csqaq_alerts(use_cache=True, use_skill='auto'):
                 if item_id in seen_ids:
                     continue
                 seen_ids.add(item_id)
+                
+                buff_sell = int(item.get('buff_sell_num') or 0)
+                buff_buy = int(item.get('buff_buy_num') or 0)
+                
+                # 计算变化量（与上次数据对比）
+                h = history.get(item_id, {})
+                sell_chg = buff_sell - h.get('buff_sell', buff_sell)
+                buy_chg = buff_buy - h.get('buff_buy', buff_buy)
+                
                 all_alerts.append({
                     'id': item_id,
                     'name': item.get('name', ''),
@@ -335,15 +357,29 @@ def fetch_csqaq_alerts(use_cache=True, use_skill='auto'):
                     'rate_30': round(float(item.get('sell_price_rate_30') or 0), 2),
                     'rank_num': item.get('rank_num', 0),
                     'img': item.get('img', ''),
-                    'buff_sell': int(item.get('buff_sell_num') or 0),
-                    'buff_buy': int(item.get('buff_buy_num') or 0),
+                    'buff_sell': buff_sell,
+                    'buff_buy': buff_buy,
                     'steam_buy': int(item.get('steam_buy_num') or 0),
+                    'sell_chg': sell_chg,  # 在售变化量
+                    'buy_chg': buy_chg,    # 求购变化量
                 })
             time.sleep(0.3)
 
     all_alerts.sort(key=lambda x: abs(x.get('rate_1', 0)), reverse=True)
     all_alerts = _filter_excluded(all_alerts)
     _cached_alerts = all_alerts
+    
+    # 保存当前数据作为历史（用于下次对比）
+    try:
+        history_data = {
+            'alerts': [{'id': a['id'], 'buff_sell': a['buff_sell'], 'buff_buy': a['buff_buy']} for a in all_alerts],
+            'updated_at': time.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        with open(history_file, 'w', encoding='utf-8') as f:
+            json.dump(history_data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f'[HISTORY] Save failed: {e}', file=sys.stderr)
+    
     return all_alerts
 
 # ═══════════════ RECOMMENDATIONS (复用缓存) ═══════════════

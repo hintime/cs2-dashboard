@@ -1173,7 +1173,14 @@ function renderAlertsTab(tab) {
     const absChg = Math.abs(chg);
     const dir = isSupplyTab ? 'up' : chg > 0 ? 'up' : chg < 0 ? 'down' : 'flat';
     const chgTxt = isSupplyTab ? '' : ((chg >= 0 ? '+' : '') + chg.toFixed(2) + '%');
-    const supplyTxt = isSupplyTab ? `求购 ${item.buff_buy||0} / 在售 ${item.buff_sell||0}` : '';
+    
+    // 显示供需变化量
+    const buyChg = item.buy_chg || 0;
+    const sellChg = item.sell_chg || 0;
+    const buyChgStr = buyChg >= 0 ? '+' + buyChg : '' + buyChg;
+    const sellChgStr = sellChg >= 0 ? '+' + sellChg : '' + sellChg;
+    const supplyTxt = isSupplyTab ? `求购 ${item.buff_buy||0} (${buyChgStr}) / 在售 ${item.buff_sell||0} (${sellChgStr})` : '';
+    
     const barW = isSupplyTab ? 0 : Math.min(absChg * 4, 100);
     const barColor = dir === 'up' ? 'var(--rise)' : dir === 'down' ? 'var(--fall)' : 'var(--text3)';
     const isStarred = starred[item.id];
