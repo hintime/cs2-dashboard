@@ -250,10 +250,9 @@ tbody tr:hover{background:var(--glow-blue)}
     <div class="mi-items" id="miItems"></div>
   </div>
 
-  <div class="kpi-strip">
+  <div class="kpi-strip" style="grid-template-columns:repeat(2,1fr)">
     <div class="kpi"><div class="label">总价值</div><div class="value" id="totalValue">--</div><div class="meta" id="totalCount">-- 件</div></div>
     <div class="kpi"><div class="label">总盈亏</div><div class="value" id="totalPnl">--</div><div class="meta" id="totalPnlPct">--</div></div>
-    <div class="kpi"><div class="label">总成本</div><div class="value" id="totalCost">--</div><div class="meta">投入本金</div></div>
   </div>
 
   <div class="panel" id="alertsPanel">
@@ -305,6 +304,10 @@ tbody tr:hover{background:var(--glow-blue)}
   </div>
 
   <div class="panel" id="holdingsPanel">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:12px">
+      <div style="font-size:12px;color:var(--text3)">投入本金 <span style="margin-left:6px;color:var(--text2)">总成本</span></div>
+      <div style="font-size:22px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace" id="totalCostHeader">--</div>
+    </div>
     <div class="panel-head">
       <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
       <div style="display:flex;align-items:center;gap:4px">
@@ -650,7 +653,9 @@ function updateKPI() {
   DOM.totalPnl.textContent = (isUp ? '+' : '') + '¥' + (tp - tc).toLocaleString();
   DOM.totalPnl.className = 'value ' + (isUp ? 'rise' : 'fall');
   DOM.totalPnlPct.textContent = (isUp ? '+' : '') + tpct.toFixed(2) + '% · ' + Math.round(H.filter(h => h.pnl > 0).length / H.length * 100) + '% 胜率';
-  DOM.totalCost.textContent = '¥' + tc.toLocaleString();
+  // 同步更新持仓明细上方的总成本
+  const costHeader = document.getElementById('totalCostHeader');
+  if (costHeader) costHeader.textContent = '¥' + tc.toLocaleString();
   DOM.totalCount.textContent = H.length + ' 件';
 }
 
