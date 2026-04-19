@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CS2 大盘指数收集器
-- 每小时从ECO获取全量价格数据（36,000+条）
-- 计算市场指数快照
-- 存储到 index_history/YYYY-MM-DD.json
-- 推送GitHub
+CS2 大盘指数收集器 v2（通用版公式）
 
-指数类型：
-- 市值指数（总市值变化）
-- 等权指数（平均价格变化）
-- 涨跌分布统计
+指数 = (当前总市值 ÷ 基期总市值) × 1000
+市值 = Σ(每只饰品 BUFF 底价 × 在售数量)
+
+存储结构：
+  market_history/
+    {YYYY-MM-DD_HH}00.json   ← 每小时快照（含完整items用于次日涨跌）
+    base.json                ← 基期快照（所有快照的参考基准）
+
+指数历史：
+  index_history/
+    {YYYY-MM-DD}.json        ← 每日指数时间序列
 """
 import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl
 from datetime import datetime, timedelta
@@ -25,9 +28,8 @@ GH_TOKEN = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN', '')
 REPO = 'hintime/cs2-dashboard'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, '..') if SCRIPT_DIR.endswith('.github') else SCRIPT_DIR
-INDEX_DIR = os.path.join(DATA_DIR, 'index_history')
-
-# ECO API
+HIST_DIR = os.path.join(DATA_DIR, 'market_history')  # 原始快照
+INDEX_DIR = os.path.join(DATA_DIR, 'index_history')  # 指数序列
 ECO_BASE = 'https://openapi.ecosteam.cn'
 
 ctx = ssl.create_default_context()
@@ -38,12 +40,9 @@ ctx.verify_mode = ssl.CERT_NONE
 _eco_key = None
 
 def get_eco_key():
-    """Load ECO private key from env or file"""
     global _eco_key
     if _eco_key:
         return _eco_key
-    
-    # Try environment variable (base64 encoded)
     key_b64 = os.environ.get('ECO_PRIVATE_KEY_B64', '')
     if key_b64:
         try:
@@ -52,12 +51,10 @@ def get_eco_key():
             return _eco_key
         except Exception as e:
             print(f'[WARN] Failed to decode ECO_PRIVATE_KEY_B64: {e}')
-    
-    # Try local file
     key_paths = [
         os.path.join(SCRIPT_DIR, 'eco_private.pem'),
         os.path.join(DATA_DIR, 'eco_private.pem'),
-        os.path.join(SCRIPT_DIR, '..', 'eco_private_key.pem'),  # workspace root
+        os.path.join(DATA_DIR, '..', 'eco_private_key.pem'),
         os.path.expanduser('~/.eco_key.pem')
     ]
     for path in key_paths:
@@ -69,11 +66,9 @@ def get_eco_key():
                 return _eco_key
             except Exception as e:
                 print(f'[WARN] Failed to load key from {path}: {e}')
-    
     return None
 
 def sign_eco(params, private_key):
-    """ECO API签名：参数按key字母序排序，SHA256withRSA签名"""
     sorted_params = sorted(params.items(), key=lambda x: x[0].lower())
     parts = []
     for k, v in sorted_params:
@@ -83,31 +78,25 @@ def sign_eco(params, private_key):
             v = json.dumps(v, separators=(',', ':'), ensure_ascii=False)
         parts.append(f'{k}={v}')
     sign_str = '&'.join(parts)
-    
     h = SHA256.new(sign_str.encode('utf-8'))
     signature = pkcs1_15.new(private_key).sign(h)
     return base64.b64encode(signature).decode()
 
 def fetch_eco_full_prices():
-    """获取ECO全量价格数据"""
     key = get_eco_key()
     if not key:
         print('[ERROR] ECO private key not found')
         return None
-    
     url = f'{ECO_BASE}/Api/Market/GetHashNameAndPriceList'
-    ts = str(int(time.time()))  # ECO API需要秒级时间戳
-    
+    ts = str(int(time.time()))
     params = {
         'PartnerId': PARTNER_ID,
         'Timestamp': ts,
         'GameID': '730'
     }
     params['Sign'] = sign_eco(params, key)
-    
     body = json.dumps(params).encode('utf-8')
     req = urllib.request.Request(url, data=body, headers={'Content-Type': 'application/json'})
-    
     try:
         with urllib.request.urlopen(req, context=ctx, timeout=30) as resp:
             data = json.loads(resp.read().decode('utf-8'))
@@ -119,248 +108,311 @@ def fetch_eco_full_prices():
         return None
 
 # ═══════════════ INDEX CALCULATION ═══════════════
-def calc_index_snapshot(items, prev_items=None):
-    """计算指数快照"""
-    if not items:
-        return None
-    
-    # 基础统计
-    total_items = len(items)
-    total_market_value = 0  # 总市值 = Σ(price × 在售量)
-    total_price = 0
-    total_selling = 0
-    price_changes = []
-    
-    # 按价格区间统计
-    price_brackets = {
-        'under_50': 0,
-        '50_100': 0,
-        '100_500': 0,
-        '500_1000': 0,
-        'over_1000': 0
-    }
-    
+
+def calc_market_value(items):
+    """
+    计算当前总市值
+    市值 = Σ(BUFF底价 × 在售数量)
+    """
+    total_value = 0
+    total_items = 0
+    price_sum = 0
+
     for item in items:
-        price = float(item.get('Price', 0) or item.get('MarketComprePrice', 0) or 0)
-        selling = int(item.get('SellingTotal', 0) or 0)
-        
+        # Price: 优先用 Price(BUFF最低卖价), fallback 到 MarketComprePrice
+        price = float(item.get('Price') or item.get('MarketComprePrice') or 0)
+        selling = int(item.get('SellingTotal') or 0)
+
         if price <= 0:
             continue
-        
-        total_market_value += price * max(selling, 1)
-        total_price += price
-        total_selling += selling
-        
-        # 价格区间统计
-        if price < 50:
-            price_brackets['under_50'] += 1
-        elif price < 100:
-            price_brackets['50_100'] += 1
-        elif price < 500:
-            price_brackets['100_500'] += 1
-        elif price < 1000:
-            price_brackets['500_1000'] += 1
-        else:
-            price_brackets['over_1000'] += 1
-    
-    avg_price = total_price / total_items if total_items > 0 else 0
-    
-    # 涨跌统计（需要历史数据）
-    gainers = 0
-    losers = 0
-    unchanged = 0
-    top_gainers = []
-    top_losers = []
-    
-    if prev_items:
-        prev_map = {i.get('HashName'): i for i in prev_items}
-        
-        for item in items:
-            name = item.get('HashName')
-            price = float(item.get('Price', 0) or item.get('MarketComprePrice', 0) or 0)
-            prev = prev_map.get(name)
-            
-            if prev and price > 0:
-                prev_price = float(prev.get('Price', 0) or prev.get('MarketComprePrice', 0) or 0)
-                if prev_price > 0:
-                    change_pct = (price - prev_price) / prev_price * 100
-                    price_changes.append({
-                        'name': name,
-                        'price': price,
-                        'change_pct': change_pct
-                    })
-                    
-                    if change_pct > 0.1:
-                        gainers += 1
-                    elif change_pct < -0.1:
-                        losers += 1
-                    else:
-                        unchanged += 1
-        
-        # 排序获取Top涨跌榜
-        price_changes.sort(key=lambda x: x['change_pct'], reverse=True)
-        top_gainers = price_changes[:10]
-        top_losers = price_changes[-10:][::-1]
-    
-    snapshot = {
-        'time': datetime.now().strftime('%H:%M'),
-        'timestamp': int(time.time()),
-        'total_items': total_items,
-        'market_value': round(total_market_value, 2),
-        'avg_price': round(avg_price, 2),
-        'total_selling': total_selling,
-        'price_distribution': price_brackets,
-        'change_stats': {
-            'gainers': gainers,
-            'losers': losers,
-            'unchanged': unchanged
-        }
-    }
-    
-    if top_gainers:
-        snapshot['top_gainers'] = [{
-            'name': g['name'][:30],
-            'price': g['price'],
-            'change': round(g['change_pct'], 2)
-        } for g in top_gainers]
-    
-    if top_losers:
-        snapshot['top_losers'] = [{
-            'name': l['name'][:30],
-            'price': l['price'],
-            'change': round(l['change_pct'], 2)
-        } for l in top_losers]
-    
-    return snapshot
 
-def load_prev_day_data(date_str):
-    """加载前一天的数据"""
-    prev_date = (datetime.strptime(date_str, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
-    prev_file = os.path.join(INDEX_DIR, f'{prev_date}.json')
-    
+        total_value += price * max(selling, 1)
+        price_sum += price
+        total_items += 1
+
+    avg_price = price_sum / total_items if total_items > 0 else 0
+    return {
+        'total_market_value': round(total_value, 2),
+        'avg_price': round(avg_price, 2),
+        'total_items': total_items,
+    }
+
+def build_item_map(items):
+    """为快速查找构建 HashName → 物品数据的映射"""
+    return {i.get('HashName'): i for i in items}
+
+def calc_index(current_items, base_items):
+    """
+    计算市值加权指数
+    指数 = (当前总市值 ÷ 基期总市值) × 1000
+    """
+    curr = calc_market_value(current_items)
+    base = calc_market_value(base_items) if base_items else None
+
+    if base is None:
+        # 无基期数据，第一期为基期，指数 = 1000
+        index_value = 1000.0
+        change_pct = 0.0
+    else:
+        if base['total_market_value'] > 0:
+            index_value = (curr['total_market_value'] / base['total_market_value']) * 1000
+            change_pct = (curr['total_market_value'] - base['total_market_value']) / base['total_market_value'] * 100
+        else:
+            index_value = 1000.0
+            change_pct = 0.0
+
+    return {
+        'index': round(index_value, 2),
+        'change_pct': round(change_pct, 2),
+        'current_mv': curr['total_market_value'],
+        'base_mv': base['total_market_value'] if base else 0,
+        'avg_price': curr['avg_price'],
+        'total_items': curr['total_items'],
+    }
+
+def calc_change_stats(current_items, prev_items):
+    """
+    计算涨跌分布（对比上一小时快照）
+    """
+    if not prev_items:
+        return {'gainers': 0, 'losers': 0, 'unchanged': 0, 'top_gainers': [], 'top_losers': []}
+
+    prev_map = build_item_map(prev_items)
+    gainers, losers, unchanged = 0, 0, 0
+    changes = []
+
+    for item in current_items:
+        name = item.get('HashName', '')
+        price = float(item.get('Price') or item.get('MarketComprePrice') or 0)
+        prev = prev_map.get(name)
+        if not prev or price <= 0:
+            continue
+        prev_price = float(prev.get('Price') or prev.get('MarketComprePrice') or 0)
+        if prev_price <= 0:
+            continue
+
+        change_pct = (price - prev_price) / prev_price * 100
+        changes.append({'name': name, 'price': price, 'change_pct': change_pct})
+
+        if change_pct > 0.1:
+            gainers += 1
+        elif change_pct < -0.1:
+            losers += 1
+        else:
+            unchanged += 1
+
+    changes.sort(key=lambda x: x['change_pct'], reverse=True)
+    top_gainers = [{'name': c['name'][:35], 'price': round(c['price'], 2), 'change': round(c['change_pct'], 2)} for c in changes[:10]]
+    top_losers = [{'name': c['name'][:35], 'price': round(c['price'], 2), 'change': round(c['change_pct'], 2)} for c in changes[-10:][::-1]]
+
+    return {
+        'gainers': gainers,
+        'losers': losers,
+        'unchanged': unchanged,
+        'top_gainers': top_gainers,
+        'top_losers': top_losers,
+    }
+
+def price_distribution(items):
+    """按价格区间统计"""
+    brackets = {'under_50': 0, '50_100': 0, '100_500': 0, '500_1000': 0, 'over_1000': 0}
+    for item in items:
+        price = float(item.get('Price') or item.get('MarketComprePrice') or 0)
+        if price <= 0:
+            continue
+        if price < 50:
+            brackets['under_50'] += 1
+        elif price < 100:
+            brackets['50_100'] += 1
+        elif price < 500:
+            brackets['100_500'] += 1
+        elif price < 1000:
+            brackets['500_1000'] += 1
+        else:
+            brackets['over_1000'] += 1
+    return brackets
+
+# ═══════════════ STORAGE ═══════════════
+
+def get_hourly_file(date_str):
+    """获取当前小时快照文件名"""
+    hour = datetime.now().strftime('%H')
+    return os.path.join(HIST_DIR, f'{date_str}_{hour}00.json')
+
+def load_prev_hour_items(date_str):
+    """加载上一小时快照的items数据"""
+    hour = datetime.now().strftime('%H')
+    # 尝试当前小时-1
+    prev_hour = int(hour) - 1
+    if prev_hour < 0:
+        prev_hour = 23
+    prev_file = os.path.join(HIST_DIR, f'{date_str}_{prev_hour:02d}00.json')
     if os.path.exists(prev_file):
         try:
             with open(prev_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                # 返回最后一个快照的数据
-                if data.get('snapshots'):
-                    last = data['snapshots'][-1]
-                    # 如果有保存的样本数据，返回它
-                    return {'items': last.get('items_sample', [])}
-        except Exception as e:
-            print(f'[WARN] Failed to load prev day data: {e}')
-    
+                return data.get('items', [])
+        except:
+            pass
     return None
 
-def save_index_data(date_str, snapshot, items_sample=None):
-    """保存指数数据"""
+def load_base_items():
+    """加载基期快照（第一个快照或 base.json）"""
+    base_file = os.path.join(HIST_DIR, 'base.json')
+    if os.path.exists(base_file):
+        try:
+            with open(base_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return data.get('items', [])
+        except:
+            pass
+    return None
+
+def save_hourly_snapshot(date_str, items, index_info, change_stats):
+    """保存每小时快照"""
+    os.makedirs(HIST_DIR, exist_ok=True)
+    hour = datetime.now().strftime('%H')
+    file_path = os.path.join(HIST_DIR, f'{date_str}_{hour}00.json')
+
+    snapshot = {
+        'time': f'{hour}:00',
+        'timestamp': int(time.time()),
+        'items': items,  # 完整items用于次日涨跌计算
+        'index': index_info['index'],
+        'change_pct': index_info['change_pct'],
+        'total_market_value': index_info['current_mv'],
+        'avg_price': index_info['avg_price'],
+        'total_items': index_info['total_items'],
+        'price_distribution': price_distribution(items),
+        'change_stats': change_stats,
+    }
+
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(snapshot, f, ensure_ascii=False, indent=2)
+    print(f'[SAVE] {file_path}')
+    return file_path
+
+def ensure_base_updated(items, index_info):
+    """确保基期快照存在（只在第一天或 base.json 不存在时更新）"""
+    base_file = os.path.join(HIST_DIR, 'base.json')
+    if not os.path.exists(base_file):
+        base_data = {
+            'base_date': datetime.now().strftime('%Y-%m-%d'),
+            'items': items,
+            'total_market_value': index_info['current_mv'],
+            'index': 1000.0,
+        }
+        with open(base_file, 'w', encoding='utf-8') as f:
+            json.dump(base_data, f, ensure_ascii=False, indent=2)
+        print('[BASE] Created base.json (first snapshot = 1000)')
+
+def update_index_series(date_str, index_info, change_stats):
+    """更新每日指数时间序列"""
     os.makedirs(INDEX_DIR, exist_ok=True)
     index_file = os.path.join(INDEX_DIR, f'{date_str}.json')
-    
-    # 加载现有数据
-    data = {'date': date_str, 'snapshots': []}
+
+    data = {'date': date_str, 'series': []}
     if os.path.exists(index_file):
         try:
             with open(index_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
         except:
             pass
-    
-    # 追加新快照
-    data['snapshots'].append(snapshot)
-    
-    # 只保留当天最近24个快照（每小时一个）
-    if len(data['snapshots']) > 24:
-        data['snapshots'] = data['snapshots'][-24:]
-    
-    # 如果是当天第一个快照，保存样本数据用于明天涨跌计算
-    if items_sample and len(data.get('snapshots', [])) == 1:
-        data['items_sample'] = items_sample
-    
-    # 保存
+
+    data['series'].append({
+        'time': datetime.now().strftime('%H:%M'),
+        'timestamp': int(time.time()),
+        'index': index_info['index'],
+        'change_pct': index_info['change_pct'],
+        'market_value': index_info['current_mv'],
+        'avg_price': index_info['avg_price'],
+    })
+
+    # 只保留当天48个点
+    if len(data['series']) > 48:
+        data['series'] = data['series'][-48:]
+
     with open(index_file, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    
-    print(f'[SAVE] {index_file} ({len(data["snapshots"])} snapshots)')
-    return index_file
+    print(f'[IDX] {index_file} ({len(data["series"])} points)')
 
 # ═══════════════ GIT PUSH ═══════════════
-def git_push(files_changed, msg):
-    """Push files to GitHub"""
-    if not files_changed:
-        print('[INFO] No files to push')
+
+def git_push(files, msg):
+    if not files:
+        print('[GIT] Nothing to push')
         return
-    
-    # Check if we're in a git repo
     if not os.path.exists(os.path.join(DATA_DIR, '.git')):
-        print('[INFO] Initializing git repo...')
         subprocess.run(['git', 'init'], cwd=DATA_DIR, capture_output=True)
         subprocess.run(['git', 'remote', 'add', 'origin', f'https://github.com/{REPO}.git'], cwd=DATA_DIR, capture_output=True)
-    
-    # Add and commit
-    for f in files_changed:
+    for f in files:
         subprocess.run(['git', 'add', f], cwd=DATA_DIR, capture_output=True)
-    
     result = subprocess.run(['git', 'commit', '-m', msg], cwd=DATA_DIR, capture_output=True, text=True)
-    if 'nothing to commit' in result.stdout or result.returncode != 0:
-        print(f'[GIT] {result.stdout.strip()}')
+    if 'nothing to commit' in result.stdout:
+        print('[GIT] Nothing new to commit')
         return
-    
-    # Pull rebase and push
     subprocess.run(['git', 'pull', '--rebase'], cwd=DATA_DIR, capture_output=True)
-    
     if GH_TOKEN:
         push_url = f'https://x-access-token:{GH_TOKEN}@github.com/{REPO}.git'
         subprocess.run(['git', 'push', push_url], cwd=DATA_DIR, capture_output=True)
     else:
         subprocess.run(['git', 'push'], cwd=DATA_DIR, capture_output=True)
-    
     print(f'[GIT] Pushed: {msg}')
 
 # ═══════════════ MAIN ═══════════════
+
 def main():
-    print('=== CS2 Index Collector ===')
-    
-    # 当前日期
+    print('=== CS2 Market Index Collector v2 ===')
     date_str = datetime.now().strftime('%Y-%m-%d')
-    
-    # 获取全量数据
+    now_hour = datetime.now().strftime('%H')
+
+    # 1. 获取全量数据
     items = fetch_eco_full_prices()
     if not items:
         print('[ERROR] No data fetched')
         return 1
-    
-    # 加载前一天数据（用于计算涨跌）
-    prev_data = load_prev_day_data(date_str)
-    prev_items = prev_data.get('items') if prev_data else None
-    
-    # 计算指数快照
-    snapshot = calc_index_snapshot(items, prev_items)
-    if not snapshot:
-        print('[ERROR] Failed to calc index')
-        return 1
-    
-    # 保存指数数据（第一次运行时保存样本）
-    is_first = not os.path.exists(os.path.join(INDEX_DIR, f'{date_str}.json'))
-    sample_data = items[:500] if is_first else None  # 保存500个样本用于明天涨跌计算
-    index_file = save_index_data(date_str, snapshot, sample_data)
-    
-    # Git push
-    git_push([index_file], f'chore: update index {date_str} {snapshot["time"]}')
-    
-    # 输出摘要
-    print(f'')
-    print(f'[INDEX] Market Snapshot {date_str} {snapshot["time"]}')
-    print(f'  Total Items: {snapshot["total_items"]:,}')
-    print(f'  Market Value: {snapshot["market_value"]:,.0f} CNY')
-    print(f'  Avg Price: {snapshot["avg_price"]:.2f} CNY')
-    print(f'  Total Selling: {snapshot["total_selling"]:,}')
-    
-    if snapshot.get('change_stats'):
-        cs = snapshot['change_stats']
-        print(f'  Changes: UP {cs["gainers"]} / DOWN {cs["losers"]} / NC {cs["unchanged"]}')
-    
-    print(f'')
+
+    # 2. 获取基期数据（用于算指数）
+    base_items = load_base_items()
+
+    # 3. 获取上一小时数据（用于算涨跌）
+    prev_items = load_prev_hour_items(date_str)
+
+    # 4. 计算市值加权指数
+    index_info = calc_index(items, base_items)
+    print(f'[INDEX] Value={index_info["index"]:.2f} Change={index_info["change_pct"]:+.2f}%')
+    print(f'[MV] Current={index_info["current_mv"]:,.0f} Base={index_info["base_mv"]:,.0f}')
+
+    # 5. 计算涨跌分布
+    change_stats = calc_change_stats(items, prev_items) if prev_items else {'gainers': 0, 'losers': 0, 'unchanged': 0, 'top_gainers': [], 'top_losers': []}
+
+    # 6. 保存快照
+    snap_file = save_hourly_snapshot(date_str, items, index_info, change_stats)
+
+    # 7. 确保基期存在
+    ensure_base_updated(items, index_info)
+
+    # 8. 更新指数序列
+    update_index_series(date_str, index_info, change_stats)
+
+    # 9. Git push
+    hour = now_hour
+    git_push(
+        [snap_file, os.path.join(HIST_DIR, 'base.json'), os.path.join(INDEX_DIR, f'{date_str}.json')],
+        f'chore: market index {date_str} {hour}:00 idx={index_info["index"]:.2f}'
+    )
+
+    # 10. 输出摘要
+    print('')
+    print(f'=== {date_str} {hour}:00 ===')
+    print(f'  Index:  {index_info["index"]:.2f}  ({index_info["change_pct"]:+.2f}% vs base)')
+    print(f'  Mkt Cap: {index_info["current_mv"]:,.0f} CNY')
+    print(f'  Avg Price: {index_info["avg_price"]:.2f} CNY')
+    print(f'  Items: {index_info["total_items"]:,}')
+    if change_stats.get('gainers') or change_stats.get('losers'):
+        cs = change_stats
+        print(f'  Changes vs prev hour: UP={cs["gainers"]} DOWN={cs["losers"]} NC={cs["unchanged"]}')
+    print('')
     return 0
 
 if __name__ == '__main__':
