@@ -258,8 +258,7 @@ tbody tr:hover{background:var(--glow-blue)}
         <div class="tabs" id="alertsTabs">
           <button class="tab on" data-tab="gainers">🔥 涨幅榜</button>
           <button class="tab" data-tab="losers">📉 跌幅榜</button>
-          <button class="tab" data-tab="buyUp">📈 求购异动</button>
-          <button class="tab" data-tab="sellUp">📦 在售异动</button>
+          <button class="tab" data-tab="supply">📊 供需异动</button>
           <button class="tab" data-tab="watch">⭐ 自选 <span id="watchCount" style="background:var(--blue);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px">0</span></button>
         </div>
         <span id="alertsUpdateTime" style="font-size:10px;color:var(--text3)"></span>
@@ -1147,10 +1146,13 @@ function renderAlertsTab(tab) {
     items = alertsData.filter(a => a.rate_1 > 0).slice().sort((a,b) => (b.rate_1||0) - (a.rate_1||0)).slice(0, 20);
   } else if (tab === 'losers') {
     items = alertsData.filter(a => a.rate_1 < 0).slice().sort((a,b) => (a.rate_1||0) - (b.rate_1||0)).slice(0, 20);
-  } else if (tab === 'buyUp') {
-    items = alertsData.slice().sort((a,b) => (b.buff_buy||0) - (a.buff_buy||0)).slice(0, 20);
-  } else if (tab === 'sellUp') {
-    items = alertsData.slice().sort((a,b) => (b.buff_sell||0) - (a.buff_sell||0)).slice(0, 20);
+  } else if (tab === 'supply') {
+    // 按供需比排序（求购/在售），显示供需异常
+    items = alertsData.slice().sort((a,b) => {
+      const ratioA = (a.buff_buy||0) / Math.max(a.buff_sell||1, 1);
+      const ratioB = (b.buff_buy||0) / Math.max(b.buff_sell||1, 1);
+      return ratioB - ratioA;
+    }).slice(0, 20);
   } else if (tab === 'watch') {
     const watched = Object.keys(starred).filter(k => starred[k]).map(Number);
     if (!watched.length) {
@@ -1166,17 +1168,17 @@ function renderAlertsTab(tab) {
 
   const frag = document.createDocumentFragment();
   items.forEach((item, idx) => {
-    const isQtyTab = tab === 'buyUp' || tab === 'sellUp';
+    const isSupplyTab = tab === 'supply';
     const chg = item.rate_1 || 0;
     const absChg = Math.abs(chg);
-    const dir = isQtyTab ? 'up' : chg > 0 ? 'up' : chg < 0 ? 'down' : 'flat';
-    const chgTxt = isQtyTab ? '' : ((chg >= 0 ? '+' : '') + chg.toFixed(2) + '%');
-    const qtyTxt = tab === 'buyUp' ? (item.buff_buy || 0) + ' 求购' : tab === 'sellUp' ? (item.buff_sell || 0) + ' 在售' : '';
-    const barW = isQtyTab ? 0 : Math.min(absChg * 4, 100);
+    const dir = isSupplyTab ? 'up' : chg > 0 ? 'up' : chg < 0 ? 'down' : 'flat';
+    const chgTxt = isSupplyTab ? '' : ((chg >= 0 ? '+' : '') + chg.toFixed(2) + '%');
+    const supplyTxt = isSupplyTab ? `求购 ${item.buff_buy||0} / 在售 ${item.buff_sell||0}` : '';
+    const barW = isSupplyTab ? 0 : Math.min(absChg * 4, 100);
     const barColor = dir === 'up' ? 'var(--rise)' : dir === 'down' ? 'var(--fall)' : 'var(--text3)';
     const isStarred = starred[item.id];
     const rank = tab !== 'watch' ? '<span class="a-rank">#'+(idx+1)+'</span>' : '';
-    const displayName = item.name_cn || item.name || '--';
+    const displayName = item.name || '--';
 
     const div = document.createElement('div');
     div.className = 'alert-card ' + dir;
@@ -1184,9 +1186,9 @@ function renderAlertsTab(tab) {
       rank +
       '<button class="a-star '+(isStarred?'on':'')+'" data-aid="'+item.id+'">'+(isStarred?'★':'☆')+'</button>'+
       '<div class="a-name" title="'+displayName+'">'+displayName+'</div>'+
-      '<div class="a-meta"><span class="a-price">¥'+(item.price||'--')+'</span><span class="a-chg '+dir+'">'+(isQtyTab ? qtyTxt : chgTxt)+'</span></div>'+
-      (isQtyTab ? '<div class="a-period" style="color:var(--text2)">' + (tab === 'buyUp' ? '在售 ' + (item.buff_sell || 0) : '求购 ' + (item.buff_buy || 0)) + '</div>' : '<div class="a-period" style="color:'+(item.rate_7>=0?'var(--rise)':'var(--fall)')+'">7日 '+(item.rate_7>=0?'+':'')+((item.rate_7||0).toFixed(2))+'%</div>')+
-      (isQtyTab ? '' : '<div class="a-bar"><div class="a-bar-fill" style="width:'+barW+'%;background:'+barColor+'"></div></div>');
+      '<div class="a-meta"><span class="a-price">¥'+(item.price||'--')+'</span><span class="a-chg '+dir+'">'+(isSupplyTab ? supplyTxt : chgTxt)+'</span></div>'+
+      (isSupplyTab ? '<div class="a-period" style="color:var(--text2)">¥'+(item.price||'--')+' · '+((item.buff_buy||0) / Math.max(item.buff_sell||1, 1)).toFixed(1)+'倍供需</div>' : '<div class="a-period" style="color:'+(item.rate_7>=0?'var(--rise)':'var(--fall)')+'">7日 '+(item.rate_7>=0?'+':'')+((item.rate_7||0).toFixed(2))+'%</div>')+
+      (isSupplyTab ? '' : '<div class="a-bar"><div class="a-bar-fill" style="width:'+barW+'%;background:'+barColor+'"></div></div>');
     frag.appendChild(div);
   });
   grid.innerHTML = '';
