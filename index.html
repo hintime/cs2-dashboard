@@ -1479,14 +1479,12 @@ function renderAnalysis() {
     }
 
     // ── Confidence ──
+    // 可信度基于数据质量，而非涨跌幅大小
     let confidence = '低';
     let confColor = 'var(--text3)';
-    // 如果持仓自带rate数据，可信度更高
-    if (item.rate_1 !== undefined || item.rate_7 !== undefined) {
-      if (Math.abs(r7) > 3 || Math.abs(r1) > 1) { confidence = '高'; confColor = 'var(--rise)'; }
-      else if (Math.abs(r7) > 1 || Math.abs(r1) > 0.5) { confidence = '中'; confColor = 'var(--amber)'; }
-    } else if (isRec && Math.abs(r7) > 3) { confidence = '高'; confColor = 'var(--rise)'; }
-    else if (Math.abs(r7) > 2 && Math.abs(r1) > 0.5) { confidence = '中'; confColor = 'var(--amber)'; }
+    const histLen = (item.price_history || []).length;
+    if (histLen >= 7) { confidence = '高'; confColor = 'var(--rise)'; }
+    else if (histLen >= 2) { confidence = '中'; confColor = 'var(--amber)'; }
 
     return {
       name, cost, price, pnl, pnlPct,
