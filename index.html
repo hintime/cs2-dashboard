@@ -689,13 +689,13 @@ function getFiltered() {
 function invalidateCache() { filteredCache = null; filterCacheKey = ''; }
 
 // ══════════ 快速导航滚动 ══════════
-function scrollToPanel(id) {
+window.scrollToPanel = function(id) {
   const el = document.getElementById(id);
   if (!el) return;
   const navHeight = document.getElementById('quickNav')?.offsetHeight || 50;
   const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 16;
   window.scrollTo({top, behavior:'smooth'});
-}
+};
 
 // 滚动监听：高亮当前可见板块
 let navObserver = null;
