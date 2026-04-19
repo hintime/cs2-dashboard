@@ -227,6 +227,15 @@ tbody tr:hover{background:var(--glow-blue)}
     </div>
   </div>
 
+  <!-- ══════════ 快速导航 ══════════ -->
+  <div class="quick-nav" id="quickNav">
+    <button class="nav-btn" onclick="scrollToPanel('holdingsPanel')">📦 持仓</button>
+    <button class="nav-btn" onclick="scrollToPanel('alertsPanel')">📊 异动</button>
+    <button class="nav-btn" onclick="scrollToPanel('recPanel')">💡 推荐</button>
+    <button class="nav-btn" onclick="scrollToPanel('analysisSection')">🎯 分析</button>
+    <button class="nav-btn" onclick="scrollToPanel('changelogPanel')" id="changelogNavBtn" style="display:none">📋 变动</button>
+  </div>
+
   <!-- 大盘指数 — 仅在有数据时渲染 -->
   <div class="market-index glass" id="marketSection" style="display:none">
     <div class="mi-header">
@@ -293,15 +302,6 @@ tbody tr:hover{background:var(--glow-blue)}
       </div>
     </div>
     <div id="changelogContent" style="padding:16px;max-height:400px;overflow-y:auto"></div>
-  </div>
-
-  <!-- ══════════ 快速导航 ══════════ -->
-  <div class="quick-nav" id="quickNav">
-    <button class="nav-btn" onclick="scrollTo('holdingsPanel')">📦 持仓</button>
-    <button class="nav-btn" onclick="scrollTo('alertsPanel')">📊 异动</button>
-    <button class="nav-btn" onclick="scrollTo('recPanel')">💡 推荐</button>
-    <button class="nav-btn" onclick="scrollTo('analysisSection')">🎯 分析</button>
-    <button class="nav-btn" onclick="scrollTo('changelogPanel')" id="changelogNavBtn" style="display:none">📋 变动</button>
   </div>
 
   <div class="panel" id="holdingsPanel">
@@ -689,10 +689,10 @@ function getFiltered() {
 function invalidateCache() { filteredCache = null; filterCacheKey = ''; }
 
 // ══════════ 快速导航滚动 ══════════
-function scrollTo(id) {
+function scrollToPanel(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  const navHeight = document.getElementById('quickNav').offsetHeight || 50;
+  const navHeight = document.getElementById('quickNav')?.offsetHeight || 50;
   const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 16;
   window.scrollTo({top, behavior:'smooth'});
 }
