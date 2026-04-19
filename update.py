@@ -288,7 +288,12 @@ def generate_recommendations(alerts=None):
     merged = []
     for item in eco_items:
         gn = item.get('GoodsName', '')
+        # 按名称前缀过滤 StatTrak
         if any(gn.startswith(p) for p in EXCLUDE_PRE):
+            continue
+        # 按外观关键字过滤（从名称括号内提取）
+        ext_in_name = gn.split('(')[1].rstrip(')') if '(' in gn else ''
+        if ext_in_name in EXCLUDE_EXT:
             continue
         key = norm(gn)
         csq = csq_map.get(key, {})
