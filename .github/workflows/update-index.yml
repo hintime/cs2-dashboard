@@ -31,7 +31,10 @@ jobs:
         env:
           ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python index_collector.py
+        run: |
+          echo "=== START ==="
+          timeout 120 python index_collector.py 2>&1 || echo "EXIT_CODE=$?"
+          echo "=== END ==="
 
       - name: Debug git state
         run: |

@@ -459,12 +459,15 @@ def git_push(files, msg):
     if 'nothing to commit' in result.stdout:
         print('[GIT] Nothing new to commit')
         return
-    subprocess.run(['git', 'pull', '--rebase'], cwd=DATA_DIR, capture_output=True)
     if GH_TOKEN:
-        push_url = f'https://x-access-token:{GH_TOKEN}@github.com/{REPO}.git'
-        subprocess.run(['git', 'push', push_url], cwd=DATA_DIR, capture_output=True)
+        # Pull with embedded token to avoid credential prompt
+        pull_url = f'https://x-access-token:{GH_TOKEN}@github.com/{REPO}.git'
+        subprocess.run(['git', 'pull', '--rebase', pull_url], cwd=DATA_DIR, capture_output=True)
+        push_url = pull_url
     else:
-        subprocess.run(['git', 'push'], cwd=DATA_DIR, capture_output=True)
+        subprocess.run(['git', 'pull', '--rebase'], cwd=DATA_DIR, capture_output=True)
+        push_url = None
+    subprocess.run(['git', 'push', push_url or 'origin', 'HEAD:main'], cwd=DATA_DIR, capture_output=True)
     print(f'[GIT] Pushed: {msg}')
 
 # ═══════════════ MAIN ═══════════════
