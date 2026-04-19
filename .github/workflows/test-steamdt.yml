@@ -10,25 +10,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: HTTP connectivity check
-        run: curl -s -o /dev/null -w "HTTP %{http_code}" https://open.steamdt.com/
-
-      - name: K-line API test
         run: |
-          curl -s -X POST "https://open.steamdt.com/open/cs2/v1/kline" \
-            -H "Authorization: Bearer ${{ secrets.STEAMDT_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"marketHashName\":\"AK-47 | Redline (Field-Tested)\",\"type\":2}" \
-            > /tmp/kline.json
-          python3 -c "
-import json,sys
-d=json.load(open('/tmp/kline.json'))
-print('success:',d.get('success'))
-print('errorCode:',d.get('errorCode'))
-data=d.get('data')
-print('type:',type(data).__name__)
-if isinstance(data,list):
-    print('count:',len(data))
-    for x in data[:3]: print(x)
-elif isinstance(data,dict):
-    print('keys:',list(data.keys())[:10])
-"
+          echo "=== Connectivity ==="
+          curl -s -o /dev/null -w "HTTP %{http_code}\n" https://open.steamdt.com/
+
+      - name: Run SteamDT K-line test
+        run: python3 .github/scripts/test_steamdt.py
+        env:
+          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
