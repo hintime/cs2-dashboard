@@ -428,6 +428,7 @@ def sync_market_json(date_str, index_info, series_data, selling_stats=None, tren
         'market_value': index_info['current_mv'],
         'avg_price': index_info['avg_price'],
         'total_items': index_info['total_items'],
+        'updated': datetime.now().strftime('%Y-%m-%dT%H:%M:%S+08:00'),
         'ohlc': ohlc,
         'volBar': vol_bar,
         'volColor': [('#f87171' if v > 500 else '#52525b') for v in vol_bar],

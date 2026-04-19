@@ -241,7 +241,10 @@ tbody tr:hover{background:var(--glow-blue)}
   <div class="market-index glass" id="marketSection" style="display:none">
     <div class="mi-header">
       <span class="mi-title">CS2 大盘指数</span>
-      <div><span class="mi-num" id="miNum">--</span><span class="mi-chg" id="miChg">--</span></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="mi-num" id="miNum">--</span><span class="mi-chg" id="miChg">--</span>
+        <span id="miTime" style="font-size:11px;color:var(--text3)"></span>
+      </div>
     </div>
     <div id="miPeriod" style="display:flex;gap:6px;margin-bottom:14px">
       <button class="tab on" id="btnLine">折线图</button>
@@ -421,7 +424,7 @@ const CAT_LABELS = {
 const $ = id => document.getElementById(id);
 const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
 const DOM = {
-  miNum:$('miNum'), miChg:$('miChg'), miItems:$('miItems'),
+  miNum:$('miNum'), miChg:$('miChg'), miItems:$('miItems'), miTime:$('miTime'),
   btnLine:$('btnLine'), btnCandle:$('btnCandle'),
   btnIdxChart:$('btnIdxChart'), btnHotItems:$('btnHotItems'),
   idxChartPane:$('idxChartPane'), hotItemsPane:$('hotItemsPane'),
@@ -1317,6 +1320,9 @@ function renderMarket(D) {
   DOM.miNum.style.color = clr;
   DOM.miChg.textContent = (idx.change >= 0 ? '+' : '') + idx.change.toFixed(2) + '%';
   DOM.miChg.style.color = clr;
+  if (idx.updated) {
+    DOM.miTime.textContent = new Date(idx.updated).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  }
 
   const ohlcDates = idx.ohlc.map(c => c.dateFull || c.date);
   const ohlcValues = idx.ohlc.map(c => c.close);
