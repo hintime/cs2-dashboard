@@ -1,79 +1,63 @@
-"""测试 SteamDT K线 API —— 验证返回值结构和 volume 字段"""
+"""测试 SteamDT API —— 全接口连通性检查"""
 import urllib.request
+import urllib.error
 import json
 import os
-import datetime
 import urllib.parse
 
-API_KEY = os.environ.get("STEAMDT_KEY", "fb73ba391b4542a1bd182d92a93f10d4")
-KLINE_URL = "https://open.steamdt.com/open/cs2/item/v1/kline"
-PRICE_URL = "https://open.steamdt.com/open/cs2/v1/price/single"
+API_KEY = os.environ.get("STEAMDT_KEY", "")
+BASE = "https://open.steamdt.com"
+ITEM = "AK-47 | Redline (Field-Tested)"
 
-items = [
-    "AK-47 | Redline (Field-Tested)",
-    "AWP | Asiimov (Field-Tested)",
-]
-
-results = {"timestamp": datetime.datetime.now().isoformat(), "STEAMDT_KEY_prefix": API_KEY[:8] + "***", "items": {}}
-
-print("=== SteamDT K线测试 ===")
 print(f"API Key prefix: {API_KEY[:8]}***")
+print(f"Base URL: {BASE}\n")
 
-for name in items:
-    print(f"\n[{name}]")
-    body = json.dumps({"marketHashName": name, "type": 2}).encode()
-    req = urllib.request.Request(
-        KLINE_URL, data=body,
-        headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
-        method="POST"
-    )
+def call(method, path, body=None):
+    url = BASE + path
+    data = json.dumps(body).encode() if body else None
+    headers = {"Authorization": f"Bearer {API_KEY}"}
+    if data:
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
-            d = json.loads(resp.read())
-            if not d.get("success"):
-                msg = f"ERROR: {d.get('errorMsg', '')}"
-                print(msg)
-                results["items"][name] = {"error": msg}
-                continue
-            data = d.get("data") or []
-            has_volume = len(data[0]) == 6 if data else False
-            print(f"  条目: {len(data)}, 字段数: {len(data[0]) if data else 0}")
-            print(f"  最新: {data[0] if data else 'N/A'}")
-            item_result = {
-                "count": len(data),
-                "fields": len(data[0]) if data else 0,
-                "has_volume": has_volume,
-                "latest": data[0] if data else None,
-                "sample": data[:3] if data else []
-            }
-            print(f"  has_volume: {has_volume}")
-            results["items"][name] = item_result
+            raw = resp.read().decode("utf-8")
+            d = json.loads(raw)
+            ok = d.get("success", False)
+            err = d.get("errorMsg", "") or d.get("errorCode", "")
+            print(f"  [{method} {path}] success={ok} err={err}")
+            if ok:
+                data_val = d.get("data")
+                if isinstance(data_val, list):
+                    print(f"    -> list len={len(data_val)}, first={json.dumps(data_val[0])[:120] if data_val else 'empty'}")
+                elif isinstance(data_val, dict):
+                    print(f"    -> dict keys={list(data_val.keys())[:8]}")
+                else:
+                    print(f"    -> {str(data_val)[:120]}")
+            return d
+    except urllib.error.HTTPError as e:
+        body_err = e.read().decode("utf-8", errors="replace")[:200]
+        print(f"  [{method} {path}] HTTP {e.code}: {body_err}")
+        return None
     except Exception as e:
-        print(f"  ERROR: {e}")
-        results["items"][name] = {"error": str(e)}
+        print(f"  [{method} {path}] ERROR: {e}")
+        return None
 
-print("\n=== SteamDT Price 测试 ===")
-for name in items[:1]:
-    encoded_name = urllib.parse.quote(name)
-    url = f"{PRICE_URL}?marketHashName={encoded_name}"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {API_KEY}"}, method="GET")
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            d = json.loads(resp.read())
-            if d.get("success"):
-                platforms = d.get("data") or []
-                print(f"[{name}]")
-                print(f"  平台数: {len(platforms)}")
-                for p in platforms:
-                    print(f"  {p['platform']}: sellPrice={p['sellPrice']} sellCount={p['sellCount']} biddingCount={p['biddingCount']}")
-                results["price"] = {"name": name, "platforms": len(platforms), "data": platforms[:3]}
-    except Exception as e:
-        print(f"  ERROR: {e}")
-        results["price"] = {"error": str(e)}
+print("=== 1. K线接口 ===")
+call("POST", "/open/cs2/item/v1/kline", {"marketHashName": ITEM, "type": 2})
+call("POST", "/open/cs2/v1/kline", {"marketHashName": ITEM, "type": 2})
 
-# Write results to a plain file (NOT GITHUB_OUTPUT - that's for step outputs)
-output_path = "/tmp/steamdt_test_result.json"
-with open(output_path, "w", encoding="utf-8") as f:
-    json.dump(results, f, ensure_ascii=False, indent=2)
-print(f"\n=== 结果已写入: {output_path} ===")
-print(json.dumps(results, ensure_ascii=False, indent=2))
+print("\n=== 2. 单品价格接口 ===")
+encoded = urllib.parse.quote(ITEM)
+call("GET", f"/open/cs2/v1/price/single?marketHashName={encoded}")
+
+print("\n=== 3. 批量价格接口 ===")
+call("POST", "/open/cs2/v1/price/batch", {"marketHashNames": [ITEM]})
+
+print("\n=== 4. 7日均价接口 ===")
+call("GET", f"/open/cs2/v1/price/avg?marketHashName={encoded}")
+
+print("\n=== 5. 基础信息接口 ===")
+call("GET", "/open/cs2/v1/base")
+
+print("\n=== Done ===")
