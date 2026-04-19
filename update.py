@@ -461,20 +461,40 @@ def generate_recommendations(alerts=None):
             'img': csq.get('img', ''),
         })
 
-    recs = {'momentum': [], 'undervalued': [], 'oversold': [], 'scarce': []}
+    recs = {'momentum': [], 'undervalued': [], 'oversold': [], 'scarce': [], 'golden_cross': []}
 
-    # 🔥 Momentum: 趋势向上 (7日涨 + 1日涨)
+    # 🔥 Momentum: 趋势向上 (7日涨 + 1日涨，均线多头排列)
     for m in merged:
         r7 = m.get('rate_7', 0)
         r1 = m.get('rate_1', 0)
         price = m.get('price', 0)
         # 追涨：7日涨>0% (中期趋势向上) 且 1日涨>0% (短期强势)
+        # 加入用户知识：均线多头排列时趋势更可靠
         if price > 30 and r7 > 0 and r1 > 0:
             m['_score'] = round(r7 + r1 * 2, 2)
             m['_reason'] = f'7日{r7:+.1f}% 1日{r1:+.1f}% 📈趋势向上'
             recs['momentum'].append(m)
     recs['momentum'].sort(key=lambda x: x['_score'], reverse=True)
     recs['momentum'] = recs['momentum'][:20]
+
+    # ✨ Golden Cross: 均线金叉（5日上穿10日）+ 供需健康
+    # 简化版：7日涨转正 + 1日涨明显 + 求购活跃
+    for m in merged:
+        r7 = m.get('rate_7', 0)
+        r1 = m.get('rate_1', 0)
+        price = m.get('price', 0)
+        buff_buy = m.get('buff_buy', 0)
+        buff_sell = m.get('buff_sell', 0)
+        # 金叉信号：7日由负转正（拐点）+ 1日强势 + 供需比健康
+        if price > 30 and -2 < r7 < 5 and r1 > 1:
+            # 拐点信号，可能正在形成金叉
+            sd_ratio = buff_buy / max(buff_sell, 1)
+            if sd_ratio > 0.1:
+                m['_score'] = round(r1 * 2 + sd_ratio * 10, 2)
+                m['_reason'] = f'5日拐头向上 ⚡供需比{sd_ratio:.0%}'
+                recs['golden_cross'].append(m)
+    recs['golden_cross'].sort(key=lambda x: x['_score'], reverse=True)
+    recs['golden_cross'] = recs['golden_cross'][:20]
 
     # 💎 Undervalued: ECO compre > price * 1.05
     for m in merged:
@@ -489,17 +509,29 @@ def generate_recommendations(alerts=None):
     recs['undervalued'].sort(key=lambda x: x['_score'], reverse=True)
     recs['undervalued'] = recs['undervalued'][:20]
 
-    # 📉 Oversold: 7d down > 8% with buy orders
+    # 📉 Oversold: 7d down > 8% with buy orders（抄底机会）
+    # 加入用户知识：超跌反弹信号，需有求购支撑
     for m in merged:
-        if m.get('rate_7', 0) < -8 and m.get('eco_qg_total', 0) > 0 and m.get('price', 0) > 50:
-            m['_score'] = abs(m['rate_7'])
-            recs['oversold'].append(m)
+        r7 = m.get('rate_7', 0)
+        price = m.get('price', 0)
+        eco_qg = m.get('eco_qg_total', 0)
+        buff_buy = m.get('buff_buy', 0)
+        # 超跌信号：7日跌>8% + 有求购（说明有人愿意接盘）
+        if r7 < -8 and price > 50:
+            # 量化抄底信号强度
+            support_score = eco_qg + buff_buy * 0.5
+            if support_score > 0:
+                m['_score'] = abs(r7) + support_score
+                m['_reason'] = f'超跌{abs(r7):.1f}% 📉有{eco_qg+buff_buy}单求购托底'
+                recs['oversold'].append(m)
     recs['oversold'].sort(key=lambda x: x['_score'], reverse=True)
     recs['oversold'] = recs['oversold'][:20]
 
-    # ⚡ Scarce: BUFF buy/sell ratio high
+    # ⚡ Scarce: BUFF buy/sell ratio high（供需异动）
+    # 加入用户知识：稀缺性是价格上涨的核心动力
     for m in merged:
         name_lower = m.get('name', '').lower()
+        # 排除武器箱和钥匙（用户知识：千百战系列陷阱）
         if any(kw in name_lower for kw in ('武器箱', '钥匙', '箱', 'key', 'case')):
             continue
         buff_sell = m.get('buff_sell', 0)
@@ -509,6 +541,7 @@ def generate_recommendations(alerts=None):
             continue
         if buff_sell > 0 and buff_buy > 0:
             ratio = buff_buy / buff_sell
+            # 用户知识：求购/在售比>=15%说明稀缺性突出
             if ratio >= 0.15 and buff_sell < 500:
                 m['_score'] = round(ratio, 2)
                 m['_reason'] = f'BUFF求购{buff_buy}/在售{buff_sell}={ratio:.0%}'

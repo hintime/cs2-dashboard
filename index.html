@@ -276,6 +276,7 @@ tbody tr:hover{background:var(--glow-blue)}
       <div style="display:flex;align-items:center;gap:8px">
         <div class="tabs" id="recTabs">
           <button class="tab on" data-tab="momentum">🔥 追涨</button>
+          <button class="tab" data-tab="golden_cross">✨ 金叉</button>
           <button class="tab" data-tab="undervalued">💎 低估</button>
           <button class="tab" data-tab="oversold">📉 超跌</button>
           <button class="tab" data-tab="scarce">⚡ 稀缺</button>
@@ -1216,8 +1217,8 @@ DOM.alertsGrid.onclick = function(e) {
 };
 
 // ═══════════════ RECOMMENDATIONS ═══════════════
-const REC_LABELS = {momentum:'追涨',undervalued:'低估',oversold:'超跌',scarce:'稀缺'};
-const REC_BADGES = {momentum:'MOM',undervalued:'VAL',oversold:'BNC',scarce:'RRE'};
+const REC_LABELS = {momentum:'追涨',golden_cross:'金叉',undervalued:'低估',oversold:'超跌',scarce:'稀缺'};
+const REC_BADGES = {momentum:'MOM',golden_cross:'GOL',undervalued:'VAL',oversold:'BNC',scarce:'RRE'};
 
 function renderRecTab(tab) {
   const grid = DOM.recGrid;
@@ -1391,6 +1392,162 @@ function renderMarket(D) {
   });
 }
 
+// ═══════════════ TECHNICAL ANALYSIS HELPERS ═══════════════
+/**
+ * 计算均线 (MA)
+ * @param {Array} prices 价格数组（按时间顺序，最新的在最后）
+ * @param {number} period 周期
+ * @returns {number|null} 均线值
+ */
+function calcMA(prices, period) {
+  if (prices.length < period) return null;
+  const slice = prices.slice(-period);
+  return slice.reduce((a, b) => a + b, 0) / period;
+}
+
+/**
+ * 计算布林带
+ * @param {Array} prices 价格数组
+ * @param {number} period 周期（默认10）
+ * @param {number} stdDev 标准差倍数（默认2）
+ * @returns {Object} {upper, middle, lower, width}
+ */
+function calcBollingerBands(prices, period = 10, stdDev = 2) {
+  if (prices.length < period) return { upper: null, middle: null, lower: null, width: null };
+  const slice = prices.slice(-period);
+  const middle = slice.reduce((a, b) => a + b, 0) / period;
+  const variance = slice.reduce((sum, p) => sum + Math.pow(p - middle, 2), 0) / period;
+  const std = Math.sqrt(variance);
+  return {
+    upper: middle + stdDev * std,
+    middle,
+    lower: middle - stdDev * std,
+    width: (2 * stdDev * std) / middle // 带宽，用于判断张口/收口
+  };
+}
+
+/**
+ * 判断均线排列
+ * @param {Object} mas {ma5, ma10, ma30, ma60}
+ * @returns {string} 'bull'|'bear'|'neutral'
+ */
+function checkMAStructure(mas) {
+  const { ma5, ma10, ma30, ma60 } = mas;
+  if (!ma5 || !ma10 || !ma30 || !ma60) return 'neutral';
+  if (ma5 > ma10 && ma10 > ma30 && ma30 > ma60) return 'bull'; // 多头排列
+  if (ma5 < ma10 && ma10 < ma30 && ma30 < ma60) return 'bear'; // 空头排列
+  return 'neutral';
+}
+
+/**
+ * 判断布林带形态
+ * @param {Array} bandwidths 带宽数组（历史）
+ * @returns {string} 'expanding_up'|'expanding_down'|'contracting'|'stable'
+ */
+function checkBollingerPattern(bandwidths) {
+  if (bandwidths.length < 3) return 'stable';
+  const recent = bandwidths.slice(-3);
+  const trend = recent[2] - recent[0]; // 带宽变化趋势
+  if (trend > 0.05) return 'expanding_up';  // 张口向上
+  if (trend < -0.05) return 'expanding_down'; // 张口向下
+  if (Math.max(...recent) - Math.min(...recent) < 0.02) return 'contracting'; // 收口
+  return 'stable';
+}
+
+/**
+ * 识别十字星形态
+ * @param {Object} candle {open, close, high, low}
+ * @returns {boolean} 是否为十字星
+ */
+function isDoji(candle) {
+  if (!candle) return false;
+  const { open, close, high, low } = candle;
+  const body = Math.abs(close - open);
+  const range = high - low;
+  if (range === 0) return false;
+  return body / range < 0.1; // 实体小于振幅的10%
+}
+
+/**
+ * 识别启明十字星（底部）
+ * @param {Array} candles 最近3根K线
+ * @returns {boolean}
+ */
+function isMorningDoji(candles) {
+  if (candles.length < 3) return false;
+  const [prev2, prev1, curr] = candles.slice(-3);
+  // 前两根下跌，当前是十字星，收盘高于前一根开盘
+  const isDowntrend = prev2.close < prev2.open && prev1.close < prev1.open;
+  return isDowntrend && isDoji(curr) && curr.close > prev1.open;
+}
+
+/**
+ * 识别黄昏十字星（顶部）
+ * @param {Array} candles 最近3根K线
+ * @returns {boolean}
+ */
+function isEveningDoji(candles) {
+  if (candles.length < 3) return false;
+  const [prev2, prev1, curr] = candles.slice(-3);
+  // 前两根上涨，当前是十字星，收盘低于前一根开盘
+  const isUptrend = prev2.close > prev2.open && prev1.close > prev1.open;
+  return isUptrend && isDoji(curr) && curr.close < prev1.open;
+}
+
+/**
+ * 获取技术分析信号
+ * @param {Object} params {price, prices, candles, maStructure, bollinger}
+ * @returns {Object} {signal, reason, strength}
+ */
+function getTechSignal({ price, prices = [], candles = [], maStructure, bollinger }) {
+  let signal = 'neutral';
+  let reason = '';
+  let strength = 0;
+  
+  // 均线排列信号
+  if (maStructure === 'bull') {
+    signal = 'bullish';
+    reason = '均线多头排列';
+    strength = 2;
+  } else if (maStructure === 'bear') {
+    signal = 'bearish';
+    reason = '均线空头排列';
+    strength = -2;
+  }
+  
+  // 布林带位置信号
+  if (bollinger.lower && price <= bollinger.lower * 1.02) {
+    // 价格触及下轨
+    if (signal !== 'bearish') {
+      signal = 'support';
+      reason = '触及布林下轨，可能有支撑';
+      strength = 1;
+    }
+  } else if (bollinger.upper && price >= bollinger.upper * 0.98) {
+    // 价格触及上轨
+    if (signal !== 'bullish') {
+      signal = 'resistance';
+      reason = '触及布林上轨，可能回调';
+      strength = -1;
+    }
+  }
+  
+  // 十字星信号
+  if (isMorningDoji(candles)) {
+    signal = 'buy';
+    reason = '启明十字星，见底信号';
+    strength = 3;
+  } else if (isEveningDoji(candles)) {
+    signal = 'sell';
+    reason = '黄昏十字星，见顶信号';
+    strength = -3;
+  } else if (isDoji(candles[candles.length - 1])) {
+    if (!reason) reason = '十字星形态，多空平衡';
+  }
+  
+  return { signal, reason, strength };
+}
+
 // ═══════════════ PORTFOLIO ANALYSIS ═══════════════
 function renderAnalysis() {
   const container = document.getElementById('analysisGrid');
@@ -1434,22 +1591,66 @@ function renderAnalysis() {
 
     const isRec = recSet.has(name);
 
+    // ── 技术分析（需要历史数据）──
+    const priceHistory = item.price_history || [];
+    const prices = priceHistory.map(h => h.price);
+    const hasTechData = prices.length >= 5;
+    
+    // 计算均线（需要至少对应周期的数据）
+    const mas = {
+      ma5: prices.length >= 5 ? calcMA(prices, 5) : null,
+      ma10: prices.length >= 10 ? calcMA(prices, 10) : null,
+      ma30: prices.length >= 30 ? calcMA(prices, 30) : null,
+      ma60: prices.length >= 60 ? calcMA(prices, 60) : null
+    };
+    
+    // 计算布林带（需要至少10天数据）
+    const bollinger = prices.length >= 10 ? calcBollingerBands(prices, 10, 2) : { upper: null, middle: null, lower: null, width: null };
+    
+    // 均线排列
+    const maStructure = checkMAStructure(mas);
+    
+    // 技术信号
+    const techSignal = hasTechData ? getTechSignal({ price, prices, mas, bollinger }) : { signal: 'neutral', reason: '', strength: 0 };
+
     // ── Trend determination ──
     let trend = 'neutral';
     if (r7 >= 5 && r1 >= 1) trend = 'strong_up';
     else if (r7 >= 2 && r1 >= 0.5) trend = 'up';
     else if (r7 <= -5) trend = 'weak';
     else if (r7 >= -1 && r1 <= -1) trend = 'rebound';
+    
+    // 用技术分析增强趋势判断
+    if (techSignal.signal === 'bullish' && trend !== 'strong_up') trend = 'up';
+    if (techSignal.signal === 'bearish' && trend !== 'weak') trend = 'weak';
 
     // ── Sell signal ──
     let sellSignal = '持有';
     let sellReason = '';
-    if (pnlPct >= 30) { sellSignal = '止盈'; sellReason = '盈利已达30%，可考虑分批止盈'; }
-    else if (pnlPct <= -15) { sellSignal = '止损'; sellReason = '浮亏超15%，风险较大，建议止损换品'; }
-    else if (isRec) { sellSignal = '持有观察'; sellReason = '属于推荐品类，可继续持有观察'; }
-    else if (r7 <= -8) { sellSignal = '减仓'; sellReason = '7日跌幅较大，可能进入下行通道'; }
-    else if (trend === 'rebound' && pnlPct > 5) { sellSignal = '反弹卖'; sellReason = '属于超跌反弹，建议趁反弹卖出锁定收益'; }
-    else if (trend === 'neutral' && pnlPct < -5) { sellSignal = '观望'; sellReason = '短期方向不明，亏损不大可等待反弹'; }
+    
+    // 技术分析信号优先（如黄昏十字星）
+    if (techSignal.signal === 'sell') {
+      sellSignal = '技术卖';
+      sellReason = techSignal.reason;
+    } else if (techSignal.signal === 'buy') {
+      sellSignal = '技术买';
+      sellReason = techSignal.reason;
+    } else if (pnlPct >= 30) { 
+      sellSignal = '止盈'; sellReason = '盈利已达30%，可考虑分批止盈'; 
+    } else if (pnlPct <= -15) { 
+      sellSignal = '止损'; sellReason = '浮亏超15%，风险较大，建议止损换品'; 
+    } else if (isRec) { 
+      sellSignal = '持有观察'; sellReason = '属于推荐品类，可继续持有观察'; 
+    } else if (r7 <= -8) { 
+      sellSignal = '减仓'; sellReason = '7日跌幅较大，可能进入下行通道'; 
+    } else if (trend === 'rebound' && pnlPct > 5) { 
+      sellSignal = '反弹卖'; sellReason = '属于超跌反弹，建议趁反弹卖出锁定收益'; 
+    } else if (trend === 'neutral' && pnlPct < -5) { 
+      sellSignal = '观望'; sellReason = '短期方向不明，亏损不大可等待反弹'; 
+    } else if (techSignal.reason) {
+      // 有技术信号但未触发买卖
+      sellReason = techSignal.reason;
+    }
 
     // ── Future outlook ──
     let outlook = '';
@@ -1486,12 +1687,31 @@ function renderAnalysis() {
     if (histLen >= 7) { confidence = '高'; confColor = 'var(--rise)'; }
     else if (histLen >= 2) { confidence = '中'; confColor = 'var(--amber)'; }
 
+    // ── 技术分析摘要 ──
+    let techSummary = '';
+    if (hasTechData) {
+      const parts = [];
+      if (maStructure === 'bull') parts.push('多头排列');
+      else if (maStructure === 'bear') parts.push('空头排列');
+      if (bollinger.lower && price <= bollinger.lower * 1.02) parts.push('触下轨');
+      if (bollinger.upper && price >= bollinger.upper * 0.98) parts.push('触上轨');
+      if (techSignal.reason) parts.push(techSignal.reason);
+      techSummary = parts.join(' · ') || '正常区间';
+    }
+
     return {
       name, cost, price, pnl, pnlPct,
       r1, r7, r30, isRec,
       trend, sellSignal, sellReason, outlook, outlookColor,
       targetLow, targetHigh,
-      confidence, confColor
+      confidence, confColor,
+      // 技术分析数据
+      hasTechData,
+      ma5: mas.ma5, ma10: mas.ma10, ma30: mas.ma30, ma60: mas.ma60,
+      maStructure,
+      bollUpper: bollinger.upper, bollMiddle: bollinger.middle, bollLower: bollinger.lower,
+      techSignal: techSignal.signal,
+      techSummary
     };
   });
 
@@ -1519,6 +1739,8 @@ function renderAnalysis() {
     '减仓': '#fb923c',
     '观望': 'var(--text2)',
     '持有观察': 'var(--blue)',
+    '技术卖': '#f87171',
+    '技术买': '#4ade80',
     '持有': 'var(--text3)'
   };
 
@@ -1549,6 +1771,7 @@ function renderAnalysis() {
         <span class="ac-label">可信度</span>
         <span style="font-size:12px;color:${a.confColor};font-weight:600">${a.confidence}</span>
       </div>
+      ${a.hasTechData ? `<div class="ac-row"><span class="ac-label">技术</span><span style="font-size:11px;color:var(--text2)">${a.techSummary}</span></div>` : ''}
       ${a.sellReason ? '<div class="ac-reason">' + a.sellReason + '</div>' : ''}
     </div>
   `).join('');
