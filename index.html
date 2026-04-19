@@ -719,9 +719,28 @@ function invalidateCache() { filteredCache = null; filterCacheKey = ''; }
 window.scrollToPanel = function(id) {
   const el = document.getElementById(id);
   if (!el) return;
+  
+  // 立即设置 active 状态
+  const btns = document.querySelectorAll('.nav-btn');
+  btns.forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('onclick')?.includes(id));
+  });
+  
+  // 暂时禁用 Observer
+  if (navObserver) navObserver.disconnect();
+  
   const navHeight = document.getElementById('quickNav')?.offsetHeight || 50;
   const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 16;
   window.scrollTo({top, behavior:'smooth'});
+  
+  // 滚动结束后重新启用 Observer
+  setTimeout(() => {
+    const sections = ['holdingsPanel', 'alertsPanel', 'recPanel', 'analysisSection'];
+    sections.forEach(sid => {
+      const se = document.getElementById(sid);
+      if (se) navObserver?.observe(se);
+    });
+  }, 800);
 };
 
 // 滚动监听：高亮当前可见板块
