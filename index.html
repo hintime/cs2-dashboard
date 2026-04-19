@@ -564,7 +564,12 @@ async function loadAll() {
           p: pricePerUnit,
           pnl: pricePerUnit - cU,
           pnlPct: cU > 0 ? (pricePerUnit - cU) / cU * 100 : 0,
-          gid: item.id || 0
+          gid: item.id || 0,
+          // 传递涨跌率字段（update.py写入）
+          rate_1: item.rate_1,
+          rate_7: item.rate_7,
+          rate_30: item.rate_30,
+          price_history: item.price_history
         });
       }
     });
@@ -1265,7 +1270,7 @@ function renderAnalysis() {
     return;
   }
 
-  // Build name → rate lookup from alerts (rate_1/rate_7)
+  // Build name → rate lookup from alerts (fallback)
   const rateMap = {};
   (alertsData || []).forEach(a => {
     rateMap[a.name] = { r1: a.rate_1 || 0, r7: a.rate_7 || 0, r30: a.rate_30 || 0 };
@@ -1274,10 +1279,6 @@ function renderAnalysis() {
   // Build name → is recommended
   const allRecs = Object.values(recData || {}).flat();
   const recSet = new Set(allRecs.map(r => r.name));
-  if (!items || items.length === 0) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px;font-size:13px">暂无持仓数据</div>';
-    return;
-  }
 
   // Get market recommendations for comparison signals
   const recs = window.recData || {};
@@ -1292,10 +1293,13 @@ function renderAnalysis() {
     const price = item.p;
     const pnl = price - cost;
     const pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
-    const rLookup = rateMap[name] || {};
-    const r1 = rLookup.r1 || 0;
-    const r7 = rLookup.r7 || 0;
-    const r30 = rLookup.r30 || 0;
+
+    // 优先使用持仓自带的rate数据（update.py已写入）
+    // fallback到alerts匹配
+    const r1 = item.rate_1 !== undefined ? item.rate_1 : (rateMap[name]?.r1 || 0);
+    const r7 = item.rate_7 !== undefined ? item.rate_7 : (rateMap[name]?.r7 || 0);
+    const r30 = item.rate_30 !== undefined ? item.rate_30 : (rateMap[name]?.r30 || 0);
+
     const isRec = recSet.has(name);
 
     // ── Trend determination ──
@@ -1345,7 +1349,11 @@ function renderAnalysis() {
     // ── Confidence ──
     let confidence = '低';
     let confColor = 'var(--text3)';
-    if (isRec && Math.abs(r7) > 3) { confidence = '高'; confColor = 'var(--rise)'; }
+    // 如果持仓自带rate数据，可信度更高
+    if (item.rate_1 !== undefined || item.rate_7 !== undefined) {
+      if (Math.abs(r7) > 3 || Math.abs(r1) > 1) { confidence = '高'; confColor = 'var(--rise)'; }
+      else if (Math.abs(r7) > 1 || Math.abs(r1) > 0.5) { confidence = '中'; confColor = 'var(--amber)'; }
+    } else if (isRec && Math.abs(r7) > 3) { confidence = '高'; confColor = 'var(--rise)'; }
     else if (Math.abs(r7) > 2 && Math.abs(r1) > 0.5) { confidence = '中'; confColor = 'var(--amber)'; }
 
     return {

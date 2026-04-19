@@ -521,11 +521,80 @@ def main():
         print(f'[ECO] Got {len(prices)} prices')
 
         updated = 0
+        today = time.strftime('%Y-%m-%d')
         for item in items:
             hn = item.get('market_hash')
             if hn and hn in prices:
-                item['price'] = prices[hn]
+                new_price = prices[hn]
+                old_price = item.get('price', 0)
+
+                # 更新价格
+                item['price'] = new_price
                 updated += 1
+
+                # 记录历史价格（用于计算涨跌率）
+                history = item.get('price_history', [])
+
+                # 如果今天已有记录，更新；否则追加
+                found = False
+                for h in history:
+                    if h.get('date') == today:
+                        h['price'] = new_price
+                        found = True
+                        break
+                if not found:
+                    history.append({'date': today, 'price': new_price})
+
+                # 保留最近 60 天历史（足够算 rate_30）
+                history.sort(key=lambda x: x['date'])
+                item['price_history'] = history[-60:]
+
+                # 计算涨跌率
+                # rate_1: 相对上一次更新
+                if old_price and old_price > 0:
+                    item['rate_1'] = round((new_price - old_price) / old_price * 100, 2)
+                else:
+                    item['rate_1'] = 0
+
+                # rate_7: 相对 7 天前
+                hist = item['price_history']
+                if len(hist) >= 2:
+                    # 找 7 天前的记录
+                    today_dt = time.strptime(today, '%Y-%m-%d')
+                    for h in hist:
+                        h_dt = time.strptime(h['date'], '%Y-%m-%d')
+                        days_diff = (time.mktime(today_dt) - time.mktime(h_dt)) / 86400
+                        if 6 <= days_diff <= 8 and h.get('price', 0) > 0:
+                            item['rate_7'] = round((new_price - h['price']) / h['price'] * 100, 2)
+                            break
+                    else:
+                        # 没找到 7 天前的，用最旧的记录估算
+                        if hist[0].get('price', 0) > 0:
+                            oldest = hist[0]
+                            oldest_dt = time.strptime(oldest['date'], '%Y-%m-%d')
+                            days = max(1, (time.mktime(today_dt) - time.mktime(oldest_dt)) / 86400)
+                            rate_raw = (new_price - oldest['price']) / oldest['price'] * 100
+                            # 归一化到 7 天
+                            item['rate_7'] = round(rate_raw / days * 7, 2) if days > 0 else 0
+
+                # rate_30: 相对 30 天前（同理）
+                if len(hist) >= 2:
+                    today_dt = time.strptime(today, '%Y-%m-%d')
+                    for h in hist:
+                        h_dt = time.strptime(h['date'], '%Y-%m-%d')
+                        days_diff = (time.mktime(today_dt) - time.mktime(h_dt)) / 86400
+                        if 28 <= days_diff <= 32 and h.get('price', 0) > 0:
+                            item['rate_30'] = round((new_price - h['price']) / h['price'] * 100, 2)
+                            break
+                    else:
+                        # 没找到 30 天前的，用最旧的记录估算
+                        if hist[0].get('price', 0) > 0:
+                            oldest = hist[0]
+                            oldest_dt = time.strptime(oldest['date'], '%Y-%m-%d')
+                            days = max(1, (time.mktime(today_dt) - time.mktime(oldest_dt)) / 86400)
+                            rate_raw = (new_price - oldest['price']) / oldest['price'] * 100
+                            # 归一化到 30 天
+                            item['rate_30'] = round(rate_raw / days * 30, 2) if days > 0 else 0
 
         total_cost = sum(it.get('cost', 0) * it.get('qty', 1) for it in items)
         total_market = sum(it.get('price', 0) * it.get('qty', 1) for it in items)
