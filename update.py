@@ -213,7 +213,7 @@ def fetch_csqaq_alerts(use_cache=True):
     
     # 串行拉取所有页面（降低并发避免 429）
     for sort_key in ('price_up_1d', 'price_down_1d'):
-        for page in range(1, 4):
+        for page in range(1, 3):
             items, _, _ = fetch_page(sort_key, page)
             for item in items:
                 item_id = item.get('id')

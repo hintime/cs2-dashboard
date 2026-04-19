@@ -187,6 +187,7 @@ tbody tr:hover{background:var(--glow-blue)}
       <button class="gear-btn" id="gearBtn" title="设置 GitHub Token">⚙</button>
       <span class="badge"><span class="dot"></span>实时</span>
       <span class="badge" id="updateTime" title="数据更新时间">--</span>
+      <span id="refreshStatus" style="font-size:11px;color:var(--text3);min-width:60px"></span>
     </div>
   </div>
 
@@ -886,13 +887,18 @@ $('refreshBtn').onclick = async function() {
     await loadAll();
     const loadTs = new Date(startTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     DOM.updateTime.textContent = '刷新 ' + loadTs;
+    $('refreshStatus').textContent = '加载中';
+    $('refreshStatus').style.color = '';
     showToast('📊 已加载本地数据，开始全量扫描...', 2000);
   } catch (e) {
     console.error('Load failed:', e);
+    $('refreshStatus').textContent = '❌ 失败';
+    $('refreshStatus').style.color = '#f87171';
   }
   
   // 阶段2：触发全量扫描（持仓价格 + 异动 + 推荐）
   btn.textContent = '🔍 扫描全量数据...';
+  $('refreshStatus').textContent = '扫描中';
   
   try {
     // 触发本地全量更新
@@ -916,6 +922,8 @@ $('refreshBtn').onclick = async function() {
       await loadAll();
       const finalTs = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
       DOM.updateTime.textContent = '更新 ' + finalTs;
+      $('refreshStatus').textContent = '✅ 成功';
+      $('refreshStatus').style.color = '#4ade80';
       
       const items = H?.length || 0;
       const alerts = alertsData?.length || 0;
@@ -928,15 +936,20 @@ $('refreshBtn').onclick = async function() {
       renderChangelog(changes);
     } else {
       showToast('⏱️ 扫描超时，数据将在后台更新', 3000);
+      $('refreshStatus').textContent = '⏱️ 超时';
+      $('refreshStatus').style.color = '#fbbf24';
     }
     
   } catch (e) {
     console.error('Update failed:', e);
     showToast('❌ 更新失败: ' + e.message, 3000);
+    $('refreshStatus').textContent = '❌ 失败';
+    $('refreshStatus').style.color = '#f87171';
   } finally {
     btn.textContent = '↻ 刷新';
     btn.disabled = false;
     isUpdating = false;
+    setTimeout(() => { const rs=$('refreshStatus'); if(rs) { rs.textContent=''; rs.style.color=''; } }, 5000);
   }
 };
 
