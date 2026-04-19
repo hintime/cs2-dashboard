@@ -77,6 +77,25 @@ body{
 .rec-card{display:flex;flex-direction:column;background:var(--surface);backdrop-filter:blur(8px);border-radius:var(--radius-sm);padding:14px 16px;cursor:default;transition:all .25s ease;position:relative;overflow:hidden;border:1px solid var(--border)}
 .rec-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
 .rec-card .r-badge{position:absolute;top:8px;right:10px;font-size:9px;padding:2px 8px;border-radius:6px;font-weight:700;letter-spacing:.5px}
+
+/* ── Portfolio Analysis Cards ── */
+.analysis-card{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:16px;display:flex;flex-direction:column;gap:10px;transition:all .25s;
+}
+.analysis-card:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.analysis-card .ac-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.analysis-card .ac-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.4;flex:1}
+.analysis-card .ac-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0;letter-spacing:.3px}
+.analysis-card .ac-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.analysis-card .ac-m{display:flex;flex-direction:column;gap:2px}
+.analysis-card .ac-ml{font-size:10px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase}
+.analysis-card .ac-mv{font-size:14px;font-weight:700;font-family:'DM Mono','JetBrains Mono',monospace;color:var(--text)}
+.analysis-card .ac-changes{display:flex;gap:10px}
+.analysis-card .ac-ch{font-size:11px;font-weight:700;font-family:'DM Mono','JetBrains Mono',monospace}
+.analysis-card .ac-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.analysis-card .ac-label{font-size:11px;color:var(--text3)}
+.analysis-card .ac-reason{font-size:11px;color:var(--text2);background:var(--surface);border-radius:6px;padding:8px 10px;line-height:1.5;border-left:2px solid var(--border-hi)}
 .rec-card.momentum{border-color:rgba(248,113,113,.25);border-left:3px solid var(--rise);background:linear-gradient(135deg,var(--glow-rise),var(--surface))}
 .rec-card.momentum .r-badge{background:rgba(248,113,113,.12);color:var(--rise)}
 .rec-card.undervalued{border-color:rgba(96,165,250,.25);border-left:3px solid var(--blue);background:linear-gradient(135deg,var(--glow-blue),var(--surface))}
@@ -277,8 +296,18 @@ tbody tr:hover{background:var(--glow-blue)}
     <div id="pager" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:#71717a"></div>
   </div>
 
+  <!-- ══════════ 持仓分析 ══════════ -->
+  <div class="glass" style="padding:24px 28px;margin-bottom:28px" id="analysisSection">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h2>持仓分析 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px">卖出建议 · 趋势判断</span></h2>
+      <span id="analysisRefresh" style="font-size:12px;color:var(--text3);cursor:pointer" onclick="loadAll()">↻ 刷新</span>
+    </div>
+    <div id="analysisGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">
+      <div style="text-align:center;color:var(--text3);padding:40px;font-size:13px">加载中…</div>
+    </div>
+  </div>
+
   <div class="foot">CS2 饰品投资看板 · ECOSteam · CSQAQ</div>
-</div>
 
 <div class="modal-overlay" id="tokenModal">
   <div class="modal">
@@ -575,6 +604,7 @@ function initDashboard() {
   render();
   renderAlertsTab(currentTab);
   renderRecTab(currentRecTab);
+  renderAnalysis();
 }
 
 function updateKPI() {
@@ -885,6 +915,7 @@ $('refreshBtn').onclick = async function() {
   
   try {
     await loadAll();
+    renderAnalysis();
     const loadTs = new Date(startTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     DOM.updateTime.textContent = '刷新 ' + loadTs;
     $('refreshStatus').textContent = '加载中';
@@ -1221,6 +1252,176 @@ function renderMarket(D) {
     cancelAnimationFrame(resizeRaf);
     resizeRaf = requestAnimationFrame(() => ec && ec.resize());
   });
+}
+
+// ═══════════════ PORTFOLIO ANALYSIS ═══════════════
+function renderAnalysis() {
+  const container = document.getElementById('analysisGrid');
+  if (!container) return;
+
+  const items = H || [];
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px;font-size:13px">暂无持仓数据</div>';
+    return;
+  }
+
+  // Build name → rate lookup from alerts (rate_1/rate_7)
+  const rateMap = {};
+  (alertsData || []).forEach(a => {
+    rateMap[a.name] = { r1: a.rate_1 || 0, r7: a.rate_7 || 0, r30: a.rate_30 || 0 };
+  });
+
+  // Build name → is recommended
+  const allRecs = Object.values(recData || {}).flat();
+  const recSet = new Set(allRecs.map(r => r.name));
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px;font-size:13px">暂无持仓数据</div>';
+    return;
+  }
+
+  // Get market recommendations for comparison signals
+  const recs = window.recData || {};
+  const recNames = new Set(
+    (recs.momentum || []).concat(recs.undervalued || []).map(r => r.name)
+  );
+
+  // ── Per-item analysis ──
+  const analyses = items.map(item => {
+    const name = item.n;
+    const cost = item.c;
+    const price = item.p;
+    const pnl = price - cost;
+    const pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
+    const rLookup = rateMap[name] || {};
+    const r1 = rLookup.r1 || 0;
+    const r7 = rLookup.r7 || 0;
+    const r30 = rLookup.r30 || 0;
+    const isRec = recSet.has(name);
+
+    // ── Trend determination ──
+    let trend = 'neutral';
+    if (r7 >= 5 && r1 >= 1) trend = 'strong_up';
+    else if (r7 >= 2 && r1 >= 0.5) trend = 'up';
+    else if (r7 <= -5) trend = 'weak';
+    else if (r7 >= -1 && r1 <= -1) trend = 'rebound';
+
+    // ── Sell signal ──
+    let sellSignal = '持有';
+    let sellReason = '';
+    if (pnlPct >= 30) { sellSignal = '止盈'; sellReason = '盈利已达30%，可考虑分批止盈'; }
+    else if (pnlPct <= -15) { sellSignal = '止损'; sellReason = '浮亏超15%，风险较大，建议止损换品'; }
+    else if (isRec) { sellSignal = '持有观察'; sellReason = '属于推荐品类，可继续持有观察'; }
+    else if (r7 <= -8) { sellSignal = '减仓'; sellReason = '7日跌幅较大，可能进入下行通道'; }
+    else if (trend === 'rebound' && pnlPct > 5) { sellSignal = '反弹卖'; sellReason = '属于超跌反弹，建议趁反弹卖出锁定收益'; }
+    else if (trend === 'neutral' && pnlPct < -5) { sellSignal = '观望'; sellReason = '短期方向不明，亏损不大可等待反弹'; }
+
+    // ── Future outlook ──
+    let outlook = '';
+    let outlookColor = 'var(--text3)';
+    if (trend === 'strong_up') { outlook = '📈 强势上升'; outlookColor = 'var(--rise)'; }
+    else if (trend === 'up') { outlook = '↗ 温和上涨'; outlookColor = '#86efac'; }
+    else if (trend === 'rebound') { outlook = '↙ 超跌反弹'; outlookColor = 'var(--amber)'; }
+    else if (trend === 'weak') { outlook = '📉 下行通道'; outlookColor = 'var(--fall)'; }
+    else { outlook = '→ 横盘整理'; outlookColor = 'var(--text3)'; }
+
+    // ── Target price range (based on trend and volatility) ──
+    let targetLow = '', targetHigh = '';
+    if (r7 > 0 && r1 > 0) {
+      // Uptrend: assume 5-15% upside over next 30 days
+      const base = price;
+      targetLow = (base * 1.05).toFixed(0);
+      targetHigh = (base * 1.15).toFixed(0);
+    } else if (r7 < -5) {
+      // Downtrend: expect -10% to +3% range
+      const base = price;
+      targetLow = (base * 0.90).toFixed(0);
+      targetHigh = (base * 1.03).toFixed(0);
+    } else {
+      const base = price;
+      targetLow = (base * 0.97).toFixed(0);
+      targetHigh = (base * 1.05).toFixed(0);
+    }
+
+    // ── Confidence ──
+    let confidence = '低';
+    let confColor = 'var(--text3)';
+    if (isRec && Math.abs(r7) > 3) { confidence = '高'; confColor = 'var(--rise)'; }
+    else if (Math.abs(r7) > 2 && Math.abs(r1) > 0.5) { confidence = '中'; confColor = 'var(--amber)'; }
+
+    return {
+      name, cost, price, pnl, pnlPct,
+      r1, r7, r30, isRec,
+      trend, sellSignal, sellReason, outlook, outlookColor,
+      targetLow, targetHigh,
+      confidence, confColor
+    };
+  });
+
+  // Sort by: sell signals first (止损 > 止盈 > 反弹卖), then by 7-day change
+  const signalOrder = { '止损': 0, '止盈': 1, '反弹卖': 2, '减仓': 3, '观望': 4, '持有观察': 5, '持有': 6 };
+  analyses.sort((a, b) => {
+    const oa = signalOrder[a.sellSignal] ?? 9;
+    const ob = signalOrder[b.sellSignal] ?? 9;
+    if (oa !== ob) return oa - ob;
+    return a.r7 - b.r7;
+  });
+
+  // ── Generate HTML ──
+  const TREND_COLORS = {
+    'strong_up': 'var(--rise)',
+    'up': '#86efac',
+    'rebound': 'var(--amber)',
+    'weak': 'var(--fall)',
+    'neutral': 'var(--text3)'
+  };
+  const SIGNAL_COLORS = {
+    '止损': '#f87171',
+    '止盈': '#4ade80',
+    '反弹卖': 'var(--amber)',
+    '减仓': '#fb923c',
+    '观望': 'var(--text2)',
+    '持有观察': 'var(--blue)',
+    '持有': 'var(--text3)'
+  };
+
+  container.innerHTML = analyses.map(a => `
+    <div class="analysis-card">
+      <div class="ac-header">
+        <span class="ac-name" title="${a.name}">${a.name.length > 20 ? a.name.substring(0, 18) + '…' : a.name}</span>
+        <span class="ac-badge" style="background:${SIGNAL_COLORS[a.sellSignal] || 'var(--text3)'}20;color:${SIGNAL_COLORS[a.sellSignal] || 'var(--text3)'};border:1px solid ${SIGNAL_COLORS[a.sellSignal] || 'var(--text3)'}40">${a.sellSignal}</span>
+      </div>
+      <div class="ac-metrics">
+        <div class="ac-m"><span class="ac-ml">现价</span><span class="ac-mv">¥${a.price.toFixed(0)}</span></div>
+        <div class="ac-m"><span class="ac-ml">成本</span><span class="ac-mv">¥${a.cost.toFixed(0)}</span></div>
+        <div class="ac-m"><span class="ac-ml">盈亏</span><span class="ac-mv" style="color:${a.pnl >= 0 ? 'var(--rise)' : 'var(--fall)'}">${a.pnl >= 0 ? '+' : ''}${a.pnl.toFixed(0)} (${a.pnlPct >= 0 ? '+' : ''}${a.pnlPct.toFixed(1)}%)</span></div>
+      </div>
+      <div class="ac-changes">
+        <span class="ac-ch" style="color:${a.r1 >= 0 ? 'var(--rise)' : 'var(--fall)'}">1日 ${a.r1 >= 0 ? '+' : ''}${a.r1.toFixed(2)}%</span>
+        <span class="ac-ch" style="color:${a.r7 >= 0 ? 'var(--rise)' : 'var(--fall)'}">7日 ${a.r7 >= 0 ? '+' : ''}${a.r7.toFixed(2)}%</span>
+      </div>
+      <div class="ac-row">
+        <span class="ac-label">走势</span>
+        <span style="color:${a.outlookColor};font-size:12px;font-weight:600">${a.outlook}</span>
+      </div>
+      <div class="ac-row">
+        <span class="ac-label">预判</span>
+        <span style="font-size:12px;color:var(--text2)">${a.targetLow ? '¥' + a.targetLow + ' ~ ¥' + a.targetHigh : '--'}</span>
+      </div>
+      <div class="ac-row">
+        <span class="ac-label">可信度</span>
+        <span style="font-size:12px;color:${a.confColor};font-weight:600">${a.confidence}</span>
+      </div>
+      ${a.sellReason ? '<div class="ac-reason">' + a.sellReason + '</div>' : ''}
+    </div>
+  `).join('');
+
+  // Also inject analysis data for KPI
+  updateAnalysisKPI(analyses);
+}
+
+// Inject analysis indicators into KPI strip
+function updateAnalysisKPI(analyses) {
+  // No KPI strip to update for now, analysis is its own section
 }
 
 // ═══════════════ START ═══════════════
