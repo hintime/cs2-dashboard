@@ -336,6 +336,61 @@ def update_index_series(date_str, index_info, change_stats):
         json.dump(data, f, ensure_ascii=False, indent=2)
     print(f'[IDX] {index_file} ({len(data["series"])} points)')
 
+def sync_market_json(date_str, index_info, series_data):
+    """把指数数据写入 market.json（前端期望的格式）"""
+    market_file = os.path.join(DATA_DIR, 'market.json')
+
+    market = {}
+    if os.path.exists(market_file):
+        try:
+            with open(market_file, 'r', encoding='utf-8') as f:
+                market = json.load(f)
+        except:
+            pass
+
+    # 构建 ohlc 数据（前端 renderMarket 期望的格式）
+    ohlc = []
+    vol_bar = []
+    max_mv = max((s.get('market_value') or 1) for s in series_data) if series_data else 1
+
+    for s in series_data:
+        idx_val = s['index']
+        mv = s.get('market_value') or 0
+        # OHLC: 简化处理，open=close=high=low=指数值
+        ohlc.append({
+            'date': date_str,
+            'dateFull': f"{date_str} {s.get('time','00:00')}",
+            'open': idx_val,
+            'close': idx_val,
+            'high': idx_val,
+            'low': idx_val,
+        })
+        vol_bar.append(round(mv / max_mv * 1000))  # 归一化到 0-1000
+
+    # 取最后一条涨跌
+    last = series_data[-1] if series_data else {}
+    change_pct = last.get('change_pct', 0)
+    change = change_pct  # 前端用的字段名
+
+    market['index'] = {
+        'latest': index_info['index'],
+        'change': change,
+        'change_pct': change_pct,
+        'market_value': index_info['current_mv'],
+        'avg_price': index_info['avg_price'],
+        'total_items': index_info['total_items'],
+        'ohlc': ohlc,
+        'volBar': vol_bar,
+        'volColor': [('#f87171' if v > 500 else '#52525b') for v in vol_bar],
+        'series': series_data,  # 原始序列（用于未来扩展）
+    }
+    market['index_updated'] = int(time.time() * 1000)
+
+    with open(market_file, 'w', encoding='utf-8') as f:
+        json.dump(market, f, ensure_ascii=False, indent=2)
+    print(f'[MKT] Updated market.json index block')
+    return market_file
+
 # ═══════════════ GIT PUSH ═══════════════
 
 def git_push(files, msg):
@@ -393,12 +448,23 @@ def main():
     ensure_base_updated(items, index_info)
 
     # 8. 更新指数序列
-    update_index_series(date_str, index_info, change_stats)
+    index_file = os.path.join(INDEX_DIR, f'{date_str}.json')
+    series_data = []
+    if os.path.exists(index_file):
+        try:
+            with open(index_file, 'r', encoding='utf-8') as f:
+                d = json.load(f)
+                series_data = d.get('series', [])
+        except:
+            pass
 
-    # 9. Git push
+    # 9. 同步到 market.json（前端直接读取）
+    market_file = sync_market_json(date_str, index_info, series_data)
+
+    # 10. Git push
     hour = now_hour
     git_push(
-        [snap_file, os.path.join(HIST_DIR, 'base.json'), os.path.join(INDEX_DIR, f'{date_str}.json')],
+        [snap_file, os.path.join(HIST_DIR, 'base.json'), index_file, market_file],
         f'chore: market index {date_str} {hour}:00 idx={index_info["index"]:.2f}'
     )
 
