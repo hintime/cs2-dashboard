@@ -71,8 +71,8 @@ for name in items[:1]:
         print(f"  ERROR: {e}")
         results["price"] = {"error": str(e)}
 
-# Write results to file
-output_path = os.environ.get("GITHUB_OUTPUT", "/tmp/steamdt_test_result.json")
+# Write results to a plain file (NOT GITHUB_OUTPUT - that's for step outputs)
+output_path = "/tmp/steamdt_test_result.json"
 with open(output_path, "w", encoding="utf-8") as f:
     json.dump(results, f, ensure_ascii=False, indent=2)
 print(f"\n=== 结果已写入: {output_path} ===")
