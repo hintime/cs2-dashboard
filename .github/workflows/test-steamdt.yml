@@ -10,62 +10,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Test SteamDT K-line API
+      - name: Test SteamDT K-line API (Volume Check)
         run: |
-          echo "=== Testing SteamDT API connectivity ==="
-          
-          # Test 1: Simple connectivity
-          echo "--- Test 1: Basic HTTP check ---"
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://open.steamdt.com/ 2>&1)
-          echo "HTTP status: $HTTP_CODE"
-          
-          # Test 2: Price API
+          echo "=== Test 1: SteamDT HTTP connectivity ==="
+          curl -s -o /dev/null -w "HTTP %{http_code}\n" https://open.steamdt.com/
+
           echo ""
-          echo "--- Test 2: Price API ---"
-          curl -s -X POST "https://open.steamdt.com/open/cs2/v1/price/single" \
-            -H "Authorization: Bearer ${{ secrets.STEAMDT_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d '{"marketHashName":"AK-47 | Redline (Field-Tested)"}' \
-            | python3 -c "import sys,json; d=json.load(sys.stdin); print('success:', d.get('success')); print('data:', json.dumps(d.get('data',{}), indent=2))"
-          
-          # Test 3: K-line API
-          echo ""
-          echo "--- Test 3: K-line API (daily) ---"
+          echo "=== Test 2: SteamDT K-line (daily) ==="
           curl -s -X POST "https://open.steamdt.com/open/cs2/v1/kline" \
             -H "Authorization: Bearer ${{ secrets.STEAMDT_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"marketHashName":"AK-47 | Redline (Field-Tested)","type":2}' \
-            | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
+            > /tmp/kline.json
+          
+          python3 -c "
+import json
+with open('/tmp/kline.json') as f:
+    d = json.load(f)
 print('success:', d.get('success'))
 print('errorCode:', d.get('errorCode'))
 print('errorMsg:', d.get('errorMsg'))
 data = d.get('data', [])
 print('data type:', type(data).__name__)
-print('data length:', len(data) if isinstance(data, list) else 'N/A')
-if isinstance(data, list) and len(data) > 0:
-    print('first item:', data[0])
-    print('first item type:', type(data[0]).__name__)
-    if isinstance(data[0], list):
-        print('first item length:', len(data[0]))
-"
-          
-          # Test 4: K-line with platform=ALL
-          echo ""
-          echo "--- Test 4: K-line with platform=ALL ---"
-          curl -s -X POST "https://open.steamdt.com/open/cs2/v1/kline" \
-            -H "Authorization: Bearer ${{ secrets.STEAMDT_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d '{"marketHashName":"AK-47 | Redline (Field-Tested)","type":2,"platform":"ALL"}' \
-            | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-print('success:', d.get('success'))
-print('errorCode:', d.get('errorCode'))
-data = d.get('data', [])
-if isinstance(data, list) and len(data) > 0:
-    print('entries:', len(data))
-    for i, item in enumerate(data[:3]):
-        print(f'  [{i}]: {item}')
+if isinstance(data, list):
+    print('entries count:', len(data))
+    for i, item in enumerate(data[:5]):
+        print(f'  [{i}]: {item}  (len={len(item) if isinstance(item,list) else \"?\"})')
+elif isinstance(data, dict):
+    print('data keys:', list(data.keys())[:10])
+    for k in list(data.keys())[:5]:
+        print(f'  [{k}]: {data[k]}')
 "
