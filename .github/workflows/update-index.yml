@@ -37,7 +37,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add market_history/ index_history/
+          git add market_history/ index_history/ market.json
           git diff --quiet && git diff --staged --quiet || \
             git commit -m "chore: market index $(date +'%Y-%m-%d %H:00')" && \
             git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
