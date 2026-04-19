@@ -25,6 +25,23 @@ body{
   background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(96,165,250,.06),transparent);
 }
 .container{max-width:1280px;margin:0 auto;padding:28px 24px 40px}
+
+/* ══════════ 快速导航栏 ══════════ */
+.quick-nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;gap:8px;padding:12px 0;margin-bottom:20px;
+  background:linear-gradient(180deg,var(--bg) 60%,transparent);
+}
+.nav-btn{
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text2);font-size:12px;font-weight:600;
+  padding:8px 16px;border-radius:8px;cursor:pointer;
+  transition:all .2s;white-space:nowrap;
+}
+.nav-btn:hover{border-color:var(--blue);color:var(--text);transform:translateY(-1px)}
+.nav-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 12px rgba(96,165,250,.3)}
+@media(max-width:640px){.quick-nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}}
+
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px}
 .header h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .header .sub{font-size:11px;color:var(--text3);margin-top:3px;letter-spacing:.02em}
@@ -278,7 +295,16 @@ tbody tr:hover{background:var(--glow-blue)}
     <div id="changelogContent" style="padding:16px;max-height:400px;overflow-y:auto"></div>
   </div>
 
-  <div class="panel">
+  <!-- ══════════ 快速导航 ══════════ -->
+  <div class="quick-nav" id="quickNav">
+    <button class="nav-btn" onclick="scrollTo('holdingsPanel')">📦 持仓</button>
+    <button class="nav-btn" onclick="scrollTo('alertsPanel')">📊 异动</button>
+    <button class="nav-btn" onclick="scrollTo('recPanel')">💡 推荐</button>
+    <button class="nav-btn" onclick="scrollTo('analysisSection')">🎯 分析</button>
+    <button class="nav-btn" onclick="scrollTo('changelogPanel')" id="changelogNavBtn" style="display:none">📋 变动</button>
+  </div>
+
+  <div class="panel" id="holdingsPanel">
     <div class="panel-head">
       <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
       <div style="display:flex;align-items:center;gap:4px">
@@ -610,6 +636,7 @@ function initDashboard() {
   renderAlertsTab(currentTab);
   renderRecTab(currentRecTab);
   renderAnalysis();
+  initNavObserver();
 }
 
 function updateKPI() {
@@ -660,6 +687,38 @@ function getFiltered() {
 }
 
 function invalidateCache() { filteredCache = null; filterCacheKey = ''; }
+
+// ══════════ 快速导航滚动 ══════════
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const navHeight = document.getElementById('quickNav').offsetHeight || 50;
+  const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 16;
+  window.scrollTo({top, behavior:'smooth'});
+}
+
+// 滚动监听：高亮当前可见板块
+let navObserver = null;
+function initNavObserver() {
+  const sections = ['holdingsPanel', 'alertsPanel', 'recPanel', 'analysisSection'];
+  const btns = document.querySelectorAll('.nav-btn');
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        btns.forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('onclick')?.includes(id));
+        });
+      }
+    });
+  }, {threshold:0.3, rootMargin:'-60px 0px -60% 0px'});
+  
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+}
 
 function render() {
   const items = getFiltered();
@@ -819,10 +878,16 @@ function diffSnapshot(oldSnap, newSnap) {
 function renderChangelog(changes) {
   const panel = $('changelogPanel');
   const content = $('changelogContent');
+  const navBtn = $('changelogNavBtn');
   if (!changes || (!changes.prices.length && !changes.alerts.length && !changes.recs.length)) {
     panel.style.display = 'none';
+    if (navBtn) navBtn.style.display = 'none';
     return;
   }
+  
+  // 显示面板和导航按钮
+  panel.style.display = 'block';
+  if (navBtn) navBtn.style.display = 'inline-block';
 
   let html = '';
 
@@ -875,7 +940,11 @@ function renderChangelog(changes) {
 }
 
 // 关闭按钮
-$('changelogClose').onclick = () => { $('changelogPanel').style.display = 'none'; };
+$('changelogClose').onclick = () => {
+  $('changelogPanel').style.display = 'none';
+  const navBtn = $('changelogNavBtn');
+  if (navBtn) navBtn.style.display = 'none';
+};
 
 // 轮询检查更新是否完成
 async function pollUpdateComplete(startTime) {
