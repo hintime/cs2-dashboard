@@ -171,11 +171,111 @@ def _filter_excluded(items):
             if not any(i.get('name','').startswith(p) for p in _EXCLUDE_PREFIXES)
             and i.get('exterior','') not in _EXCLUDE_EXTERIORS]
 
-# ═══════════════ CSQAQ ALERTS (串行，稳定) ═══════════════
+# ═══════════════ CSQAQ ALERTS (支持 skill 调用) ═══════════════
 _cached_alerts = None  # 全局缓存，供 recommendations 复用
+# Skill 路径：workspace/skills/csqaq-market-lookup/
+CSQAQ_SKILL_PATH = os.path.join(os.path.dirname(DATA_DIR), 'skills', 'csqaq-market-lookup', 'scripts', 'csqaq_api.py')
 
-def fetch_csqaq_alerts(use_cache=True):
-    """Fetch price change rankings from CSQAQ (串行，带缓存)"""
+def _fetch_csqaq_direct(sort_key, page):
+    """直接调用 CSQAQ API（原有逻辑）"""
+    body = {
+        'page_index': page,
+        'page_size': 50,
+        'filter': {'type': ['sticker', 'normal'], 'sort': [sort_key]},
+        'show_recently_price': True
+    }
+    try:
+        d = http_post_raw(
+            'https://api.csqaq.com/api/v1/info/get_rank_list',
+            body,
+            headers={'ApiToken': CSQ_KEY},
+            timeout=15
+        )
+        items = d.get('data', {})
+        if isinstance(items, dict):
+            items = items.get('data', [])
+        return items
+    except Exception as e:
+        print(f'[WARN] CSQAQ {sort_key} page {page}: {e}', file=sys.stderr)
+        return []
+
+def fetch_csqaq_via_skill(sort_key='price_up_1d', page=1, page_size=50):
+    """通过 csqaq-market-lookup skill 获取排行榜数据"""
+    if not os.path.exists(CSQAQ_SKILL_PATH):
+        print(f'[CSQAQ] Skill not found: {CSQAQ_SKILL_PATH}', file=sys.stderr)
+        return []
+    
+    # 构建 JSON body 并写入临时文件
+    body = {
+        'page_index': page,
+        'page_size': page_size,
+        'filter': {'type': ['sticker', 'normal'], 'sort': [sort_key]},
+        'show_recently_price': True
+    }
+    body_file = os.path.join(DATA_DIR, '_csqaq_body.json')
+    with open(body_file, 'w', encoding='utf-8') as f:
+        json.dump(body, f, ensure_ascii=False)
+    
+    # 调用 skill 的脚本（使用 --body-file 传递 JSON）
+    try:
+        env = os.environ.copy()
+        env['CSQAQ_API_TOKEN'] = CSQ_KEY
+        
+        result = subprocess.run(
+            ['python', CSQAQ_SKILL_PATH, 'call',
+             '--path', '/api/v1/info/get_rank_list',
+             '--method', 'POST',
+             '--body-file', body_file,
+             '--api-token', CSQ_KEY],
+            capture_output=True, timeout=30,
+            env=env
+        )
+        
+        # 删除临时文件
+        try:
+            os.remove(body_file)
+        except:
+            pass
+        
+        # 解析输出（跳过 [CALL] 和 [STATUS] 行）
+        output = result.stdout.decode('gbk', errors='replace')
+        lines = output.strip().split('\n')
+        json_start = -1
+        for i, line in enumerate(lines):
+            # 跳过 skill CLI 的状态行
+            if line.startswith('[CALL]') or line.startswith('[STATUS]'):
+                continue
+            if line.startswith('{') or line.startswith('['):
+                json_start = i
+                break
+        
+        if json_start < 0:
+            print(f'[CSQAQ] No JSON in output: {output[:200]}', file=sys.stderr)
+            return []
+        
+        json_text = '\n'.join(lines[json_start:])
+        data = json.loads(json_text)
+        
+        # 提取数据
+        items = data.get('data', {})
+        if isinstance(items, dict):
+            items = items.get('data', [])
+        
+        return items
+    except Exception as e:
+        print(f'[CSQAQ] Skill error: {e}', file=sys.stderr)
+        return []
+
+def fetch_csqaq_alerts(use_cache=True, use_skill='auto'):
+    """Fetch price change rankings from CSQAQ (智能切换调用方式)
+    
+    Args:
+        use_cache: 是否使用缓存
+        use_skill: 'auto' (自动切换), True (强制 skill), False (强制直接调用)
+    
+    Returns:
+        list: 异动数据列表，或 None (CI 环境跳过)
+    """
     global _cached_alerts
     
     if use_cache and _cached_alerts is not None:
@@ -184,37 +284,41 @@ def fetch_csqaq_alerts(use_cache=True):
     # Skip in CI environment (IP whitelist blocks GitHub Actions)
     if os.environ.get('GITHUB_ACTIONS') == 'true':
         print('[CSQAQ] Skipping in CI (IP whitelist), will use local data')
-        return None  # Return None to indicate skip, not empty
+        return None
     
     all_alerts = []
     seen_ids = set()
     
-    def fetch_page(sort_key, page):
-        body = {
-            'page_index': page,
-            'page_size': 50,
-            'filter': {'type': ['sticker', 'normal'], 'sort': [sort_key]},
-            'show_recently_price': True
-        }
-        try:
-            d = http_post_raw(
-                'https://api.csqaq.com/api/v1/info/get_rank_list',
-                body,
-                headers={'ApiToken': CSQ_KEY},
-                timeout=15
-            )
-            items = d.get('data', {})
-            if isinstance(items, dict):
-                items = items.get('data', [])
-            return items, sort_key, page
-        except Exception as e:
-            print(f'[WARN] CSQAQ {sort_key} page {page}: {e}', file=sys.stderr)
-            return [], sort_key, page
+    # 智能选择调用方式
+    def smart_fetch(sort_key, page):
+        """智能切换：优先直接调用，失败则切换到 skill"""
+        if use_skill == True:
+            # 强制使用 skill
+            return fetch_csqaq_via_skill(sort_key, page)
+        elif use_skill == False:
+            # 强制使用直接调用
+            return _fetch_csqaq_direct(sort_key, page)
+        else:
+            # 自动模式：先尝试直接调用，失败则切换到 skill
+            try:
+                items = _fetch_csqaq_direct(sort_key, page)
+                if items:
+                    return items
+                print(f'[CSQAQ] Direct call returned empty, fallback to skill')
+            except Exception as e:
+                print(f'[CSQAQ] Direct call failed: {e}, fallback to skill')
+            
+            # 切换到 skill
+            try:
+                return fetch_csqaq_via_skill(sort_key, page)
+            except Exception as e:
+                print(f'[CSQAQ] Skill call also failed: {e}')
+                return []
     
-    # 串行拉取所有页面（降低并发避免 429）
+    # 串行拉取所有页面
     for sort_key in ('price_up_1d', 'price_down_1d'):
         for page in range(1, 3):
-            items, _, _ = fetch_page(sort_key, page)
+            items = smart_fetch(sort_key, page)
             for item in items:
                 item_id = item.get('id')
                 if item_id in seen_ids:
@@ -235,6 +339,7 @@ def fetch_csqaq_alerts(use_cache=True):
                     'buff_buy': int(item.get('buff_buy_num') or 0),
                     'steam_buy': int(item.get('steam_buy_num') or 0),
                 })
+            time.sleep(0.3)
 
     all_alerts.sort(key=lambda x: abs(x.get('rate_1', 0)), reverse=True)
     all_alerts = _filter_excluded(all_alerts)
