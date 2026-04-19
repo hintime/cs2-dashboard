@@ -230,6 +230,7 @@ tbody tr:hover{background:var(--glow-blue)}
 
   <!-- ══════════ 快速导航 ══════════ -->
   <div class="quick-nav" id="quickNav">
+    <button class="nav-btn" onclick="scrollToPanel('marketSection')">📈 指数</button>
     <button class="nav-btn" onclick="scrollToPanel('alertsPanel')">📊 异动</button>
     <button class="nav-btn" onclick="scrollToPanel('recPanel')">💡 推荐</button>
     <button class="nav-btn" onclick="scrollToPanel('holdingsPanel')">📦 持仓</button>
@@ -759,7 +760,7 @@ window.scrollToPanel = function(id) {
   
   // 滚动结束后重新启用 Observer
   setTimeout(() => {
-    const sections = ['holdingsPanel', 'alertsPanel', 'recPanel', 'analysisSection'];
+    const sections = ['marketSection', 'holdingsPanel', 'alertsPanel', 'recPanel', 'analysisSection'];
     sections.forEach(sid => {
       const se = document.getElementById(sid);
       if (se) navObserver?.observe(se);
@@ -770,7 +771,7 @@ window.scrollToPanel = function(id) {
 // 滚动监听：高亮当前可见板块
 let navObserver = null;
 function initNavObserver() {
-  const sections = ['holdingsPanel', 'alertsPanel', 'recPanel', 'analysisSection'];
+  const sections = ['marketSection', 'holdingsPanel', 'alertsPanel', 'recPanel', 'analysisSection'];
   const btns = document.querySelectorAll('.nav-btn');
   
   const observer = new IntersectionObserver((entries) => {
