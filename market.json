@@ -1697,5 +1697,40 @@
       }
     ],
     "golden_cross": []
-  }
+  },
+  "index": {
+    "latest": 999.89,
+    "change": 0.0,
+    "change_pct": 0.0,
+    "market_value": 489848149.34,
+    "avg_price": 991.27,
+    "total_items": 34277,
+    "ohlc": [
+      {
+        "date": "2026-04-20",
+        "dateFull": "2026-04-20 00:55",
+        "open": 1000.0,
+        "close": 1000.0,
+        "high": 1000.0,
+        "low": 1000.0
+      }
+    ],
+    "volBar": [
+      1000
+    ],
+    "volColor": [
+      "#f87171"
+    ],
+    "series": [
+      {
+        "time": "00:55",
+        "timestamp": 1776617742,
+        "index": 1000.0,
+        "change_pct": 0.0,
+        "market_value": 489902481.87,
+        "avg_price": 991.22
+      }
+    ]
+  },
+  "index_updated": 1776618038828
 }
