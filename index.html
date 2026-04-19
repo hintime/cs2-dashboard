@@ -247,7 +247,20 @@ tbody tr:hover{background:var(--glow-blue)}
       <button class="tab on" id="btnLine">折线图</button>
       <button class="tab" id="btnCandle">K线图</button>
     </div>
-    <div class="mi-chart" id="indexChart"></div>
+    <!-- 大盘内层标签：指数图 / 热门饰品 -->
+    <div id="miInnerTabs" style="display:flex;gap:6px;margin-bottom:14px">
+      <button class="tab on" id="btnIdxChart">📊 指数</button>
+      <button class="tab" id="btnHotItems">🔥 热门饰品</button>
+    </div>
+    <div id="idxChartPane"><div class="mi-chart" id="indexChart"></div></div>
+    <div id="hotItemsPane" style="display:none">
+      <div id="hotMeta" style="font-size:12px;color:var(--text3);margin-bottom:10px"></div>
+      <div id="hotItemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px"></div>
+      <div style="margin-top:16px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">❄️ 冷门饰品（在售量减少最多）</div>
+        <div id="coldItemsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px"></div>
+      </div>
+    </div>
     <div class="mi-items" id="miItems"></div>
   </div>
 
@@ -409,13 +422,16 @@ const $ = id => document.getElementById(id);
 const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
 const DOM = {
   miNum:$('miNum'), miChg:$('miChg'), miItems:$('miItems'),
+  btnLine:$('btnLine'), btnCandle:$('btnCandle'),
+  btnIdxChart:$('btnIdxChart'), btnHotItems:$('btnHotItems'),
+  idxChartPane:$('idxChartPane'), hotItemsPane:$('hotItemsPane'),
+  hotMeta:$('hotMeta'), hotItemsGrid:$('hotItemsGrid'), coldItemsGrid:$('coldItemsGrid'),
   countBadge:$('countBadge'), tbody:$('tbody'), pager:$('pager'),
   tabBar:$('tabBar'), alertsGrid:$('alertsGrid'),
   alertsUpdateTime:$('alertsUpdateTime'), watchCount:$('watchCount'),
   recGrid:$('recGrid'), recUpdateTime:$('recUpdateTime'),
   syncStatus:$('syncStatus'), updateTime:$('updateTime'),
   marketSection:$('marketSection'), indexChart:$('indexChart'),
-  btnLine:$('btnLine'), btnCandle:$('btnCandle'),
   tokenModal:$('tokenModal'), tokenInput:$('tokenInput'), tokenStatus:$('tokenStatus')
 };
 
@@ -639,7 +655,10 @@ async function loadAll() {
   }
 
   initDashboard();
-  if (marketData && marketData.index) renderMarket(marketData);
+  if (marketData && marketData.index) {
+    renderMarket(marketData);
+    renderTrending(marketData);
+  }
 }
 
 // ═══════════════ DASHBOARD INIT ═══════════════
@@ -1391,6 +1410,75 @@ function renderMarket(D) {
     resizeRaf = requestAnimationFrame(() => ec && ec.resize());
   });
 }
+
+// ═══════════════ TRENDING ITEMS (from ECO selling delta) ═══════════════
+function renderTrending(D) {
+  const idx = D.index || {};
+  const trending = idx.trending || {};
+  const selling = idx.selling || {};
+  const hot = trending.hot || [];
+  const cold = trending.cold || [];
+
+  // Meta info
+  const delta = selling.total_selling_delta || 0;
+  const deltaPct = selling.total_selling_delta_pct || 0;
+  const totalSell = selling.total_selling || 0;
+  const metaText = delta > 0
+    ? `全市场在售量 +${delta.toLocaleString()}（+${deltaPct}%）总在售 ${totalSell.toLocaleString()} 件，活跃度上升`
+    : delta < 0
+    ? `全市场在售量 ${delta.toLocaleString()}（${deltaPct}%）总在售 ${totalSell.toLocaleString()} 件，活跃度下降`
+    : `全市场在售量持平（总在售 ${totalSell.toLocaleString()} 件）`;
+  DOM.hotMeta.textContent = metaText;
+
+  // Tab switching
+  DOM.btnIdxChart.onclick = function() {
+    DOM.btnIdxChart.className = 'tab on';
+    DOM.btnHotItems.className = 'tab';
+    DOM.idxChartPane.style.display = '';
+    DOM.hotItemsPane.style.display = 'none';
+  };
+  DOM.btnHotItems.onclick = function() {
+    DOM.btnHotItems.className = 'tab on';
+    DOM.btnIdxChart.className = 'tab';
+    DOM.idxChartPane.style.display = 'none';
+    DOM.hotItemsPane.style.display = '';
+  };
+
+  function renderCard(item, type) {
+    const delta = item.selling_delta;
+    const deltaPct = item.selling_delta_pct || 0;
+    const price = item.price || 0;
+    const isHot = type === 'hot';
+    const color = isHot ? 'var(--rise)' : 'var(--fall)';
+    const icon = isHot ? '📈' : '📉';
+    const arrow = isHot ? '+' : '';
+    const shortName = item.goods_name.length > 20 ? item.goods_name.slice(0, 18) + '…' : item.goods_name;
+    const deltaStr = deltaPct >= 999 || deltaPct <= -999
+      ? `${arrow}${delta}`
+      : `${arrow}${deltaPct}%`;
+    return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px 12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:600;color:var(--text1)" title="${item.hash_name}">${shortName}</span>
+        <span style="font-size:13px">${icon}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">
+        <span>¥${price >= 100 ? price.toFixed(0) : price.toFixed(2)}</span>
+        <span style="color:${color};font-weight:600">${delta > 0 ? '+' : ''}${delta} 在售</span>
+        <span style="color:${color}">${deltaStr}</span>
+      </div>
+    </div>`;
+  }
+
+  DOM.hotItemsGrid.innerHTML = hot.length > 0
+    ? hot.map(h => renderCard(h, 'hot')).join('')
+    : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">等待下一小时数据…</div>';
+
+  DOM.coldItemsGrid.innerHTML = cold.length > 0
+    ? cold.map(c => renderCard(c, 'cold')).join('')
+    : '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">等待下一小时数据…</div>';
+}
+
+// ═══════════════ TECHNICAL ANALYSIS HELPERS ═══════════════
 
 // ═══════════════ TECHNICAL ANALYSIS HELPERS ═══════════════
 /**
