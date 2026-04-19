@@ -33,6 +33,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python index_collector.py
 
+      - name: Debug git state
+        run: |
+          echo "=== git status ==="
+          git status --short
+          echo "=== git log -1 --oneline ==="
+          git log -1 --oneline
+          echo "=== git remote -v ==="
+          git remote -v
+          echo "=== git diff --stat ==="
+          git diff --stat
+          echo "=== git diff --cached --stat ==="
+          git diff --cached --stat
+
       - name: Push changes
         run: |
           git config --local user.email "action@github.com"
