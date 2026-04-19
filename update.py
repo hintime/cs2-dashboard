@@ -282,18 +282,26 @@ def generate_recommendations(alerts=None):
         if key:
             csq_map[key] = a
 
-    # Merge ECO + CSQAQ
+    # Merge ECO + CSQAQ（排除 StatTrak / 破损不堪 / 战痕累累）
+    EXCLUDE_PRE = ('StatTrak™ ', 'StatTrak ')
+    EXCLUDE_EXT = {'破损不堪', '战痕累累'}
     merged = []
     for item in eco_items:
         gn = item.get('GoodsName', '')
+        if any(gn.startswith(p) for p in EXCLUDE_PRE):
+            continue
         key = norm(gn)
         csq = csq_map.get(key, {})
         price = float(item.get('Price') or 0)
         if price < 10:
             continue
+        exterior = csq.get('exterior', '')
+        if exterior in EXCLUDE_EXT:
+            continue
         merged.append({
             'name': gn,
             'hash_name': item.get('HashName', ''),
+            'exterior': exterior,
             'price': csq.get('price') or price,
             'rate_1': csq.get('rate_1', 0),
             'rate_7': csq.get('rate_7', 0),
