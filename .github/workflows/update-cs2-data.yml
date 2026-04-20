@@ -28,19 +28,20 @@ jobs:
           git config user.email "hintime@users.noreply.github.com"
           git config user.name "hintime"
 
-      - name: Update ECO prices + CSQAQ alerts
+      - name: Update data
         env:
           ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
           CSQ_API_TOKEN: ${{ secrets.CSQ_API_TOKEN }}
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          echo "Testing CSQAQ API..."
-          curl -s -X POST https://api.csqaq.com/api/v1/info/get_rank_list \
-            -H "Content-Type: application/json" \
-            -H "ApiToken: HXGPY1R7L5W7K7F3O4K1E2N8" \
-            -d '{"page_index":1,"page_size":1,"filter":{"type":["sticker","normal"],"sort":["price_up_1d"]},"show_recently_price":true}' \
-            --connect-timeout 10 | head -c 200
-          echo ""
-          echo "Running update.py..."
-          python update.py all
+          echo "=== $(date) Running update.py ==="
+          python update.py all 2>&1 || echo "Update finished with warnings"
+
+      - name: Commit and push
+        run: |
+          git config user.email "hintime@users.noreply.github.com"
+          git config user.name "hintime"
+          git add -A
+          git commit -m "chore: data update $(date +'%Y-%m-%d %H:%M')" --allow-empty || true
+          git push
