@@ -2,8 +2,8 @@ name: Update CS2 Market Index
 
 on:
   schedule:
-    # 每小时整点运行
-    - cron: '0 * * * *'
+    # 每2小时运行一次（0,2,4,6,8,10,12,14,16,18,20,22点）
+    - cron: '0 */2 * * *'
   workflow_dispatch:
 
 permissions:

@@ -2,7 +2,7 @@ name: Update CS2 Data
 
 on:
   schedule:
-    - cron: '0 * * * *'    # 每小时更新价格+异动
+    - cron: '0 */2 * * *'  # 每2小时更新价格+异动
   workflow_dispatch:
 
 jobs:
