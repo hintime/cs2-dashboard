@@ -1006,7 +1006,7 @@ async function pollUpdateComplete(startTime) {
   const MAX_WAIT = 120000; // 2分钟超时
   const INTERVAL = 5000;   // 5秒轮询一次
   const start = Date.now();
-  
+
   while (Date.now() - start < MAX_WAIT) {
     await sleep(INTERVAL);
     try {
@@ -1014,9 +1014,11 @@ async function pollUpdateComplete(startTime) {
       const r = await fetch('market.json?v=' + Date.now());
       if (r.ok) {
         const data = await r.json();
-        const updateTime = data.alerts_updated || data.items_updated;
+        // 检测多个时间戳字段（alerts / items / index）
+        const updateTime = data.alerts_updated || data.items_updated || data.index_updated;
         if (updateTime) {
-          const updateTs = new Date(updateTime).getTime();
+          // 支持毫秒时间戳和 ISO 字符串两种格式
+          const updateTs = typeof updateTime === 'number' ? updateTime : new Date(updateTime).getTime();
           // 如果更新时间比开始时间晚，说明更新完成了
           if (updateTs > startTime) {
             return true;
