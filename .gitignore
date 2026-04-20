@@ -1,8 +1,6 @@
-.vercel
-eco_private_key.txt
-_test_eco.py
-_check.py
-_verify.py
-_lint.py
-debug.txt
-__pycache__/
+# Debug/temp files
+_*.py
+_*.ps1
+_*.json
+_*.txt
+_*.log
