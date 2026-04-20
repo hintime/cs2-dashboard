@@ -582,9 +582,10 @@ async function loadAll() {
   const t0 = Date.now(); // mark refresh time
   await loadOverrides();
 
+  const fetchOpts = { cache: 'no-store' };
   const [holdingsR, marketR] = await Promise.all([
-    fetch('holdings.json?v=' + t0).then(r => r.json()).catch(() => null),
-    fetch('market.json?v=' + t0).then(r => r.json()).catch(() => null)
+    fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null),
+    fetch('market.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null)
   ]);
 
   // ── Process holdings ──
@@ -1013,7 +1014,7 @@ async function pollUpdateComplete(startTime) {
     await sleep(INTERVAL);
     try {
       // 检查 market.json 的更新时间是否比 startTime 新
-      const r = await fetch('market.json?v=' + Date.now());
+      const r = await fetch('market.json?v=' + Date.now(), { cache: 'no-store' });
       if (r.ok) {
         const data = await r.json();
         // 检测多个时间戳字段（alerts / items / index）
