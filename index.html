@@ -454,7 +454,9 @@ let starred = JSON.parse(localStorage.getItem(LS_STARRED) || '{}');
 // ═══════════════ UPDATE DATA (trigger GitHub Actions workflow) ═══════════════
 let updateTimer = null;
 const WORKFLOW_ID = 'update-cs2-data.yml';
+const WORKFLOW_ID_INDEX = 'update-index.yml';
 const WORKFLOW_API = 'https://api.github.com/repos/' + GH_REPO + '/actions/workflows/' + WORKFLOW_ID + '/dispatches';
+const WORKFLOW_API_INDEX = 'https://api.github.com/repos/' + GH_REPO + '/actions/workflows/' + WORKFLOW_ID_INDEX + '/dispatches';
 const RUNS_API = 'https://api.github.com/repos/' + GH_REPO + '/actions/runs?workflow_id=' + WORKFLOW_ID + '&per_page=1';
 
 async function pollWorkflowComplete() {
@@ -1068,7 +1070,14 @@ $('refreshBtn').onclick = async function() {
     
     // 同时触发 CI 更新（如果有 Token）
     if (ghToken) {
+      // 触发数据更新 workflow
       fetch(WORKFLOW_API, {
+        method: 'POST',
+        headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
+        body: JSON.stringify({ ref: 'main' })
+      }).catch(() => {});
+      // 同时触发指数更新 workflow（大盘指数）
+      fetch(WORKFLOW_API_INDEX, {
         method: 'POST',
         headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
         body: JSON.stringify({ ref: 'main' })
