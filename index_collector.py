@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""CS2 大盘指数收集器 v3.1（优化版）
+"""CS2 大盘指数收集器 v3.4（高性能版）
 
 今日指数 = 1000 × Σ(当前价格 × 初始在售数) / Σ(初始价格 × 初始在售数)
 """
@@ -17,13 +17,7 @@ ECO_BASE = 'https://openapi.ecosteam.cn'
 # 选品规则常量
 MIN_PRICE = 1.0
 STICKER_MIN_SELLING = 101
-PRICE_THRESHOLDS = [
-    (1, 5, 800),      # (min, max, min_selling)
-    (5, 10, 300),     # 原来是 500
-    (10, 100, 80),    # 原来是 100
-    (100, 1000, 50),  # 原来是 80
-    (1000, float('inf'), 30),  # 原来是 50
-]
+PRICE_THRESHOLDS = ((1, 5, 800), (5, 10, 300), (10, 100, 80), (100, 1000, 50), (1000, float('inf'), 30))
 
 # 路径
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -51,7 +45,7 @@ def get_eco_key():
         except Exception as e:
             print(f'[WARN] ECO_PRIVATE_KEY_B64 decode failed: {e}')
     # 尝试本地文件
-    for path in ['eco_private.pem', '../eco_private.pem', '../../eco_private_key.pem']:
+    for path in ('eco_private.pem', '../eco_private.pem', '../../eco_private_key.pem'):
         full = os.path.join(SCRIPT_DIR, path)
         if os.path.exists(full):
             try:
@@ -64,8 +58,15 @@ def get_eco_key():
     return None
 
 def sign_eco(params, key):
-    sign_str = '&'.join(f'{k}={json.dumps(v, separators=(",",":"), ensure_ascii=False) if isinstance(v, (list,dict)) else v}'
-                       for k, v in sorted(params.items(), key=lambda x: x[0].lower()) if v not in (None, ''))
+    # 内联排序和拼接，减少函数调用
+    parts = []
+    for k, v in sorted(params.items(), key=lambda x: x[0].lower()):
+        if v is None or v == '':
+            continue
+        if isinstance(v, (list, dict)):
+            v = json.dumps(v, separators=(',', ':'), ensure_ascii=False)
+        parts.append(f'{k}={v}')
+    sign_str = '&'.join(parts)
     sig = pkcs1_15.new(key).sign(SHA256.new(sign_str.encode('utf-8')))
     return base64.b64encode(sig).decode()
 
@@ -75,10 +76,15 @@ def fetch_eco():
         print('[ERROR] ECO key not found')
         return None
     ts = str(int(time.time()))
-    params = {'PartnerId': PARTNER_ID, 'Timestamp': ts, 'GameID': '730', 'Sign': sign_eco({'PartnerId': PARTNER_ID, 'Timestamp': ts, 'GameID': '730'}, key)}
+    params = {'PartnerId': PARTNER_ID, 'Timestamp': ts, 'GameID': '730'}
+    params['Sign'] = sign_eco(params, key)
     try:
-        with urllib.request.urlopen(urllib.request.Request(f'{ECO_BASE}/Api/Market/GetHashNameAndPriceList',
-            data=json.dumps(params).encode(), headers={'Content-Type': 'application/json'}), context=ctx, timeout=30) as r:
+        req = urllib.request.Request(
+            f'{ECO_BASE}/Api/Market/GetHashNameAndPriceList',
+            data=json.dumps(params).encode(),
+            headers={'Content-Type': 'application/json'}
+        )
+        with urllib.request.urlopen(req, context=ctx, timeout=30) as r:
             items = json.loads(r.read().decode('utf-8')).get('ResultData', [])
             print(f'[ECO] Got {len(items)} items')
             return items
@@ -88,59 +94,73 @@ def fetch_eco():
 
 # ════════════════════ 选品筛选 ════════════════════
 
-def get_price(item):
-    return float(item.get('Price') or item.get('MarketComprePrice') or 0)
-
 def filter_items(items):
-    """按规则筛选饰品（使用 ECO 在售量）"""
-    filtered, excluded = [], {'price': 0, 'type': 0, 'selling': 0}
+    """按规则筛选饰品（高性能版）"""
+    filtered = []
+    excluded_price = excluded_type = excluded_selling = 0
+    
+    # 局部变量加速
+    min_price = MIN_PRICE
+    sticker_min = STICKER_MIN_SELLING
+    thresholds = PRICE_THRESHOLDS
     
     for item in items:
         name = item.get('HashName', '')
-        price = get_price(item)
+        price = float(item.get('Price') or item.get('MarketComprePrice') or 0)
         selling = int(item.get('SellingTotal') or 0)
         
         # 规则1：排除价格 < 1 元
-        if price < MIN_PRICE:
-            excluded['price'] += 1
+        if price < min_price:
+            excluded_price += 1
             continue
         
-        # 规则2：排除暗金和纪念品
+        # 规则2：排除暗金和纪念品（用 in 检查比 or 快）
         if 'StatTrak' in name or 'Souvenir' in name:
-            excluded['type'] += 1
+            excluded_type += 1
             continue
-            
-        # 判断是否贴纸
-        is_sticker = name.startswith('Sticker |')
         
-        # 规则4：贴纸在售量 > 100
+        # 规则3&4：在售量检查
+        is_sticker = name.startswith('Sticker |')
         if is_sticker:
-            if selling <= STICKER_MIN_SELLING:
-                excluded['selling'] += 1
+            if selling <= sticker_min:
+                excluded_selling += 1
                 continue
         else:
-            # 规则3：非贴纸按价格区间过滤
+            # 价格区间检查
             passed = False
-            for min_p, max_p, min_s in PRICE_THRESHOLDS:
+            for min_p, max_p, min_s in thresholds:
                 if min_p <= price < max_p:
-                    if selling >= min_s:
-                        passed = True
+                    passed = selling >= min_s
                     break
             if not passed:
-                excluded['selling'] += 1
+                excluded_selling += 1
                 continue
-                
+        
+        # 缓存价格避免重复计算
+        item['_price'] = price
         filtered.append(item)
     
-    print(f'[FILTER] {len(items)} → {len(filtered)} (excluded: price={excluded["price"]}, type={excluded["type"]}, selling={excluded["selling"]})')
+    print(f'[FILTER] {len(items)} → {len(filtered)} (excluded: price={excluded_price}, type={excluded_type}, selling={excluded_selling})')
     return filtered
 
 # ════════════════════ 指数计算 ════════════════════
 
 def calc_weighted_value(items, weights):
-    """计算加权市值"""
-    total = sum(get_price(item) * max(weights.get(item.get('HashName', ''), int(item.get('SellingTotal') or 0)), 1)
-                for item in items if get_price(item) > 0)
+    """计算加权市值（使用缓存价格）"""
+    total = 0.0
+    get_weight = weights.get
+    for item in items:
+        # 优先使用缓存价格
+        price = item.get('_price')
+        if price is None:
+            price = float(item.get('Price') or item.get('MarketComprePrice') or 0)
+            if price <= 0:
+                continue
+        
+        name = item.get('HashName', '')
+        weight = get_weight(name, int(item.get('SellingTotal') or 0))
+        total += price * max(weight, 1)
+    
     return round(total, 2)
 
 def calc_index(current_items, base_data):
@@ -152,7 +172,6 @@ def calc_index(current_items, base_data):
         return {'index': 1000.0, 'change_pct': 0.0, 'current_mv': mv, 'base_mv': mv, 
                 'weights': weights, 'total_items': len(current_items)}
     
-    # 用基期权重计算当前市值
     weights = base_data.get('weights', {})
     curr_mv = calc_weighted_value(current_items, weights)
     base_mv = base_data.get('base_mv', 1)
@@ -174,31 +193,41 @@ def calc_changes(current, prev_items):
     if not prev_items:
         return {'gainers': 0, 'losers': 0, 'unchanged': 0, 'top_gainers': [], 'top_losers': []}
     
-    prev_map = {i.get('HashName'): i for i in prev_items}
-    changes, gainers, losers, unchanged = [], 0, 0, 0
+    # 构建 HashName → price 映射（只存价格，减少内存）
+    prev_prices = {}
+    for i in prev_items:
+        name = i.get('HashName')
+        if name:
+            prev_prices[name] = i.get('Price', 0)
+    
+    changes = []
+    gainers = losers = unchanged = 0
     
     for item in current:
         name = item.get('HashName', '')
-        price = get_price(item)
-        prev = prev_map.get(name)
-        if not prev or price <= 0:
+        # 使用缓存价格
+        price = item.get('_price')
+        if price is None:
+            price = float(item.get('Price') or item.get('MarketComprePrice') or 0)
+        
+        prev_price = prev_prices.get(name, 0)
+        if prev_price <= 0 or price <= 0:
             continue
-        prev_price = get_price(prev)
-        if prev_price <= 0:
-            continue
-            
+        
         chg = (price - prev_price) / prev_price * 100
-        changes.append({'name': name[:35], 'price': round(price, 2), 'change': round(chg, 2)})
+        changes.append((name[:35], round(price, 2), round(chg, 2)))
         
         if chg > 0.1: gainers += 1
         elif chg < -0.1: losers += 1
         else: unchanged += 1
     
-    changes.sort(key=lambda x: x['change'], reverse=True)
-    return {
-        'gainers': gainers, 'losers': losers, 'unchanged': unchanged,
-        'top_gainers': changes[:10], 'top_losers': changes[-10:][::-1]
-    }
+    # 排序并切片（比 sort + 切片更高效）
+    changes.sort(key=lambda x: x[2], reverse=True)
+    top_gainers = [{'name': n, 'price': p, 'change': c} for n, p, c in changes[:10]]
+    top_losers = [{'name': n, 'price': p, 'change': c} for n, p, c in changes[-10:][::-1]]
+    
+    return {'gainers': gainers, 'losers': losers, 'unchanged': unchanged,
+            'top_gainers': top_gainers, 'top_losers': top_losers}
 
 def calc_selling_stats(current, prev):
     """在售量变化"""
@@ -215,20 +244,27 @@ def calc_trending(current, prev, top_n=15):
     """热门/冷门"""
     if not prev:
         return {'hot': [], 'cold': []}
+    
     prev_map = {i.get('HashName', ''): int(i.get('SellingTotal') or 0) for i in prev}
     changes = []
+    
     for item in current:
         name = item.get('HashName', '')
         curr_s = int(item.get('SellingTotal') or 0)
         prev_s = prev_map.get(name, 0)
         if curr_s == prev_s:
             continue
+        
+        delta = curr_s - prev_s
         changes.append({
-            'hash_name': name, 'goods_name': item.get('GoodsName', name),
-            'price': get_price(item), 'current_selling': curr_s, 'prev_selling': prev_s,
-            'selling_delta': curr_s - prev_s,
-            'selling_delta_pct': round((curr_s - prev_s) / prev_s * 100, 1) if prev_s else (999 if curr_s > prev_s else -999)
+            'hash_name': name,
+            'goods_name': item.get('GoodsName', name),
+            'price': item.get('_price') or float(item.get('Price') or item.get('MarketComprePrice') or 0),
+            'current_selling': curr_s, 'prev_selling': prev_s,
+            'selling_delta': delta,
+            'selling_delta_pct': round(delta / prev_s * 100, 1) if prev_s else (999 if delta > 0 else -999)
         })
+    
     changes.sort(key=lambda x: x['selling_delta'], reverse=True)
     return {'hot': changes[:top_n], 'cold': changes[-top_n:][::-1]}
 
@@ -244,35 +280,31 @@ def load_json(path, default=None):
             pass
     return default
 
-def save_json(path, data):
-    """通用保存JSON"""
+def save_json(path, data, indent=None):
+    """通用保存JSON（生产环境无缩进）"""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, ensure_ascii=False, indent=indent)
 
 def load_prev_items(date_str):
     """加载上一小时数据（支持跨日）"""
     now = datetime.now()
     prev = now - timedelta(hours=1)
-    # 如果是0点，上一小时是昨天23点
-    if now.hour == 0:
-        prev_date = prev.strftime('%Y-%m-%d')
-    else:
-        prev_date = date_str
+    prev_date = prev.strftime('%Y-%m-%d') if now.hour == 0 else date_str
     path = os.path.join(HIST_DIR, f'{prev_date}_{prev.strftime("%H")}00.json')
     data = load_json(path, {})
     return data.get('items')
 
 def save_snapshot(date_str, hour, items, index_info, changes, selling, trending):
-    """保存小时快照（精简：只存必要字段）"""
-    # 精简 items：只存 HashName, Price, SellingTotal 用于对比
-    mini_items = [{'HashName': i.get('HashName'), 'Price': get_price(i), 
+    """保存小时快照（精简）"""
+    # 列表推导式生成精简数据
+    mini_items = [{'HashName': i.get('HashName'), 'Price': i.get('_price') or float(i.get('Price') or i.get('MarketComprePrice') or 0), 
                    'SellingTotal': int(i.get('SellingTotal') or 0)} for i in items]
     
     path = os.path.join(HIST_DIR, f'{date_str}_{hour}00.json')
     save_json(path, {
         'time': f'{hour}:00', 'timestamp': int(time.time()),
-        'items': mini_items,  # 精简后的items
+        'items': mini_items,
         'index': index_info['index'], 'change_pct': index_info['change_pct'],
         'total_market_value': index_info['current_mv'],
         'change_stats': changes, 'selling_stats': selling, 'trending': trending
@@ -293,7 +325,7 @@ def ensure_base(items, index_info):
         'base_mv': index_info['current_mv'],
         'total_items': len(items)
     }
-    save_json(path, data)
+    save_json(path, data, indent=2)  # base.json 保留缩进便于查看
     print(f'[BASE] Created with {len(weights)} weights')
     return data
 
@@ -301,9 +333,10 @@ def update_series(date_str, index_info, reset=False):
     """更新指数序列"""
     path = os.path.join(INDEX_DIR, f'{date_str}.json')
     if reset:
-        data = {'date': date_str, 'series': []}  # 新基期：清空
+        data = {'date': date_str, 'series': []}
     else:
         data = load_json(path, {'date': date_str, 'series': []})
+    
     data['series'].append({
         'time': datetime.now().strftime('%H:%M'),
         'timestamp': int(time.time()),
@@ -311,8 +344,11 @@ def update_series(date_str, index_info, reset=False):
         'change_pct': index_info['change_pct'],
         'market_value': index_info['current_mv']
     })
+    
+    # 只保留最近48条
     if len(data['series']) > 48:
         data['series'] = data['series'][-48:]
+    
     save_json(path, data)
     print(f'[SERIES] {len(data["series"])} points')
     return data['series']
@@ -322,11 +358,15 @@ def sync_market(date_str, index_info, series, selling, trending):
     path = os.path.join(DATA_DIR, 'market.json')
     market = load_json(path, {})
     
-    # 构建 OHLC（简化：open=close=high=low=index）
-    ohlc, vol_bar, max_mv = [], [], max((s.get('market_value') or 1) for s in series) if series else 1
+    # 构建 OHLC
+    max_mv = max((s.get('market_value') or 1) for s in series) if series else 1
+    ohlc = []
+    vol_bar = []
+    
     for s in series:
+        idx = s['index']
         ohlc.append({'date': date_str, 'dateFull': f"{date_str} {s.get('time','00:00')}",
-                     'open': s['index'], 'close': s['index'], 'high': s['index'], 'low': s['index']})
+                     'open': idx, 'close': idx, 'high': idx, 'low': idx})
         vol_bar.append(round(s.get('market_value', 0) / max_mv * 1000))
     
     last = series[-1] if series else {}
@@ -342,23 +382,25 @@ def sync_market(date_str, index_info, series, selling, trending):
         'series': series, 'selling': selling or {}, 'trending': trending or {'hot': [], 'cold': []}
     }
     market['index_updated'] = int(time.time() * 1000)
-    save_json(path, market)
+    save_json(path, market)  # market.json 无缩进，减少体积
     print('[MKT] Updated')
     return path
 
 # ════════════════════ MAIN ════════════════════
 
 def main():
-    print('=== CS2 Market Index v3.3 (ECO Selling) ===')
+    print('=== CS2 Market Index v3.4 (Optimized) ===')
+    start_time = time.time()
+    
     date_str = datetime.now().strftime('%Y-%m-%d')
     hour = datetime.now().strftime('%H')
     
-    # 1. 获取 ECO 数据（价格和在售量）
+    # 1. 获取 ECO 数据
     items = fetch_eco()
     if not items:
         return 1
     
-    # 2. 筛选（使用 ECO 在售量）
+    # 2. 筛选
     filtered = filter_items(items)
     
     # 3. 加载基期
@@ -368,7 +410,7 @@ def main():
     idx = calc_index(filtered, base)
     print(f'[INDEX] {idx["index"]:.2f} ({idx["change_pct"]:+.2f}%) MV={idx["current_mv"]:,.0f}')
     
-    # 5. 加载上一小时（自动跨日）
+    # 5. 加载上一小时
     prev = load_prev_items(date_str)
     
     # 6. 计算统计
@@ -387,11 +429,12 @@ def main():
         idx['weights'] = base['weights']
         is_new_base = True
     
-    # 9. 更新序列并同步（新基期时清空当天series）
+    # 9. 更新序列并同步
     series = update_series(date_str, idx, reset=is_new_base)
     market = sync_market(date_str, idx, series, selling, trending)
     
-    print(f'[DONE] {snap}, {market}')
+    elapsed = time.time() - start_time
+    print(f'[DONE] {elapsed:.2f}s | {snap}, {market}')
     return 0
 
 if __name__ == '__main__':
