@@ -4,3 +4,12 @@ _*.ps1
 _*.json
 _*.txt
 _*.log
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Private keys (NEVER commit)
+eco_private_key.txt
+*.pem
+*.key
