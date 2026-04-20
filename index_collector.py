@@ -13,18 +13,16 @@ from Crypto.Hash import SHA256
 # ════════════════════ CONFIG ════════════════════
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 ECO_BASE = 'https://openapi.ecosteam.cn'
-CSQAQ_BASE = 'https://api.csqaq.com'
-CSQAQ_TOKEN = os.environ.get('CSQAQ_API_TOKEN') or 'HXGPY1R7L5W7K7F3O4K1E2N8'
 
 # 选品规则常量
 MIN_PRICE = 1.0
 STICKER_MIN_SELLING = 101
 PRICE_THRESHOLDS = [
     (1, 5, 800),      # (min, max, min_selling)
-    (5, 10, 500),
-    (10, 100, 100),
-    (100, 1000, 80),
-    (1000, float('inf'), 50),
+    (5, 10, 300),     # 原来是 500
+    (10, 100, 80),    # 原来是 100
+    (100, 1000, 50),  # 原来是 80
+    (1000, float('inf'), 30),  # 原来是 50
 ]
 
 # 路径
@@ -37,87 +35,6 @@ INDEX_DIR = os.path.join(DATA_DIR, 'index_history')
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
-
-# ════════════════════ CSQAQ API (在售量) ════════════════════
-
-def fetch_csqaq_selling():
-    """从 CSQAQ 获取所有饰品的在售量数据（BUFF+悠悠）"""
-    all_items = {}
-    page_size = 500  # 最大分页
-    page_index = 1
-    max_pages = 20  # 最多20页（10,000件），CSQAQ实际有约10,000+件
-    
-    headers = {
-        'ApiToken': CSQAQ_TOKEN,
-        'Content-Type': 'application/json'
-    }
-    
-    print('[CSQAQ] Fetching selling data...')
-    
-    while page_index <= max_pages:
-        body = {
-            'page_index': page_index,
-            'page_size': page_size,
-            'filter': {'type': ['sticker', 'normal']},  # 包含贴纸和普通饰品
-            'show_recently_price': False
-        }
-        
-        try:
-            req = urllib.request.Request(
-                f'{CSQAQ_BASE}/api/v1/info/get_rank_list',
-                data=json.dumps(body).encode('utf-8'),
-                headers=headers,
-                method='POST'
-            )
-            with urllib.request.urlopen(req, timeout=60) as r:
-                data = json.loads(r.read().decode('utf-8'))
-                
-                if data.get('code') != 200:
-                    print(f'[CSQAQ] API error: {data.get("msg")}')
-                    break
-                
-                items = data.get('data', {}).get('data', [])
-                if not items:
-                    break
-                
-                for item in items:
-                    # CSQAQ 用 'id' 而不是 'good_id'
-                    item_id = item.get('id')
-                    if item_id:
-                        # 使用 BUFF+悠悠 在售量之和
-                        buff_sell = int(item.get('buff_sell_num') or 0)
-                        yyyp_sell = int(item.get('yyyp_sell_num') or 0)
-                        total_sell = buff_sell + yyyp_sell
-                        
-                        # name 可能乱码，用 id 作为 key
-                        all_items[item_id] = {
-                            'name': item.get('name', ''),
-                            'buff_sell': buff_sell,
-                            'yyyp_sell': yyyp_sell,
-                            'total_sell': total_sell,
-                            'price': float(item.get('buff_sell_price') or 0)  # 已经是元
-                        }
-                
-                print(f'[CSQAQ] Page {page_index}: got {len(items)} items, total {len(all_items)}')
-                
-                if len(items) < page_size:
-                    break
-                page_index += 1
-                time.sleep(0.5)  # 延迟500ms，避免429
-                
-        except urllib.error.HTTPError as e:
-            if e.code == 429:
-                print(f'[CSQAQ] Rate limited, waiting 5s...')
-                time.sleep(5)
-                continue  # 重试当前页
-            print(f'[CSQAQ] HTTP Error: {e}')
-            break
-        except Exception as e:
-            print(f'[CSQAQ] Error: {e}')
-            break
-    
-    print(f'[CSQAQ] Total {len(all_items)} items with selling data')
-    return all_items
 
 # ════════════════════ ECO API ════════════════════
 _eco_key = None
@@ -174,45 +91,14 @@ def fetch_eco():
 def get_price(item):
     return float(item.get('Price') or item.get('MarketComprePrice') or 0)
 
-def filter_items_eco(eco_items, csqaq_selling):
-    """
-    按规则筛选饰品（使用 CSQAQ 的在售量数据）
-    eco_items: ECO 返回的饰品列表（含价格）
-    csqaq_selling: CSQAQ 返回的在售量字典 {id: {...}}
-    """
-    filtered, excluded = [], {'price': 0, 'type': 0, 'selling': 0, 'no_csqaq': 0}
+def filter_items(items):
+    """按规则筛选饰品（使用 ECO 在售量）"""
+    filtered, excluded = [], {'price': 0, 'type': 0, 'selling': 0}
     
-    # 构建 name → 在售量 的映射（CSQAQ 的 name 可能乱码，需要模糊匹配）
-    # 策略：用 ECO 的 GoodsName 去匹配 CSQAQ 的 name
-    # 由于编码问题，这里简化处理：直接用 ECO 自身的 SellingTotal 作为 fallback
-    
-    # 先构建 CSQAQ 的 name 到在售量的映射
-    csqaq_by_name = {}
-    for v in csqaq_selling.values():
-        name = v.get('name', '')
-        if name:
-            csqaq_by_name[name] = v['total_sell']
-    
-    for item in eco_items:
+    for item in items:
         name = item.get('HashName', '')
-        goods_name = item.get('GoodsName', '')
         price = get_price(item)
-        
-        # 尝试从 CSQAQ 获取在售量
-        # 先用 GoodsName 匹配，再用 HashName 匹配
-        selling = csqaq_by_name.get(goods_name, 0)
-        if not selling:
-            # 尝试用 HashName 的部分匹配
-            for csq_name, csq_sell in csqaq_by_name.items():
-                if goods_name in csq_name or csq_name in goods_name:
-                    selling = csq_sell
-                    break
-        
-        # 如果 CSQAQ 没有，用 ECO 自身的在售量作为 fallback
-        if not selling:
-            selling = int(item.get('SellingTotal') or 0)
-            if selling > 0:
-                excluded['no_csqaq'] += 1
+        selling = int(item.get('SellingTotal') or 0)
         
         # 规则1：排除价格 < 1 元
         if price < MIN_PRICE:
@@ -223,7 +109,7 @@ def filter_items_eco(eco_items, csqaq_selling):
         if 'StatTrak' in name or 'Souvenir' in name:
             excluded['type'] += 1
             continue
-        
+            
         # 判断是否贴纸
         is_sticker = name.startswith('Sticker |')
         
@@ -243,32 +129,18 @@ def filter_items_eco(eco_items, csqaq_selling):
             if not passed:
                 excluded['selling'] += 1
                 continue
-        
-        # 添加 CSQAQ 在售量到 item（用于后续权重计算）
-        item['CSQAQ_SellingTotal'] = selling
+                
         filtered.append(item)
     
-    print(f'[FILTER] ECO={len(eco_items)} → Filtered={len(filtered)} '
-          f'(excluded: price={excluded["price"]}, type={excluded["type"]}, '
-          f'selling={excluded["selling"]}, no_csqaq={excluded["no_csqaq"]})')
+    print(f'[FILTER] {len(items)} → {len(filtered)} (excluded: price={excluded["price"]}, type={excluded["type"]}, selling={excluded["selling"]})')
     return filtered
 
 # ════════════════════ 指数计算 ════════════════════
 
 def calc_weighted_value(items, weights):
-    """计算加权市值（使用 CSQAQ 在售量作为权重）"""
-    total = 0
-    for item in items:
-        price = get_price(item)
-        if price <= 0:
-            continue
-        # 优先使用 CSQAQ 在售量，其次用 weights，最后 fallback 到当前在售量
-        name = item.get('HashName', '')
-        if name in weights:
-            weight = weights[name]
-        else:
-            weight = item.get('CSQAQ_SellingTotal', int(item.get('SellingTotal') or 0))
-        total += price * max(weight, 1)
+    """计算加权市值"""
+    total = sum(get_price(item) * max(weights.get(item.get('HashName', ''), int(item.get('SellingTotal') or 0)), 1)
+                for item in items if get_price(item) > 0)
     return round(total, 2)
 
 def calc_index(current_items, base_data):
@@ -409,29 +281,20 @@ def save_snapshot(date_str, hour, items, index_info, changes, selling, trending)
     return path
 
 def ensure_base(items, index_info):
-    """创建基期（使用 CSQAQ 在售量作为权重）"""
+    """创建基期"""
     path = os.path.join(HIST_DIR, 'base.json')
     if os.path.exists(path):
         return load_json(path)
     
-    # 使用 CSQAQ 在售量作为权重
-    weights = {}
-    for i in items:
-        name = i.get('HashName', '')
-        # 优先使用 CSQAQ 在售量
-        selling = i.get('CSQAQ_SellingTotal', int(i.get('SellingTotal') or 0))
-        if name and selling > 0:
-            weights[name] = selling
-    
+    weights = {i.get('HashName', ''): int(i.get('SellingTotal') or 0) for i in items}
     data = {
         'base_date': datetime.now().strftime('%Y-%m-%d'),
         'weights': weights,
         'base_mv': index_info['current_mv'],
-        'total_items': len(items),
-        'data_source': 'CSQAQ_Selling'  # 标记数据来源
+        'total_items': len(items)
     }
     save_json(path, data)
-    print(f'[BASE] Created with {len(weights)} weights (CSQAQ selling)')
+    print(f'[BASE] Created with {len(weights)} weights')
     return data
 
 def update_series(date_str, index_info, reset=False):
@@ -486,51 +349,45 @@ def sync_market(date_str, index_info, series, selling, trending):
 # ════════════════════ MAIN ════════════════════
 
 def main():
-    print('=== CS2 Market Index v3.2 (CSQAQ Selling) ===')
+    print('=== CS2 Market Index v3.3 (ECO Selling) ===')
     date_str = datetime.now().strftime('%Y-%m-%d')
     hour = datetime.now().strftime('%H')
     
-    # 1. 获取 CSQAQ 在售量数据（用于筛选）
-    csqaq_selling = fetch_csqaq_selling()
-    if not csqaq_selling:
-        print('[ERROR] Failed to fetch CSQAQ selling data')
+    # 1. 获取 ECO 数据（价格和在售量）
+    items = fetch_eco()
+    if not items:
         return 1
     
-    # 2. 获取 ECO 价格数据
-    eco_items = fetch_eco()
-    if not eco_items:
-        return 1
+    # 2. 筛选（使用 ECO 在售量）
+    filtered = filter_items(items)
     
-    # 3. 用 CSQAQ 在售量筛选 ECO 数据
-    filtered = filter_items_eco(eco_items, csqaq_selling)
-    
-    # 4. 加载基期
+    # 3. 加载基期
     base = load_json(os.path.join(HIST_DIR, 'base.json'))
     
-    # 5. 计算指数
+    # 4. 计算指数
     idx = calc_index(filtered, base)
     print(f'[INDEX] {idx["index"]:.2f} ({idx["change_pct"]:+.2f}%) MV={idx["current_mv"]:,.0f}')
     
-    # 6. 加载上一小时（自动跨日）
+    # 5. 加载上一小时（自动跨日）
     prev = load_prev_items(date_str)
     
-    # 7. 计算统计
+    # 6. 计算统计
     changes = calc_changes(filtered, prev)
     selling = calc_selling_stats(filtered, prev)
     trending = calc_trending(filtered, prev)
     print(f'[STATS] selling={selling["total_selling"]:,} Δ{selling["total_selling_delta"]:+,} hot={len(trending["hot"])}')
     
-    # 8. 保存
+    # 7. 保存
     snap = save_snapshot(date_str, hour, filtered, idx, changes, selling, trending)
     
-    # 9. 确保基期
+    # 8. 确保基期
     is_new_base = False
     if not base:
         base = ensure_base(filtered, idx)
         idx['weights'] = base['weights']
         is_new_base = True
     
-    # 10. 更新序列并同步（新基期时清空当天series）
+    # 9. 更新序列并同步（新基期时清空当天series）
     series = update_series(date_str, idx, reset=is_new_base)
     market = sync_market(date_str, idx, series, selling, trending)
     
