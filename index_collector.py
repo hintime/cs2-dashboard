@@ -291,10 +291,13 @@ def ensure_base(items, index_info):
     print(f'[BASE] Created with {len(weights)} weights')
     return data
 
-def update_series(date_str, index_info):
+def update_series(date_str, index_info, reset=False):
     """更新指数序列"""
     path = os.path.join(INDEX_DIR, f'{date_str}.json')
-    data = load_json(path, {'date': date_str, 'series': []})
+    if reset:
+        data = {'date': date_str, 'series': []}  # 新基期：清空
+    else:
+        data = load_json(path, {'date': date_str, 'series': []})
     data['series'].append({
         'time': datetime.now().strftime('%H:%M'),
         'timestamp': int(time.time()),
@@ -372,12 +375,14 @@ def main():
     snap = save_snapshot(date_str, hour, filtered, idx, changes, selling, trending)
     
     # 8. 确保基期
+    is_new_base = False
     if not base:
         base = ensure_base(filtered, idx)
         idx['weights'] = base['weights']  # 更新权重
+        is_new_base = True
     
-    # 9. 更新序列并同步
-    series = update_series(date_str, idx)
+    # 9. 更新序列并同步（新基期时清空当天series）
+    series = update_series(date_str, idx, reset=is_new_base)
     market = sync_market(date_str, idx, series, selling, trending)
     
     print(f'[DONE] {snap}, {market}')
