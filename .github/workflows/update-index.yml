@@ -30,30 +30,17 @@ jobs:
       - name: Run index collector
         env:
           ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "=== START ==="
-          timeout 120 python index_collector.py 2>&1 || echo "EXIT_CODE=$?"
-          echo "=== END ==="
-
-      - name: Debug git state
-        run: |
-          echo "=== git status ==="
+          echo "=== START $(date) ==="
+          python index_collector.py 2>&1
+          echo "=== END $(date) ==="
+          echo "=== Files changed ==="
           git status --short
-          echo "=== git log -1 --oneline ==="
-          git log -1 --oneline
-          echo "=== git remote -v ==="
-          git remote -v
-          echo "=== git diff --stat ==="
-          git diff --stat
-          echo "=== git diff --cached --stat ==="
-          git diff --cached --stat
 
-      - name: Push changes
+      - name: Commit and push
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add market_history/ index_history/ market.json
-          # Always commit (even if no change) to update GitHub Pages timestamp
-          git commit -m "chore: market index $(date +'%Y-%m-%d %H:00')" || true
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add -A
+          git commit -m "chore: market index $(date +'%Y-%m-%d %H:%M')" --allow-empty
+          git push

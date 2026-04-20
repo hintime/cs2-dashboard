@@ -526,12 +526,9 @@ def main():
     # 9. 同步到 market.json（前端直接读取）
     market_file = sync_market_json(date_str, index_info, series_data, selling_stats, trending)
 
-    # 10. Git push
-    hour = now_hour
-    git_push(
-        [snap_file, os.path.join(HIST_DIR, 'base.json'), index_file, market_file],
-        f'chore: market index {date_str} {hour}:00 idx={index_info["index"]:.2f}'
-    )
+    # 10. 不再内部 push，由 workflow 统一处理
+    # git_push 被移除，避免和 workflow 的 Push 步骤冲突
+    print(f'[DONE] Files ready: {snap_file}, {market_file}')
 
     # 10. 输出摘要
     print('')
