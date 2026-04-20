@@ -45,7 +45,7 @@ def fetch_csqaq_selling():
     all_items = {}
     page_size = 500  # 最大分页
     page_index = 1
-    max_pages = 10  # 最多10页，防止无限循环
+    max_pages = 20  # 最多20页（10,000件），CSQAQ实际有约10,000+件
     
     headers = {
         'ApiToken': CSQAQ_TOKEN,
