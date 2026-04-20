@@ -532,7 +532,7 @@ def main():
 
     # 10. 输出摘要
     print('')
-    print(f'=== {date_str} {hour}:00 ===')
+    print(f'=== {date_str} {now_hour}:00 ===')
     print(f'  Index:  {index_info["index"]:.2f}  ({index_info["change_pct"]:+.2f}% vs base)')
     print(f'  Mkt Cap: {index_info["current_mv"]:,.0f} CNY')
     print(f'  Avg Price: {index_info["avg_price"]:.2f} CNY')
