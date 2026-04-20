@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-CS2 大盘指数收集器 v2（通用版公式）
+CS2 大盘指数收集器 v3（加权指数公式）
 
-指数 = (当前总市值 ÷ 基期总市值) × 1000
-市值 = Σ(每只饰品 BUFF 底价 × 在售数量)
+今日指数 = 1000 × Σ(当前价格 × 初始在售数) / Σ(初始价格 × 初始在售数)
+
+选品规则：
+  1. 排除价格 < 1 元
+  2. 排除暗金(StatTrak)和纪念品(Souvenir)，只保留 normal、unusual
+  3. 非贴纸饰品按价格区间过滤在售量：
+     (1,5) → >=800, [5,10) → >=500, [10,100) → >=100, [100,1000) → >=80, [1000,+∞) → >=50
+  4. 贴纸饰品：在售量 > 100
 
 存储结构：
   market_history/
-    {YYYY-MM-DD_HH}00.json   ← 每小时快照（含完整items用于次日涨跌）
-    base.json                ← 基期快照（所有快照的参考基准）
+    {YYYY-MM-DD_HH}00.json   ← 每小时快照
+    base.json                ← 基期快照（含筛选后的items及初始在售数权重）
 
 指数历史：
   index_history/
@@ -107,26 +113,100 @@ def fetch_eco_full_prices():
         print(f'[ECO] Fetch error: {e}')
         return None
 
-# ═══════════════ INDEX CALCULATION ═══════════════
+# ═══════════════ INDEX CALCULATION v3 ═══════════════
 
-def calc_market_value(items):
+def filter_items(items):
     """
-    计算当前总市值
-    市值 = Σ(BUFF底价 × 在售数量)
+    按选品规则筛选饰品
+    1. 排除价格 < 1 元
+    2. 排除暗金(StatTrak)和纪念品(Souvenir)
+    3. 非贴纸按价格区间过滤在售量
+    4. 贴纸在售量 > 100
+    """
+    filtered = []
+    excluded = {'price_lt_1': 0, 'stattrak': 0, 'souvenir': 0, 'selling_filter': 0}
+
+    for item in items:
+        name = item.get('HashName', '')
+        price = float(item.get('Price') or item.get('MarketComprePrice') or 0)
+        selling = int(item.get('SellingTotal') or 0)
+
+        # 规则1：排除价格 < 1 元
+        if price < 1:
+            excluded['price_lt_1'] += 1
+            continue
+
+        # 规则2：排除暗金和纪念品
+        if 'StatTrak' in name:
+            excluded['stattrak'] += 1
+            continue
+        if 'Souvenir' in name:
+            excluded['souvenir'] += 1
+            continue
+
+        # 判断是否贴纸
+        is_sticker = name.startswith('Sticker |')
+
+        # 规则4：贴纸在售量 > 100
+        if is_sticker:
+            if selling <= 100:
+                excluded['selling_filter'] += 1
+                continue
+        else:
+            # 规则3：非贴纸按价格区间过滤
+            if 1 < price < 5:
+                if selling < 800:
+                    excluded['selling_filter'] += 1
+                    continue
+            elif 5 <= price < 10:
+                if selling < 500:
+                    excluded['selling_filter'] += 1
+                    continue
+            elif 10 <= price < 100:
+                if selling < 100:
+                    excluded['selling_filter'] += 1
+                    continue
+            elif 100 <= price < 1000:
+                if selling < 80:
+                    excluded['selling_filter'] += 1
+                    continue
+            elif price >= 1000:
+                if selling < 50:
+                    excluded['selling_filter'] += 1
+                    continue
+
+        filtered.append(item)
+
+    print(f'[FILTER] Total={len(items)} → Filtered={len(filtered)} '
+          f'(excluded: price<1={excluded["price_lt_1"]}, '
+          f'ST={excluded["stattrak"]}, SV={excluded["souvenir"]}, '
+          f'selling={excluded["selling_filter"]})')
+    return filtered
+
+def calc_weighted_market_value(items, base_weights=None):
+    """
+    计算加权市值
+    市值 = Σ(当前价格 × 权重)
+    权重 = 初始在售数量（来自基期）
+    如果没有 base_weights，则用当前在售数作为权重（用于基期自身）
     """
     total_value = 0
     total_items = 0
     price_sum = 0
 
     for item in items:
-        # Price: 优先用 Price(BUFF最低卖价), fallback 到 MarketComprePrice
+        name = item.get('HashName', '')
         price = float(item.get('Price') or item.get('MarketComprePrice') or 0)
-        selling = int(item.get('SellingTotal') or 0)
-
         if price <= 0:
             continue
 
-        total_value += price * max(selling, 1)
+        # 权重：优先用基期在售数，否则用当前在售数
+        if base_weights and name in base_weights:
+            weight = base_weights[name]
+        else:
+            weight = int(item.get('SellingTotal') or 0)
+
+        total_value += price * max(weight, 1)
         price_sum += price
         total_items += 1
 
@@ -141,22 +221,31 @@ def build_item_map(items):
     """为快速查找构建 HashName → 物品数据的映射"""
     return {i.get('HashName'): i for i in items}
 
-def calc_index(current_items, base_items):
+def calc_index(current_items, base_data):
     """
-    计算市值加权指数
-    指数 = (当前总市值 ÷ 基期总市值) × 1000
+    计算加权指数 v3
+    指数 = 1000 × Σ(当前价格 × 初始在售数) / Σ(初始价格 × 初始在售数)
+    base_data 包含基期 items 和对应的权重（初始在售数）
     """
-    curr = calc_market_value(current_items)
-    base = calc_market_value(base_items) if base_items else None
+    base_items = base_data.get('items', []) if base_data else []
+    base_weights = base_data.get('weights', {}) if base_data else {}
 
-    if base is None:
+    # 当前市值：用当前价格 × 基期在售数
+    curr = calc_weighted_market_value(current_items, base_weights)
+
+    if not base_items:
         # 无基期数据，第一期为基期，指数 = 1000
         index_value = 1000.0
         change_pct = 0.0
+        base_mv = curr['total_market_value']
     else:
-        if base['total_market_value'] > 0:
-            index_value = (curr['total_market_value'] / base['total_market_value']) * 1000
-            change_pct = (curr['total_market_value'] - base['total_market_value']) / base['total_market_value'] * 100
+        # 基期市值：用基期价格 × 基期在售数
+        base = calc_weighted_market_value(base_items, base_weights)
+        base_mv = base['total_market_value']
+
+        if base_mv > 0:
+            index_value = (curr['total_market_value'] / base_mv) * 1000
+            change_pct = (curr['total_market_value'] - base_mv) / base_mv * 100
         else:
             index_value = 1000.0
             change_pct = 0.0
@@ -165,14 +254,14 @@ def calc_index(current_items, base_items):
         'index': round(index_value, 2),
         'change_pct': round(change_pct, 2),
         'current_mv': curr['total_market_value'],
-        'base_mv': base['total_market_value'] if base else 0,
+        'base_mv': base_mv,
         'avg_price': curr['avg_price'],
         'total_items': curr['total_items'],
     }
 
 def calc_change_stats(current_items, prev_items):
     """
-    计算涨跌分布（对比上一小时快照）
+    计算涨跌分布（对比上一小时快照，仅统计筛选后饰品）
     """
     if not prev_items:
         return {'gainers': 0, 'losers': 0, 'unchanged': 0, 'top_gainers': [], 'top_losers': []}
@@ -303,13 +392,13 @@ def load_prev_hour_items(date_str):
     return None
 
 def load_base_items():
-    """加载基期快照（第一个快照或 base.json）"""
+    """加载基期快照（含筛选后items和权重）"""
     base_file = os.path.join(HIST_DIR, 'base.json')
     if os.path.exists(base_file):
         try:
             with open(base_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                return data.get('items', [])
+                return data  # 返回完整 base_data（含 items 和 weights）
         except:
             pass
     return None
@@ -340,19 +429,43 @@ def save_hourly_snapshot(date_str, items, index_info, change_stats, selling_stat
     print(f'[SAVE] {file_path}')
     return file_path
 
-def ensure_base_updated(items, index_info):
-    """确保基期快照存在（只在第一天或 base.json 不存在时更新）"""
+def ensure_base_updated(filtered_items, index_info):
+    """
+    确保基期快照存在（只在 base.json 不存在时创建）
+    基期数据包含：筛选后的items + 权重（每个饰品的初始在售数）
+    """
     base_file = os.path.join(HIST_DIR, 'base.json')
     if not os.path.exists(base_file):
+        # 构建权重表：HashName → 初始在售数量
+        weights = {}
+        for item in filtered_items:
+            name = item.get('HashName', '')
+            selling = int(item.get('SellingTotal') or 0)
+            if name and selling > 0:
+                weights[name] = selling
+
         base_data = {
             'base_date': datetime.now().strftime('%Y-%m-%d'),
-            'items': items,
+            'items': filtered_items,
+            'weights': weights,
             'total_market_value': index_info['current_mv'],
             'index': 1000.0,
+            'total_filtered_items': len(filtered_items),
+            'total_weights': len(weights),
+            'selection_rules': {
+                'min_price': 1,
+                'exclude_stattrak': True,
+                'exclude_souvenir': True,
+                'sticker_min_selling': 101,
+                'price_selling_thresholds': {
+                    '(1,5)': 800, '[5,10)': 500, '[10,100)': 100,
+                    '[100,1000)': 80, '[1000,+∞)': 50,
+                },
+            },
         }
         with open(base_file, 'w', encoding='utf-8') as f:
             json.dump(base_data, f, ensure_ascii=False, indent=2)
-        print('[BASE] Created base.json (first snapshot = 1000)')
+        print(f'[BASE] Created base.json with {len(weights)} weights (index = 1000)')
 
 def update_index_series(date_str, index_info, change_stats):
     """更新每日指数时间序列"""
@@ -474,7 +587,7 @@ def git_push(files, msg):
 # ═══════════════ MAIN ═══════════════
 
 def main():
-    print('=== CS2 Market Index Collector v2 ===')
+    print('=== CS2 Market Index Collector v3 ===')
     date_str = datetime.now().strftime('%Y-%m-%d')
     now_hour = datetime.now().strftime('%H')
 
@@ -484,35 +597,39 @@ def main():
         print('[ERROR] No data fetched')
         return 1
 
-    # 2. 获取基期数据（用于算指数）
-    base_items = load_base_items()
+    # 2. 按选品规则筛选
+    filtered = filter_items(items)
 
-    # 3. 获取上一小时数据（用于算涨跌）
-    prev_items = load_prev_hour_items(date_str)
+    # 3. 获取基期数据（用于算指数）
+    base_data = load_base_items()
 
-    # 4. 计算市值加权指数
-    index_info = calc_index(items, base_items)
+    # 4. 计算加权指数
+    index_info = calc_index(filtered, base_data)
     print(f'[INDEX] Value={index_info["index"]:.2f} Change={index_info["change_pct"]:+.2f}%')
     print(f'[MV] Current={index_info["current_mv"]:,.0f} Base={index_info["base_mv"]:,.0f}')
 
-    # 5. 计算涨跌分布
-    change_stats = calc_change_stats(items, prev_items) if prev_items else {'gainers': 0, 'losers': 0, 'unchanged': 0, 'top_gainers': [], 'top_losers': []}
+    # 5. 获取上一小时数据（用于算涨跌）—— 也要筛选
+    prev_raw = load_prev_hour_items(date_str)
+    prev_items = filter_items(prev_raw) if prev_raw else None
 
-    # 6. 计算在售量变化（成交量代理）
-    selling_stats = calc_selling_stats(items, prev_items)
+    # 6. 计算涨跌分布
+    change_stats = calc_change_stats(filtered, prev_items) if prev_items else {'gainers': 0, 'losers': 0, 'unchanged': 0, 'top_gainers': [], 'top_losers': []}
+
+    # 7. 计算在售量变化（成交量代理）—— 用筛选后的数据
+    selling_stats = calc_selling_stats(filtered, prev_items)
     print(f'[SELLING] curr={selling_stats["total_selling"]:,} prev={selling_stats["total_selling_prev"]:,} delta={selling_stats["total_selling_delta"]:+,} ({selling_stats["total_selling_delta_pct"]:+.1f}%)')
 
-    # 7. 计算热门/冷门饰品
-    trending = calc_trending_items(items, prev_items, top_n=15)
+    # 8. 计算热门/冷门饰品
+    trending = calc_trending_items(filtered, prev_items, top_n=15)
     print(f'[TRENDING] hot={len(trending["hot"])} cold={len(trending["cold"])}')
 
-    # 8. 保存快照
-    snap_file = save_hourly_snapshot(date_str, items, index_info, change_stats, selling_stats, trending)
+    # 9. 保存快照（保存筛选后的数据）
+    snap_file = save_hourly_snapshot(date_str, filtered, index_info, change_stats, selling_stats, trending)
 
-    # 7. 确保基期存在
-    ensure_base_updated(items, index_info)
+    # 10. 确保基期存在
+    ensure_base_updated(filtered, index_info)
 
-    # 8. 更新指数序列
+    # 11. 更新指数序列
     index_file = os.path.join(INDEX_DIR, f'{date_str}.json')
     series_data = []
     if os.path.exists(index_file):
@@ -523,20 +640,19 @@ def main():
         except:
             pass
 
-    # 9. 同步到 market.json（前端直接读取）
+    # 12. 同步到 market.json（前端直接读取）
     market_file = sync_market_json(date_str, index_info, series_data, selling_stats, trending)
 
-    # 10. 不再内部 push，由 workflow 统一处理
-    # git_push 被移除，避免和 workflow 的 Push 步骤冲突
+    # 13. 不再内部 push，由 workflow 统一处理
     print(f'[DONE] Files ready: {snap_file}, {market_file}')
 
-    # 10. 输出摘要
+    # 14. 输出摘要
     print('')
     print(f'=== {date_str} {now_hour}:00 ===')
     print(f'  Index:  {index_info["index"]:.2f}  ({index_info["change_pct"]:+.2f}% vs base)')
     print(f'  Mkt Cap: {index_info["current_mv"]:,.0f} CNY')
     print(f'  Avg Price: {index_info["avg_price"]:.2f} CNY')
-    print(f'  Items: {index_info["total_items"]:,}')
+    print(f'  Items: {index_info["total_items"]:,} (filtered from {len(items):,})')
     if change_stats.get('gainers') or change_stats.get('losers'):
         cs = change_stats
         print(f'  Changes vs prev hour: UP={cs["gainers"]} DOWN={cs["losers"]} NC={cs["unchanged"]}')
