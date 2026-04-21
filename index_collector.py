@@ -307,6 +307,7 @@ def update_series(date_str, index_info, reset=False):
     
     data['series'].append({
         'time': datetime.now().strftime('%H:%M'),
+        'date': date_str,
         'timestamp': int(time.time()),
         'index': index_info['index'],
         'change_pct': index_info['change_pct'],
@@ -354,8 +355,8 @@ def sync_market(date_str, index_info, series, selling, trending):
             indices = [s['index'] for s in group]
             
             ohlc.append({
-                'date': first.get('time', '00:00').split(':')[0] + ':00',
-                'dateFull': f"{first.get('time','00:00')}",
+                'date': first.get('date', date_str),
+                'dateFull': f"{first.get('date', date_str)} {first.get('time','00:00')}",
                 'open': first['index'],
                 'close': last['index'],
                 'high': max(indices),

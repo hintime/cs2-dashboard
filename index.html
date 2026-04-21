@@ -1410,7 +1410,7 @@ function renderMarket(D) {
 
   const ohlcDates = idx.ohlc.map(c => c.dateFull || c.date);
   const ohlcValues = idx.ohlc.map(c => c.close);
-  const ohlcData = idx.ohlc.map(c => [c.open, c.close, c.low, c.high]);
+  const ohlcData = idx.ohlc.map(c => [c.open, c.close, c.low, c.high]); // ECharts: [open, close, low, high]
 
   const fmtDate = (function() {
     let lastY = '';
@@ -1452,8 +1452,8 @@ function renderMarket(D) {
       backgroundColor:'transparent',
       grid:[{top:10,right:55,bottom:'50%',left:65},{top:'50%',right:55,bottom:40,left:65}],
       xAxis:[
-        {type:'category',data:ohlcDates,gridIndex:0,boundaryGap:true,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{show:false},axisTick:{show:false},splitLine:{show:false}},
-        {type:'category',data:ohlcDates,gridIndex:1,boundaryGap:true,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},axisTick:{show:false}}
+        {type:'category',data:ohlcDates,gridIndex:0,boundaryGap:false,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{show:false},axisTick:{show:false},splitLine:{show:false}},
+        {type:'category',data:ohlcDates,gridIndex:1,boundaryGap:false,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},axisTick:{show:false}}
       ],
       yAxis:[
         {type:'value',gridIndex:0,min:priceMin,max:priceMax,splitNumber:4,scale:false,splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
