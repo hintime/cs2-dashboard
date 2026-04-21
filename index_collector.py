@@ -321,45 +321,47 @@ def update_series(date_str, index_info, reset=False):
     return data['series']
 
 def sync_market(date_str, index_info, series, selling, trending):
-    """同步到 market.json（优化版K线）"""
+    """同步到 market.json（合并历史K线）"""
     path = os.path.join(DATA_DIR, 'market.json')
     market = load_json(path, {})
     
+    # 合并所有历史series数据
+    all_series = []
+    if os.path.exists(INDEX_DIR):
+        for f in os.listdir(INDEX_DIR):
+            if f.endswith('.json') and f != f'{date_str}.json':
+                hist = load_json(os.path.join(INDEX_DIR, f), {})
+                if hist.get('series'):
+                    all_series.extend(hist['series'])
+    # 添加今天的series
+    if series:
+        all_series.extend(series)
+    
+    # 构建K线
     ohlc = []
     vol_bar = []
     
-    if series and len(series) >= 1:
-        max_mv = max((s.get('market_value') or 1) for s in series)
+    if all_series and len(all_series) >= 1:
+        max_mv = max((s.get('market_value') or 1) for s in all_series)
         
-        # 边界处理：只有1个数据点时，单独显示
-        if len(series) == 1:
-            s = series[0]
+        # 每2小时分组
+        for i in range(0, len(all_series), 2):
+            group = all_series[i:i+2]
+            if not group:
+                continue
+            
+            first, last = group[0], group[-1]
+            indices = [s['index'] for s in group]
+            
             ohlc.append({
-                'date': date_str,
-                'dateFull': f"{date_str} {s.get('time','00:00')}",
-                'open': s['index'], 'close': s['index'],
-                'high': s['index'], 'low': s['index']
+                'date': first.get('time', '00:00').split(':')[0] + ':00',
+                'dateFull': f"{first.get('time','00:00')}",
+                'open': first['index'],
+                'close': last['index'],
+                'high': max(indices),
+                'low': min(indices)
             })
-            vol_bar.append(round(s.get('market_value', 0) / max_mv * 1000))
-        else:
-            # 每2小时分组
-            for i in range(0, len(series), 2):
-                group = series[i:i+2]
-                if not group:
-                    continue
-                
-                first, last = group[0], group[-1]
-                indices = [s['index'] for s in group]
-                
-                ohlc.append({
-                    'date': date_str,
-                    'dateFull': f"{date_str} {first.get('time','00:00')}",
-                    'open': first['index'],
-                    'close': last['index'],
-                    'high': max(indices),
-                    'low': min(indices)
-                })
-                vol_bar.append(round(last.get('market_value', 0) / max_mv * 1000))
+            vol_bar.append(round(last.get('market_value', 0) / max_mv * 1000))
     
     last = series[-1] if series else {}
     market['index'] = {
