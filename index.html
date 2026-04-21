@@ -643,15 +643,37 @@ function toggleStar(goodId) {
 }
 
 // ═══════════════ LOAD DATA ═══════════════
+const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_KEY = 'cs2_market_cache';
+
+function getCachedMarket() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const data = JSON.parse(cached);
+      if (Date.now() - data.ts < CACHE_TTL) return data.market;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function setCachedMarket(market) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ts: Date.now(), market})); } catch(e) {}
+}
+
 async function loadAll() {
   const t0 = Date.now(); // mark refresh time
   await loadOverrides();
 
+  // 优先从缓存读取market数据
+  let marketR = getCachedMarket();
   const fetchOpts = { cache: 'no-store' };
-  const [holdingsR, marketR] = await Promise.all([
-    fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null),
-    fetch('market.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null)
-  ]);
+  if (!marketR) {
+    marketR = await fetch('market.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
+    if (marketR) setCachedMarket(marketR);
+  }
+  // holdings每次请求最新
+  const holdingsR = await fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
 
   // ── Process holdings ──
   if (holdingsR && Array.isArray(holdingsR.items)) {
