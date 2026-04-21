@@ -354,20 +354,46 @@ def update_series(date_str, index_info, reset=False):
     return data['series']
 
 def sync_market(date_str, index_info, series, selling, trending):
-    """同步到 market.json"""
+    """同步到 market.json（构建真正的K线）"""
     path = os.path.join(DATA_DIR, 'market.json')
     market = load_json(path, {})
     
-    # 构建 OHLC
-    max_mv = max((s.get('market_value') or 1) for s in series) if series else 1
+    # 构建真正的K线（每2小时一根柱）
     ohlc = []
     vol_bar = []
     
-    for s in series:
-        idx = s['index']
-        ohlc.append({'date': date_str, 'dateFull': f"{date_str} {s.get('time','00:00')}",
-                     'open': idx, 'close': idx, 'high': idx, 'low': idx})
-        vol_bar.append(round(s.get('market_value', 0) / max_mv * 1000))
+    if series:
+        max_mv = max((s.get('market_value') or 1) for s in series)
+        
+        # 按2小时分组构建K线
+        for i in range(0, len(series), 2):
+            group = series[i:i+2]
+            if not group:
+                continue
+            
+            # 第一个点作为开盘
+            first = group[0]
+            # 最后一个点作为收盘
+            last = group[-1]
+            
+            # 计算组内的最高和最低
+            indices = [s['index'] for s in group]
+            high = max(indices)
+            low = min(indices)
+            
+            # K线时间用第一个点的时间
+            time_str = first.get('time', '00:00')
+            ohlc.append({
+                'date': date_str,
+                'dateFull': f"{date_str} {time_str}",
+                'open': first['index'],
+                'close': last['index'],
+                'high': high,
+                'low': low
+            })
+            
+            # 成交量用最后一个点的市值
+            vol_bar.append(round(last.get('market_value', 0) / max_mv * 1000))
     
     last = series[-1] if series else {}
     market['index'] = {
@@ -382,8 +408,8 @@ def sync_market(date_str, index_info, series, selling, trending):
         'series': series, 'selling': selling or {}, 'trending': trending or {'hot': [], 'cold': []}
     }
     market['index_updated'] = int(time.time() * 1000)
-    save_json(path, market)  # market.json 无缩进，减少体积
-    print('[MKT] Updated')
+    save_json(path, market)
+    print(f'[MKT] Updated {len(ohlc)} candles')
     return path
 
 # ════════════════════ MAIN ════════════════════
