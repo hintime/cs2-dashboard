@@ -363,7 +363,10 @@ def sync_market(date_str, index_info, series, selling, trending):
             })
             vol_bar.append(round(last.get('market_value', 0) / max_mv * 1000))
     
-    last = series[-1] if series else {}
+    # 使用合并后的历史数据
+    final_series = all_series
+    last = final_series[-1] if final_series else {}
+    
     market['index'] = {
         'latest': index_info['index'],
         'change': last.get('change_pct', 0),
@@ -373,7 +376,7 @@ def sync_market(date_str, index_info, series, selling, trending):
         'updated': datetime.now().strftime('%Y-%m-%dT%H:%M:%S+08:00'),
         'ohlc': ohlc, 'volBar': vol_bar,
         'volColor': ['#f87171' if v > 500 else '#52525b' for v in vol_bar],
-        'series': series, 'selling': selling or {}, 'trending': trending or {'hot': [], 'cold': []}
+        'series': final_series, 'selling': selling or {}, 'trending': trending or {'hot': [], 'cold': []}
     }
     market['index_updated'] = int(time.time() * 1000)
     save_json(path, market)
