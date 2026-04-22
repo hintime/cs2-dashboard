@@ -2,22 +2,27 @@
   "alerts": [
     {
       "id": 34,
-      "buff_sell": 763,
+      "buff_sell": 761,
       "buff_buy": 1126
-    },
-    {
-      "id": 7,
-      "buff_sell": 573,
-      "buff_buy": 1395
     },
     {
       "id": 31,
       "buff_sell": 96,
-      "buff_buy": 207
+      "buff_buy": 210
+    },
+    {
+      "id": 17,
+      "buff_sell": 62,
+      "buff_buy": 94
+    },
+    {
+      "id": 7,
+      "buff_sell": 574,
+      "buff_buy": 1395
     },
     {
       "id": 19,
-      "buff_sell": 592,
+      "buff_sell": 590,
       "buff_buy": 453
     },
     {
@@ -28,26 +33,26 @@
     {
       "id": 13,
       "buff_sell": 421,
-      "buff_buy": 132
+      "buff_buy": 137
     },
     {
-      "id": 50,
-      "buff_sell": 714,
-      "buff_buy": 25
+      "id": 11,
+      "buff_sell": 1335,
+      "buff_buy": 498
     },
     {
-      "id": 3,
-      "buff_sell": 358,
-      "buff_buy": 52
+      "id": 28,
+      "buff_sell": 274,
+      "buff_buy": 75
     },
     {
       "id": 38,
-      "buff_sell": 155,
-      "buff_buy": 12
+      "buff_sell": 156,
+      "buff_buy": 11
     },
     {
       "id": 14,
-      "buff_sell": 3130,
+      "buff_sell": 3128,
       "buff_buy": 701
     },
     {
@@ -61,44 +66,39 @@
       "buff_buy": 49
     },
     {
-      "id": 24,
-      "buff_sell": 1008,
-      "buff_buy": 114
-    },
-    {
       "id": 15,
-      "buff_sell": 692,
+      "buff_sell": 691,
       "buff_buy": 224
-    },
-    {
-      "id": 46,
-      "buff_sell": 1305,
-      "buff_buy": 43
     },
     {
       "id": 97,
       "buff_sell": 125,
-      "buff_buy": 15
+      "buff_buy": 14
     },
     {
-      "id": 26,
-      "buff_sell": 78,
-      "buff_buy": 66
+      "id": 52,
+      "buff_sell": 1035,
+      "buff_buy": 30
+    },
+    {
+      "id": 24,
+      "buff_sell": 1012,
+      "buff_buy": 112
     },
     {
       "id": 4,
-      "buff_sell": 611,
-      "buff_buy": 56
+      "buff_sell": 613,
+      "buff_buy": 60
     },
     {
       "id": 39,
-      "buff_sell": 465,
-      "buff_buy": 37
+      "buff_sell": 466,
+      "buff_buy": 33
     },
     {
       "id": 79,
       "buff_sell": 17,
-      "buff_buy": 2
+      "buff_buy": 1
     },
     {
       "id": 67,
@@ -107,8 +107,58 @@
     },
     {
       "id": 32,
-      "buff_sell": 879,
+      "buff_sell": 874,
       "buff_buy": 508
+    },
+    {
+      "id": 44,
+      "buff_sell": 181,
+      "buff_buy": 5
+    },
+    {
+      "id": 16,
+      "buff_sell": 46,
+      "buff_buy": 8
+    },
+    {
+      "id": 3,
+      "buff_sell": 363,
+      "buff_buy": 52
+    },
+    {
+      "id": 58,
+      "buff_sell": 326,
+      "buff_buy": 25
+    },
+    {
+      "id": 35,
+      "buff_sell": 858,
+      "buff_buy": 62
+    },
+    {
+      "id": 21,
+      "buff_sell": 838,
+      "buff_buy": 92
+    },
+    {
+      "id": 59,
+      "buff_sell": 1027,
+      "buff_buy": 23
+    },
+    {
+      "id": 48,
+      "buff_sell": 1023,
+      "buff_buy": 30
+    },
+    {
+      "id": 93,
+      "buff_sell": 82,
+      "buff_buy": 10
+    },
+    {
+      "id": 86,
+      "buff_sell": 236,
+      "buff_buy": 11
     },
     {
       "id": 25,
@@ -116,58 +166,8 @@
       "buff_buy": 147
     },
     {
-      "id": 44,
-      "buff_sell": 181,
-      "buff_buy": 6
-    },
-    {
-      "id": 16,
-      "buff_sell": 46,
-      "buff_buy": 13
-    },
-    {
-      "id": 58,
-      "buff_sell": 329,
-      "buff_buy": 26
-    },
-    {
-      "id": 64,
-      "buff_sell": 2652,
-      "buff_buy": 94
-    },
-    {
-      "id": 11,
-      "buff_sell": 1345,
-      "buff_buy": 499
-    },
-    {
-      "id": 35,
-      "buff_sell": 857,
-      "buff_buy": 62
-    },
-    {
-      "id": 52,
-      "buff_sell": 1034,
-      "buff_buy": 30
-    },
-    {
-      "id": 59,
-      "buff_sell": 1029,
-      "buff_buy": 23
-    },
-    {
-      "id": 48,
-      "buff_sell": 1024,
-      "buff_buy": 30
-    },
-    {
-      "id": 93,
-      "buff_sell": 82,
-      "buff_buy": 9
-    },
-    {
       "id": 18,
-      "buff_sell": 233,
+      "buff_sell": 232,
       "buff_buy": 500
     },
     {
@@ -181,84 +181,99 @@
       "buff_buy": 3
     },
     {
-      "id": 21,
-      "buff_sell": 841,
-      "buff_buy": 94
-    },
-    {
       "id": 22,
-      "buff_sell": 220,
+      "buff_sell": 221,
       "buff_buy": 236
     },
     {
       "id": 63,
       "buff_sell": 2370,
-      "buff_buy": 131
+      "buff_buy": 132
     },
     {
       "id": 9,
       "buff_sell": 54,
-      "buff_buy": 45
+      "buff_buy": 41
+    },
+    {
+      "id": 47,
+      "buff_sell": 747,
+      "buff_buy": 26
+    },
+    {
+      "id": 6,
+      "buff_sell": 437,
+      "buff_buy": 133
     },
     {
       "id": 68,
       "buff_sell": 761,
-      "buff_buy": 74
-    },
-    {
-      "id": 62,
-      "buff_sell": 778,
-      "buff_buy": 164
+      "buff_buy": 78
     },
     {
       "id": 1,
       "buff_sell": 1108,
-      "buff_buy": 39
+      "buff_buy": 34
+    },
+    {
+      "id": 62,
+      "buff_sell": 780,
+      "buff_buy": 164
+    },
+    {
+      "id": 98,
+      "buff_sell": 63,
+      "buff_buy": 4
+    },
+    {
+      "id": 64,
+      "buff_sell": 2648,
+      "buff_buy": 94
+    },
+    {
+      "id": 74,
+      "buff_sell": 313,
+      "buff_buy": 5
+    },
+    {
+      "id": 26,
+      "buff_sell": 79,
+      "buff_buy": 63
+    },
+    {
+      "id": 12,
+      "buff_sell": 129,
+      "buff_buy": 157
+    },
+    {
+      "id": 82,
+      "buff_sell": 89,
+      "buff_buy": 8
+    },
+    {
+      "id": 69,
+      "buff_sell": 452,
+      "buff_buy": 52
+    },
+    {
+      "id": 23,
+      "buff_sell": 187,
+      "buff_buy": 211
+    },
+    {
+      "id": 10,
+      "buff_sell": 815,
+      "buff_buy": 426
+    },
+    {
+      "id": 83,
+      "buff_sell": 760,
+      "buff_buy": 53
     },
     {
       "id": 2,
       "buff_sell": 212,
       "buff_buy": 68
-    },
-    {
-      "id": 98,
-      "buff_sell": 63,
-      "buff_buy": 5
-    },
-    {
-      "id": 17,
-      "buff_sell": 79,
-      "buff_buy": 93
-    },
-    {
-      "id": 74,
-      "buff_sell": 314,
-      "buff_buy": 5
-    },
-    {
-      "id": 12,
-      "buff_sell": 129,
-      "buff_buy": 158
-    },
-    {
-      "id": 69,
-      "buff_sell": 453,
-      "buff_buy": 52
-    },
-    {
-      "id": 23,
-      "buff_sell": 188,
-      "buff_buy": 211
-    },
-    {
-      "id": 86,
-      "buff_sell": 235,
-      "buff_buy": 11
-    },
-    {
-      "id": 83,
-      "buff_sell": 762,
-      "buff_buy": 53
     },
     {
       "id": 43,
@@ -268,32 +283,17 @@
     {
       "id": 5,
       "buff_sell": 305,
-      "buff_buy": 9
-    },
-    {
-      "id": 10,
-      "buff_sell": 814,
-      "buff_buy": 446
-    },
-    {
-      "id": 47,
-      "buff_sell": 747,
-      "buff_buy": 25
+      "buff_buy": 14
     },
     {
       "id": 8,
-      "buff_sell": 637,
+      "buff_sell": 638,
       "buff_buy": 86
     },
     {
-      "id": 6,
-      "buff_sell": 438,
-      "buff_buy": 133
-    },
-    {
-      "id": 82,
-      "buff_sell": 89,
-      "buff_buy": 8
+      "id": 50,
+      "buff_sell": 714,
+      "buff_buy": 25
     },
     {
       "id": 55,
@@ -301,19 +301,19 @@
       "buff_buy": 23
     },
     {
-      "id": 28,
-      "buff_sell": 272,
-      "buff_buy": 75
+      "id": 46,
+      "buff_sell": 1305,
+      "buff_buy": 45
     },
     {
       "id": 87,
       "buff_sell": 760,
-      "buff_buy": 32
+      "buff_buy": 31
     },
     {
       "id": 88,
-      "buff_sell": 574,
-      "buff_buy": 30
+      "buff_sell": 575,
+      "buff_buy": 31
     },
     {
       "id": 60,
@@ -323,17 +323,17 @@
     {
       "id": 96,
       "buff_sell": 37,
-      "buff_buy": 3
+      "buff_buy": 2
     },
     {
       "id": 51,
-      "buff_sell": 794,
+      "buff_sell": 795,
       "buff_buy": 19
     },
     {
       "id": 73,
       "buff_sell": 309,
-      "buff_buy": 20
+      "buff_buy": 18
     },
     {
       "id": 42,
@@ -356,5 +356,5 @@
       "buff_buy": 2
     }
   ],
-  "updated_at": "2026-04-21 01:46:35"
+  "updated_at": "2026-04-21 02:50:20"
 }
