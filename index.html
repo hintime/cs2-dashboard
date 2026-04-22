@@ -1479,14 +1479,14 @@ function renderMarket(D) {
     const volMax=Math.max.apply(null,idx.volBar||[1]);
     ec.setOption({
       backgroundColor:'transparent',
-      grid:[{top:10,right:55,bottom:'50%',left:65},{top:'50%',right:55,bottom:40,left:65}],
+      grid:[{top:10,right:55,bottom:'50%',left:65},{top:10,right:55,bottom:30,left:65}],
       xAxis:[
         {type:'category',data:ohlcDates,gridIndex:0,boundaryGap:false,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{show:false},axisTick:{show:false},splitLine:{show:false}},
         {type:'category',data:ohlcDates,gridIndex:1,boundaryGap:false,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},axisTick:{show:false}}
       ],
       yAxis:[
         {type:'value',gridIndex:0,min:priceMin,max:priceMax,splitNumber:4,scale:false,splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
-        {type:'value',gridIndex:1,min:0,max:volMax*1.15,splitNumber:5,splitLine:{show:false},position:'right',axisLine:{show:false},axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v>=1000?(v/1000).toFixed(0)+'k':v;}}}
+        // volume yAxis hidden
       ],
       tooltip:{trigger:'axis',axisPointer:{type:'cross',crossStyle:{color:'#555'},lineStyle:{color:'#555',type:'dashed'}},backgroundColor:'#0f1117',borderColor:'#252a36',borderWidth:1,padding:[8,12],textStyle:{color:'#e4e4e7',fontSize:11,fontFamily:'monospace'},
         formatter:function(params) {
@@ -1510,7 +1510,7 @@ function renderMarket(D) {
         {type:'line',name:'MA10',data:ma10,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#a78bfa',width:1,opacity:0.85}},
         {type:'line',name:'MA20',data:ma20,xAxisIndex:0,yAxisIndex:0,symbol:'none',lineStyle:{color:'#34d399',width:1,opacity:0.85}},
         {type:'candlestick',name:'指数',data:ohlcData,xAxisIndex:0,yAxisIndex:0,itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e',borderWidth:1}},
-        {type:'bar',name:'波动',data:volData,xAxisIndex:1,yAxisIndex:1,barWidth:'40%',barGap:'25%'}
+        // volume hidden
       ],
       dataZoom:[
         {type:'inside',xAxisIndex:[0,1],start:Math.max(0,Math.round((1-30/ohlcDates.length)*100)),end:100},

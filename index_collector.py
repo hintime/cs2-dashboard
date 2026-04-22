@@ -375,8 +375,7 @@ def sync_market(date_str, index_info, series, selling, trending):
         'market_value': index_info['current_mv'],
         'total_items': index_info['total_items'],
         'updated': datetime.now().strftime('%Y-%m-%dT%H:%M:%S+08:00'),
-        'ohlc': ohlc, 'volBar': vol_bar,
-        'volColor': ['#f87171' if v > 500 else '#52525b' for v in vol_bar],
+        'ohlc': ohlc, 'volBar': [], 'volColor': [],
         'series': final_series, 'selling': selling or {}, 'trending': trending or {'hot': [], 'cold': []}
     }
     market['index_updated'] = int(time.time() * 1000)
