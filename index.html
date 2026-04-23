@@ -2148,37 +2148,33 @@ function renderAnalysis() {
     '持有': 'var(--text3)'
   };
 
-  container.innerHTML = analyses.map(a => `
-    <div class="analysis-card">
-      <div class="ac-header">
-        <span class="ac-name" title="${a.name}">${a.name.length > 20 ? a.name.substring(0, 18) + '…' : a.name}</span>
-        <span class="ac-badge" style="background:${SIGNAL_COLORS[a.sellSignal] || 'var(--text3)'}20;color:${SIGNAL_COLORS[a.sellSignal] || 'var(--text3)'};border:1px solid ${SIGNAL_COLORS[a.sellSignal] || 'var(--text3)'}40">${a.sellSignal}</span>
-      </div>
-      <div class="ac-metrics">
-        <div class="ac-m"><span class="ac-ml">现价</span><span class="ac-mv">¥${a.price.toFixed(0)}</span></div>
-        <div class="ac-m"><span class="ac-ml">成本</span><span class="ac-mv">¥${a.cost.toFixed(0)}</span></div>
-        <div class="ac-m"><span class="ac-ml">盈亏</span><span class="ac-mv" style="color:${a.pnl >= 0 ? 'var(--rise)' : 'var(--fall)'}">${a.pnl >= 0 ? '+' : ''}${a.pnl.toFixed(0)} (${a.pnlPct >= 0 ? '+' : ''}${a.pnlPct.toFixed(1)}%)</span></div>
-      </div>
-      <div class="ac-changes">
-        <span class="ac-ch" style="color:${a.r1 >= 0 ? 'var(--rise)' : 'var(--fall)'}">1日 ${a.r1 >= 0 ? '+' : ''}${a.r1.toFixed(2)}%</span>
-        <span class="ac-ch" style="color:${a.r7 >= 0 ? 'var(--rise)' : 'var(--fall)'}">7日 ${a.r7 >= 0 ? '+' : ''}${a.r7.toFixed(2)}%</span>
-      </div>
-      <div class="ac-row">
-        <span class="ac-label">走势</span>
-        <span style="color:${a.outlookColor};font-size:12px;font-weight:600">${a.outlook}</span>
-      </div>
-      <div class="ac-row">
-        <span class="ac-label">预判</span>
-        <span style="font-size:12px;color:var(--text2)">${a.targetLow ? '¥' + a.targetLow + ' ~ ¥' + a.targetHigh : '--'}</span>
-      </div>
-      <div class="ac-row">
-        <span class="ac-label">可信度</span>
-        <span style="font-size:12px;color:${a.confColor};font-weight:600">${a.confidence}</span>
-      </div>
-      ${a.hasTechData ? `<div class="ac-row"><span class="ac-label">技术</span><span style="font-size:11px;color:var(--text2)">${a.techSummary}</span></div>` : ''}
-      ${a.sellReason ? '<div class="ac-reason">' + a.sellReason + '</div>' : ''}
-    </div>
-  `).join('');
+  container.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  analyses.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'analysis-card';
+    const sc = SIGNAL_COLORS[a.sellSignal] || 'var(--text3)';
+    card.innerHTML = '<div class="ac-header">' +
+      '<span class="ac-name" title="' + esc(a.name) + '">' + (a.name.length > 20 ? a.name.substring(0, 18) + '\u2026' : a.name) + '</span>' +
+      '<span class="ac-badge" style="background:' + sc + '20;color:' + sc + ';border:1px solid ' + sc + '40">' + a.sellSignal + '</span>' +
+    '</div>' +
+    '<div class="ac-metrics">' +
+      '<div class="ac-m"><span class="ac-ml">现价</span><span class="ac-mv">¥' + a.price.toFixed(0) + '</span></div>' +
+      '<div class="ac-m"><span class="ac-ml">成本</span><span class="ac-mv">¥' + a.cost.toFixed(0) + '</span></div>' +
+      '<div class="ac-m"><span class="ac-ml">盈亏</span><span class="ac-mv" style="color:' + (a.pnl >= 0 ? 'var(--rise)' : 'var(--fall)') + '">' + (a.pnl >= 0 ? '+' : '') + '¥' + a.pnl.toFixed(0) + ' (' + (a.pnlPct >= 0 ? '+' : '') + a.pnlPct.toFixed(1) + '%)</span></div>' +
+    '</div>' +
+    '<div class="ac-changes">' +
+      '<span class="ac-ch" style="color:' + (a.r1 >= 0 ? 'var(--rise)' : 'var(--fall)') + '">1日 ' + (a.r1 >= 0 ? '+' : '') + a.r1.toFixed(2) + '%</span>' +
+      '<span class="ac-ch" style="color:' + (a.r7 >= 0 ? 'var(--rise)' : 'var(--fall)') + '">7日 ' + (a.r7 >= 0 ? '+' : '') + a.r7.toFixed(2) + '%</span>' +
+    '</div>' +
+    '<div class="ac-row"><span class="ac-label">走势</span><span style="color:' + a.outlookColor + ';font-size:12px;font-weight:600">' + a.outlook + '</span></div>' +
+    '<div class="ac-row"><span class="ac-label">预判</span><span style="font-size:12px;color:var(--text2)">' + (a.targetLow ? '¥' + a.targetLow + ' ~ ¥' + a.targetHigh : '--') + '</span></div>' +
+    '<div class="ac-row"><span class="ac-label">可信度</span><span style="font-size:12px;color:' + a.confColor + ';font-weight:600">' + a.confidence + '</span></div>' +
+    (a.hasTechData ? '<div class="ac-row"><span class="ac-label">技术</span><span style="font-size:11px;color:var(--text2)">' + a.techSummary + '</span></div>' : '') +
+    (a.sellReason ? '<div class="ac-reason">' + a.sellReason + '</div>' : '');
+    frag.appendChild(card);
+  });
+  container.appendChild(frag);
 
   // Also inject analysis data for KPI
   updateAnalysisKPI(analyses);
