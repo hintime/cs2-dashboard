@@ -79,15 +79,22 @@ jobs:
 
       - name: Commit and push
         run: |
-          # Stash ALL changes (staged + unstaged + untracked) before rebase
-          git stash -u -m "workflow-all-changes" || true
+          # Stash all local changes
+          git stash -u -m "workflow-all" || true
           for attempt in 1 2 3; do
             git pull --rebase origin main && break
-            echo "Pull failed, attempt $attempt/3, retrying..."
-            sleep 2
+            echo "Rebase conflict, aborting and trying merge strategy (attempt $attempt/3)..."
+            git rebase --abort 2>/dev/null || true
+            git fetch origin main
+            # Force reset to remote, then merge our changes on top
+            git reset --hard origin/main
+            git stash pop 2>/dev/null || true
+            git add -A
+            git diff --cached --quiet && git stash push -u -m "temp" || true
+            git stash pop 2>/dev/null || true
+            sleep 3
           done
-          # Re-apply all stashed changes and stage everything
-          git stash pop
+          # Stage all changes and commit
           git add -A
           if git diff --cached --quiet; then
             echo "No changes, skipping commit"
