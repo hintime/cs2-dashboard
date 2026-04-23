@@ -1800,21 +1800,6 @@ function renderMarket(D) {
   }
   initChart();
 }
-      backgroundColor:'transparent',
-      grid:{top:10,right:30,bottom:25,left:65},
-      xAxis:{type:'category',data:ohlcDates,
-        axisLine:{lineStyle:{color:'#252a36'}},
-        axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},
-        axisTick:{show:false}},
-      yAxis:{type:'value',
-        min:Math.floor(Math.min.apply(null,ohlcValues)/20)*20,
-        max:Math.ceil(Math.max.apply(null,ohlcValues)/20)*20,
-        splitNumber:4,splitLine:{lineStyle:{color:'#1e2130'}},
-        axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
-      tooltip:{trigger:'axis',backgroundColor:'#0f1117',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
-      series:[{type:'line',data:ohlcValues,symbol:'none',lineStyle:{color:'#3b82f6',width:2},areaStyle:{color:'#3b82f614'}}]
-    }, true);
-  }
 
   
 // 热门饰品已移除 — 供需异动数据在 alertsPanel 统一展示
