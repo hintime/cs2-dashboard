@@ -42,6 +42,7 @@ def get_eco_key():
         return _eco_key
     from Crypto.PublicKey import RSA
     key_b64 = os.environ.get('ECO_PRIVATE_KEY_B64')
+    print(f"[DEBUG] ECO_PRIVATE_KEY_B64 from env: {len(key_b64) if key_b64 else 0} chars, starts: {key_b64[:20] if key_b64 else 'None'}")
     if not key_b64:
         key_path = os.path.join(DATA_DIR, 'eco_private_key.txt')
         if os.path.exists(key_path):
@@ -50,7 +51,10 @@ def get_eco_key():
         else:
             raise FileNotFoundError('ECO private key not found')
     pem = '-----BEGIN RSA PRIVATE KEY-----\n' + key_b64 + '\n-----END RSA PRIVATE KEY-----'
+    print(f"[DEBUG] PEM header: {pem[:40]}")
+    print(f"[DEBUG] PEM length: {len(pem)}")
     _eco_key = RSA.import_key(pem)
+    print(f"[DEBUG] RSA import_key succeeded, key size: {key.size_in_bits() if hasattr(key, 'size_in_bits') else 'unknown'} bits")
     return _eco_key
 
 def sign_eco(params):
