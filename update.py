@@ -171,10 +171,13 @@ def _filter_excluded(items):
             if not any(i.get('name','').startswith(p) for p in _EXCLUDE_PREFIXES)
             and i.get('exterior','') not in _EXCLUDE_EXTERIORS]
 
-# ═══════════════ CSQAQ ALERTS (支持 skill 调用) ═══════════════
+# ═══════════════ CSQAQ ALERTS (支持 skill 调用 + proxy) ═══════════════
 _cached_alerts = None  # 全局缓存，供 recommendations 复用
 # Skill 路径：workspace/skills/csqaq-market-lookup/
 CSQAQ_SKILL_PATH = os.path.join(os.path.dirname(DATA_DIR), 'skills', 'csqaq-market-lookup', 'scripts', 'csqaq_api.py')
+
+# Proxy support for CI environments (bypasses IP whitelist)
+CSQAQ_PROXY_URL = os.environ.get('CSQAQ_PROXY_URL', '').rstrip('/')
 
 def _fetch_csqaq_direct(sort_key, page):
     """直接调用 CSQAQ API（原有逻辑）"""
@@ -184,9 +187,12 @@ def _fetch_csqaq_direct(sort_key, page):
         'filter': {'type': ['sticker', 'normal'], 'sort': [sort_key]},
         'show_recently_price': True
     }
+    api_url = 'https://api.csqaq.com/api/v1/info/get_rank_list'
+    if CSQAQ_PROXY_URL:
+        api_url = f'{CSQAQ_PROXY_URL}/api/v1/info/get_rank_list'
     try:
         d = http_post_raw(
-            'https://api.csqaq.com/api/v1/info/get_rank_list',
+            api_url,
             body,
             headers={'ApiToken': CSQ_KEY},
             timeout=15
@@ -281,11 +287,8 @@ def fetch_csqaq_alerts(use_cache=True, use_skill='auto'):
     if use_cache and _cached_alerts is not None:
         return _cached_alerts
     
-    # Skip in CI environment (IP whitelist blocks GitHub Actions)
-    if os.environ.get('GITHUB_ACTIONS') == 'true':
-        print('[CSQAQ] Skipping in CI (IP whitelist), will use local data')
-        return None
-    
+    # Proxy support for CI environments (bypasses IP whitelist)
+    # Removed GITHUB_ACTIONS skip — with proxy URL, CI can now fetch alerts too
     all_alerts = []
     seen_ids = set()
     
