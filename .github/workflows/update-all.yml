@@ -79,18 +79,15 @@ jobs:
 
       - name: Commit and push
         run: |
-          # Save any staged changes as a patch (handles case where python scripts modify files after staging)
-          git diff --cached -o workflow.patch 2>/dev/null || true
-          git reset HEAD -- . 2>/dev/null || true
+          # Stash ALL changes (staged + unstaged + untracked) before rebase
+          git stash -u -m "workflow-all-changes" || true
           for attempt in 1 2 3; do
             git pull --rebase origin main && break
             echo "Pull failed, attempt $attempt/3, retrying..."
             sleep 2
           done
-          # Re-apply staged changes patch if any
-          if [ -f workflow.patch ] && [ -s workflow.patch ]; then
-            git apply workflow.patch
-          fi
+          # Re-apply all stashed changes and stage everything
+          git stash pop
           git add -A
           if git diff --cached --quiet; then
             echo "No changes, skipping commit"
@@ -98,4 +95,3 @@ jobs:
             git commit -m "chore: data update $(date +'%Y-%m-%d %H:%M')" --allow-empty
             git push
           fi
-          rm -f workflow.patch
