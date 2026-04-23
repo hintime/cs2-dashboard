@@ -11,7 +11,7 @@ CS2 Dashboard 数据更新脚本 (优化版)
 - 数据缓存复用（alerts + recommendations 共享）
 - 批量处理
 """
-import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl
+import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl, gzip
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ═══════════════ CONFIG ═══════════════
@@ -79,7 +79,10 @@ def http_get(url, headers=None, timeout=15):
     for attempt in range(MAX_RETRIES):
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
-                return json.loads(r.read().decode('utf-8'))
+                raw = r.read()
+                if raw[:2] == b'\x1f\x8b':
+                    raw = gzip.decompress(raw)
+                return json.loads(raw.decode('utf-8'))
         except Exception as e:
             if attempt == MAX_RETRIES - 1:
                 raise
@@ -94,7 +97,10 @@ def http_post(url, body, headers=None, timeout=15):
     for attempt in range(MAX_RETRIES):
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
-                return json.loads(r.read().decode('utf-8'))
+                raw = r.read()
+                if raw[:2] == b'\x1f\x8b':
+                    raw = gzip.decompress(raw)
+                return json.loads(raw.decode('utf-8'))
         except Exception as e:
             if attempt == MAX_RETRIES - 1:
                 raise
@@ -111,6 +117,8 @@ def http_post_raw(url, body, headers=None, timeout=15):
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
                 raw = r.read()
+                if raw[:2] == b'\x1f\x8b':
+                    raw = gzip.decompress(raw)
                 for enc in ('utf-8', 'gbk', 'latin-1'):
                     try:
                         return json.loads(raw.decode(enc))
