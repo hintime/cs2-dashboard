@@ -618,6 +618,10 @@ function scheduleSync() {
 
 async function syncToGitHub() {
   if (!ghToken) return;
+  const payload = JSON.stringify(costOverrides, null, 2);
+  // 防抖：仅在内容实际变化时同步
+  if (syncToGitHub._lastPayload === payload) return;
+  syncToGitHub._lastPayload = payload;
   const el = DOM.syncStatus;
   el.textContent = '⏳ 同步中...';
   el.className = 'sync-status show';
@@ -829,10 +833,12 @@ function buildTabs() {
 
 // ═══════════════ TABLE RENDER ═══════════════
 function getFiltered() {
-  const key = curCat + '|' + sortCol + '|' + sortDir;
+  const key = curCat + '|' + sortCol + '|' + sortDir + '|' + PAGE_SIZE + '|' + (isBSFilter ? 'bs' : 'all');
   if (filteredCache && filterCacheKey === key) return filteredCache;
   let raw = curCat === 'all' ? H : H.filter(h => h.t === curCat);
-  filteredCache = raw.filter(h => !isBS(h)).sort((a,b) => {
+  // 预过滤 BS(战痕累累)，避免无效数据进入缓存
+  raw = raw.filter(h => !isBS(h));
+  filteredCache = raw.sort((a,b) => {
     const av = a[sortCol] || 0, bv = b[sortCol] || 0;
     if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
     return sortDir === 'asc' ? av - bv : bv - av;
