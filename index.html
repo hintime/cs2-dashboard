@@ -363,6 +363,7 @@ html { scroll-behavior: smooth; }
         <div style="display:flex;align-items:center;gap:12px">
           <button class="export-btn" id="exportBtn" title="导出 cost-overrides.json">📥 导出</button>
           <button class="export-btn" id="csvBtn" title="导出持仓CSV" onclick="exportCSV()">📊 CSV</button>
+          <button class="export-btn" id="csvBtn" title="导出持仓CSV">📊 CSV</button>
           <span class="sync-status" id="syncStatus"></span>
         </div>
       </div>
@@ -1678,18 +1679,32 @@ function renderMarket(D) {
 
   // volData removed
 
-  // Lazy init ECharts only when user clicks a chart tab
-  function ecInit() {
-    if (ec) return;
+  // Wait for echarts (lazy load), then init chart
+  var echartsReady = false;
+  function safeInit(fn) {
+    if (!window.echarts) {
+      var t = setInterval(() => {
+        if (window.echarts) { clearInterval(t); echartsReady = true; fn(); }
+      }, 50);
+    } else { echartsReady = true; fn(); }
+  }
+  function initChart() {
+    safeInit(doInit);
+  }
+  function doInit() {
+    if (ec) ec.dispose();
     ec = echarts.init(DOM.indexChart, null, {renderer:'canvas'});
+    DOM.btnLine.onclick = renderLine;
+    DOM.btnCandle.onclick = renderCandle;
+    renderLine();
+    let resizeRaf = 0;
     window.addEventListener('resize', () => {
-      clearTimeout(ecResizeTimer);
-      ecResizeTimer = setTimeout(() => ec && ec.resize(), 120);
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => ec && ec.resize());
     });
   }
-
   function renderLine() {
-    ecInit();
+    if (!ec) return;
     DOM.btnLine.className = 'tab on'; DOM.btnCandle.className = 'tab';
     ec.setOption({
       backgroundColor:'transparent',
@@ -1708,7 +1723,7 @@ function renderMarket(D) {
     }, true);
   }
   function renderCandle() {
-    ecInit();
+    if (!ec) return;
     DOM.btnCandle.className = 'tab on'; DOM.btnLine.className = 'tab';
     const closes = idx.ohlc.map(c => c.close);
     function ma(arr,n) { return arr.map(function(v,i) { if (i<n-1) return '-'; var s=0; for (var j=0;j<n;j++) s+=arr[i-j]; return Math.round(s/n*100)/100; }); }
@@ -1783,10 +1798,26 @@ function renderMarket(D) {
       ]
     }, true);
   }
-  ecInit();
-  renderLine();
+  initChart();
 }
+      backgroundColor:'transparent',
+      grid:{top:10,right:30,bottom:25,left:65},
+      xAxis:{type:'category',data:ohlcDates,
+        axisLine:{lineStyle:{color:'#252a36'}},
+        axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},
+        axisTick:{show:false}},
+      yAxis:{type:'value',
+        min:Math.floor(Math.min.apply(null,ohlcValues)/20)*20,
+        max:Math.ceil(Math.max.apply(null,ohlcValues)/20)*20,
+        splitNumber:4,splitLine:{lineStyle:{color:'#1e2130'}},
+        axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
+      tooltip:{trigger:'axis',backgroundColor:'#0f1117',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
+      series:[{type:'line',data:ohlcValues,symbol:'none',lineStyle:{color:'#3b82f6',width:2},areaStyle:{color:'#3b82f614'}}]
+    }, true);
+  }
 
+  
+// 热门饰品已移除 — 供需异动数据在 alertsPanel 统一展示
 // ═══════════════ TECHNICAL ANALYSIS HELPERS ═══════════════
 /**
  * 计算均线 (MA)
@@ -1943,55 +1974,32 @@ function getTechSignal({ price, prices = [], candles = [], maStructure, bollinge
   return { signal, reason, strength };
 }
 
-// ═══════════════ TECH INDICATOR CACHE ═══════════════
-let _techCache = {};
-let _techCacheVer = 0;
-let _techCacheItems = null;
-
-function techFor(item) {
-  const key = item.n + '|' + (item.w||'');
-  if (_techCache[key] && _techCache._v === _techCacheVer) return _techCache[key];
-  const prices = (item.price_history||[]).map(h=>h.price);
-  const hasTechData = prices.length >= 5;
-  const mas = {
-    ma5:  prices.length >= 5  ? calcMA(prices, 5)  : null,
-    ma10: prices.length >= 10 ? calcMA(prices, 10) : null,
-    ma30: prices.length >= 30 ? calcMA(prices, 30) : null,
-    ma60: prices.length >= 60 ? calcMA(prices, 60) : null
-  };
-  const bollinger = prices.length >= 10 ? calcBollingerBands(prices, 10, 2) : {upper:null,middle:null,lower:null,width:null};
-  const maStructure = checkMAStructure(mas);
-  const candles = prices.slice(-3).map((p,i,arr)=>({open:arr[i-1]||p,close:p,high:Math.max(p,(arr[i-1]||p)),low:Math.min(p,(arr[i-1]||p))}));
-  const signal = hasTechData ? getTechSignal({price:item.p, prices, candles, maStructure, bollinger}) : {signal:'neutral',reason:'',strength:0};
-  _techCache[key] = {mas, bollinger, maStructure, signal, hasTechData};
-  return _techCache[key];
-}
-
-function invalidateTechCache() {
-  _techCache = {};
-  _techCache._v = ++_techCacheVer;
-}
-
 // ═══════════════ PORTFOLIO ANALYSIS ═══════════════
 function renderAnalysis() {
   const container = document.getElementById('analysisGrid');
   if (!container) return;
+
   const items = H || [];
   if (!items || items.length === 0) {
     container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px;font-size:13px">暂无持仓数据</div>';
     return;
   }
-  invalidateTechCache();
 
   // Build name → rate lookup from alerts (fallback)
   const rateMap = {};
-  (alertsData || []).forEach(a => { rateMap[a.name] = {r1:a.rate_1||0, r7:a.rate_7||0, r30:a.rate_30||0}; });
+  (alertsData || []).forEach(a => {
+    rateMap[a.name] = { r1: a.rate_1 || 0, r7: a.rate_7 || 0, r30: a.rate_30 || 0 };
+  });
 
   // Build name → is recommended
   const allRecs = Object.values(recData || {}).flat();
   const recSet = new Set(allRecs.map(r => r.name));
 
   // Get market recommendations for comparison signals
+  const recs = window.recData || {};
+  const recNames = new Set(
+    (recs.momentum || []).concat(recs.undervalued || []).map(r => r.name)
+  );
 
   // ── Per-item analysis ──
   const analyses = items.map(item => {
@@ -2009,13 +2017,27 @@ function renderAnalysis() {
 
     const isRec = recSet.has(name);
 
-    // ── 技术分析（使用缓存）──
-    const tech = techFor(item);
-    const hasTechData = tech.hasTechData;
-    const mas = tech.mas;
-    const bollinger = tech.bollinger;
-    const maStructure = tech.maStructure;
-    const techSignal = tech.signal;
+    // ── 技术分析（需要历史数据）──
+    const priceHistory = item.price_history || [];
+    const prices = priceHistory.map(h => h.price);
+    const hasTechData = prices.length >= 5;
+    
+    // 计算均线（需要至少对应周期的数据）
+    const mas = {
+      ma5: prices.length >= 5 ? calcMA(prices, 5) : null,
+      ma10: prices.length >= 10 ? calcMA(prices, 10) : null,
+      ma30: prices.length >= 30 ? calcMA(prices, 30) : null,
+      ma60: prices.length >= 60 ? calcMA(prices, 60) : null
+    };
+    
+    // 计算布林带（需要至少10天数据）
+    const bollinger = prices.length >= 10 ? calcBollingerBands(prices, 10, 2) : { upper: null, middle: null, lower: null, width: null };
+    
+    // 均线排列
+    const maStructure = checkMAStructure(mas);
+    
+    // 技术信号
+    const techSignal = hasTechData ? getTechSignal({ price, prices, mas, bollinger }) : { signal: 'neutral', reason: '', strength: 0 };
 
     // ── Trend determination ──
     let trend = 'neutral';
@@ -2148,33 +2170,37 @@ function renderAnalysis() {
     '持有': 'var(--text3)'
   };
 
-  container.innerHTML = '';
-  const frag = document.createDocumentFragment();
-  analyses.forEach(a => {
-    const card = document.createElement('div');
-    card.className = 'analysis-card';
-    const sc = SIGNAL_COLORS[a.sellSignal] || 'var(--text3)';
-    card.innerHTML = '<div class="ac-header">' +
-      '<span class="ac-name" title="' + esc(a.name) + '">' + (a.name.length > 20 ? a.name.substring(0, 18) + '\u2026' : a.name) + '</span>' +
-      '<span class="ac-badge" style="background:' + sc + '20;color:' + sc + ';border:1px solid ' + sc + '40">' + a.sellSignal + '</span>' +
-    '</div>' +
-    '<div class="ac-metrics">' +
-      '<div class="ac-m"><span class="ac-ml">现价</span><span class="ac-mv">¥' + a.price.toFixed(0) + '</span></div>' +
-      '<div class="ac-m"><span class="ac-ml">成本</span><span class="ac-mv">¥' + a.cost.toFixed(0) + '</span></div>' +
-      '<div class="ac-m"><span class="ac-ml">盈亏</span><span class="ac-mv" style="color:' + (a.pnl >= 0 ? 'var(--rise)' : 'var(--fall)') + '">' + (a.pnl >= 0 ? '+' : '') + '¥' + a.pnl.toFixed(0) + ' (' + (a.pnlPct >= 0 ? '+' : '') + a.pnlPct.toFixed(1) + '%)</span></div>' +
-    '</div>' +
-    '<div class="ac-changes">' +
-      '<span class="ac-ch" style="color:' + (a.r1 >= 0 ? 'var(--rise)' : 'var(--fall)') + '">1日 ' + (a.r1 >= 0 ? '+' : '') + a.r1.toFixed(2) + '%</span>' +
-      '<span class="ac-ch" style="color:' + (a.r7 >= 0 ? 'var(--rise)' : 'var(--fall)') + '">7日 ' + (a.r7 >= 0 ? '+' : '') + a.r7.toFixed(2) + '%</span>' +
-    '</div>' +
-    '<div class="ac-row"><span class="ac-label">走势</span><span style="color:' + a.outlookColor + ';font-size:12px;font-weight:600">' + a.outlook + '</span></div>' +
-    '<div class="ac-row"><span class="ac-label">预判</span><span style="font-size:12px;color:var(--text2)">' + (a.targetLow ? '¥' + a.targetLow + ' ~ ¥' + a.targetHigh : '--') + '</span></div>' +
-    '<div class="ac-row"><span class="ac-label">可信度</span><span style="font-size:12px;color:' + a.confColor + ';font-weight:600">' + a.confidence + '</span></div>' +
-    (a.hasTechData ? '<div class="ac-row"><span class="ac-label">技术</span><span style="font-size:11px;color:var(--text2)">' + a.techSummary + '</span></div>' : '') +
-    (a.sellReason ? '<div class="ac-reason">' + a.sellReason + '</div>' : '');
-    frag.appendChild(card);
-  });
-  container.appendChild(frag);
+  container.innerHTML = analyses.map(a => `
+    <div class="analysis-card">
+      <div class="ac-header">
+        <span class="ac-name" title="${a.name}">${a.name.length > 20 ? a.name.substring(0, 18) + '…' : a.name}</span>
+        <span class="ac-badge" style="background:${SIGNAL_COLORS[a.sellSignal] || 'var(--text3)'}20;color:${SIGNAL_COLORS[a.sellSignal] || 'var(--text3)'};border:1px solid ${SIGNAL_COLORS[a.sellSignal] || 'var(--text3)'}40">${a.sellSignal}</span>
+      </div>
+      <div class="ac-metrics">
+        <div class="ac-m"><span class="ac-ml">现价</span><span class="ac-mv">¥${a.price.toFixed(0)}</span></div>
+        <div class="ac-m"><span class="ac-ml">成本</span><span class="ac-mv">¥${a.cost.toFixed(0)}</span></div>
+        <div class="ac-m"><span class="ac-ml">盈亏</span><span class="ac-mv" style="color:${a.pnl >= 0 ? 'var(--rise)' : 'var(--fall)'}">${a.pnl >= 0 ? '+' : ''}${a.pnl.toFixed(0)} (${a.pnlPct >= 0 ? '+' : ''}${a.pnlPct.toFixed(1)}%)</span></div>
+      </div>
+      <div class="ac-changes">
+        <span class="ac-ch" style="color:${a.r1 >= 0 ? 'var(--rise)' : 'var(--fall)'}">1日 ${a.r1 >= 0 ? '+' : ''}${a.r1.toFixed(2)}%</span>
+        <span class="ac-ch" style="color:${a.r7 >= 0 ? 'var(--rise)' : 'var(--fall)'}">7日 ${a.r7 >= 0 ? '+' : ''}${a.r7.toFixed(2)}%</span>
+      </div>
+      <div class="ac-row">
+        <span class="ac-label">走势</span>
+        <span style="color:${a.outlookColor};font-size:12px;font-weight:600">${a.outlook}</span>
+      </div>
+      <div class="ac-row">
+        <span class="ac-label">预判</span>
+        <span style="font-size:12px;color:var(--text2)">${a.targetLow ? '¥' + a.targetLow + ' ~ ¥' + a.targetHigh : '--'}</span>
+      </div>
+      <div class="ac-row">
+        <span class="ac-label">可信度</span>
+        <span style="font-size:12px;color:${a.confColor};font-weight:600">${a.confidence}</span>
+      </div>
+      ${a.hasTechData ? `<div class="ac-row"><span class="ac-label">技术</span><span style="font-size:11px;color:var(--text2)">${a.techSummary}</span></div>` : ''}
+      ${a.sellReason ? '<div class="ac-reason">' + a.sellReason + '</div>' : ''}
+    </div>
+  `).join('');
 
   // Also inject analysis data for KPI
   updateAnalysisKPI(analyses);
