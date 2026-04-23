@@ -11,7 +11,7 @@ CS2 Dashboard 数据更新脚本 (优化版)
 - 数据缓存复用（alerts + recommendations 共享）
 - 批量处理
 """
-import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl
+import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl, gzip
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ═══════════════ CONFIG ═══════════════
@@ -42,6 +42,7 @@ def get_eco_key():
         return _eco_key
     from Crypto.PublicKey import RSA
     key_b64 = os.environ.get('ECO_PRIVATE_KEY_B64')
+    print(f"[DEBUG] ECO_PRIVATE_KEY_B64 from env: {len(key_b64) if key_b64 else 0} chars, starts: {key_b64[:20] if key_b64 else 'None'}")
     if not key_b64:
         key_path = os.path.join(DATA_DIR, 'eco_private_key.txt')
         if os.path.exists(key_path):
@@ -50,7 +51,10 @@ def get_eco_key():
         else:
             raise FileNotFoundError('ECO private key not found')
     pem = '-----BEGIN RSA PRIVATE KEY-----\n' + key_b64 + '\n-----END RSA PRIVATE KEY-----'
+    print(f"[DEBUG] PEM header: {pem[:40]}")
+    print(f"[DEBUG] PEM length: {len(pem)}")
     _eco_key = RSA.import_key(pem)
+    print(f"[DEBUG] RSA import_key succeeded, key size: {_eco_key.size_in_bits()} bits")
     return _eco_key
 
 def sign_eco(params):
@@ -75,7 +79,10 @@ def http_get(url, headers=None, timeout=15):
     for attempt in range(MAX_RETRIES):
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
-                return json.loads(r.read().decode('utf-8'))
+                raw = r.read()
+                if raw[:2] == b'\x1f\x8b':
+                    raw = gzip.decompress(raw)
+                return json.loads(raw.decode('utf-8'))
         except Exception as e:
             if attempt == MAX_RETRIES - 1:
                 raise
@@ -90,7 +97,10 @@ def http_post(url, body, headers=None, timeout=15):
     for attempt in range(MAX_RETRIES):
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
-                return json.loads(r.read().decode('utf-8'))
+                raw = r.read()
+                if raw[:2] == b'\x1f\x8b':
+                    raw = gzip.decompress(raw)
+                return json.loads(raw.decode('utf-8'))
         except Exception as e:
             if attempt == MAX_RETRIES - 1:
                 raise
@@ -107,6 +117,8 @@ def http_post_raw(url, body, headers=None, timeout=15):
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
                 raw = r.read()
+                if raw[:2] == b'\x1f\x8b':
+                    raw = gzip.decompress(raw)
                 for enc in ('utf-8', 'gbk', 'latin-1'):
                     try:
                         return json.loads(raw.decode(enc))
@@ -171,10 +183,13 @@ def _filter_excluded(items):
             if not any(i.get('name','').startswith(p) for p in _EXCLUDE_PREFIXES)
             and i.get('exterior','') not in _EXCLUDE_EXTERIORS]
 
-# ═══════════════ CSQAQ ALERTS (支持 skill 调用) ═══════════════
+# ═══════════════ CSQAQ ALERTS (支持 skill 调用 + proxy) ═══════════════
 _cached_alerts = None  # 全局缓存，供 recommendations 复用
 # Skill 路径：workspace/skills/csqaq-market-lookup/
 CSQAQ_SKILL_PATH = os.path.join(os.path.dirname(DATA_DIR), 'skills', 'csqaq-market-lookup', 'scripts', 'csqaq_api.py')
+
+# Proxy support for CI environments (bypasses IP whitelist)
+CSQAQ_PROXY_URL = os.environ.get('CSQAQ_PROXY_URL', '').rstrip('/')
 
 def _fetch_csqaq_direct(sort_key, page):
     """直接调用 CSQAQ API（原有逻辑）"""
@@ -184,9 +199,12 @@ def _fetch_csqaq_direct(sort_key, page):
         'filter': {'type': ['sticker', 'normal'], 'sort': [sort_key]},
         'show_recently_price': True
     }
+    api_url = 'https://api.csqaq.com/api/v1/info/get_rank_list'
+    if CSQAQ_PROXY_URL:
+        api_url = f'{CSQAQ_PROXY_URL}/api/v1/info/get_rank_list'
     try:
         d = http_post_raw(
-            'https://api.csqaq.com/api/v1/info/get_rank_list',
+            api_url,
             body,
             headers={'ApiToken': CSQ_KEY},
             timeout=15
@@ -281,11 +299,8 @@ def fetch_csqaq_alerts(use_cache=True, use_skill='auto'):
     if use_cache and _cached_alerts is not None:
         return _cached_alerts
     
-    # Skip in CI environment (IP whitelist blocks GitHub Actions)
-    if os.environ.get('GITHUB_ACTIONS') == 'true':
-        print('[CSQAQ] Skipping in CI (IP whitelist), will use local data')
-        return None
-    
+    # Proxy support for CI environments (bypasses IP whitelist)
+    # Removed GITHUB_ACTIONS skip — with proxy URL, CI can now fetch alerts too
     all_alerts = []
     seen_ids = set()
     

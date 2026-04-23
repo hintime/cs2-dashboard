@@ -1,0 +1,108 @@
+name: Update All CS2 Data
+
+on:
+  schedule:
+    # 每2小时运行一次（半点），合并原来两个 workflow 的职责
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Update mode'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - prices
+          - alerts
+          - index
+
+concurrency:
+  group: cs2-dashboard-update
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  update-all:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pycryptodome
+
+      - name: Configure git
+        run: |
+          git config user.email "hintime@users.noreply.github.com"
+          git config user.name "hintime"
+          # Use GH_PAT for push authentication
+          git remote set-url origin "https://x-access-token:${{ secrets.GH_PAT }}@github.com/hintime/cs2-dashboard.git"
+
+      - name: Run data update (holdings + market + recommendations)
+        if: inputs.mode == 'all' || inputs.mode == '' || inputs.mode == 'prices' || inputs.mode == 'alerts'
+        env:
+          ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
+          CSQ_API_TOKEN: ${{ secrets.CSQ_API_TOKEN }}
+          CSQAQ_PROXY_URL: ${{ secrets.CSQAQ_PROXY_URL }}
+          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_ACTIONS: 'true'
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          echo "=== START update.py ($(date)) ==="
+          python update.py all 2>&1
+          echo "=== END update.py ($(date)) ==="
+
+      - name: Run market index collector
+        if: inputs.mode == 'all' || inputs.mode == '' || inputs.mode == 'index'
+        env:
+          ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_ACTIONS: 'true'
+        run: |
+          echo "=== START index_collector.py ($(date)) ==="
+          python index_collector.py 2>&1
+          echo "=== END index_collector.py ($(date)) ==="
+
+      - name: Show changed files
+        run: |
+          git status --short
+
+      - name: Commit and push
+        run: |
+          # Stash all local changes
+          git stash -u -m "workflow-all" || true
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && break
+            echo "Rebase conflict, aborting and trying merge strategy (attempt $attempt/3)..."
+            git rebase --abort 2>/dev/null || true
+            git fetch origin main
+            # Force reset to remote, then merge our changes on top
+            git reset --hard origin/main
+            git stash pop 2>/dev/null || true
+            git add -A
+            git diff --cached --quiet && git stash push -u -m "temp" || true
+            git stash pop 2>/dev/null || true
+            sleep 3
+          done
+          # Stage all changes and commit
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes, skipping commit"
+          else
+            git commit -m "chore: data update $(date +'%Y-%m-%d %H:%M')" --allow-empty
+            git push
+          fi

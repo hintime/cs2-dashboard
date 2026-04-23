@@ -4,7 +4,7 @@
 
 今日指数 = 1000 × Σ(当前价格 × 初始在售数) / Σ(初始价格 × 初始在售数)
 """
-import json, time, base64, urllib.request, os, sys, ssl
+import json, time, base64, urllib.request, os, sys, ssl, gzip
 from datetime import datetime, timedelta
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
@@ -83,10 +83,14 @@ def fetch_eco(retries=3):
             req = urllib.request.Request(
                 f'{ECO_BASE}/Api/Market/GetHashNameAndPriceList',
                 data=json.dumps(params).encode(),
-                headers={'Content-Type': 'application/json'}
+                headers={'Content-Type': 'application/json', 'Accept-Encoding': 'gzip'}
             )
             with urllib.request.urlopen(req, context=ctx, timeout=30) as r:
-                items = json.loads(r.read().decode('utf-8')).get('ResultData', [])
+                raw = r.read()
+                # Handle both plain and gzip responses
+                if raw[:2] == b'\x1f\x8b':
+                    raw = gzip.decompress(raw)
+                items = json.loads(raw.decode('utf-8')).get('ResultData', [])
                 print(f'[ECO] Got {len(items)} items')
                 return items
         except Exception as e:

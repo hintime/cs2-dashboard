@@ -1679,18 +1679,32 @@ function renderMarket(D) {
 
   // volData removed
 
-  // Lazy init ECharts only when user clicks a chart tab
-  function ecInit() {
-    if (ec) return;
+  // Wait for echarts (lazy load), then init chart
+  var echartsReady = false;
+  function safeInit(fn) {
+    if (!window.echarts) {
+      var t = setInterval(() => {
+        if (window.echarts) { clearInterval(t); echartsReady = true; fn(); }
+      }, 50);
+    } else { echartsReady = true; fn(); }
+  }
+  function initChart() {
+    safeInit(doInit);
+  }
+  function doInit() {
+    if (ec) ec.dispose();
     ec = echarts.init(DOM.indexChart, null, {renderer:'canvas'});
+    DOM.btnLine.onclick = renderLine;
+    DOM.btnCandle.onclick = renderCandle;
+    renderLine();
+    let resizeRaf = 0;
     window.addEventListener('resize', () => {
-      clearTimeout(ecResizeTimer);
-      ecResizeTimer = setTimeout(() => ec && ec.resize(), 120);
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => ec && ec.resize());
     });
   }
-
   function renderLine() {
-    ecInit();
+    if (!ec) return;
     DOM.btnLine.className = 'tab on'; DOM.btnCandle.className = 'tab';
     ec.setOption({
       backgroundColor:'transparent',
@@ -1709,7 +1723,7 @@ function renderMarket(D) {
     }, true);
   }
   function renderCandle() {
-    ecInit();
+    if (!ec) return;
     DOM.btnCandle.className = 'tab on'; DOM.btnLine.className = 'tab';
     const closes = idx.ohlc.map(c => c.close);
     function ma(arr,n) { return arr.map(function(v,i) { if (i<n-1) return '-'; var s=0; for (var j=0;j<n;j++) s+=arr[i-j]; return Math.round(s/n*100)/100; }); }
@@ -1784,10 +1798,26 @@ function renderMarket(D) {
       ]
     }, true);
   }
-  ecInit();
-  renderLine();
+  initChart();
 }
+      backgroundColor:'transparent',
+      grid:{top:10,right:30,bottom:25,left:65},
+      xAxis:{type:'category',data:ohlcDates,
+        axisLine:{lineStyle:{color:'#252a36'}},
+        axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},
+        axisTick:{show:false}},
+      yAxis:{type:'value',
+        min:Math.floor(Math.min.apply(null,ohlcValues)/20)*20,
+        max:Math.ceil(Math.max.apply(null,ohlcValues)/20)*20,
+        splitNumber:4,splitLine:{lineStyle:{color:'#1e2130'}},
+        axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
+      tooltip:{trigger:'axis',backgroundColor:'#0f1117',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
+      series:[{type:'line',data:ohlcValues,symbol:'none',lineStyle:{color:'#3b82f6',width:2},areaStyle:{color:'#3b82f614'}}]
+    }, true);
+  }
 
+  
+// 热门饰品已移除 — 供需异动数据在 alertsPanel 统一展示
 // ═══════════════ TECHNICAL ANALYSIS HELPERS ═══════════════
 /**
  * 计算均线 (MA)
