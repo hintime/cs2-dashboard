@@ -54,7 +54,7 @@ def get_eco_key():
     print(f"[DEBUG] PEM header: {pem[:40]}")
     print(f"[DEBUG] PEM length: {len(pem)}")
     _eco_key = RSA.import_key(pem)
-    print(f"[DEBUG] RSA import_key succeeded, key size: {key.size_in_bits() if hasattr(key, 'size_in_bits') else 'unknown'} bits")
+    print(f"[DEBUG] RSA import_key succeeded, key size: {_eco_key.size_in_bits()} bits")
     return _eco_key
 
 def sign_eco(params):
