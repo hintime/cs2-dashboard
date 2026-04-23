@@ -17,6 +17,10 @@ on:
           - alerts
           - index
 
+concurrency:
+  group: cs2-dashboard-update
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
