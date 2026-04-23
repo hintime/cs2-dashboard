@@ -6,8 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>CS2 饰品投资看板 · v2026.04.18</title>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<title>CS2 饰品投资看板 · v2026.04.23c</title>
 <style>
 :root{
   --bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);
@@ -40,7 +39,7 @@ body{
   transition:all .2s;white-space:nowrap;
 }
 .nav-btn:hover{border-color:var(--blue);color:var(--text);transform:translateY(-1px)}
-.nav-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 12px rgba(96,165,250,.3)}
+.nav-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 2px 12px rgba(96,165,250,.3);text-shadow:0 1px 3px rgba(0,0,0,.2)}
 @media(max-width:640px){.quick-nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}}
 
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px}
@@ -61,7 +60,7 @@ body{
 .mi-chart{height:400px;margin-bottom:20px}
 .mi-items{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .mi-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;cursor:pointer;transition:all .25s ease}
-.mi-item:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.mi-item:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.2);background:rgba(96,165,250,.04)}
 .mi-item.active{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 4px 20px var(--glow-blue)}
 .mi-item-name{font-size:13px;color:var(--text3);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mi-item-price{font-size:18px;font-weight:700}
@@ -70,7 +69,7 @@ body{
 
 .kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
 .kpi{background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);transition:border-color .25s}
-.kpi:hover{border-color:var(--border-hi)}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}.kpi:hover{border-color:var(--border-hi);box-shadow:0 4px 24px rgba(96,165,250,.1)}
 .kpi .label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);margin-bottom:8px;font-weight:500}
 .kpi .value{font-size:24px;font-weight:800;letter-spacing:-.01em}
 .kpi .value.rise{color:var(--rise)}.kpi .value.fall{color:var(--fall)}
@@ -79,6 +78,7 @@ body{
 .alert-card{display:flex;flex-direction:column;background:var(--surface);backdrop-filter:blur(8px);border-radius:var(--radius-sm);padding:14px 16px;cursor:pointer;transition:all .25s ease;position:relative;overflow:hidden;border:1px solid var(--border)}
 .alert-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
 .alert-card.up{border-color:rgba(248,113,113,.3);border-left:3px solid var(--rise);background:linear-gradient(135deg,var(--glow-rise),var(--surface))}
+.alert-card.supply{border-color:rgba(96,165,250,.3);border-left:3px solid var(--blue);background:linear-gradient(135deg,var(--glow-blue),var(--surface))}
 .alert-card.down{border-color:rgba(52,211,153,.3);border-left:3px solid var(--fall);background:linear-gradient(135deg,var(--glow-fall),var(--surface))}
 .alert-card .a-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:24px}
 .alert-card .a-meta{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px}
@@ -101,7 +101,7 @@ body{
   background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);
   padding:16px;display:flex;flex-direction:column;gap:10px;transition:all .25s;
 }
-.analysis-card:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.analysis-card:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.2);border-left:3px solid var(--blue)}
 .analysis-card .ac-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .analysis-card .ac-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.4;flex:1}
 .analysis-card .ac-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0;letter-spacing:.3px}
@@ -133,11 +133,12 @@ body{
 .watch-empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:13px}
 .watch-empty p{margin:8px 0 4px;font-size:15px;font-weight:600;color:var(--text2)}
 
-.panel{background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow)}
+.panel{background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--border);border-top:2px solid rgba(96,165,250,.25);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow)}
 .panel-head{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--border)}
 .panel-head h2{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.3px}
 .tabs{display:grid;grid-template-columns:repeat(4,1fr);width:100%}
-.tab{background:none;border:1px solid transparent;color:var(--text3);padding:5px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:500;transition:all .2s}
+.tab{background:none;border:1px solid transparent;color:var(--text3);padding:5px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:500;transition:all .2s;outline:none}
+.tab:focus-visible{box-shadow:0 0 0 2px var(--blue)}
 .tab:hover{color:var(--text2);background:rgba(255,255,255,.03)}
 .tab.on{color:var(--blue);background:var(--glow-blue);border-color:rgba(96,165,250,.2)}
 
@@ -147,11 +148,11 @@ thead th:hover{color:var(--text2);background:rgba(255,255,255,.02)}
 tbody td{padding:11px 16px;border-bottom:1px solid rgba(55,65,81,.2);font-size:13px;transition:background .2s}
 tbody tr{transition:background .2s}
 tbody tr:nth-child(even){background:rgba(255,255,255,.015)}
-tbody tr:hover{background:var(--glow-blue)}
+tbody tr:hover td{background:rgba(96,165,250,.07)}
 .item-name{font-weight:600}
 .wear-tag{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 8px;border-radius:5px;margin-left:6px;font-family:'DM Mono','JetBrains Mono',monospace;border:1px solid var(--border)}
 .text-r{text-align:right}
-.sort-asc::after{content:' ↑'}.sort-desc::after{content:' ↓'}
+.sort-asc::after{content:" ▲";color:var(--blue);font-size:11px;font-weight:700}.sort-desc::after{content:" ▼";color:var(--blue);font-size:11px;font-weight:700}
 .clr-rise{color:var(--rise)}.clr-fall{color:var(--fall)}.mono{font-family:'DM Mono','JetBrains Mono',monospace}
 
 .foot{font-size:10px;color:var(--text3);text-align:center;padding:24px;opacity:.6}
@@ -171,6 +172,12 @@ tbody tr:hover{background:var(--glow-blue)}
 .sync-status.show{opacity:1}.sync-status.ok{color:var(--fall)}.sync-status.err{color:var(--rise)}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .25s}
+.loading-overlay{position:fixed;inset:0;z-index:998;opacity:0;pointer-events:none;transition:opacity .3s;background:rgba(13,17,23,.5);display:flex;align-items:center;justify-content:center}
+.loading-overlay.show{opacity:1;pointer-events:auto}
+.loading-overlay::after{content:"正在加载数据...";color:var(--text2);font-size:14px}
+.loading-overlay{position:fixed;inset:0;z-index:998;opacity:0;pointer-events:none;transition:opacity .3s;background:rgba(13,17,23,.5);display:flex;align-items:center;justify-content:center}
+.loading-overlay.show{opacity:1;pointer-events:auto}
+.loading-overlay::after{content:"正在加载数据...";color:var(--text2);font-size:14px}
 .modal-overlay.show{opacity:1;pointer-events:auto}
 .modal{background:rgba(22,27,34,.95);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:28px;width:420px;max-width:90vw;box-shadow:0 16px 48px rgba(0,0,0,.4)}
 .modal h3{margin:0 0 8px;font-size:16px;font-weight:700}
@@ -193,6 +200,13 @@ tbody tr:hover{background:var(--glow-blue)}
 ::-webkit-scrollbar-thumb{background:rgba(99,115,129,.25);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(99,115,129,.4)}
 
+/* ── Search & Sort Controls ── */
+#searchInput:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(96,165,250,.15);outline:none}
+#pageNumInput:focus{border-color:var(--blue);outline:none}
+#sortOrder{cursor:pointer;appearance:auto}
+#pageJump{font-size:12px;color:var(--text2)}
+#pageNumInput{max-width:56px}
+
 /* ── Changelog ── */
 .cl-section{margin-bottom:16px}
 .cl-section:last-child{margin-bottom:0}
@@ -210,6 +224,24 @@ tbody tr:hover{background:var(--glow-blue)}
 .cl-item .cl-tag.rec{background:rgba(251,191,36,.1);color:var(--amber)}
 .cl-item .cl-tag.new{background:rgba(52,211,153,.1);color:var(--fall)}
 .cl-empty{color:var(--text3);font-size:12px;padding:8px 0}
+
+@keyframes shimmer { 0% { background-position: -400px 0 } 100% { background-position: 400px 0 } }
+.skeleton-line { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 800px 100%; animation: shimmer 1.6s infinite linear; border-radius: 4px; }
+.skeleton-card { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 800px 100%; animation: shimmer 1.6s infinite linear; border-radius: 14px; }
+
+
+@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.body-fadein { animation: fadein 0.5s ease forwards; }
+.container { animation: fadein 0.45s ease forwards; }
+html { scroll-behavior: smooth; }
+.alert-card.supply{border-color:rgba(96,165,250,.3);border-left:3px solid var(--blue);background:linear-gradient(135deg,var(--glow-blue),var(--surface))}
+
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)!important;pointer-events:auto}
+.toast.hide{opacity:0;transform:translateX(-50%) translateY(10px)!important;pointer-events:none}
+.sort-asc::after{content:" ▲";font-weight:700}
+.sort-desc::after{content:" ▼";font-weight:700}
+.nav-item.active{color:var(--accent)}
+.nav-item.active::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60%;height:2px;background:var(--accent);border-radius:2px}
 </style>
 </head>
 <body>
@@ -320,6 +352,8 @@ tbody tr:hover{background:var(--glow-blue)}
       <div style="background:var(--surface2);padding:16px 20px;border-radius:var(--radius-sm);border:1px solid var(--border)">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:6px">投入本金</div>
         <div style="font-size:24px;font-weight:800" id="totalCostHeader">--</div>
+        <div id="bestPerformer" class="kpi-sub" style="display:none"></div>
+        <div id="worstPerformer" class="kpi-sub" style="display:none"></div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px">总成本</div>
       </div>
     </div>
@@ -328,10 +362,24 @@ tbody tr:hover{background:var(--glow-blue)}
         <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="export-btn" id="exportBtn" title="导出 cost-overrides.json">📥 导出</button>
+          <button class="export-btn" id="csvBtn" title="导出持仓CSV" onclick="exportCSV()">📊 CSV</button>
+          <button class="export-btn" id="csvBtn" title="导出持仓CSV">📊 CSV</button>
           <span class="sync-status" id="syncStatus"></span>
         </div>
       </div>
-      <div class="tabs" id="tabBar"></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="tabs" id="tabBar"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+          <input id="searchInput" placeholder="🔍 搜索饰品… (/ 或 S 键聚焦)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 12px;font-size:12px;width:160px;outline:none;transition:border-color .2s" />
+          <select id="sortOrder" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer">
+            <option value="pnlPct">按盈亏%排序</option>
+            <option value="pnl">按盈亏额排序</option>
+            <option value="p">按现价排序</option>
+            <option value="c">按成本排序</option>
+            <option value="n">按名称排序</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div style="overflow-x:auto">
       <table><thead><tr>
@@ -340,6 +388,25 @@ tbody tr:hover{background:var(--glow-blue)}
       </tr></thead><tbody id="tbody"></tbody></table>
     </div>
     <div id="pager" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:#71717a"></div>
+<div id="pageSizeBar" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:4px 0 10px;font-size:12px;color:var(--text3)">
+  每页 <select id="pageSizeSel" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer">
+    <option value="15">15</option>
+    <option value="30" selected>30</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+  </select> 条
+</div>
+<div id="pageSizeBar" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:4px 0 10px;font-size:12px;color:var(--text3)">
+  每页 <select id="pageSizeSel" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer">
+    <option value="15">15</option>
+    <option value="30" selected>30</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+  </select> 条
+</div>
+    <div id="pageJump" style="display:none;justify-content:center;align-items:center;gap:8px;padding-bottom:10px;font-size:12px;color:var(--text2)">
+      跳至 <input id="pageNumInput" type="number" min="1" style="width:56px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;text-align:center;font-size:12px;outline:none" /> 页 <button id="pageGoBtn" class="tab" style="font-size:12px;padding:4px 12px">跳转</button>
+    </div>
   </div>
 
   <!-- ══════════ 持仓分析 ══════════ -->
@@ -447,10 +514,9 @@ tbody tr:hover{background:var(--glow-blue)}
     </div>
   </div>
 
-  <div class="foot">CS2 饰品投资看板 · ECOSteam · CSQAQ</div>
+  <div class="foot">CS2 饰品投资看板 · ECOSteam · CSQAQ · <span title="J/K 上下翻页 | G 首行 | / 搜索 | Enter 选中 | Esc 清空">⌨ J/K/G / Enter / Esc</span></div>
 
-<div class="modal-overlay" id="tokenModal">
-  <div class="modal">
+<div class="modal-overllass="modal">
     <h3>⚙️ GitHub 自动同步设置</h3>
     <p>配置 GitHub Token 后，编辑购入价会自动同步到仓库，换浏览器也不丢数据。<br>
     Token 只需要 <b>repo</b> 权限（Fine-grained token 推荐，仅授权 cs2-dashboard 仓库）。<br>
@@ -466,9 +532,61 @@ tbody tr:hover{background:var(--glow-blue)}
 </div>
 
 <script>
+// ═══════════════ ECHARTS — 动态加载，不阻塞首屏 ═══════════════
+(function loadEcharts() {
+  if (window.echarts) return;
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js';
+  s.onload = function() { window._echartsReady = 1; };
+  document.head.appendChild(s);
+})();
+
 (function(){
 'use strict';
 
+// ═══════════════ 骨架屏 ═══════════════
+function showSkeleton() {
+  document.body.insertAdjacentHTML('beforeend', `<style>
+.skeleton-wrap{padding:40px 24px;max-width:1280px;margin:0 auto}
+.skeleton-line{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;margin-bottom:12px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-h{height:20px}.skeleton-h-sm{height:14px}.skeleton-h-lg{height:32px}.skeleton-w-lg{width:60%}.skeleton-w-sm{width:35%}.skeleton-w-xs{width:20%}
+.skeleton-card{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:20px}
+.skeleton-rect{height:120px;border-radius:14px}
+</style>`);
+  document.querySelector('.container').innerHTML = `
+<div class="skeleton-wrap">
+  <div class="skeleton-line skeleton-h-sm skeleton-w-lg"></div>
+  <div class="skeleton-line skeleton-h-lg" style="margin-bottom:32px"></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">
+    <div class="skeleton-line" style="height:100px;border-radius:14px"></div>
+    <div class="skeleton-line" style="height:100px;border-radius:14px"></div>
+    <div class="skeleton-line" style="height:100px;border-radius:14px"></div>
+  </div>
+  <div class="skeleton-line skeleton-h-sm" style="margin-bottom:8px"></div>
+  <div class="skeleton-card">
+    <div class="skeleton-line skeleton-rect"></div>
+    <div class="skeleton-line skeleton-rect"></div>
+    <div class="skeleton-line skeleton-rect"></div>
+    <div class="skeleton-line skeleton-rect"></div>
+    <div class="skeleton-line skeleton-rect"></div>
+    <div class="skeleton-line skeleton-rect"></div>
+  </div>
+</div>`;
+}
+showSkeleton();
+  document.body.classList.add('body-fadein');
+
+
+function hideSkeleton() {
+  var el = document.querySelector('.skeleton-wrap');
+  if (el) {
+    el.style.transition = 'opacity 0.4s ease';
+    el.style.opacity = '0';
+    setTimeout(function() { if (el.parentNode) el.remove(); }, 400);
+  }
+  document.body.classList.remove('body-fadein');
+}
 // ═══════════════ CONSTANTS — 唯一真相源 ═══════════════
 // 磨损等级：中文 → 英文缩写 → 中文显示名
 // 与 holdings.json 的 wear 字段对齐（后端已修正：略有磨损=MW, 久经沙场=FT）
@@ -515,7 +633,9 @@ const DOM = {
   recGrid:$('recGrid'), recUpdateTime:$('recUpdateTime'),
   syncStatus:$('syncStatus'), updateTime:$('updateTime'),
   marketSection:$('marketSection'), indexChart:$('indexChart'),
-  tokenModal:$('tokenModal'), tokenInput:$('tokenInput'), tokenStatus:$('tokenStatus')
+  tokenModal:$('tokenModal'), tokenInput:$('tokenInput'), tokenStatus:$('tokenStatus'),
+  searchInput:$('searchInput'), sortOrder:$('sortOrder'),
+  pageJump:$('pageJump'), pageNumInput:$('pageNumInput'), pageGoBtn:$('pageGoBtn')
 };
 
 // ═══════════════ STATE ═══════════════
@@ -533,6 +653,7 @@ let sortDir = 'desc';
 let ec = null;             // ECharts instance
 let filteredCache = null;
 let filterCacheKey = '';
+let searchQuery = '';
 
 const PAGE_SIZE = 30;
 const LS_KEY = 'cs2_cost_overrides';
@@ -582,13 +703,13 @@ let toastEl = null;
 function showToast(msg, duration) {
   if (!toastEl) {
     toastEl = document.createElement('div');
-    toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(22,27,34,.95);border:1px solid rgba(96,165,250,.3);border-radius:10px;padding:10px 20px;font-size:13px;color:#d1d5db;z-index:9999;backdrop-filter:blur(8px);transition:opacity .3s;pointer-events:none;white-space:nowrap';
+    toastEl.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(22,27,34,.97);border:1px solid rgba(96,165,250,.4);border-radius:10px;padding:10px 20px;font-size:13px;color:#d1d5db;z-index:9999;backdrop-filter:blur(12px);transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.3)';
     document.body.appendChild(toastEl);
   }
   toastEl.textContent = msg;
-  toastEl.style.opacity = '1';
+  toastEl.style.opacity = '1'; toastEl.style.transform = 'translateX(-50%) translateY(0)';
   clearTimeout(toastEl._timer);
-  toastEl._timer = setTimeout(() => { toastEl.style.opacity = '0'; }, duration);
+  toastEl._timer = setTimeout(() => { toastEl.style.opacity = '0'; toastEl.style.transform = 'translateX(-50%) translateY(8px)'; }, duration);
 }
 
 // ═══════════════ HELPERS ═══════════════
@@ -770,17 +891,20 @@ async function loadAll() {
   if (marketData && marketData.index) {
     renderMarket(marketData);
   }
+  setTimeout(hideSkeleton, 80);
 }
 
 // ═══════════════ DASHBOARD INIT ═══════════════
 function initDashboard() {
-  updateKPI();
   buildTabs();
-  render();
   renderAlertsTab(currentTab);
   renderRecTab(currentRecTab);
   renderAnalysis();
+  render();
+  updateKPI();
   initNavObserver();
+  if (marketData && marketData.index) renderMarket(marketData);
+  safeInit(initChart);
 }
 
 function updateKPI() {
@@ -808,7 +932,22 @@ function updateKPI() {
     pnlEl.textContent = (isUp ? '+' : '') + '¥' + (tp - tc).toLocaleString();
     pnlEl.style.color = isUp ? 'var(--rise)' : 'var(--fall)';
   }
-  if (pnlPctEl) pnlPctEl.textContent = (isUp ? '+' : '') + tpct.toFixed(2) + '% · ' + Math.round(H.filter(h => h.p > h.c).length / H.length * 100) + '% 胜率';
+  if (pnlPctEl) {
+    var winners = H.filter(function(h){return h.p > h.c;}).length;
+    pnlPctEl.textContent = (isUp ? '+' : '') + tpct.toFixed(2) + '% · ' + Math.round(winners / H.length * 100) + '% 胜率';
+  }
+  var sorted = H.slice().sort(function(a,b){return b.pnlPct - a.pnlPct;});
+  var best = sorted[0], worst = sorted[H.length-1];
+  var bestEl = document.getElementById('bestPerformer');
+  var worstEl = document.getElementById('worstPerformer');
+  if (bestEl && best) {
+    bestEl.textContent = best.n + ' ' + (best.pnlPct>=0?'+':'') + best.pnlPct.toFixed(1) + '%';
+    bestEl.style.color = best.pnlPct >= 0 ? 'var(--fall)' : 'var(--rise)';
+  }
+  if (worstEl && worst) {
+    worstEl.textContent = worst.n + ' ' + (worst.pnlPct>=0?'+':'') + worst.pnlPct.toFixed(1) + '%';
+    worstEl.style.color = worst.pnlPct >= 0 ? 'var(--fall)' : 'var(--rise)';
+  }
   
   if (costEl) costEl.textContent = '¥' + tc.toLocaleString();
 }
@@ -833,11 +972,14 @@ function buildTabs() {
 
 // ═══════════════ TABLE RENDER ═══════════════
 function getFiltered() {
-  const key = curCat + '|' + sortCol + '|' + sortDir + '|' + PAGE_SIZE + '|' + (isBSFilter ? 'bs' : 'all');
+  const key = curCat + '|' + sortCol + '|' + sortDir + '|' + PAGE_SIZE + '|' + searchQuery;
   if (filteredCache && filterCacheKey === key) return filteredCache;
   let raw = curCat === 'all' ? H : H.filter(h => h.t === curCat);
-  // 预过滤 BS(战痕累累)，避免无效数据进入缓存
   raw = raw.filter(h => !isBS(h));
+  if (searchQuery) {
+    const q = searchQuery.trim().toLowerCase();
+    raw = raw.filter(h => h.n.toLowerCase().includes(q) || (WEAR_MAP[h.w]||'').toLowerCase().includes(q));
+  }
   filteredCache = raw.sort((a,b) => {
     const av = a[sortCol] || 0, bv = b[sortCol] || 0;
     if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
@@ -927,10 +1069,13 @@ function render() {
   DOM.tbody.innerHTML = '';
   DOM.tbody.appendChild(frag);
 
-  if (totalPages <= 1) { DOM.pager.innerHTML = ''; return; }
-  DOM.pager.innerHTML = '<button class="tab" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span>'+curPage+' / '+totalPages+' 页</span><button class="tab" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
-  $('pgPrev').onclick = () => { curPage--; render(); };
-  $('pgNext').onclick = () => { curPage++; render(); };
+  if (totalPages <= 1) { DOM.pager.innerHTML = ''; DOM.pageJump.style.display = 'none'; return; }
+  DOM.pager.innerHTML = '<button class="tab" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span>'+curPage+' / '+totalPages+' 页 · '+items.length+' 条</span><button class="tab" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
+  DOM.pageJump.style.display = 'flex';
+  DOM.pageNumInput.max = totalPages;
+  DOM.pageNumInput.value = '';
+  $('pgPrev').onclick = () => { curPage = Math.max(1, curPage - 1); render(); };
+  $('pgNext').onclick = () => { curPage = Math.min(totalPages, curPage + 1); render(); };
 }
 
 // ═══════════════ EVENT HANDLERS ═══════════════
@@ -959,6 +1104,49 @@ document.querySelectorAll('thead th').forEach(th => {
 });
 document.querySelectorAll('thead th')[5].className = 'sort-desc';
 
+// 搜索框
+let searchTimer = null;
+DOM.searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    searchQuery = DOM.searchInput.value;
+    curPage = 1;
+    invalidateCache();
+    render();
+  }, 200);
+});
+
+// 排序下拉框
+DOM.sortOrder.addEventListener('change', () => {
+  const v = DOM.sortOrder.value;
+  sortCol = v;
+  sortDir = 'desc';
+  curPage = 1;
+  invalidateCache();
+  render();
+});
+
+// 页码跳转
+$('pageSizeSel').addEventListener('change', function() {
+  PAGE_SIZE = parseInt(this.value);
+  curPage = 1;
+  invalidateCache();
+  render();
+});
+
+
+DOM.pageSizeSel.onchange = function() { PAGE_SIZE = parseInt(this.value) || 50; curPage = 1; render(); };
+DOM.pageGoBtn.onclick = function() {
+  const n = parseInt(DOM.pageNumInput.value);
+  const totalPages = Math.max(1, Math.ceil(getFiltered().length / PAGE_SIZE));
+  if (!isNaN(n) && n >= 1 && n <= totalPages) {
+    curPage = n;
+    render();
+  }
+};
+DOM.pageNumInput.addEventListener('keydown', e => { if (e.key === 'Enter') DOM.pageGoBtn.click(); });
+DOM.searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { curPage=1; invalidateCache(); render(); } });
+
 DOM.tbody.onclick = function(e) {
   const starBtn = e.target.closest('.row-star');
   if (starBtn) { const gid = +starBtn.dataset.gid; if (gid) toggleStar(gid); return; }
@@ -986,6 +1174,19 @@ DOM.tbody.onclick = function(e) {
   inp.onkeydown = function(e) { if (e.key === 'Enter') save(); if (e.key === 'Escape') { invalidateCache(); render(); } };
 };
 
+function exportCSV() {
+  var rows=[['名称','成本','当前价','盈亏%','类型','品名']];
+  H.forEach(function(s){
+    var cost=getCost(s.name,true);
+    var pnlPct=cost>0?((s.price-cost)/cost*100):0;
+    rows.push([s.name,cost.toFixed(2),s.price.toFixed(2),pnlPct.toFixed(1)+'%',s.listed?'在售':'持仓',s.type||'']);
+  });
+  var csv=rows.map(function(r){return r.map(function(v){var s=String(v);return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='cs2_portfolio_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  URL.revokeObjectURL(a.href);
+}
 $('exportBtn').onclick = function() {
   const blob = new Blob([JSON.stringify(costOverrides, null, 2)], {type:'application/json'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'cost-overrides.json'; a.click();
@@ -1154,6 +1355,30 @@ async function pollUpdateComplete(startTime) {
   }
   return false; // 超时
 }
+
+document.addEventListener('keydown', function(e) {
+  var tag = e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (e.key === 'j' || e.key === 'ArrowDown') { curPage = Math.min(curPage + 1, Math.ceil(getFiltered().length / PAGE_SIZE)); render(); }
+  if (e.key === 'k' || e.key === 'ArrowUp') { curPage = Math.max(curPage - 1, 1); render(); }
+  if (e.key === 'g' && !e.shiftKey) { curPage = 1; render(); }
+  if (e.key === 'G') { curPage = Math.max(1, Math.ceil(getFiltered().length / PAGE_SIZE)); render(); }
+  if (e.key === '/' || e.key === 's') { e.preventDefault(); DOM.searchInput.focus(); }
+  if (e.key === 'Escape') { DOM.searchInput.blur(); DOM.searchInput.value = ''; searchQuery = ''; curPage = 1; invalidateCache(); render(); }
+  if (e.key === 'r') $('refreshBtn').click();
+});
+
+document.addEventListener('keydown', function(e) {
+  var tag = e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (e.key === 'j' || e.key === 'ArrowDown') { curPage = Math.min(curPage + 1, Math.ceil(getFiltered().length / PAGE_SIZE)); render(); }
+  if (e.key === 'k' || e.key === 'ArrowUp') { curPage = Math.max(curPage - 1, 1); render(); }
+  if (e.key === 'g' && !e.shiftKey) { curPage = 1; render(); }
+  if (e.key === 'G') { curPage = Math.max(1, Math.ceil(getFiltered().length / PAGE_SIZE)); render(); }
+  if (e.key === '/' || e.key === 's') { e.preventDefault(); DOM.searchInput.focus(); }
+  if (e.key === 'Escape') { DOM.searchInput.blur(); DOM.searchInput.value = ''; searchQuery = ''; curPage = 1; invalidateCache(); render(); }
+  if (e.key === 'r') $('refreshBtn').click();
+});
 
 $('refreshBtn').onclick = async function() {
   if (isUpdating) return; // 防止重复点击
@@ -1454,9 +1679,32 @@ function renderMarket(D) {
 
   // volData removed
 
-  ec = echarts.init(DOM.indexChart, null, {renderer:'canvas'});
-
+  // Wait for echarts (lazy load), then init chart
+  var echartsReady = false;
+  function safeInit(fn) {
+    if (!window.echarts) {
+      var t = setInterval(() => {
+        if (window.echarts) { clearInterval(t); echartsReady = true; fn(); }
+      }, 50);
+    } else { echartsReady = true; fn(); }
+  }
+  function initChart() {
+    safeInit(doInit);
+  }
+  function doInit() {
+    if (ec) ec.dispose();
+    ec = echarts.init(DOM.indexChart, null, {renderer:'canvas'});
+    DOM.btnLine.onclick = renderLine;
+    DOM.btnCandle.onclick = renderCandle;
+    renderLine();
+    let resizeRaf = 0;
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => ec && ec.resize());
+    });
+  }
   function renderLine() {
+    if (!ec) return;
     DOM.btnLine.className = 'tab on'; DOM.btnCandle.className = 'tab';
     ec.setOption({
       backgroundColor:'transparent',
@@ -1474,8 +1722,8 @@ function renderMarket(D) {
       series:[{type:'line',data:ohlcValues,symbol:'none',lineStyle:{color:'#3b82f6',width:2},areaStyle:{color:'#3b82f614'}}]
     }, true);
   }
-
   function renderCandle() {
+    if (!ec) return;
     DOM.btnCandle.className = 'tab on'; DOM.btnLine.className = 'tab';
     const closes = idx.ohlc.map(c => c.close);
     function ma(arr,n) { return arr.map(function(v,i) { if (i<n-1) return '-'; var s=0; for (var j=0;j<n;j++) s+=arr[i-j]; return Math.round(s/n*100)/100; }); }
@@ -1515,18 +1763,25 @@ function renderMarket(D) {
       ]
     }, true);
   }
-
-  DOM.btnLine.onclick = renderLine;
-  DOM.btnCandle.onclick = renderCandle;
-  renderLine();
-
-  let resizeRaf = 0;
-  window.addEventListener('resize', () => {
-    cancelAnimationFrame(resizeRaf);
-    resizeRaf = requestAnimationFrame(() => ec && ec.resize());
-  });
+  initChart();
 }
+      backgroundColor:'transparent',
+      grid:{top:10,right:30,bottom:25,left:65},
+      xAxis:{type:'category',data:ohlcDates,
+        axisLine:{lineStyle:{color:'#252a36'}},
+        axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},
+        axisTick:{show:false}},
+      yAxis:{type:'value',
+        min:Math.floor(Math.min.apply(null,ohlcValues)/20)*20,
+        max:Math.ceil(Math.max.apply(null,ohlcValues)/20)*20,
+        splitNumber:4,splitLine:{lineStyle:{color:'#1e2130'}},
+        axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
+      tooltip:{trigger:'axis',backgroundColor:'#0f1117',borderColor:'#252a36',textStyle:{color:'#e4e4e7',fontSize:11}},
+      series:[{type:'line',data:ohlcValues,symbol:'none',lineStyle:{color:'#3b82f6',width:2},areaStyle:{color:'#3b82f614'}}]
+    }, true);
+  }
 
+  
 // 热门饰品已移除 — 供需异动数据在 alertsPanel 统一展示
 // ═══════════════ TECHNICAL ANALYSIS HELPERS ═══════════════
 /**
