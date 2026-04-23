@@ -530,9 +530,11 @@ let curCat = 'all';
 let curPage = 1;
 let sortCol = 'pnlPct';
 let sortDir = 'desc';
-let ec = null;             // ECharts instance
+let ec = null;             // ECharts instance (lazy init on chart tab click)
+let ecResizeTimer = 0;
 let filteredCache = null;
 let filterCacheKey = '';
+let isBSFilter = false;
 
 const PAGE_SIZE = 30;
 const LS_KEY = 'cs2_cost_overrides';
@@ -994,6 +996,7 @@ $('exportBtn').onclick = function() {
 // ═══════════════ REFRESH BUTTON ═══════════════
 // 状态跟踪
 let isUpdating = false;
+let updatePhase = 0; // 0=idle,1=loading,2=scanning,3=polling
 let prevSnapshot = null; // 刷新前的数据快照
 
 // 数据快照（用于对比变更）
@@ -1156,8 +1159,8 @@ async function pollUpdateComplete(startTime) {
 }
 
 $('refreshBtn').onclick = async function() {
-  if (isUpdating) return; // 防止重复点击
-  
+  if (updatePhase !== 0) return; // 防止重复点击
+  updatePhase = 1;
   const btn = $('refreshBtn');
   const startTime = Date.now();
   isUpdating = true;
@@ -1172,6 +1175,7 @@ $('refreshBtn').onclick = async function() {
   try {
     await loadAll();
     renderAnalysis();
+    updatePhase = 2;
     const loadTs = new Date(startTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     DOM.updateTime.textContent = '刷新 ' + loadTs;
     $('refreshStatus').textContent = '加载中';
@@ -1208,6 +1212,7 @@ $('refreshBtn').onclick = async function() {
     }
     
     // 阶段3：轮询等待更新完成
+    updatePhase = 3;
     btn.textContent = '⏳ 更新中...';
     const completed = await pollUpdateComplete(startTime);
     
@@ -1242,7 +1247,7 @@ $('refreshBtn').onclick = async function() {
   } finally {
     btn.textContent = '↻ 刷新';
     btn.disabled = false;
-    isUpdating = false;
+    updatePhase = 0; isUpdating = false;
     setTimeout(() => { const rs=$('refreshStatus'); if(rs) { rs.textContent=''; rs.style.color=''; } }, 5000);
   }
 };
@@ -1454,9 +1459,18 @@ function renderMarket(D) {
 
   // volData removed
 
-  ec = echarts.init(DOM.indexChart, null, {renderer:'canvas'});
+  // Lazy init: only create ECharts instance when user clicks a chart tab
+  function ecInit() {
+    if (ec) return; // already inited
+    ec = echarts.init(DOM.indexChart, null, {renderer:'canvas'});
+    window.addEventListener('resize', () => {
+      clearTimeout(ecResizeTimer);
+      ecResizeTimer = setTimeout(() => ec && ec.resize(), 120);
+    });
+  }
 
   function renderLine() {
+    ecInit();
     DOM.btnLine.className = 'tab on'; DOM.btnCandle.className = 'tab';
     ec.setOption({
       backgroundColor:'transparent',
@@ -1476,6 +1490,7 @@ function renderMarket(D) {
   }
 
   function renderCandle() {
+    ecInit();
     DOM.btnCandle.className = 'tab on'; DOM.btnLine.className = 'tab';
     const closes = idx.ohlc.map(c => c.close);
     function ma(arr,n) { return arr.map(function(v,i) { if (i<n-1) return '-'; var s=0; for (var j=0;j<n;j++) s+=arr[i-j]; return Math.round(s/n*100)/100; }); }
