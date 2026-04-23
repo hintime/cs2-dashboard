@@ -79,17 +79,23 @@ jobs:
 
       - name: Commit and push
         run: |
-          # Retry pull to handle race conditions from parallel runs
+          # Save any staged changes as a patch (handles case where python scripts modify files after staging)
+          git diff --cached -o workflow.patch 2>/dev/null || true
+          git reset HEAD -- . 2>/dev/null || true
           for attempt in 1 2 3; do
             git pull --rebase origin main && break
             echo "Pull failed, attempt $attempt/3, retrying..."
             sleep 2
           done
+          # Re-apply staged changes patch if any
+          if [ -f workflow.patch ] && [ -s workflow.patch ]; then
+            git apply workflow.patch
+          fi
           git add -A
-          # Only commit if there are actual changes
           if git diff --cached --quiet; then
             echo "No changes, skipping commit"
           else
             git commit -m "chore: data update $(date +'%Y-%m-%d %H:%M')" --allow-empty
             git push
           fi
+          rm -f workflow.patch
