@@ -1944,32 +1944,55 @@ function getTechSignal({ price, prices = [], candles = [], maStructure, bollinge
   return { signal, reason, strength };
 }
 
+// ═══════════════ TECH INDICATOR CACHE ═══════════════
+let _techCache = {};
+let _techCacheVer = 0;
+let _techCacheItems = null;
+
+function techFor(item) {
+  const key = item.n + '|' + (item.w||'');
+  if (_techCache[key] && _techCache._v === _techCacheVer) return _techCache[key];
+  const prices = (item.price_history||[]).map(h=>h.price);
+  const hasTechData = prices.length >= 5;
+  const mas = {
+    ma5:  prices.length >= 5  ? calcMA(prices, 5)  : null,
+    ma10: prices.length >= 10 ? calcMA(prices, 10) : null,
+    ma30: prices.length >= 30 ? calcMA(prices, 30) : null,
+    ma60: prices.length >= 60 ? calcMA(prices, 60) : null
+  };
+  const bollinger = prices.length >= 10 ? calcBollingerBands(prices, 10, 2) : {upper:null,middle:null,lower:null,width:null};
+  const maStructure = checkMAStructure(mas);
+  const candles = prices.slice(-3).map((p,i,arr)=>({open:arr[i-1]||p,close:p,high:Math.max(p,(arr[i-1]||p)),low:Math.min(p,(arr[i-1]||p))}));
+  const signal = hasTechData ? getTechSignal({price:item.p, prices, candles, maStructure, bollinger}) : {signal:'neutral',reason:'',strength:0};
+  _techCache[key] = {mas, bollinger, maStructure, signal, hasTechData};
+  return _techCache[key];
+}
+
+function invalidateTechCache() {
+  _techCache = {};
+  _techCache._v = ++_techCacheVer;
+}
+
 // ═══════════════ PORTFOLIO ANALYSIS ═══════════════
 function renderAnalysis() {
   const container = document.getElementById('analysisGrid');
   if (!container) return;
-
   const items = H || [];
   if (!items || items.length === 0) {
     container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px;font-size:13px">暂无持仓数据</div>';
     return;
   }
+  invalidateTechCache();
 
   // Build name → rate lookup from alerts (fallback)
   const rateMap = {};
-  (alertsData || []).forEach(a => {
-    rateMap[a.name] = { r1: a.rate_1 || 0, r7: a.rate_7 || 0, r30: a.rate_30 || 0 };
-  });
+  (alertsData || []).forEach(a => { rateMap[a.name] = {r1:a.rate_1||0, r7:a.rate_7||0, r30:a.rate_30||0}; });
 
   // Build name → is recommended
   const allRecs = Object.values(recData || {}).flat();
   const recSet = new Set(allRecs.map(r => r.name));
 
   // Get market recommendations for comparison signals
-  const recs = window.recData || {};
-  const recNames = new Set(
-    (recs.momentum || []).concat(recs.undervalued || []).map(r => r.name)
-  );
 
   // ── Per-item analysis ──
   const analyses = items.map(item => {
@@ -1987,27 +2010,13 @@ function renderAnalysis() {
 
     const isRec = recSet.has(name);
 
-    // ── 技术分析（需要历史数据）──
-    const priceHistory = item.price_history || [];
-    const prices = priceHistory.map(h => h.price);
-    const hasTechData = prices.length >= 5;
-    
-    // 计算均线（需要至少对应周期的数据）
-    const mas = {
-      ma5: prices.length >= 5 ? calcMA(prices, 5) : null,
-      ma10: prices.length >= 10 ? calcMA(prices, 10) : null,
-      ma30: prices.length >= 30 ? calcMA(prices, 30) : null,
-      ma60: prices.length >= 60 ? calcMA(prices, 60) : null
-    };
-    
-    // 计算布林带（需要至少10天数据）
-    const bollinger = prices.length >= 10 ? calcBollingerBands(prices, 10, 2) : { upper: null, middle: null, lower: null, width: null };
-    
-    // 均线排列
-    const maStructure = checkMAStructure(mas);
-    
-    // 技术信号
-    const techSignal = hasTechData ? getTechSignal({ price, prices, mas, bollinger }) : { signal: 'neutral', reason: '', strength: 0 };
+    // ── 技术分析（使用缓存）──
+    const tech = techFor(item);
+    const hasTechData = tech.hasTechData;
+    const mas = tech.mas;
+    const bollinger = tech.bollinger;
+    const maStructure = tech.maStructure;
+    const techSignal = tech.signal;
 
     // ── Trend determination ──
     let trend = 'neutral';
