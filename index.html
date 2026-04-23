@@ -1746,6 +1746,41 @@ function renderMarket(D) {
           if (ma10[di]!=='-') maHtml+='<span style="color:#a78bfa">MA10:'+ma10[di].toFixed(0)+'</span> ';
           if (ma20[di]!=='-') maHtml+='<span style="color:#34d399">MA20:'+ma20[di].toFixed(0)+'</span>';
           return '<div style="line-height:1.7"><b>'+candle.axisValue+'</b><br/>'+
+            'O:'+o.toFixed(2)+' C:<b style="color:'+clr+'">'+c.toFixed(2)+'</b> H:'+h.toFixed(2)+' L:'+l.toFixed(2)+'<br/>'+
+            (isUp?'+':'')+pct+'%<br/>'+maHtml+'</div>';
+        }
+      },
+      series:[
+        {type:'line',name:'MA5',data:ma5,symbol:'none',lineStyle:{color:'#f59e0b',width:1,opacity:0.85}},
+        {type:'line',name:'MA10',data:ma10,symbol:'none',lineStyle:{color:'#a78bfa',width:1,opacity:0.85}},
+        {type:'line',name:'MA20',data:ma20,symbol:'none',lineStyle:{color:'#34d399',width:1,opacity:0.85}},
+        {type:'candlestick',name:'Index',data:ohlcData,itemStyle:{color:'#ef4444',color0:'#22c55e',borderColor:'#ef4444',borderColor0:'#22c55e',borderWidth:1}},
+      ],
+      dataZoom:[
+        {type:'inside',start:Math.max(0,Math.round((1-30/ohlcDates.length)*100)),end:100},
+        {show:false,start:Math.max(0,Math.round((1-30/ohlcDates.length)*100)),end:100}
+      ]
+    }, true);
+  }
+    const ma5=ma(closes,5), ma10=ma(closes,10), ma20=ma(closes,20);
+    const priceMin=Math.floor(Math.min.apply(null,closes)/20)*20;
+    const priceMax=Math.ceil(Math.max.apply(null,closes)/20)*20;
+    ec.setOption({
+      backgroundColor:'transparent',
+      grid:{top:10,right:55,bottom:30,left:65},
+      xAxis:{type:'category',data:ohlcDates,boundaryGap:false,axisLine:{lineStyle:{color:'#252a36'}},axisLabel:{color:'#9ca3af',fontSize:12,interval:Math.max(0,Math.floor(ohlcDates.length/6)-1),formatter:fmtDate},axisTick:{show:false},splitLine:{show:false}},
+      yAxis:{type:'value',min:priceMin,max:priceMax,splitNumber:4,scale:false,splitLine:{lineStyle:{color:'#1e2130'}},axisLabel:{color:'#9ca3af',fontSize:12,formatter:function(v){return v.toFixed(0);}}},
+      tooltip:{trigger:'axis',axisPointer:{type:'cross',crossStyle:{color:'#555'},lineStyle:{color:'#555',type:'dashed'}},backgroundColor:'#0f1117',borderColor:'#252a36',borderWidth:1,padding:[8,12],textStyle:{color:'#e4e4e7',fontSize:11,fontFamily:'monospace'},
+        formatter:function(params) {
+          var candle=null; for (var i=0;i<params.length;i++) { if (params[i].seriesType==='candlestick') {candle=params[i];break;} }
+          if (!candle) return '';
+          var v=candle.value,o=v[0],h=v[1],l=v[2],c=v[3];
+          var isUp=c>=o,clr=isUp?'#ef4444':'#22c55e',pct=((c-o)/o*100).toFixed(2);
+          var di=candle.dataIndex,maHtml='';
+          if (ma5[di]!=='-') maHtml+='<span style="color:#f59e0b">MA5:'+ma5[di].toFixed(0)+'</span> ';
+          if (ma10[di]!=='-') maHtml+='<span style="color:#a78bfa">MA10:'+ma10[di].toFixed(0)+'</span> ';
+          if (ma20[di]!=='-') maHtml+='<span style="color:#34d399">MA20:'+ma20[di].toFixed(0)+'</span>';
+          return '<div style="line-height:1.7"><b>'+candle.axisValue+'</b><br/>'+
             '<span style="color:#9ca3af">开</span>:'+o.toFixed(2)+' <span style="color:#9ca3af">收</span>:<b style="color:'+clr+'">'+c.toFixed(2)+'</b><br/>'+
             '<span style="color:#9ca3af">高</span>:'+h.toFixed(2)+' <span style="color:#9ca3af">低</span>:'+l.toFixed(2)+'<br/>'+
             '<span style="color:'+clr+'">'+(isUp?'▲ ':'▼ ')+'</span>'+(isUp?'+':'')+pct+'%<br/>'+maHtml+'</div>';
