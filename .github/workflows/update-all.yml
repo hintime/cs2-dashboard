@@ -43,6 +43,8 @@ jobs:
         run: |
           git config user.email "hintime@users.noreply.github.com"
           git config user.name "hintime"
+          # Use GH_PAT for push authentication
+          git remote set-url origin "https://x-access-token:${{ secrets.GH_PAT }}@github.com/hintime/cs2-dashboard.git"
 
       - name: Run data update (holdings + market + recommendations)
         if: inputs.mode == 'all' || inputs.mode == '' || inputs.mode == 'prices' || inputs.mode == 'alerts'
