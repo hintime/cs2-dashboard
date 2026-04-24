@@ -41,7 +41,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install pycryptodome
+        run: pip install pycryptodome==3.20.0
 
       - name: Configure git
         run: |

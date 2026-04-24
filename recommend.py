@@ -12,48 +12,15 @@ CS2 饰品购买推荐引擎
 """
 import json, time, base64, urllib.request, ssl, os, sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from eco_sign import get_eco_key, sign_eco
+
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 CSQ_KEY = os.environ.get('CSQ_API_TOKEN', 'HXGPY1R7L5W7K7F3O4K1E2N8')
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
-
-# ═══════════════ ECO SIGNING ═══════════════
-_eco_key = None
-
-def get_eco_key():
-    global _eco_key
-    if _eco_key is not None:
-        return _eco_key
-    from Crypto.PublicKey import RSA
-    key_b64 = os.environ.get('ECO_PRIVATE_KEY_B64')
-    if not key_b64:
-        key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'eco_private_key.txt')
-        if os.path.exists(key_path):
-            with open(key_path, 'r') as f:
-                key_b64 = f.read().strip()
-        else:
-            raise FileNotFoundError('ECO private key not found')
-    pem = '-----BEGIN RSA PRIVATE KEY-----\n' + key_b64 + '\n-----END RSA PRIVATE KEY-----'
-    _eco_key = RSA.import_key(pem)
-    return _eco_key
-
-def sign_eco(params):
-    from Crypto.Signature import pkcs1_15
-    from Crypto.Hash import SHA256
-    key = get_eco_key()
-    sorted_params = sorted(params.items(), key=lambda x: x[0].lower())
-    parts = []
-    for k, v in sorted_params:
-        if v is None or v == '':
-            continue
-        if isinstance(v, (list, dict)):
-            v = json.dumps(v, separators=(',', ':'), ensure_ascii=False)
-        parts.append(f'{k}={v}')
-    sign_str = '&'.join(parts)
-    h = SHA256.new(sign_str.encode('utf-8'))
-    return base64.b64encode(pkcs1_15.new(key).sign(h)).decode()
 
 # ═══════════════ HTTP ═══════════════
 def http_post_raw(url, body, headers=None, timeout=15):

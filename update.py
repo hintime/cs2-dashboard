@@ -14,6 +14,9 @@ CS2 Dashboard 数据更新脚本 (优化版)
 import json, time, base64, urllib.request, urllib.error, subprocess, os, sys, ssl, gzip
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from eco_sign import get_eco_key, sign_eco
+
 # ═══════════════ CONFIG ═══════════════
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 CSQ_KEY = os.environ.get('CSQ_API_TOKEN', 'HXGPY1R7L5W7K7F3O4K1E2N8')
@@ -32,46 +35,6 @@ ctx.verify_mode = ssl.CERT_NONE
 
 # Track which files were modified
 dirty_files = set()
-
-# ═══════════════ ECO SIGNING ═══════════════
-_eco_key = None
-
-def get_eco_key():
-    global _eco_key
-    if _eco_key is not None:
-        return _eco_key
-    from Crypto.PublicKey import RSA
-    key_b64 = os.environ.get('ECO_PRIVATE_KEY_B64')
-    print(f"[DEBUG] ECO_PRIVATE_KEY_B64 from env: {len(key_b64) if key_b64 else 0} chars, starts: {key_b64[:20] if key_b64 else 'None'}")
-    if not key_b64:
-        key_path = os.path.join(DATA_DIR, 'eco_private_key.txt')
-        if os.path.exists(key_path):
-            with open(key_path, 'r') as f:
-                key_b64 = f.read().strip()
-        else:
-            raise FileNotFoundError('ECO private key not found')
-    pem = '-----BEGIN RSA PRIVATE KEY-----\n' + key_b64 + '\n-----END RSA PRIVATE KEY-----'
-    print(f"[DEBUG] PEM header: {pem[:40]}")
-    print(f"[DEBUG] PEM length: {len(pem)}")
-    _eco_key = RSA.import_key(pem)
-    print(f"[DEBUG] RSA import_key succeeded, key size: {_eco_key.size_in_bits()} bits")
-    return _eco_key
-
-def sign_eco(params):
-    from Crypto.Signature import pkcs1_15
-    from Crypto.Hash import SHA256
-    key = get_eco_key()
-    sorted_params = sorted(params.items(), key=lambda x: x[0].lower())
-    parts = []
-    for k, v in sorted_params:
-        if v is None or v == '':
-            continue
-        if isinstance(v, (list, dict)):
-            v = json.dumps(v, separators=(',', ':'), ensure_ascii=False)
-        parts.append(f'{k}={v}')
-    sign_str = '&'.join(parts)
-    h = SHA256.new(sign_str.encode('utf-8'))
-    return base64.b64encode(pkcs1_15.new(key).sign(h)).decode()
 
 # ═══════════════ HTTP HELPERS ═══════════════
 def http_get(url, headers=None, timeout=15):

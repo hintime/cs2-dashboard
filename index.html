@@ -175,9 +175,6 @@ tbody tr:hover td{background:rgba(96,165,250,.07)}
 .loading-overlay{position:fixed;inset:0;z-index:998;opacity:0;pointer-events:none;transition:opacity .3s;background:rgba(13,17,23,.5);display:flex;align-items:center;justify-content:center}
 .loading-overlay.show{opacity:1;pointer-events:auto}
 .loading-overlay::after{content:"正在加载数据...";color:var(--text2);font-size:14px}
-.loading-overlay{position:fixed;inset:0;z-index:998;opacity:0;pointer-events:none;transition:opacity .3s;background:rgba(13,17,23,.5);display:flex;align-items:center;justify-content:center}
-.loading-overlay.show{opacity:1;pointer-events:auto}
-.loading-overlay::after{content:"正在加载数据...";color:var(--text2);font-size:14px}
 .modal-overlay.show{opacity:1;pointer-events:auto}
 .modal{background:rgba(22,27,34,.95);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:28px;width:420px;max-width:90vw;box-shadow:0 16px 48px rgba(0,0,0,.4)}
 .modal h3{margin:0 0 8px;font-size:16px;font-weight:700}
@@ -238,8 +235,7 @@ html { scroll-behavior: smooth; }
 
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)!important;pointer-events:auto}
 .toast.hide{opacity:0;transform:translateX(-50%) translateY(10px)!important;pointer-events:none}
-.sort-asc::after{content:" ▲";font-weight:700}
-.sort-desc::after{content:" ▼";font-weight:700}
+
 .nav-item.active{color:var(--accent)}
 .nav-item.active::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60%;height:2px;background:var(--accent);border-radius:2px}
 </style>
@@ -388,14 +384,6 @@ html { scroll-behavior: smooth; }
       </tr></thead><tbody id="tbody"></tbody></table>
     </div>
     <div id="pager" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:#71717a"></div>
-<div id="pageSizeBar" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:4px 0 10px;font-size:12px;color:var(--text3)">
-  每页 <select id="pageSizeSel" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer">
-    <option value="15">15</option>
-    <option value="30" selected>30</option>
-    <option value="50">50</option>
-    <option value="100">100</option>
-  </select> 条
-</div>
 <div id="pageSizeBar" style="display:flex;justify-content:center;align-items:center;gap:8px;padding:4px 0 10px;font-size:12px;color:var(--text3)">
   每页 <select id="pageSizeSel" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer">
     <option value="15">15</option>
@@ -1127,15 +1115,14 @@ DOM.sortOrder.addEventListener('change', () => {
 });
 
 // 页码跳转
-$('pageSizeSel').addEventListener('change', function() {
-  PAGE_SIZE = parseInt(this.value);
+DOM.pageSizeSel.addEventListener('change', function() {
+  PAGE_SIZE = parseInt(this.value) || 50;
   curPage = 1;
   invalidateCache();
   render();
 });
 
 
-DOM.pageSizeSel.onchange = function() { PAGE_SIZE = parseInt(this.value) || 50; curPage = 1; render(); };
 DOM.pageGoBtn.onclick = function() {
   const n = parseInt(DOM.pageNumInput.value);
   const totalPages = Math.max(1, Math.ceil(getFiltered().length / PAGE_SIZE));
@@ -1166,7 +1153,7 @@ DOM.tbody.onclick = function(e) {
       item.pnl = item.p - val;
       item.pnlPct = val > 0 ? (item.p - val) / val * 100 : 0;
       costOverrides[overrideKey(item.n, item.w)] = val;
-      saveOverrides();
+      saveOverridesDebounced();
     }
     invalidateCache(); updateKPI(); render();
   }
@@ -1196,6 +1183,13 @@ $('exportBtn').onclick = function() {
 // 状态跟踪
 let isUpdating = false;
 let prevSnapshot = null; // 刷新前的数据快照
+
+// cost-overrides 写盘防抖
+let _saveOverridesTimer = null;
+function saveOverridesDebounced() {
+  clearTimeout(_saveOverridesTimer);
+  _saveOverridesTimer = setTimeout(saveOverrides, 300);
+}
 
 // 数据快照（用于对比变更）
 function takeSnapshot() {
@@ -1703,6 +1697,12 @@ function renderMarket(D) {
       resizeRaf = requestAnimationFrame(() => ec && ec.resize());
     });
   }
+  function ecDispose() {
+    if (!ec) return;
+    ec.dispose();
+    ec = null;
+  }
+
   function renderLine() {
     if (!ec) return;
     DOM.btnLine.className = 'tab on'; DOM.btnCandle.className = 'tab';
