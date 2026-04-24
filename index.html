@@ -1058,12 +1058,16 @@ function render() {
   DOM.tbody.appendChild(frag);
 
   if (totalPages <= 1) { DOM.pager.innerHTML = ''; DOM.pageJump.style.display = 'none'; return; }
-  DOM.pager.innerHTML = '<button class="tab" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span>'+curPage+' / '+totalPages+' 页 · '+items.length+' 条</span><button class="tab" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
+  DOM.pager.innerHTML = '<button class="pgr-btn" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span>'+curPage+' / '+totalPages+' 页 · '+items.length+' 条</span><button class="pgr-btn" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
   DOM.pageJump.style.display = 'flex';
   DOM.pageNumInput.max = totalPages;
   DOM.pageNumInput.value = '';
-  $('pgPrev').onclick = () => { curPage = Math.max(1, curPage - 1); render(); };
-  $('pgNext').onclick = () => { curPage = Math.min(totalPages, curPage + 1); render(); };
+  DOM.pager.onclick = e => {
+    const btn = e.target.closest('.pgr-btn');
+    if (!btn || btn.disabled) return;
+    if (btn.id === 'pgPrev') { curPage = Math.max(1, curPage - 1); render(); }
+    if (btn.id === 'pgNext') { curPage = Math.min(totalPages, curPage + 1); render(); }
+  };
 }
 
 // ═══════════════ EVENT HANDLERS ═══════════════
