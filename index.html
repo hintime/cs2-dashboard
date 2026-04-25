@@ -1071,16 +1071,31 @@ function render() {
 }
 
 // ═══════════════ EVENT HANDLERS ═══════════════
-DOM.tabBar.onclick = e => {
-  const btn = e.target.closest('.tab');
-  if (!btn) return;
-  DOM.tabBar.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  curCat = btn.dataset.cat;
-  curPage = 1;
-  invalidateCache();
-  render();
-};
+// tabBar click - use try/catch to avoid null error if element not ready
+try {
+  DOM.tabBar.onclick = e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    DOM.tabBar.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    curCat = btn.dataset.cat;
+    curPage = 1;
+    invalidateCache();
+    render();
+  };
+} catch(e) {
+  // Fallback: event delegation on document
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('#tabBar .tab');
+    if (!btn) return;
+    document.querySelectorAll('#tabBar .tab').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    curCat = btn.dataset.cat;
+    curPage = 1;
+    invalidateCache();
+    render();
+  });
+}
 
 document.querySelectorAll('thead th').forEach(th => {
   th.onclick = () => {
