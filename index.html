@@ -1109,7 +1109,9 @@ document.querySelectorAll('thead th').forEach(th => {
     render();
   };
 });
-document.querySelectorAll('thead th')[5].className = 'sort-desc';
+// Set default sort indicator on 6th column (盈亏%)
+const ths = document.querySelectorAll('thead th');
+if (ths[5]) ths[5].className = 'sort-desc';
 
 // 搜索框
 let searchTimer = null;
