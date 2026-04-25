@@ -1439,7 +1439,9 @@ document.addEventListener('keydown', function(e) {
 });
 
 function setupRefreshBtn() {
-$('refreshBtn').onclick = async function() {
+  const refreshBtn = $('refreshBtn');
+  if (!refreshBtn) return;
+  refreshBtn.onclick = async function() {
   if (isUpdating) return; // 防止重复点击
   
   const btn = $('refreshBtn');
