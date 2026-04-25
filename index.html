@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -1193,6 +1193,7 @@ if (DOM.tbody) {
   inp.onblur = save;
   inp.onkeydown = function(e) { if (e.key === 'Enter') save(); if (e.key === 'Escape') { invalidateCache(); render(); } };
 };
+}
 
 function exportCSV() {
   var rows=[['名称','成本','当前价','盈亏%','类型','品名']];
@@ -2201,4 +2202,5 @@ loadAll().catch(console.error);
 </script>
 </body>
 </html>
+
 
