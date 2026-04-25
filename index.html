@@ -359,7 +359,6 @@ html { scroll-behavior: smooth; }
         <div style="display:flex;align-items:center;gap:12px">
           <button class="export-btn" id="exportBtn" title="导出 cost-overrides.json">📥 导出</button>
           <button class="export-btn" id="csvBtn" title="导出持仓CSV" onclick="exportCSV()">📊 CSV</button>
-          <button class="export-btn" id="csvBtn" title="导出持仓CSV">📊 CSV</button>
           <span class="sync-status" id="syncStatus"></span>
         </div>
       </div>
@@ -804,6 +803,7 @@ function setCachedMarket(market) {
 }
 
 async function loadAll() {
+  try {
   const t0 = Date.now(); // mark refresh time
   await loadOverrides();
 
@@ -880,6 +880,11 @@ async function loadAll() {
     renderMarket(marketData);
   }
   setTimeout(hideSkeleton, 80);
+  } catch(err) {
+    console.error('loadAll error:', err);
+    hideSkeleton();
+    throw err;
+  }
 }
 
 // ═══════════════ DASHBOARD INIT ═══════════════
@@ -2263,7 +2268,11 @@ function updateAnalysisKPI(analyses) {
 
 // ═══════════════ START ═══════════════
 updateWatchCount();
-loadAll().catch(console.error);
+loadAll().catch(function(err) {
+  console.error('loadAll failed:', err);
+  hideSkeleton();
+  document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444"><h2>加载失败</h2><p>' + (err && err.message || '未知错误') + '</p><button onclick="location.reload()" style="margin-top:20px;padding:10px 20px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer">刷新重试</button></div>';
+});
 
 })();
 </script>
