@@ -1619,19 +1619,24 @@ function renderAlertsTab(tab) {
 }
 
 function setupAlertsTabs() {
-$('alertsTabs').onclick = function(e) {
-  const btn = e.target.closest('[data-tab]');
-  if (!btn) return;
-  this.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  renderAlertsTab(btn.dataset.tab);
-};
+  const alertsTabs = $('alertsTabs');
+  if (alertsTabs) {
+    alertsTabs.onclick = function(e) {
+      const btn = e.target.closest('[data-tab]');
+      if (!btn) return;
+      this.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      renderAlertsTab(btn.dataset.tab);
+    };
+  }
+  
+  if (DOM.alertsGrid) {
+    DOM.alertsGrid.onclick = function(e) {
+      const btn = e.target.closest('.a-star');
+      if (btn) toggleStar(+btn.dataset.aid);
+    };
+  }
 }
-
-DOM.alertsGrid.onclick = function(e) {
-  const btn = e.target.closest('.a-star');
-  if (btn) toggleStar(+btn.dataset.aid);
-};
 
 // ═══════════════ RECOMMENDATIONS ═══════════════
 const REC_LABELS = {momentum:'追涨',golden_cross:'金叉',undervalued:'低估',oversold:'超跌',scarce:'稀缺'};
