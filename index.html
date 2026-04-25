@@ -1115,33 +1115,39 @@ if (ths[5]) ths[5].className = 'sort-desc';
 
 // 搜索框
 let searchTimer = null;
-DOM.searchInput.addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    searchQuery = DOM.searchInput.value;
+if (DOM.searchInput) {
+  DOM.searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      searchQuery = DOM.searchInput.value;
+      curPage = 1;
+      invalidateCache();
+      render();
+    }, 200);
+  });
+}
+
+// 排序下拉框
+if (DOM.sortOrder) {
+  DOM.sortOrder.addEventListener('change', () => {
+    const v = DOM.sortOrder.value;
+    sortCol = v;
+    sortDir = 'desc';
     curPage = 1;
     invalidateCache();
     render();
-  }, 200);
-});
-
-// 排序下拉框
-DOM.sortOrder.addEventListener('change', () => {
-  const v = DOM.sortOrder.value;
-  sortCol = v;
-  sortDir = 'desc';
-  curPage = 1;
-  invalidateCache();
-  render();
-});
+  });
+}
 
 // 页码跳转
-DOM.pageSizeSel.addEventListener('change', function() {
-  PAGE_SIZE = parseInt(this.value) || 50;
-  curPage = 1;
-  invalidateCache();
-  render();
-});
+if (DOM.pageSizeSel) {
+  DOM.pageSizeSel.addEventListener('change', function() {
+    PAGE_SIZE = parseInt(this.value) || 50;
+    curPage = 1;
+    invalidateCache();
+    render();
+  });
+}
 
 
 DOM.pageGoBtn.onclick = function() {
