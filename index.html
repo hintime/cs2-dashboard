@@ -1375,8 +1375,11 @@ function renderChangelog(changes) {
 
 // 关闭按钮 - moved to initDashboard
 function setupChangelogClose() {
-  $('changelogClose').onclick = () => {
-    $('changelogPanel').style.display = 'none';
+  const changelogClose = $('changelogClose');
+  if (!changelogClose) return;
+  changelogClose.onclick = () => {
+    const changelogPanel = $('changelogPanel');
+    if (changelogPanel) changelogPanel.style.display = 'none';
     const navBtn = $('changelogNavBtn');
     if (navBtn) navBtn.style.display = 'none';
   };
