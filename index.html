@@ -893,6 +893,24 @@ function initDashboard() {
   initNavObserver();
   if (marketData && marketData.index) renderMarket(marketData);
   safeInit(initChart);
+  
+  // Setup all button handlers
+  setupExportBtn();
+  setupChangelogClose();
+  setupRefreshBtn();
+  setupTokenModal();
+  setupAlertsTabs();
+  setupRecTabs();
+}
+
+function setupExportBtn() {
+  var exportBtn = document.getElementById('exportBtn');
+  if (exportBtn) {
+    exportBtn.onclick = function() {
+      const blob = new Blob([JSON.stringify(costOverrides, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'cost-overrides.json'; a.click();
+    };
+  }
 }
 
 function updateKPI() {
@@ -1208,10 +1226,7 @@ function exportCSV() {
   a.download='cs2_portfolio_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
   URL.revokeObjectURL(a.href);
 }
-$('exportBtn').onclick = function() {
-  const blob = new Blob([JSON.stringify(costOverrides, null, 2)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'cost-overrides.json'; a.click();
-};
+
 
 // ═══════════════ REFRESH BUTTON ═══════════════
 // 状态跟踪
@@ -1348,12 +1363,14 @@ function renderChangelog(changes) {
   panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
 }
 
-// 关闭按钮
-$('changelogClose').onclick = () => {
-  $('changelogPanel').style.display = 'none';
-  const navBtn = $('changelogNavBtn');
-  if (navBtn) navBtn.style.display = 'none';
-};
+// 关闭按钮 - moved to initDashboard
+function setupChangelogClose() {
+  $('changelogClose').onclick = () => {
+    $('changelogPanel').style.display = 'none';
+    const navBtn = $('changelogNavBtn');
+    if (navBtn) navBtn.style.display = 'none';
+  };
+}
 
 // 轮询检查更新是否完成
 async function pollUpdateComplete(startTime) {
@@ -1408,6 +1425,7 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'r') $('refreshBtn').click();
 });
 
+function setupRefreshBtn() {
 $('refreshBtn').onclick = async function() {
   if (isUpdating) return; // 防止重复点击
   
@@ -1499,7 +1517,9 @@ $('refreshBtn').onclick = async function() {
     setTimeout(() => { const rs=$('refreshStatus'); if(rs) { rs.textContent=''; rs.style.color=''; } }, 5000);
   }
 };
+} // end setupRefreshBtn
 
+function setupTokenModal() {
 $('gearBtn').onclick = function() {
   DOM.tokenInput.value = ghToken;
   DOM.tokenStatus.textContent = ghToken ? '✅ 已配置 Token' : '⚠️ 未配置，编辑不会自动同步';
@@ -1523,7 +1543,8 @@ $('tokenSave').onclick = async function() {
     } else { DOM.tokenStatus.textContent = '❌ Token 无效或无权限'; }
   } catch(e) { DOM.tokenStatus.textContent = '❌ 网络错误'; }
 };
-DOM.tokenModal.onclick = function(e) { if (e.target === this) this.classList.remove('show'); };
+DOM.tokenModal.onclick = function(e) { if (e.target === this) this.classList.remove('show'); }
+} // end setupTokenModal
 
 // ═══════════════ ALERTS ═══════════════
 function renderAlertsTab(tab) {
@@ -1597,6 +1618,7 @@ function renderAlertsTab(tab) {
   grid.appendChild(frag);
 }
 
+function setupAlertsTabs() {
 $('alertsTabs').onclick = function(e) {
   const btn = e.target.closest('[data-tab]');
   if (!btn) return;
@@ -1604,6 +1626,7 @@ $('alertsTabs').onclick = function(e) {
   btn.classList.add('on');
   renderAlertsTab(btn.dataset.tab);
 };
+}
 
 DOM.alertsGrid.onclick = function(e) {
   const btn = e.target.closest('.a-star');
@@ -1673,6 +1696,7 @@ function renderRecTab(tab) {
   grid.appendChild(frag);
 }
 
+function setupRecTabs() {
 $('recTabs').onclick = function(e) {
   const btn = e.target.closest('[data-tab]');
   if (!btn) return;
@@ -1680,6 +1704,7 @@ $('recTabs').onclick = function(e) {
   btn.classList.add('on');
   renderRecTab(btn.dataset.tab);
 };
+} // end setupRecTabs
 
 // ═══════════════ MARKET CHART (only when index data exists) ═══════════════
 function renderMarket(D) {
