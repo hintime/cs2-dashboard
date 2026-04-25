@@ -776,7 +776,7 @@ async function loadOverrides() {
 
 // ═══════════════ STAR SYSTEM ═══════════════
 function saveStars() { localStorage.setItem(LS_STARRED, JSON.stringify(starred)); updateWatchCount(); }
-function updateWatchCount() { DOM.watchCount.textContent = Object.keys(starred).filter(k => starred[k]).length; }
+function updateWatchCount() { if (DOM.watchCount) DOM.watchCount.textContent = Object.keys(starred).filter(k => starred[k]).length; }
 function toggleStar(goodId) {
   starred[goodId] = !starred[goodId];
   saveStars();
@@ -856,21 +856,21 @@ async function loadAll() {
   if (marketR) {
     marketData = marketR;
     const ut = marketR.update_time || marketR.alerts_updated || marketR.items_updated;
-    if (ut) {
+    if (ut && DOM.updateTime) {
       DOM.updateTime.textContent = '数据 ' + new Date(ut).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-    } else {
+    } else if (DOM.updateTime) {
       DOM.updateTime.textContent = '刷新 ' + new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     }
     alertsData = Array.isArray(marketR.alerts) ? marketR.alerts : [];
     recData = marketR.recommendations || {};
-    if (marketR.alerts_updated) {
+    if (marketR.alerts_updated && DOM.alertsUpdateTime) {
       try {
         DOM.alertsUpdateTime.textContent = new Date(marketR.alerts_updated).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
       } catch(e) {}
     }
     // 推荐板块显示当前加载时间（随刷新按钮更新）
-    DOM.recUpdateTime.textContent = new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-  } else {
+    if (DOM.recUpdateTime) DOM.recUpdateTime.textContent = new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  } else if (DOM.updateTime) {
     // no market.json at all — show refresh time
     DOM.updateTime.textContent = '刷新 ' + new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
   }
@@ -973,7 +973,7 @@ function buildTabs() {
   cats.forEach(c => {
     html += '<button class="tab ' + (c.key === 'all' ? 'on' : '') + '" data-cat="' + c.key + '">' + c.label + ' ' + c.count + '</button>';
   });
-  DOM.tabBar.innerHTML = html;
+  if (DOM.tabBar) DOM.tabBar.innerHTML = html;
 }
 
 // ═══════════════ TABLE RENDER ═══════════════
@@ -1050,7 +1050,7 @@ function initNavObserver() {
 
 function render() {
   const items = getFiltered();
-  DOM.countBadge.textContent = items.length;
+  if (DOM.countBadge) DOM.countBadge.textContent = items.length;
   const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
   if (curPage > totalPages) curPage = totalPages;
   const start = (curPage - 1) * PAGE_SIZE;
@@ -1072,25 +1072,35 @@ function render() {
       '<td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td>';
     frag.appendChild(tr);
   });
-  DOM.tbody.innerHTML = '';
-  DOM.tbody.appendChild(frag);
+  if (DOM.tbody) {
+    DOM.tbody.innerHTML = '';
+    DOM.tbody.appendChild(frag);
+  }
 
-  if (totalPages <= 1) { DOM.pager.innerHTML = ''; DOM.pageJump.style.display = 'none'; return; }
-  DOM.pager.innerHTML = '<button class="pgr-btn" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span>'+curPage+' / '+totalPages+' 页 · '+items.length+' 条</span><button class="pgr-btn" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
-  DOM.pageJump.style.display = 'flex';
-  DOM.pageNumInput.max = totalPages;
-  DOM.pageNumInput.value = '';
-  DOM.pager.onclick = e => {
-    const btn = e.target.closest('.pgr-btn');
-    if (!btn || btn.disabled) return;
-    if (btn.id === 'pgPrev') { curPage = Math.max(1, curPage - 1); render(); }
-    if (btn.id === 'pgNext') { curPage = Math.min(totalPages, curPage + 1); render(); }
-  };
+  if (totalPages <= 1) { 
+    if (DOM.pager) DOM.pager.innerHTML = ''; 
+    if (DOM.pageJump) DOM.pageJump.style.display = 'none'; 
+    return; 
+  }
+  if (DOM.pager) {
+    DOM.pager.innerHTML = '<button class="pgr-btn" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span>'+curPage+' / '+totalPages+' 页 · '+items.length+' 条</span><button class="pgr-btn" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
+    DOM.pager.onclick = e => {
+      const btn = e.target.closest('.pgr-btn');
+      if (!btn || btn.disabled) return;
+      if (btn.id === 'pgPrev') { curPage = Math.max(1, curPage - 1); render(); }
+      if (btn.id === 'pgNext') { curPage = Math.min(totalPages, curPage + 1); render(); }
+    };
+  }
+  if (DOM.pageJump) DOM.pageJump.style.display = 'flex';
+  if (DOM.pageNumInput) {
+    DOM.pageNumInput.max = totalPages;
+    DOM.pageNumInput.value = '';
+  }
 }
 
 // ═══════════════ EVENT HANDLERS ═══════════════
 // tabBar click - use try/catch to avoid null error if element not ready
-try {
+if (DOM.tabBar) {
   DOM.tabBar.onclick = e => {
     const btn = e.target.closest('.tab');
     if (!btn) return;
@@ -1101,7 +1111,7 @@ try {
     invalidateCache();
     render();
   };
-} catch(e) {
+} else {
   // Fallback: event delegation on document
   document.addEventListener('click', e => {
     const btn = e.target.closest('#tabBar .tab');
@@ -1444,7 +1454,7 @@ $('refreshBtn').onclick = async function() {
     await loadAll();
     renderAnalysis();
     const loadTs = new Date(startTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-    DOM.updateTime.textContent = '刷新 ' + loadTs;
+    if (DOM.updateTime) DOM.updateTime.textContent = '刷新 ' + loadTs;
     $('refreshStatus').textContent = '加载中';
     $('refreshStatus').style.color = '';
     showToast('📊 已加载本地数据，开始全量扫描...', 2000);
@@ -1486,7 +1496,7 @@ $('refreshBtn').onclick = async function() {
       // 更新完成，重新加载数据
       await loadAll();
       const finalTs = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-      DOM.updateTime.textContent = '更新 ' + finalTs;
+      if (DOM.updateTime) DOM.updateTime.textContent = '更新 ' + finalTs;
       $('refreshStatus').textContent = '✅ 成功';
       $('refreshStatus').style.color = '#4ade80';
       
@@ -1520,30 +1530,44 @@ $('refreshBtn').onclick = async function() {
 } // end setupRefreshBtn
 
 function setupTokenModal() {
-$('gearBtn').onclick = function() {
-  DOM.tokenInput.value = ghToken;
-  DOM.tokenStatus.textContent = ghToken ? '✅ 已配置 Token' : '⚠️ 未配置，编辑不会自动同步';
-  DOM.tokenModal.classList.add('show');
-};
-$('tokenCancel').onclick = () => DOM.tokenModal.classList.remove('show');
-$('tokenClear').onclick = function() {
-  ghToken = ''; localStorage.removeItem(LS_TOKEN_KEY);
-  DOM.tokenInput.value = ''; DOM.tokenStatus.textContent = '🗑️ Token 已清除';
-};
-$('tokenSave').onclick = async function() {
-  const token = DOM.tokenInput.value.trim();
-  if (!token) { DOM.tokenStatus.textContent = '⚠️ 请输入 Token'; return; }
-  DOM.tokenStatus.textContent = '⏳ 验证中...';
-  try {
-    const r = await fetch('https://api.github.com/repos/'+GH_REPO, {headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}});
-    if (r.ok) {
-      ghToken = token; localStorage.setItem(LS_TOKEN_KEY, token);
-      DOM.tokenStatus.textContent = '✅ Token 有效，已保存！';
-      setTimeout(() => DOM.tokenModal.classList.remove('show'), 1500);
-    } else { DOM.tokenStatus.textContent = '❌ Token 无效或无权限'; }
-  } catch(e) { DOM.tokenStatus.textContent = '❌ 网络错误'; }
-};
-DOM.tokenModal.onclick = function(e) { if (e.target === this) this.classList.remove('show'); }
+  const gearBtn = $('gearBtn');
+  if (gearBtn) {
+    gearBtn.onclick = function() {
+      if (DOM.tokenInput) DOM.tokenInput.value = ghToken;
+      if (DOM.tokenStatus) DOM.tokenStatus.textContent = ghToken ? '✅ 已配置 Token' : '⚠️ 未配置，编辑不会自动同步';
+      if (DOM.tokenModal) DOM.tokenModal.classList.add('show');
+    };
+  }
+  const tokenCancel = $('tokenCancel');
+  if (tokenCancel) tokenCancel.onclick = () => DOM.tokenModal && DOM.tokenModal.classList.remove('show');
+  const tokenClear = $('tokenClear');
+  if (tokenClear) {
+    tokenClear.onclick = function() {
+      ghToken = ''; localStorage.removeItem(LS_TOKEN_KEY);
+      if (DOM.tokenInput) DOM.tokenInput.value = '';
+      if (DOM.tokenStatus) DOM.tokenStatus.textContent = '🗑️ Token 已清除';
+    };
+  }
+  const tokenSave = $('tokenSave');
+  if (tokenSave) {
+    tokenSave.onclick = async function() {
+      if (!DOM.tokenInput || !DOM.tokenStatus) return;
+      const token = DOM.tokenInput.value.trim();
+      if (!token) { DOM.tokenStatus.textContent = '⚠️ 请输入 Token'; return; }
+      DOM.tokenStatus.textContent = '⏳ 验证中...';
+      try {
+        const r = await fetch('https://api.github.com/repos/'+GH_REPO, {headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}});
+        if (r.ok) {
+          ghToken = token; localStorage.setItem(LS_TOKEN_KEY, token);
+          DOM.tokenStatus.textContent = '✅ Token 有效，已保存！';
+          setTimeout(() => DOM.tokenModal && DOM.tokenModal.classList.remove('show'), 1500);
+        } else { DOM.tokenStatus.textContent = '❌ Token 无效或无权限'; }
+      } catch(e) { DOM.tokenStatus.textContent = '❌ 网络错误'; }
+    };
+  }
+  if (DOM.tokenModal) {
+    DOM.tokenModal.onclick = function(e) { if (e.target === this) this.classList.remove('show'); }
+  }
 } // end setupTokenModal
 
 // ═══════════════ ALERTS ═══════════════
@@ -1702,13 +1726,16 @@ function renderRecTab(tab) {
 }
 
 function setupRecTabs() {
-$('recTabs').onclick = function(e) {
-  const btn = e.target.closest('[data-tab]');
-  if (!btn) return;
-  this.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  renderRecTab(btn.dataset.tab);
-};
+  const recTabs = $('recTabs');
+  if (recTabs) {
+    recTabs.onclick = function(e) {
+      const btn = e.target.closest('[data-tab]');
+      if (!btn) return;
+      this.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      renderRecTab(btn.dataset.tab);
+    };
+  }
 } // end setupRecTabs
 
 // ═══════════════ MARKET CHART (only when index data exists) ═══════════════
@@ -1716,13 +1743,17 @@ function renderMarket(D) {
   const idx = D.index;
   if (!idx || !idx.ohlc || !idx.ohlc.length) return;
 
-  DOM.marketSection.style.display = '';
+  if (DOM.marketSection) DOM.marketSection.style.display = '';
   const clr = idx.change >= 0 ? 'var(--rise)' : 'var(--fall)';
-  DOM.miNum.textContent = idx.latest.toFixed(2);
-  DOM.miNum.style.color = clr;
-  DOM.miChg.textContent = (idx.change >= 0 ? '+' : '') + idx.change.toFixed(2) + '%';
-  DOM.miChg.style.color = clr;
-  if (idx.updated) {
+  if (DOM.miNum) {
+    DOM.miNum.textContent = idx.latest.toFixed(2);
+    DOM.miNum.style.color = clr;
+  }
+  if (DOM.miChg) {
+    DOM.miChg.textContent = (idx.change >= 0 ? '+' : '') + idx.change.toFixed(2) + '%';
+    DOM.miChg.style.color = clr;
+  }
+  if (idx.updated && DOM.miTime) {
     DOM.miTime.textContent = new Date(idx.updated).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
   }
 
@@ -1751,9 +1782,10 @@ function renderMarket(D) {
   }
   function doInit() {
     if (ec) ec.dispose();
+    if (!DOM.indexChart) return;
     ec = echarts.init(DOM.indexChart, null, {renderer:'canvas'});
-    DOM.btnLine.onclick = renderLine;
-    DOM.btnCandle.onclick = renderCandle;
+    if (DOM.btnLine) DOM.btnLine.onclick = renderLine;
+    if (DOM.btnCandle) DOM.btnCandle.onclick = renderCandle;
     renderLine();
     let resizeRaf = 0;
     window.addEventListener('resize', () => {
