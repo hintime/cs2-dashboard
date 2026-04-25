@@ -1150,18 +1150,24 @@ if (DOM.pageSizeSel) {
 }
 
 
-DOM.pageGoBtn.onclick = function() {
-  const n = parseInt(DOM.pageNumInput.value);
-  const totalPages = Math.max(1, Math.ceil(getFiltered().length / PAGE_SIZE));
-  if (!isNaN(n) && n >= 1 && n <= totalPages) {
-    curPage = n;
-    render();
-  }
-};
-DOM.pageNumInput.addEventListener('keydown', e => { if (e.key === 'Enter') DOM.pageGoBtn.click(); });
-DOM.searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { curPage=1; invalidateCache(); render(); } });
-
-DOM.tbody.onclick = function(e) {
+if (DOM.pageGoBtn) {
+  DOM.pageGoBtn.onclick = function() {
+    const n = parseInt(DOM.pageNumInput.value);
+    const totalPages = Math.max(1, Math.ceil(getFiltered().length / PAGE_SIZE));
+    if (!isNaN(n) && n >= 1 && n <= totalPages) {
+      curPage = n;
+      render();
+    }
+  };
+}
+if (DOM.pageNumInput) {
+  DOM.pageNumInput.addEventListener('keydown', e => { if (e.key === 'Enter') DOM.pageGoBtn && DOM.pageGoBtn.click(); });
+}
+if (DOM.searchInput) {
+  DOM.searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { curPage=1; invalidateCache(); render(); } });
+}
+if (DOM.tbody) {
+  DOM.tbody.onclick = function(e) {
   const starBtn = e.target.closest('.row-star');
   if (starBtn) { const gid = +starBtn.dataset.gid; if (gid) toggleStar(gid); return; }
 
