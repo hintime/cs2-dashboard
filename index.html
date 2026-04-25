@@ -892,7 +892,7 @@ function initDashboard() {
   updateKPI();
   initNavObserver();
   if (marketData && marketData.index) renderMarket(marketData);
-  safeInit(initChart);
+  if (typeof safeInit === 'function') safeInit(initChart);
   
   // Setup all button handlers
   setupExportBtn();
