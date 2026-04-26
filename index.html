@@ -895,6 +895,17 @@ async function loadAll() {
 
 // ═══════════════ DASHBOARD INIT ═══════════════
 function initDashboard() {
+  // Re-query DOM elements after skeleton overlay removed
+  DOM.tbody = document.getElementById('tbody');
+  DOM.pager = document.getElementById('pager');
+  DOM.countBadge = document.getElementById('countBadge');
+  DOM.pageJump = document.getElementById('pageJump');
+  DOM.pageNumInput = document.getElementById('pageNumInput');
+  DOM.tabBar = document.getElementById('tabBar');
+  DOM.updateTime = document.getElementById('updateTime');
+  DOM.alertsUpdateTime = document.getElementById('alertsUpdateTime');
+  DOM.recUpdateTime = document.getElementById('recUpdateTime');
+  
   buildTabs();
   renderAlertsTab(currentTab);
   renderRecTab(currentRecTab);
