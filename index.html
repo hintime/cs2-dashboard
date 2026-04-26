@@ -818,8 +818,10 @@ async function loadAll() {
   const holdingsR = await fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
 
   // ── Process holdings ──
+  console.log('holdingsR:', holdingsR);
   if (holdingsR && Array.isArray(holdingsR.items)) {
     H = [];
+    console.log('holdingsR.items.length:', holdingsR.items.length);
     holdingsR.items.forEach(item => {
       const catKey = CAT_MAP[item.category] || 'other';
       const wearCode = item.wear || '';  // FN/MW/FT/WW/BS/other/'' 
@@ -875,6 +877,7 @@ async function loadAll() {
     DOM.updateTime.textContent = '刷新 ' + new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
   }
 
+  console.log('H.length before initDashboard:', H.length);
   initDashboard();
   if (marketData && marketData.index) {
     renderMarket(marketData);
