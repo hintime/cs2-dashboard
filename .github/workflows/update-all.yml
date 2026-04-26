@@ -67,7 +67,7 @@ jobs:
           echo "=== END update.py ($(date)) ==="
 
       - name: Run market index collector
-        if: inputs.mode == 'all' || inputs.mode == '' || inputs.mode == 'index'
+        if: github.event_name == 'schedule' || inputs.mode == 'all' || inputs.mode == '' || inputs.mode == 'index'
         env:
           ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
