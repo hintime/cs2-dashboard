@@ -533,15 +533,17 @@ html { scroll-behavior: smooth; }
 
 // ═══════════════ 骨架屏 ═══════════════
 function showSkeleton() {
-  document.body.insertAdjacentHTML('beforeend', `<style>
-.skeleton-wrap{padding:40px 24px;max-width:1280px;margin:0 auto}
+  // Create overlay instead of replacing content
+  var overlay = document.createElement('div');
+  overlay.id = 'skeleton-overlay';
+  overlay.innerHTML = `<style>
+#skeleton-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:var(--bg);padding:40px 24px;max-width:1280px;margin:0 auto}
 .skeleton-line{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;margin-bottom:12px}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .skeleton-h{height:20px}.skeleton-h-sm{height:14px}.skeleton-h-lg{height:32px}.skeleton-w-lg{width:60%}.skeleton-w-sm{width:35%}.skeleton-w-xs{width:20%}
 .skeleton-card{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:20px}
 .skeleton-rect{height:120px;border-radius:14px}
-</style>`);
-  document.querySelector('.container').innerHTML = `
+</style>
 <div class="skeleton-wrap">
   <div class="skeleton-line skeleton-h-sm skeleton-w-lg"></div>
   <div class="skeleton-line skeleton-h-lg" style="margin-bottom:32px"></div>
@@ -560,13 +562,14 @@ function showSkeleton() {
     <div class="skeleton-line skeleton-rect"></div>
   </div>
 </div>`;
+  document.body.appendChild(overlay);
 }
 showSkeleton();
   document.body.classList.add('body-fadein');
 
 
 function hideSkeleton() {
-  var el = document.querySelector('.skeleton-wrap');
+  var el = document.getElementById('skeleton-overlay');
   if (el) {
     el.style.transition = 'opacity 0.4s ease';
     el.style.opacity = '0';
