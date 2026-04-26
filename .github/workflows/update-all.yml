@@ -108,5 +108,7 @@ jobs:
             echo "No changes, skipping commit"
           else
             git commit -m "chore: data update $(date +'%Y-%m-%d %H:%M')" --allow-empty
+            # Pull latest changes before pushing to avoid rejection
+            git pull --rebase origin main || true
             git push
           fi
