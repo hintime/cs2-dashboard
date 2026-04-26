@@ -85,8 +85,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
+          # Debug: check if token is set (mask it)
+          echo "Token length: ${#GH_TOKEN}"
+          echo "Token empty: $([ -z "$GH_TOKEN" ] && echo 'YES' || echo 'NO')"
           # Configure git remote with token for authentication
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+          echo "Remote URL configured"
           # Stash all local changes
           git stash -u -m "workflow-all" || true
           for attempt in 1 2 3; do
