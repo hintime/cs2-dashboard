@@ -83,11 +83,16 @@ jobs:
 
       - name: Commit and push
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
         run: |
           # Debug: check if token is set (mask it)
           echo "Token length: ${#GH_TOKEN}"
           echo "Token empty: $([ -z "$GH_TOKEN" ] && echo 'YES' || echo 'NO')"
+          # Exit if token is empty
+          if [ -z "$GH_TOKEN" ]; then
+            echo "ERROR: GH_TOKEN is empty. Please set GH_PAT secret in repository settings."
+            exit 1
+          fi
           # Configure git remote with token for authentication
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
           echo "Remote URL configured"
