@@ -82,7 +82,11 @@ jobs:
           git status --short
 
       - name: Commit and push
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
+          # Configure git remote with token for authentication
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
           # Stash all local changes
           git stash -u -m "workflow-all" || true
           for attempt in 1 2 3; do
