@@ -81,12 +81,12 @@ jobs:
           git status --short
 
       - name: Commit and push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Use GITHUB_TOKEN for authentication (provided by GitHub Actions)
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
           echo "Remote URL configured with GITHUB_TOKEN"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Stash all local changes
           git stash -u -m "workflow-all" || true
           for attempt in 1 2 3; do
