@@ -1521,30 +1521,21 @@ function setupRefreshBtn() {
   $('refreshStatus').textContent = '扫描中';
   
   try {
-    // 阶段2：直接从 API 获取最新数据
+    // 阶段2：清除缓存并重新加载最新数据
     btn.textContent = '⏳ 更新中...';
     $('refreshStatus').textContent = '获取最新数据...';
     
-    // 尝试从 CSQAQ API 获取实时数据
-    const freshData = await fetchFreshData();
-    if (freshData) {
-      // 更新 holdings 数据
-      if (freshData.holdings) {
-        H = freshData.holdings;
-        // 保存到 localStorage 缓存
-        try { localStorage.setItem('cs2_holdings_cache', JSON.stringify({ts: Date.now(), data: freshData.holdings})); } catch(e) {}
-      }
-      // 更新 market 数据
-      if (freshData.market) {
-        marketData = freshData.market;
-        alertsData = Array.isArray(freshData.market.alerts) ? freshData.market.alerts : [];
-        recData = freshData.market.recommendations || {};
-        try { localStorage.setItem('cs2_market_cache', JSON.stringify({ts: Date.now(), data: freshData.market})); } catch(e) {}
-      }
-      showToast('✅ 已获取最新数据', 2000);
-    }
+    // 清除 localStorage 缓存
+    try {
+      localStorage.removeItem(CACHE_KEY);
+      localStorage.removeItem('cs2_holdings_cache');
+      localStorage.removeItem('cs2_market_cache');
+    } catch(e) {}
     
-    // 阶段3：重新渲染
+    // 重新加载数据（强制从服务器获取最新）
+    await loadAll();
+    
+    // 重新渲染
     initDashboard();
     const finalTs = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     if (DOM.updateTime) DOM.updateTime.textContent = '更新 ' + finalTs;
