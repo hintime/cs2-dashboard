@@ -680,8 +680,9 @@ def main():
                 new_price = prices[hn]
                 old_price = item.get('price', 0)
 
-                # 更新价格
+                # 更新价格（同时保存 ECO 价格）
                 item['price'] = new_price
+                item['eco_price'] = new_price
                 updated += 1
 
                 # 记录历史价格（用于计算涨跌率）

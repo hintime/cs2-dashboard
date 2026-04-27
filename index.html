@@ -380,7 +380,7 @@ html { scroll-behavior: smooth; }
     <div style="overflow-x:auto">
       <table><thead><tr>
         <th data-col="n">饰品</th><th data-col="w">磨损</th><th data-col="c" class="text-r">成本</th>
-        <th data-col="p" class="text-r">现价</th><th data-col="pnl" class="text-r">盈亏</th><th data-col="pnlPct" class="text-r">盈亏%</th>
+        <th data-col="p" class="text-r">现价</th><th data-col="eco_price" class="text-r">ECO价</th><th data-col="pnl" class="text-r">盈亏</th><th data-col="pnlPct" class="text-r">盈亏%</th>
       </tr></thead><tbody id="tbody"></tbody></table>
     </div>
     <div id="pager" style="display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:#71717a"></div>
@@ -870,6 +870,7 @@ async function loadAll() {
           q: 1,
           c: cU,
           p: pricePerUnit,
+          eco_price: item.eco_price || 0,
           pnl: pricePerUnit - cU,
           pnlPct: cU > 0 ? (pricePerUnit - cU) / cU * 100 : 0,
           gid: item.id || 0,
@@ -1138,6 +1139,7 @@ function render() {
       '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
       '<td class="text-r mono"><span class="cost-val">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'" title="编辑购入价">✏️</span>'+(edited?'<span style="color:var(--blue);font-size:9px;margin-left:2px">已改</span>':'')+'</td>'+
       '<td class="text-r mono">¥'+h.p.toFixed(2)+'</td>'+
+      '<td class="text-r mono">'+(h.eco_price ? '¥'+h.eco_price.toFixed(2) : '--')+'</td>'+
       '<td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td>'+
       '<td class="text-r"><span class="'+pnlCls+'">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span></td>';
     frag.appendChild(tr);
@@ -1207,7 +1209,7 @@ document.querySelectorAll('thead th').forEach(th => {
     render();
   };
 });
-// Set default sort indicator on 6th column (盈亏%)
+// Set default sort indicator on 7th column (盈亏%)
 const ths = document.querySelectorAll('thead th');
 if (ths[5]) ths[5].className = 'sort-desc';
 
