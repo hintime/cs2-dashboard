@@ -1010,8 +1010,21 @@ function updateKPI() {
   if (dataStatusEl) {
     const now = new Date();
     const timeStr = now.toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
-    dataStatusEl.textContent = '更新于 ' + timeStr;
+    const source = ghToken ? 'CSQAQ API + 本地' : '本地 JSON';
+    dataStatusEl.textContent = '页面刷新: ' + timeStr + ' · 来源: ' + source;
     dataStatusEl.style.color = 'var(--text2)';
+  }
+  
+  // 显示数据文件更新时间
+  const marketTime = marketData?.update_time || marketData?.items_updated;
+  const holdingsTime = holdingsR?.update_time;
+  if (marketTime || holdingsTime) {
+    const times = [];
+    if (marketTime) times.push('市场: ' + new Date(marketTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}));
+    if (holdingsTime) times.push('持仓: ' + new Date(holdingsTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}));
+    if (times.length && dataStatusEl) {
+      dataStatusEl.textContent += ' · ' + times.join(' · ');
+    }
   }
 }
 
