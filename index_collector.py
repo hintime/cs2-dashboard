@@ -40,7 +40,15 @@ def get_eco_key():
     key_b64 = os.environ.get('ECO_PRIVATE_KEY_B64', '')
     if key_b64:
         try:
-            _eco_key = RSA.import_key(base64.b64decode(key_b64))
+            # 尝试解码 Base64
+            decoded = base64.b64decode(key_b64).decode('utf-8')
+            # 如果解码后是 PEM 格式（含头尾），直接使用
+            if '-----BEGIN' in decoded:
+                _eco_key = RSA.import_key(decoded)
+            else:
+                # 纯密钥内容，需要包装成 PEM
+                pem = '-----BEGIN RSA PRIVATE KEY-----\n' + decoded + '\n-----END RSA PRIVATE KEY-----'
+                _eco_key = RSA.import_key(pem)
             return _eco_key
         except Exception as e:
             print(f'[WARN] ECO key decode failed: {e}')
