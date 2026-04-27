@@ -805,6 +805,31 @@ function setCachedMarket(market) {
   try { localStorage.setItem(CACHE_KEY, JSON.stringify({ts: Date.now(), market})); } catch(e) {}
 }
 
+// 从 CSQAQ API 获取实时数据
+async function fetchFreshData() {
+  try {
+    const proxyUrl = localStorage.getItem('csqaq_proxy') || '';
+    const apiBase = proxyUrl || 'https://api.csqaq.com';
+    
+    // 获取持仓数据
+    const holdingsPromise = fetch(apiBase + '/v1/holdings', {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('csq_token') || '') }
+    }).then(r => r.ok ? r.json() : null).catch(() => null);
+    
+    // 获取市场数据
+    const marketPromise = fetch(apiBase + '/v1/market', {
+      headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('csq_token') || '') }
+    }).then(r => r.ok ? r.json() : null).catch(() => null);
+    
+    const [holdings, market] = await Promise.all([holdingsPromise, marketPromise]);
+    
+    return { holdings, market };
+  } catch (e) {
+    console.error('fetchFreshData error:', e);
+    return null;
+  }
+}
+
 async function loadAll() {
   try {
   const t0 = Date.now(); // mark refresh time
@@ -1496,23 +1521,31 @@ function setupRefreshBtn() {
   $('refreshStatus').textContent = '扫描中';
   
   try {
-    // 阶段2：触发后台更新（不等待）
+    // 阶段2：直接从 API 获取最新数据
     btn.textContent = '⏳ 更新中...';
+    $('refreshStatus').textContent = '获取最新数据...';
     
-    // 触发本地全量更新（如果本地服务运行中）
-    fetch('http://localhost:8765/update?mode=full').catch(() => {});
-    
-    // 如果有 Token，触发 CI 更新
-    if (ghToken) {
-      fetch(WORKFLOW_API, {
-        method: 'POST',
-        headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
-        body: JSON.stringify({ ref: 'main' })
-      }).catch(() => {});
+    // 尝试从 CSQAQ API 获取实时数据
+    const freshData = await fetchFreshData();
+    if (freshData) {
+      // 更新 holdings 数据
+      if (freshData.holdings) {
+        H = freshData.holdings;
+        // 保存到 localStorage 缓存
+        try { localStorage.setItem('cs2_holdings_cache', JSON.stringify({ts: Date.now(), data: freshData.holdings})); } catch(e) {}
+      }
+      // 更新 market 数据
+      if (freshData.market) {
+        marketData = freshData.market;
+        alertsData = Array.isArray(freshData.market.alerts) ? freshData.market.alerts : [];
+        recData = freshData.market.recommendations || {};
+        try { localStorage.setItem('cs2_market_cache', JSON.stringify({ts: Date.now(), data: freshData.market})); } catch(e) {}
+      }
+      showToast('✅ 已获取最新数据', 2000);
     }
     
-    // 阶段3：重新加载数据（不轮询等待）
-    await loadAll();
+    // 阶段3：重新渲染
+    initDashboard();
     const finalTs = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     if (DOM.updateTime) DOM.updateTime.textContent = '更新 ' + finalTs;
     $('refreshStatus').textContent = '✅ 成功';
