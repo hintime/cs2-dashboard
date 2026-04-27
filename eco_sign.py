@@ -13,7 +13,12 @@ _eco_key = None
 
 
 def get_eco_key(data_dir=None):
-    """加载 ECO RSA 私钥。优先读环境变量，其次读本地文件。"""
+    """加载 ECO RSA 私钥。优先读环境变量，其次读本地文件。
+    
+    支持两种格式：
+    1. ECO_PRIVATE_KEY_B64 = Base64编码的完整PEM文件内容（含头尾）
+    2. ECO_PRIVATE_KEY_B64 = Base64编码的纯密钥内容（不含头尾）
+    """
     global _eco_key
     if _eco_key is not None:
         return _eco_key
@@ -28,7 +33,23 @@ def get_eco_key(data_dir=None):
                 key_b64 = f.read().strip()
         else:
             raise FileNotFoundError('ECO private key not found')
-    pem = '-----BEGIN RSA PRIVATE KEY-----\n' + key_b64 + '\n-----END RSA PRIVATE KEY-----'
+    
+    # 尝试解码 Base64
+    try:
+        decoded = base64.b64decode(key_b64).decode('utf-8')
+        # 如果解码后是 PEM 格式（含头尾），直接使用
+        if '-----BEGIN' in decoded:
+            pem = decoded
+        else:
+            # 纯密钥内容，需要包装成 PEM
+            pem = '-----BEGIN RSA PRIVATE KEY-----\n' + decoded + '\n-----END RSA PRIVATE KEY-----'
+    except Exception:
+        # 解码失败，假设已经是纯密钥内容（非 Base64 编码）
+        if '-----BEGIN' in key_b64:
+            pem = key_b64
+        else:
+            pem = '-----BEGIN RSA PRIVATE KEY-----\n' + key_b64 + '\n-----END RSA PRIVATE KEY-----'
+    
     _eco_key = RSA.import_key(pem)
     return _eco_key
 
