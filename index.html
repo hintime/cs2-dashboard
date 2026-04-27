@@ -1496,51 +1496,37 @@ function setupRefreshBtn() {
   $('refreshStatus').textContent = '扫描中';
   
   try {
-    // 触发本地全量更新
+    // 阶段2：触发后台更新（不等待）
+    btn.textContent = '⏳ 更新中...';
+    
+    // 触发本地全量更新（如果本地服务运行中）
     fetch('http://localhost:8765/update?mode=full').catch(() => {});
     
-    // 同时触发 CI 更新（如果有 Token）
+    // 如果有 Token，触发 CI 更新
     if (ghToken) {
-      // 触发数据更新 workflow
       fetch(WORKFLOW_API, {
         method: 'POST',
         headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
         body: JSON.stringify({ ref: 'main' })
       }).catch(() => {});
-      // 同时触发指数更新 workflow（大盘指数）
-      fetch(WORKFLOW_API_INDEX, {
-        method: 'POST',
-        headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
-        body: JSON.stringify({ ref: 'main' })
-      }).catch(() => {});
     }
     
-    // 阶段3：轮询等待更新完成
-    btn.textContent = '⏳ 更新中...';
-    const completed = await pollUpdateComplete(startTime);
+    // 阶段3：重新加载数据（不轮询等待）
+    await loadAll();
+    const finalTs = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    if (DOM.updateTime) DOM.updateTime.textContent = '更新 ' + finalTs;
+    $('refreshStatus').textContent = '✅ 成功';
+    $('refreshStatus').style.color = '#4ade80';
     
-    if (completed) {
-      // 更新完成，重新加载数据
-      await loadAll();
-      const finalTs = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
-      if (DOM.updateTime) DOM.updateTime.textContent = '更新 ' + finalTs;
-      $('refreshStatus').textContent = '✅ 成功';
-      $('refreshStatus').style.color = '#4ade80';
-      
-      const items = H?.length || 0;
-      const alerts = alertsData?.length || 0;
-      const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
-      showToast('✅ 全量扫描完成 · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 4000);
-      
-      // 对比并显示变更日志
-      const newSnap = takeSnapshot();
-      const changes = diffSnapshot(prevSnapshot, newSnap);
-      renderChangelog(changes);
-    } else {
-      showToast('⏱️ 扫描超时，数据将在后台更新', 3000);
-      $('refreshStatus').textContent = '⏱️ 超时';
-      $('refreshStatus').style.color = '#fbbf24';
-    }
+    const items = H?.length || 0;
+    const alerts = alertsData?.length || 0;
+    const recs = (recData?.momentum?.length||0) + (recData?.undervalued?.length||0) + (recData?.oversold?.length||0) + (recData?.scarce?.length||0);
+    showToast('✅ 刷新完成 · ' + items + ' 持仓 · ' + alerts + ' 异动 · ' + recs + ' 推荐', 4000);
+    
+    // 对比并显示变更日志
+    const newSnap = takeSnapshot();
+    const changes = diffSnapshot(prevSnapshot, newSnap);
+    renderChangelog(changes);
     
   } catch (e) {
     console.error('Update failed:', e);
