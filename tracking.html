@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS2 推荐追踪</title>
+<style>
+:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#f87171;--fall:#34d399;--blue:#60a5fa;--amber:#fbbf24;--radius:14px;--shadow:0 2px 16px rgba(0,0,0,.25)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:28px 20px 40px}
+h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:11px;color:var(--text3);margin-top:3px}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}.header .nav a:hover{text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.3px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--surface2);border-radius:8px;padding:12px 14px;text-align:center}.kpi-l{font-size:10px;color:var(--text3);margin-bottom:4px}
+.kpi-v{font-size:20px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
+.kpi-v.rise{color:var(--rise)}.kpi-v.fall{color:var(--fall)}.kpi-v.blue{color:var(--blue)}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(55,65,81,.08);font-size:11px;align-items:center}
+.row:last-child{border-bottom:none}.row .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)}
+.row .v{min-width:50px;text-align:right;font-weight:600;font-family:'DM Mono',monospace}.empty{text-align:center;padding:24px;color:var(--text3);font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{padding:6px 8px;color:var(--text3);font-size:10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:5px 8px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)}
+.loading{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.container{padding:18px 12px 28px}.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div><h1>推荐追踪</h1><div class="sub" id="trackDate">加载中...</div></div>
+    <div class="nav"><a href="/">← 返回看板</a></div>
+  </div>
+  <div class="card">
+    <div class="kpis" id="trackKpis">
+      <div class="kpi"><div class="kpi-l">加载中</div><div class="kpi-v"><span class="loading"></span></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>📋 推荐记录 (按当前价格实时计算)</h2>
+    <table><thead><tr><th style="width:42%">饰品</th><th>推荐日</th><th>推荐价</th><th>当前价</th><th style="text-align:right">收益</th></tr></thead><tbody id="trackList"></tbody></table>
+  </div>
+</div>
+<script>
+function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
+
+function loadTracks() {
+  try {
+    var raw = localStorage.getItem('cs2_rec_tracks');
+    var tracks = raw ? JSON.parse(raw) : [];
+
+    // 同时拉取市场数据获取当前价格
+    fetch('market.json?v=' + Date.now())
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(marketData) {
+        var nowPrices = {};
+        if (marketData && marketData.recommendations && marketData.recommendations.all) {
+          marketData.recommendations.all.forEach(function(rec) {
+            nowPrices[rec.name] = rec.price || rec.eco_price || 0;
+          });
+        }
+
+        // 也从 eco_tracked 补充价格
+        return fetch('eco_tracked.json?v=' + Date.now())
+          .then(function(r) { return r.ok ? r.json() : []; })
+          .catch(function() { return []; })
+          .then(function(ecoData) {
+            if (Array.isArray(ecoData)) {
+              ecoData.forEach(function(item) {
+                if (!nowPrices[item.name] && item.eco_price) {
+                  nowPrices[item.name] = item.eco_price;
+                }
+              });
+            }
+            renderTracks(tracks, nowPrices, marketData);
+          });
+      })
+      .catch(function() {
+        renderTracks(tracks, {}, null);
+      });
+  } catch(e) {
+    document.getElementById('trackKpis').innerHTML = '<div class="kpi"><div class="kpi-l">错误</div><div class="kpi-v" style="font-size:12px">读取本地数据失败</div></div>';
+  }
+}
+
+function renderTracks(tracks, nowPrices, marketData) {
+  var timeStr = marketData && marketData.update_time
+    ? '数据更新: ' + new Date(marketData.update_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})
+    : '共 ' + tracks.length + ' 条记录';
+
+  document.getElementById('trackDate').textContent = timeStr;
+
+  if (!tracks.length) {
+    document.getElementById('trackKpis').innerHTML = '<div class="kpi"><div class="kpi-l">暂无数据</div><div class="kpi-v" style="font-size:12px">访问主页面后自动记录</div></div>';
+    document.getElementById('trackList').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">暂无记录</td></tr>';
+    return;
+  }
+
+  // ── 计算统计数据 ──
+  var total = tracks.length;
+  var dailyCounts = {};
+  var profited = 0, allProfitable = 0;
+  var totalRetPct = 0, totalRetAbs = 0;
+  var bestRet = -Infinity, worstRet = Infinity;
+  var bestName = '', worstName = '';
+
+  tracks.forEach(function(t) {
+    dailyCounts[t.date] = (dailyCounts[t.date] || 0) + 1;
+    var cp = nowPrices[t.name] || 0;
+    var rp = t.recPrice || t.ecoPrice || 0;
+    if (rp > 0 && cp > 0) {
+      var ret = (cp - rp) / rp * 100;
+      totalRetPct += ret;
+      totalRetAbs += (cp - rp);
+      if (ret > 0) profited++;
+      if (ret > 2) allProfitable++;
+      if (ret > bestRet) { bestRet = ret; bestName = t.name; }
+      if (ret < worstRet) { worstRet = ret; worstName = t.name; }
+    }
+  });
+
+  var uniqueDays = Object.keys(dailyCounts).length;
+  var avgRet = total > 0 ? totalRetPct / total : 0;
+  var sorted = tracks.slice().sort(function(a, b) { return a.date < b.date ? 1 : -1; });
+  var todayCount = dailyCounts[sorted[0] ? sorted[0].date : ''] || 0;
+
+  // ── KPI ──
+  document.getElementById('trackKpis').innerHTML =
+    '<div class="kpi"><div class="kpi-l">累计推荐</div><div class="kpi-v blue">' + total + '</div></div>' +
+    '<div class="kpi"><div class="kpi-l">记录天数</div><div class="kpi-v">' + uniqueDays + '</div></div>' +
+    '<div class="kpi"><div class="kpi-l">今日推荐</div><div class="kpi-v">' + todayCount + '</div></div>' +
+    '<div class="kpi ' + (profited > total / 2 ? 'rise' : 'fall') + '"><div class="kpi-l">盈利数</div><div class="kpi-v">' + profited + '/' + total + '</div><div class="kpi-sub">' + (total > 0 ? (profited/total*100).toFixed(0) : 0) + '%</div></div>' +
+    '<div class="kpi"><div class="kpi-l">平均收益</div><div class="kpi-v ' + (avgRet >= 0 ? 'rise' : 'fall') + '">' + (avgRet >= 0 ? '+' : '') + avgRet.toFixed(1) + '%</div><div class="kpi-sub">总盈亏 ' + (totalRetAbs >= 0 ? '+' : '') + '¥' + totalRetAbs.toFixed(0) + '</div></div>' +
+    '<div class="kpi ' + (bestRet > 0 ? 'rise' : 'fall') + '"><div class="kpi-l">最佳</div><div class="kpi-v" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + ((bestName || '--').substring(0,14)) + '</div><div class="kpi-sub">' + (bestRet > -Infinity ? (bestRet >= 0 ? '+' : '') + bestRet.toFixed(1) + '%' : '--') + '</div></div>';
+
+  // ── 详情列表 (按收益排序) ──
+  var enriched = tracks.map(function(t) {
+    var cp = nowPrices[t.name] || 0;
+    var rp = t.recPrice || t.ecoPrice || 0;
+    var ret = (rp > 0 && cp > 0) ? ((cp - rp) / rp * 100) : null;
+    return { name: t.name, date: t.date, recPrice: rp, nowPrice: cp, ret: ret };
+  });
+
+  enriched.sort(function(a, b) {
+    var ra = a.ret, rb = b.ret;
+    if (ra === null && rb === null) return 0;
+    if (ra === null) return 1;
+    if (rb === null) return -1;
+    return rb - ra;
+  });
+
+  var rows = enriched.map(function(e) {
+    var retStr = e.ret !== null ? (e.ret >= 0 ? '+' : '') + e.ret.toFixed(1) + '%' : '--';
+    var cls = e.ret !== null ? (e.ret > 0 ? 'rise' : 'fall') : '';
+    return '<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(e.name) + '">' + esc(e.name) + '</td><td>' + e.date + '</td><td>¥' + e.recPrice.toFixed(1) + '</td><td style="color:var(--text3)">' + (e.nowPrice > 0 ? '¥' + e.nowPrice.toFixed(1) : '--') + '</td><td style="text-align:right;font-weight:600;color:var(--' + cls + ');color:' + (e.ret !== null ? (e.ret >= 0 ? 'var(--rise)' : 'var(--fall)') : 'var(--text3)') + '">' + retStr + '</td></tr>';
+  }).join('');
+
+  document.getElementById('trackList').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">暂无记录</td></tr>';
+}
+
+loadTracks();
+(function(){var _l=Date.now();setInterval(function(){fetch('market.json?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.update_time||d.alerts_updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadTracks();}}).catch(function(){})},60000)})();
+</script>
+</body>
+</html>

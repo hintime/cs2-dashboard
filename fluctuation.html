@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS2 在售量异动 · BUFF + 悠悠</title>
+<style>
+:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#f87171;--fall:#34d399;--blue:#60a5fa;--amber:#fbbf24;--purple:#a855f7;--radius:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:1000px;margin:0 auto;padding:28px 20px 40px}
+h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:11px;color:var(--text3);margin-top:3px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}
+.header .nav a:hover{text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:0 2px 16px rgba(0,0,0,.25)}
+.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.3px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--surface2);border-radius:8px;padding:12px 14px;text-align:center}
+.kpi-l{font-size:10px;color:var(--text3);margin-bottom:4px}
+.kpi-v{font-size:20px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
+.kpi-v.rise{color:var(--rise)}.kpi-v.fall{color:var(--fall)}.kpi-v.blue{color:var(--blue)}.kpi-v.amber{color:var(--amber)}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+th{padding:12px 20px;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;border-bottom:2px solid var(--border);text-align:left;white-space:nowrap}
+td{padding:14px 20px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)}
+tr:hover td{background:rgba(96,165,250,.04)}
+td.rise{color:var(--rise);font-weight:700}td.fall{color:var(--fall);font-weight:700}
+td.warn{color:var(--amber);font-weight:700}
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:12px}
+.badge{display:inline-block;padding:1px 8px;border-radius:4px;font-size:10px;font-weight:600}
+.badge-up{background:rgba(52,211,153,.15);color:var(--fall)}
+.badge-down{background:rgba(248,113,113,.15);color:var(--rise)}
+.badge-warn{background:rgba(251,191,36,.15);color:var(--amber)}
+.spark{height:4px;border-radius:2px;min-width:40px}
+.spark-up{background:linear-gradient(90deg,transparent,var(--fall))}
+.spark-down{background:linear-gradient(90deg,transparent,var(--rise))}
+.loading{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.container{padding:18px 12px 28px}.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div><h1>📡 在售量异动 · 小时级监控</h1><div class="sub" id="fluctDate">加载中...</div></div>
+    <div class="nav"><a href="/">← 返回看板</a></div>
+  </div>
+  <div class="card">
+    <div class="kpis" id="fluctKpis">
+      <div class="kpi"><div class="kpi-l">分析中</div><div class="kpi-v"><span class="loading"></span></div></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div id="dropListBuff" class="empty">加载中...</div>
+    </div>
+    <div class="card">
+      <div id="surgeListBuff" class="empty">加载中...</div>
+    </div>
+    <div class="card">
+      <div id="dropListYyyp" class="empty">加载中...</div>
+    </div>
+    <div class="card">
+      <div id="surgeListYyyp" class="empty">加载中...</div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>📋 全部异动记录</h2>
+    <table><thead><tr><th>饰品</th><th>上次在售</th><th>本次在售</th><th>变化</th><th>变化率</th><th>信号</th></tr></thead><tbody id="allList"></tbody></table>
+  </div>
+</div>
+<script>
+var THRESHOLD = 10; // 异动阈值：变化超过10%就算
+var nameMap = {};
+function cn(name) { return nameMap[name] || name; }
+
+function classifySignal(c) {
+  // 扫货：在售量骤降，库存越来越少
+  if (c.pct <= -30 && c.nowNum < 50) return { level: 'sweep_high', label: '⚠️ 疑似扫货', cls: 'badge-warn' };
+  if (c.pct <= -15 && c.nowNum < 100) return { level: 'sweep_low', label: '🔻 在售减少', cls: 'badge-down' };
+  // 砸盘：在售量暴增，库存堆积
+  if (c.pct >= 30 && c.nowNum > 100) return { level: 'dump_high', label: '🚨 疑似砸盘', cls: 'badge-warn' };
+  if (c.pct >= 15 && c.nowNum > 50) return { level: 'dump_low', label: '🔺 在售增加', cls: 'badge-up' };
+  // 普通异动
+  if (c.pct < 0) return { level: 'drop', label: '📉 减少', cls: 'badge-down' };
+  return { level: 'surge', label: '📈 增加', cls: 'badge-up' };
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function loadFluct() {
+  var t0 = Date.now();
+  fetch('buff_history.json?v=' + t0)
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+      if (!data) {
+        document.getElementById('fluctDate').textContent = '暂无历史数据';
+        return;
+      }
+      var dates = Object.keys(data).sort();
+      if (dates.length < 2) {
+        document.getElementById('fluctDate').textContent = '需要至少2小时数据，当前仅' + dates.length + '个时点';
+        return;
+      }
+      var now = dates[dates.length - 1];
+      var prev = dates[dates.length - 2];
+      document.getElementById('fluctDate').textContent = '对比 ' + prev + ' → ' + now + ' · 阈值' + THRESHOLD + '%';
+
+      // 补充加载中文名映射
+      fetch('eco_tracked.json?v=' + t0)
+        .then(function(r){return r.ok?r.json():[];})
+        .then(function(eco){
+          nameMap = {};
+          if (Array.isArray(eco)) {
+            eco.forEach(function(it){ if(it.HashName) nameMap[it.HashName] = it.GoodsName || it.HashName; });
+          }
+          renderFluct(data, dates, now, prev, nameMap);
+        });
+    }).catch(function() { document.getElementById('fluctDate').textContent = '加载失败'; });
+}
+
+function renderFluct(data, dates, now, prev, nameMapArg) {
+      nameMap = nameMapArg || {};
+      var nowData = data[now] || {};
+      var prevData = data[prev] || {};
+
+      function computeChanges(sellNumKey, sellPriceKey, minSell) {
+        var changes = [];
+        Object.keys(nowData).forEach(function(name) {
+          var t = nowData[name];
+          var y = prevData[name];
+          if (!y || !y[sellNumKey] || y[sellNumKey] < minSell) return;
+          var tNum = t[sellNumKey] || 0;
+          var yNum = y[sellNumKey];
+          var delta = tNum - yNum;
+          var pct = yNum > 0 ? (delta / yNum * 100) : 0;
+          if (Math.abs(pct) >= THRESHOLD) {
+            changes.push({
+              name: name,
+              prevNum: yNum,
+              nowNum: tNum,
+              delta: delta,
+              pct: pct,
+              nowPrice: t[sellPriceKey] || 0,
+              prevPrice: y[sellPriceKey] || 0
+            });
+          }
+        });
+        changes.sort(function(a, b) { return Math.abs(b.pct) - Math.abs(a.pct); });
+        return changes;
+      }
+
+      var buffChanges = computeChanges('buff_sell_num', 'buff_sell', 100);
+      var yyypChanges = computeChanges('yyyp_sell_num', 'yyyp_sell', 100);
+
+      function kpiFor(changes, label) {
+        var dropCount = changes.filter(function(c) { return c.pct < 0; }).length;
+        var surgeCount = changes.filter(function(c) { return c.pct > 0; }).length;
+        var avgDrop = dropCount > 0 ? changes.filter(function(c) { return c.pct < 0; }).reduce(function(s, c) { return s + Math.abs(c.pct); }, 0) / dropCount : 0;
+        var avgSurge = surgeCount > 0 ? changes.filter(function(c) { return c.pct > 0; }).reduce(function(s, c) { return s + c.pct; }, 0) / surgeCount : 0;
+        return {label:label, total:changes.length, drops:dropCount, surges:surgeCount, avgDrop:avgDrop, avgSurge:avgSurge};
+      }
+
+      var bk = kpiFor(buffChanges, 'BUFF');
+      var yk = kpiFor(yyypChanges, '悠悠');
+
+      document.getElementById('fluctKpis').innerHTML =
+        '<div class="kpi"><div class="kpi-l">BUFF异动</div><div class="kpi-v blue">' + bk.total + '</div><div class="kpi-sub">≥' + THRESHOLD + '% · ' + bk.drops + '降/' + bk.surges + '增</div></div>' +
+        '<div class="kpi"><div class="kpi-l">悠悠异动</div><div class="kpi-v" style="color:var(--amber)">' + yk.total + '</div><div class="kpi-sub">≥' + THRESHOLD + '% · ' + yk.drops + '降/' + yk.surges + '增</div></div>' +
+        '<div class="kpi"><div class="kpi-l">⚠️ 扫货嫌疑</div><div class="kpi-v rise">' + (buffChanges.concat(yyypChanges).filter(function(c){return c.pct <= -15 && c.nowNum < 100;}).length) + '</div><div class="kpi-sub">骤降>15%+低库存</div></div>' +
+        '<div class="kpi"><div class="kpi-l">🚨 砸盘嫌疑</div><div class="kpi-v fall">' + (buffChanges.concat(yyypChanges).filter(function(c){return c.pct >= 30 && c.nowNum > 100;}).length) + '</div><div class="kpi-sub">暴增>30%+库存高</div></div>';
+
+      // 疑似扫货/砸盘（优先级高）
+      var allSweeps = buffChanges.concat(yyypChanges).filter(function(c){return classifySignal(c).level === 'sweep_high';});
+      var allDumps = buffChanges.concat(yyypChanges).filter(function(c){return classifySignal(c).level === 'dump_high';});
+      renderList('dropListBuff', allSweeps.length ? allSweeps : buffChanges.filter(function(c){return c.pct<0;}).slice(0,15), '⚠️ 疑似扫货（骤降>30%+库存<50）');
+      renderList('surgeListBuff', allDumps.length ? allDumps : buffChanges.filter(function(c){return c.pct>0;}).slice(0,15), '🚨 疑似砸盘（暴增>30%+库存>100）');
+      // 悠悠
+      renderList('dropListYyyp', yyypChanges.filter(function(c){return c.pct<0;}).slice(0, 15), '🔻 悠悠在售量骤降');
+      renderList('surgeListYyyp', yyypChanges.filter(function(c){return c.pct>0;}).slice(0, 15), '🔺 悠悠在售量暴增');
+
+      // 全量表
+      var allHtml = '<tr><td colspan="6" style="font-weight:700;color:var(--text3);padding:8px 16px">对比 ' + prev + ' → ' + now + '</td></tr>';
+      allHtml += '<tr><td colspan="6" style="font-weight:700;color:var(--blue);padding:8px 16px">🔵 BUFF 异动</td></tr>';
+      allHtml += buffChanges.map(changeRow).join('') || '<tr><td colspan="6" class="empty">无显著异动</td></tr>';
+      allHtml += '<tr><td colspan="6" style="font-weight:700;color:var(--amber);padding:8px 16px">🟡 悠悠 异动</td></tr>';
+      allHtml += yyypChanges.map(changeRow).join('') || '<tr><td colspan="6" class="empty">无显著异动</td></tr>';
+      document.getElementById('allList').innerHTML = allHtml;
+}
+
+function renderList(id, items, title) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (!items.length) { el.innerHTML = '<div class="empty">无显著异动</div>'; return; }
+  el.innerHTML = (title ? '<div style="font-size:11px;font-weight:700;margin-bottom:6px">' + title + '</div>' : '') +
+    items.map(function(c) {
+      var sig = classifySignal(c);
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(55,65,81,.08)">' +
+        '<div style="flex:1;overflow:hidden">' +
+          '<div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)" title="' + esc(cn(c.name)) + '">' + esc(cn(c.name)) + '</div>' +
+          '<div style="font-size:10px;color:var(--text3);margin-top:2px">' + c.prevNum + ' → ' + c.nowNum + '件 · ¥' + (c.nowPrice || 0).toFixed(1) + '</div>' +
+        '</div>' +
+        '<span class="badge ' + sig.cls + '" style="margin-left:8px;font-size:10px">' + sig.label + ' ' + (c.pct > 0 ? '+' : '') + c.pct.toFixed(0) + '%</span>' +
+      '</div>';
+    }).join('');
+}
+
+function changeRow(c) {
+  var sig = classifySignal(c);
+  var dirCls = c.pct > 0 ? 'fall' : 'rise';
+  return '<tr><td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(cn(c.name)) + '">' + esc(cn(c.name)) + '</td>' +
+    '<td>' + c.prevNum + '</td><td>' + c.nowNum + '</td>' +
+    '<td class="' + dirCls + '">' + (c.delta > 0 ? '+' : '') + c.delta + '</td>' +
+    '<td class="' + dirCls + '">' + (c.pct > 0 ? '+' : '') + c.pct.toFixed(0) + '%</td>' +
+    '<td><span class="badge ' + sig.cls + '">' + sig.label + '</span></td></tr>';
+}
+
+loadFluct();
+
+// 自动检测
+(function(){
+  var _last = Date.now();
+  setInterval(function(){
+    fetch('market.json?v=' + Date.now(), {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+      var ut = d.update_time || d.alerts_updated || '';
+      if (ut && new Date(ut).getTime() > _last) { _last = new Date(ut).getTime(); loadFluct(); }
+    }).catch(function(){});
+  }, 60000);
+})();
+</script>
+</body>
+</html>

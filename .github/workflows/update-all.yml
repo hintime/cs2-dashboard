@@ -1,0 +1,99 @@
+name: Update All CS2 Data
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Update mode'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - prices
+          - alerts
+          - index
+
+concurrency:
+  group: cs2-dashboard-update
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  update-all:
+    runs-on: [windows, x64]
+    defaults:
+      run:
+        shell: cmd
+
+    steps:
+      - name: Checkout repo (silent, no git console popup)
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GIT_TERMINAL_PROMPT: '0'
+          GIT_ASKPASS: 'echo'
+        run: |
+          set PATH=C:\Users\Lenovo\AppData\Local\Programs\Python\Python312;C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Scripts;%PATH%
+          python scripts\git_ops.py checkout
+
+      - name: Setup Python (system)
+        run: |
+          set PATH=C:\Users\Lenovo\AppData\Local\Programs\Python\Python312;C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Scripts;%PATH%
+          python --version
+          pip install pycryptodome==3.20.0 --trusted-host pypi.org --trusted-host files.pythonhosted.org 2>&1
+
+      - name: Configure git
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          set PATH=C:\Users\Lenovo\AppData\Local\Programs\Python\Python312;C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Scripts;%PATH%
+          python scripts\git_ops.py config
+
+      - name: Run data update (holdings + market + recommendations)
+        if: inputs.mode == 'all' || inputs.mode == '' || inputs.mode == 'prices' || inputs.mode == 'alerts'
+        env:
+          ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
+          CSQ_API_TOKEN: ${{ secrets.CSQ_API_TOKEN }}
+          CSQAQ_PROXY_URL: ${{ secrets.CSQAQ_PROXY_URL }}
+          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
+          ENRICH_BUFF: '1'
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GIT_TERMINAL_PROMPT: '0'
+          GIT_ASKPASS: 'echo'
+          GITHUB_ACTIONS: 'true'
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set PATH=C:\Users\Lenovo\AppData\Local\Programs\Python\Python312;C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Scripts;%PATH%
+          echo === START update.py ===
+          python update.py all 2>&1
+          echo === END update.py ===
+
+      - name: Run market index collector
+        if: inputs.mode == 'all' || inputs.mode == '' || inputs.mode == 'index'
+        env:
+          ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_ACTIONS: 'true'
+        run: |
+          set PATH=C:\Users\Lenovo\AppData\Local\Programs\Python\Python312;C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Scripts;%PATH%
+          echo === START index_collector.py ===
+          python index_collector.py 2>&1
+          echo === END index_collector.py ===
+
+      - name: Show changed files
+        run: |
+          set PATH=C:\Users\Lenovo\AppData\Local\Programs\Python\Python312;C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Scripts;%PATH%
+          python scripts\git_ops.py status
+
+      - name: Commit and push
+        env:
+          GIT_TERMINAL_PROMPT: '0'
+          GIT_ASKPASS: 'echo'
+        run: |
+          set PATH=C:\Users\Lenovo\AppData\Local\Programs\Python\Python312;C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Scripts;%PATH%
+          python scripts\git_ops.py push

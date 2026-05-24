@@ -1,0 +1,1531 @@
+拒绝访问。
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7725 PnL=-12585 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=436.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=985.00
+  [SteamDT] UMP-45 | Blaze (Factory New): BUFF sell=238.00
+  [SteamDT] M4A4 | Hellish (Minimal Wear): BUFF sell=567.00
+[SteamDT] Got BUFF prices for 32/32 items
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-18 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (8 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[13:00:20] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.9s)
+  eco_catalog.json : 36627 items  (0.5s)
+  filtered         : 5078 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  eco_tracked.json  : 5078 items  (0.1s)
+  Price stats (tracked): min=0.00  median=81.17  max=288888.00
+  P95=4097.00
+  Category breakdown (tracked):
+    Weapon      :   4173
+    Glove       :    471
+    Other       :    277
+    Case        :    157
+[13:00:23] Done  (2.5s total)
+[REC] Catalog ready, generating recommendations
+[REC] Loaded 5078 items from eco_tracked.json
+[REC] BUFF prices available for 32 items
+[REC] 30 recommendations (ECO=30, BUFF=0)
+[REC] 30 recommendations (ECO=30, BUFF=0)
+[PRICE_HIST] Recorded ECO prices for 5063/5078 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\cs2-dashboard\update.py", line 1155, in <module>
+    main()
+  File "C:\Users\Lenovo\cs2-dashboard\update.py", line 1151, in main
+    push_all()
+  File "C:\Users\Lenovo\cs2-dashboard\update.py", line 781, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\cs2-dashboard\update.py", line 828, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 1.
+[2026/05/20 周三 13:00:25.86] Update finished 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7707 PnL=-12602 (-62.1%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=436.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=985.00
+  [SteamDT] UMP-45 | Blaze (Factory New): BUFF sell=238.00
+  [SteamDT] M4A4 | Hellish (Minimal Wear): BUFF sell=567.00
+[SteamDT] Got BUFF prices for 32/32 items
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-18 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (8 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[13:10:20] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.8s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 5076 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  eco_tracked.json  : 5076 items  (0.1s)
+  Price stats (tracked): min=0.00  median=81.20  max=288888.00
+  P95=4097.00
+  Category breakdown (tracked):
+    Weapon      :   4171
+    Glove       :    471
+    Other       :    277
+    Case        :    157
+[13:10:23] Done  (2.4s total)
+[REC] Catalog ready, generating recommendations
+[REC] Loaded 5076 items from eco_tracked.json
+[REC] BUFF prices available for 32 items
+[REC] 30 recommendations (ECO=30, BUFF=0)
+[REC] 30 recommendations (ECO=30, BUFF=0)
+[PRICE_HIST] Recorded ECO prices for 5061/5076 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\cs2-dashboard\update.py", line 1155, in <module>
+    main()
+  File "C:\Users\Lenovo\cs2-dashboard\update.py", line 1151, in main
+    push_all()
+  File "C:\Users\Lenovo\cs2-dashboard\update.py", line 781, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\cs2-dashboard\update.py", line 828, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 1.
+[2026/05/20 周三 13:10:26.08] Update finished 
+[鍛ㄤ笁 2026/05/20 13:20:01.33] Git pull failed, continuing 
+  [CSQAQ] Batch 12 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 20 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 23 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 27 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 34 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 69 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 71 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 88 error: HTTP Error 429: Too Many Requests
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7714 PnL=-12595 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=985.00
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4356 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[13:20:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.9s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4358 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4358 items  (1.3s)
+  Price stats (tracked): min=0.00  median=97.38  max=288888.00
+  P95=4355.00
+  Category breakdown (tracked):
+    Weapon      :   3711
+    Glove       :    471
+    Other       :    176
+[13:20:53] Done  (3.6s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4358 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 500 prices
+  [CSQAQ] Batch 15/88: 700 prices
+  [CSQAQ] Batch 25/88: 1100 prices
+  [CSQAQ] Batch 30/88: 1300 prices
+  [CSQAQ] Batch 35/88: 1500 prices
+  [CSQAQ] Batch 40/88: 1750 prices
+  [CSQAQ] Batch 45/88: 2000 prices
+  [CSQAQ] Batch 50/88: 2249 prices
+  [CSQAQ] Batch 55/88: 2499 prices
+  [CSQAQ] Batch 60/88: 2749 prices
+  [CSQAQ] Batch 65/88: 2999 prices
+  [CSQAQ] Batch 70/88: 3199 prices
+  [CSQAQ] Batch 75/88: 3399 prices
+  [CSQAQ] Batch 80/88: 3649 prices
+  [CSQAQ] Batch 85/88: 3899 prices
+[CSQAQ] Batch total: 3999/4358 items
+[CSQAQ] Batch merged: 3999 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4358 tracked items...
+[REC] Loaded 4358 items from eco_tracked.json
+[REC] Filtered out 811 excluded items (3547 remaining)
+[REC] BUFF prices available for 3260 items
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[PRICE_HIST] Recorded ECO prices for 3983/4358 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 13:27:00.15] Update failed 
+[鍛ㄤ笁 2026/05/20 13:30:01.34] Git pull failed, continuing 
+  [CSQAQ] Batch 31 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 57 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 71 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 72 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 87 error: HTTP Error 429: Too Many Requests
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7711 PnL=-12598 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=985.00
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4363 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[13:30:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.9s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4361 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4361 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.88  max=288888.00
+  P95=4381.00
+  Category breakdown (tracked):
+    Weapon      :   3714
+    Glove       :    471
+    Other       :    176
+[13:30:54] Done  (3.7s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4361 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 499 prices
+  [CSQAQ] Batch 15/88: 749 prices
+  [CSQAQ] Batch 20/88: 999 prices
+  [CSQAQ] Batch 25/88: 1249 prices
+  [CSQAQ] Batch 30/88: 1499 prices
+  [CSQAQ] Batch 35/88: 1699 prices
+  [CSQAQ] Batch 40/88: 1949 prices
+  [CSQAQ] Batch 45/88: 2199 prices
+  [CSQAQ] Batch 50/88: 2449 prices
+  [CSQAQ] Batch 55/88: 2699 prices
+  [CSQAQ] Batch 60/88: 2899 prices
+  [CSQAQ] Batch 65/88: 3149 prices
+  [CSQAQ] Batch 70/88: 3399 prices
+  [CSQAQ] Batch 75/88: 3549 prices
+  [CSQAQ] Batch 80/88: 3799 prices
+  [CSQAQ] Batch 85/88: 4049 prices
+[CSQAQ] Batch total: 4110/4361 items
+[CSQAQ] Batch merged: 4110 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4361 tracked items...
+[REC] Loaded 4361 items from eco_tracked.json
+[REC] Filtered out 813 excluded items (3548 remaining)
+[REC] BUFF prices available for 3354 items
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[PRICE_HIST] Recorded ECO prices for 4095/4361 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 13:37:12.22] Update failed 
+[鍛ㄤ笁 2026/05/20 13:40:01.36] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7710 PnL=-12599 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=985.00
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4362 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[13:40:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.9s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4365 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4365 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.63  max=288888.00
+  P95=4381.00
+  Category breakdown (tracked):
+    Weapon      :   3718
+    Glove       :    471
+    Other       :    176
+[13:40:54] Done  (3.7s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4365 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 500 prices
+  [CSQAQ] Batch 15/88: 750 prices
+  [CSQAQ] Batch 20/88: 1000 prices
+  [CSQAQ] Batch 25/88: 1250 prices
+  [CSQAQ] Batch 30/88: 1500 prices
+  [CSQAQ] Batch 35/88: 1749 prices
+  [CSQAQ] Batch 40/88: 1999 prices
+  [CSQAQ] Batch 45/88: 2249 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4364/4365 items
+[CSQAQ] Batch merged: 4364 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4365 tracked items...
+[REC] Loaded 4365 items from eco_tracked.json
+[REC] Filtered out 814 excluded items (3551 remaining)
+[REC] BUFF prices available for 3559 items
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[PRICE_HIST] Recorded ECO prices for 4349/4365 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 13:45:55.80] Update failed 
+[鍛ㄤ笁 2026/05/20 13:50:01.34] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7710 PnL=-12599 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=985.00
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4365 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[13:50:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.6s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4364 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4364 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.88  max=288888.00
+  P95=4381.00
+  Category breakdown (tracked):
+    Weapon      :   3717
+    Glove       :    471
+    Other       :    176
+[13:50:54] Done  (3.4s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4364 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 500 prices
+  [CSQAQ] Batch 15/88: 750 prices
+  [CSQAQ] Batch 20/88: 1000 prices
+  [CSQAQ] Batch 25/88: 1250 prices
+  [CSQAQ] Batch 30/88: 1500 prices
+  [CSQAQ] Batch 35/88: 1750 prices
+  [CSQAQ] Batch 40/88: 2000 prices
+  [CSQAQ] Batch 45/88: 2250 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4363/4364 items
+[CSQAQ] Batch merged: 4363 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4364 tracked items...
+[REC] Loaded 4364 items from eco_tracked.json
+[REC] Filtered out 814 excluded items (3550 remaining)
+[REC] BUFF prices available for 3558 items
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[PRICE_HIST] Recorded ECO prices for 4348/4364 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 13:55:37.34] Update failed 
+[鍛ㄤ笁 2026/05/20 14:00:01.35] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7713 PnL=-12597 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4364 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[14:00:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.9s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4364 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4364 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.63  max=288888.00
+  P95=4381.00
+  Category breakdown (tracked):
+    Weapon      :   3717
+    Glove       :    471
+    Other       :    176
+[14:00:54] Done  (3.7s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4364 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 500 prices
+  [CSQAQ] Batch 15/88: 750 prices
+  [CSQAQ] Batch 20/88: 1000 prices
+  [CSQAQ] Batch 25/88: 1250 prices
+  [CSQAQ] Batch 30/88: 1500 prices
+  [CSQAQ] Batch 35/88: 1750 prices
+  [CSQAQ] Batch 40/88: 2000 prices
+  [CSQAQ] Batch 45/88: 2250 prices
+  [CSQAQ] Batch 50/88: 2500 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4363/4364 items
+[CSQAQ] Batch merged: 4363 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4364 tracked items...
+[REC] Loaded 4364 items from eco_tracked.json
+[REC] Filtered out 814 excluded items (3550 remaining)
+[REC] BUFF prices available for 3558 items
+[REC] 30 recommendations (ECO=26, BUFF=4)
+[REC] 30 recommendations (ECO=26, BUFF=4)
+[PRICE_HIST] Recorded ECO prices for 4348/4364 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 14:05:26.45] Update failed 
+[鍛ㄤ笁 2026/05/20 14:10:01.35] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7713 PnL=-12597 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4364 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[14:10:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.7s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4369 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4369 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.63  max=288888.00
+  P95=4400.00
+  Category breakdown (tracked):
+    Weapon      :   3722
+    Glove       :    471
+    Other       :    176
+[14:10:54] Done  (3.5s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4369 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 499 prices
+  [CSQAQ] Batch 15/88: 749 prices
+  [CSQAQ] Batch 20/88: 999 prices
+  [CSQAQ] Batch 25/88: 1249 prices
+  [CSQAQ] Batch 30/88: 1499 prices
+  [CSQAQ] Batch 35/88: 1749 prices
+  [CSQAQ] Batch 40/88: 1999 prices
+  [CSQAQ] Batch 45/88: 2249 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4368/4369 items
+[CSQAQ] Batch merged: 4368 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4369 tracked items...
+[REC] Loaded 4369 items from eco_tracked.json
+[REC] Filtered out 813 excluded items (3556 remaining)
+[REC] BUFF prices available for 3564 items
+[REC] 30 recommendations (ECO=26, BUFF=4)
+[REC] 30 recommendations (ECO=26, BUFF=4)
+[PRICE_HIST] Recorded ECO prices for 4353/4369 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 14:15:54.08] Update failed 
+[鍛ㄤ笁 2026/05/20 14:20:01.37] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7713 PnL=-12597 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4369 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[14:20:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.5s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4367 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4367 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.44  max=288888.00
+  P95=4381.00
+  Category breakdown (tracked):
+    Weapon      :   3720
+    Glove       :    471
+    Other       :    176
+[14:20:54] Done  (3.3s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4367 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 500 prices
+  [CSQAQ] Batch 15/88: 750 prices
+  [CSQAQ] Batch 20/88: 1000 prices
+  [CSQAQ] Batch 25/88: 1250 prices
+  [CSQAQ] Batch 30/88: 1500 prices
+  [CSQAQ] Batch 35/88: 1750 prices
+  [CSQAQ] Batch 40/88: 2000 prices
+  [CSQAQ] Batch 45/88: 2250 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4366/4367 items
+[CSQAQ] Batch merged: 4366 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4367 tracked items...
+[REC] Loaded 4367 items from eco_tracked.json
+[REC] Filtered out 811 excluded items (3556 remaining)
+[REC] BUFF prices available for 3564 items
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[PRICE_HIST] Recorded ECO prices for 4351/4367 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 14:25:36.87] Update failed 
+[鍛ㄤ笁 2026/05/20 14:30:01.38] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7713 PnL=-12597 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4367 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[14:30:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (2.6s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4370 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4370 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.63  max=288888.00
+  P95=4381.00
+  Category breakdown (tracked):
+    Weapon      :   3722
+    Glove       :    471
+    Other       :    177
+[14:30:55] Done  (4.4s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4370 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 499 prices
+  [CSQAQ] Batch 15/88: 749 prices
+  [CSQAQ] Batch 20/88: 999 prices
+  [CSQAQ] Batch 25/88: 1249 prices
+  [CSQAQ] Batch 30/88: 1499 prices
+  [CSQAQ] Batch 35/88: 1749 prices
+  [CSQAQ] Batch 40/88: 1999 prices
+  [CSQAQ] Batch 45/88: 2249 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4369/4370 items
+[CSQAQ] Batch merged: 4369 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4370 tracked items...
+[REC] Loaded 4370 items from eco_tracked.json
+[REC] Filtered out 812 excluded items (3558 remaining)
+[REC] BUFF prices available for 3566 items
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[PRICE_HIST] Recorded ECO prices for 4354/4370 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 14:36:17.38] Update failed 
+[鍛ㄤ笁 2026/05/20 14:40:01.40] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7713 PnL=-12596 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4370 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[14:40:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.9s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4371 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4371 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.63  max=288888.00
+  P95=4412.00
+  Category breakdown (tracked):
+    Weapon      :   3723
+    Glove       :    471
+    Other       :    177
+[14:40:54] Done  (3.7s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4371 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 500 prices
+  [CSQAQ] Batch 15/88: 750 prices
+  [CSQAQ] Batch 20/88: 1000 prices
+  [CSQAQ] Batch 25/88: 1250 prices
+  [CSQAQ] Batch 30/88: 1500 prices
+  [CSQAQ] Batch 35/88: 1750 prices
+  [CSQAQ] Batch 40/88: 2000 prices
+  [CSQAQ] Batch 45/88: 2249 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4370/4371 items
+[CSQAQ] Batch merged: 4370 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4371 tracked items...
+[REC] Loaded 4371 items from eco_tracked.json
+[REC] Filtered out 813 excluded items (3558 remaining)
+[REC] BUFF prices available for 3566 items
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[PRICE_HIST] Recorded ECO prices for 4355/4371 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 14:45:23.82] Update failed 
+[鍛ㄤ笁 2026/05/20 14:50:01.41] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7715 PnL=-12595 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.99
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4371 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[14:50:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.6s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4369 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4369 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.50  max=288888.00
+  P95=4400.00
+  Category breakdown (tracked):
+    Weapon      :   3721
+    Glove       :    471
+    Other       :    177
+[14:50:54] Done  (3.4s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4369 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 500 prices
+  [CSQAQ] Batch 15/88: 750 prices
+  [CSQAQ] Batch 20/88: 1000 prices
+  [CSQAQ] Batch 25/88: 1250 prices
+  [CSQAQ] Batch 30/88: 1500 prices
+  [CSQAQ] Batch 35/88: 1750 prices
+  [CSQAQ] Batch 40/88: 2000 prices
+  [CSQAQ] Batch 45/88: 2250 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4368/4369 items
+[CSQAQ] Batch merged: 4368 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4369 tracked items...
+[REC] Loaded 4369 items from eco_tracked.json
+[REC] Filtered out 812 excluded items (3557 remaining)
+[REC] BUFF prices available for 3565 items
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[PRICE_HIST] Recorded ECO prices for 4353/4369 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 14:55:57.15] Update failed 
+[鍛ㄤ笁 2026/05/20 15:00:01.43] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7715 PnL=-12595 (-62.0%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.49
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4369 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[15:00:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (2.0s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4369 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4369 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.41  max=288888.00
+  P95=4400.00
+  Category breakdown (tracked):
+    Weapon      :   3721
+    Glove       :    471
+    Other       :    177
+[15:00:54] Done  (3.8s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4369 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 499 prices
+  [CSQAQ] Batch 15/88: 749 prices
+  [CSQAQ] Batch 20/88: 999 prices
+  [CSQAQ] Batch 25/88: 1249 prices
+  [CSQAQ] Batch 30/88: 1499 prices
+  [CSQAQ] Batch 35/88: 1749 prices
+  [CSQAQ] Batch 40/88: 1999 prices
+  [CSQAQ] Batch 45/88: 2249 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4368/4369 items
+[CSQAQ] Batch merged: 4368 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4369 tracked items...
+[REC] Loaded 4369 items from eco_tracked.json
+[REC] Filtered out 812 excluded items (3557 remaining)
+[REC] BUFF prices available for 3565 items
+[REC] 30 recommendations (ECO=26, BUFF=4)
+[REC] 30 recommendations (ECO=26, BUFF=4)
+[PRICE_HIST] Recorded ECO prices for 4353/4369 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 15:05:38.33] Update failed 
+[鍛ㄤ笁 2026/05/20 15:10:01.44] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7704 PnL=-12606 (-62.1%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.49
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4369 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[15:10:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (2.0s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4369 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4369 items  (1.3s)
+  Price stats (tracked): min=0.00  median=96.63  max=288888.00
+  P95=4400.00
+  Category breakdown (tracked):
+    Weapon      :   3721
+    Glove       :    471
+    Other       :    177
+[15:10:54] Done  (3.8s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4369 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 500 prices
+  [CSQAQ] Batch 15/88: 750 prices
+  [CSQAQ] Batch 20/88: 1000 prices
+  [CSQAQ] Batch 25/88: 1250 prices
+  [CSQAQ] Batch 30/88: 1500 prices
+  [CSQAQ] Batch 35/88: 1750 prices
+  [CSQAQ] Batch 40/88: 2000 prices
+  [CSQAQ] Batch 45/88: 2250 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4368/4369 items
+[CSQAQ] Batch merged: 4368 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4369 tracked items...
+[REC] Loaded 4369 items from eco_tracked.json
+[REC] Filtered out 813 excluded items (3556 remaining)
+[REC] BUFF prices available for 3564 items
+[REC] 30 recommendations (ECO=26, BUFF=4)
+[REC] 30 recommendations (ECO=26, BUFF=4)
+[PRICE_HIST] Recorded ECO prices for 4353/4369 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 15:15:44.07] Update failed 
+[鍛ㄤ笁 2026/05/20 15:20:01.45] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7673 PnL=-12636 (-62.2%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.00
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4369 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[15:20:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.7s)
+  eco_catalog.json : 36627 items  (0.4s)
+  filtered         : 4383 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4383 items  (1.3s)
+  Price stats (tracked): min=0.00  median=97.99  max=288888.00
+  P95=4400.00
+  Category breakdown (tracked):
+    Weapon      :   3735
+    Glove       :    471
+    Other       :    177
+[15:20:54] Done  (3.5s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4383 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 500 prices
+  [CSQAQ] Batch 15/88: 750 prices
+  [CSQAQ] Batch 20/88: 1000 prices
+  [CSQAQ] Batch 25/88: 1250 prices
+  [CSQAQ] Batch 30/88: 1500 prices
+  [CSQAQ] Batch 35/88: 1750 prices
+  [CSQAQ] Batch 40/88: 1999 prices
+  [CSQAQ] Batch 45/88: 2249 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4381/4383 items
+[CSQAQ] Batch merged: 4381 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4383 tracked items...
+[REC] Loaded 4383 items from eco_tracked.json
+[REC] Filtered out 817 excluded items (3566 remaining)
+[REC] BUFF prices available for 3574 items
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[REC] 30 recommendations (ECO=25, BUFF=5)
+[PRICE_HIST] Recorded ECO prices for 4366/4383 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+[鍛ㄤ笁 2026/05/20 15:25:22.33] Update failed 
+[鍛ㄤ笁 2026/05/20 15:30:01.45] Git pull failed, continuing 
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7674 PnL=-12636 (-62.2%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.00
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4383 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[15:30:50] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.8s)
+  eco_catalog.json : 36627 items  (0.5s)
+  filtered         : 4384 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4384 items  (1.3s)
+  Price stats (tracked): min=0.00  median=98.31  max=288888.00
+  P95=4367.00
+  Category breakdown (tracked):
+    Weapon      :   3736
+    Glove       :    471
+    Other       :    177
+[15:30:53] Done  (3.6s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4384 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 499 prices
+  [CSQAQ] Batch 15/88: 749 prices
+  [CSQAQ] Batch 20/88: 999 prices
+  [CSQAQ] Batch 25/88: 1249 prices
+  [CSQAQ] Batch 30/88: 1499 prices
+  [CSQAQ] Batch 35/88: 1749 prices
+  [CSQAQ] Batch 40/88: 1999 prices
+  [CSQAQ] Batch 45/88: 2248 prices
+  [CSQAQ] Batch 50/88: 2498 prices
+  [CSQAQ] Batch 55/88: 2748 prices
+  [CSQAQ] Batch 60/88: 2998 prices
+  [CSQAQ] Batch 65/88: 3248 prices
+  [CSQAQ] Batch 70/88: 3498 prices
+  [CSQAQ] Batch 75/88: 3748 prices
+  [CSQAQ] Batch 80/88: 3998 prices
+  [CSQAQ] Batch 85/88: 4248 prices
+[CSQAQ] Batch total: 4382/4384 items
+[CSQAQ] Batch merged: 4382 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4384 tracked items...
+[REC] Loaded 4384 items from eco_tracked.json
+[REC] Filtered out 823 excluded items (3561 remaining)
+[REC] BUFF prices available for 3569 items
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[PRICE_HIST] Recorded ECO prices for 4367/4384 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7673 PnL=-12637 (-62.2%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.00
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4384 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[15:40:51] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (1.5s)
+  eco_catalog.json : 36627 items  (0.5s)
+  filtered         : 4396 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  eco_tracked.json  : 4396 items  (0.1s)
+  Price stats (tracked): min=0.00  median=98.00  max=288888.00
+  P95=4348.99
+  Category breakdown (tracked):
+    Weapon      :   3748
+    Glove       :    471
+    Other       :    177
+[15:40:53] Done  (2.1s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4396 items...
+  [CSQAQ] Batch 5/88: 250 prices
+  [CSQAQ] Batch 10/88: 499 prices
+  [CSQAQ] Batch 15/88: 749 prices
+  [CSQAQ] Batch 20/88: 999 prices
+  [CSQAQ] Batch 25/88: 1249 prices
+  [CSQAQ] Batch 30/88: 1499 prices
+  [CSQAQ] Batch 35/88: 1749 prices
+  [CSQAQ] Batch 40/88: 1999 prices
+  [CSQAQ] Batch 45/88: 2249 prices
+  [CSQAQ] Batch 50/88: 2499 prices
+  [CSQAQ] Batch 55/88: 2749 prices
+  [CSQAQ] Batch 60/88: 2999 prices
+  [CSQAQ] Batch 65/88: 3249 prices
+  [CSQAQ] Batch 70/88: 3499 prices
+  [CSQAQ] Batch 75/88: 3749 prices
+  [CSQAQ] Batch 80/88: 3999 prices
+  [CSQAQ] Batch 85/88: 4249 prices
+[CSQAQ] Batch total: 4394/4396 items
+[CSQAQ] Batch merged: 4394 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 32 items
+[SteamDT] Fetching multi-platform prices for 4396 tracked items...
+[REC] Loaded 4396 items from eco_tracked.json
+[REC] Filtered out 828 excluded items (3568 remaining)
+[REC] BUFF prices available for 3576 items
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[PRICE_HIST] Recorded ECO prices for 4379/4396 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1365, in <module>
+    print(f'[MARKET] Failed: {e}', file=sys.stderr)
+
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1361, in main
+    market['market_updated'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+^^
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.
+  [CSQAQ] Batch 14 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 32 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 35 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 37 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 40 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 54 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 59 error: HTTP Error 429: Too Many Requests
+  [CSQAQ] Batch 83 error: HTTP Error 429: Too Many Requests
+=== CS2 Dashboard Update (all) ===
+[ECO] Fetching prices for 32 items...
+[ECO] Got 32 prices
+[ECO] Updated 32/32 | Cost=20309 Market=7672 PnL=-12637 (-62.2%)
+[SteamDT] Fetching BUFF prices...
+  [SteamDT] M4A1-S | Moss Quartz (Factory New): BUFF sell=1095.99
+  [SteamDT] FAMAS | Commemoration (Factory New): BUFF sell=435.00
+  [SteamDT] P2000 | Fire Elemental (Factory New): BUFF sell=984.99
+[SteamDT] Got 32/32 prices
+[SteamDT] Merged BUFF prices for 32 items into holdings
+[SteamDT] Merged multi-platform prices for 19/4396 items into eco_tracked.json
+[HISTORY] Saved BUFF prices for 32 items on 2026-05-20
+[ALERTS] Computing from BUFF price history...
+[ALERTS] Using 2026-05-19 as 1d reference (target=2026-05-19)
+[ALERTS] Using 2026-05-13 as 7d reference (target=2026-05-13)
+[ALERTS] Computed 32 items from history (9 days)
+[ALERTS] Got 32 alerts
+[SteamDT] Fetching K-lines...
+[SteamDT] Items list: 32 items (from holdings.json)
+[SteamDT] Test response: success=True, errorCode=0, errorMsg=None
+[SteamDT] K-line data: 0 items fetched
+[NEWS] Fetching CS2 Steam news...
+[HOSTS] api.steampowered.com blocked by hosts file (127.0.0.1), skipping
+[NEWS] Skipped (Steam API blocked by hosts file)
+[ECO] Building catalog (parallel background)...
+[15:50:53] ECO catalog builder started
+[REC] Waiting for catalog build...
+  fetch_eco_full : 36627 items  (2.0s)
+  eco_catalog.json : 36627 items  (0.6s)
+  filtered         : 4403 items  (0.1s)
+    (Price>=5.0, SellingTotal>=10)
+  enriching with BUFF prices (SteamDT, ~2-3 min for 8198 items)...
+  eco_tracked.json  : 4403 items  (1.3s)
+  Price stats (tracked): min=0.00  median=98.00  max=288888.00
+  P95=4355.00
+  Category breakdown (tracked):
+    Weapon      :   3755
+    Glove       :    471
+    Other       :    177
+[15:50:57] Done  (4.0s total)
+[REC] Catalog ready, generating recommendations
+[CSQAQ] Rank list merged: 0 items
+[CSQAQ] Full scan: 4403 items...
+  [CSQAQ] Batch 5/89: 250 prices
+  [CSQAQ] Batch 10/89: 500 prices
+  [CSQAQ] Batch 15/89: 700 prices
+  [CSQAQ] Batch 20/89: 950 prices
+  [CSQAQ] Batch 25/89: 1200 prices
+  [CSQAQ] Batch 30/89: 1450 prices
+  [CSQAQ] Batch 45/89: 2000 prices
+  [CSQAQ] Batch 50/89: 2250 prices
+  [CSQAQ] Batch 55/89: 2449 prices
+  [CSQAQ] Batch 60/89: 2649 prices
+  [CSQAQ] Batch 65/89: 2899 prices
+  [CSQAQ] Batch 70/89: 3149 prices
+  [CSQAQ] Batch 75/89: 3399 prices
+  [CSQAQ] Batch 80/89: 3649 prices
+  [CSQAQ] Batch 85/89: 3849 prices
+[CSQAQ] Batch total: 4001/4403 items
+[CSQAQ] Batch merged: 4001 items
+[SteamDT] Updating 32 holdings...
+[SteamDT] Holdings updated: 28 items
+[SteamDT] Fetching multi-platform prices for 4403 tracked items...
+[REC] Loaded 4403 items from eco_tracked.json
+[REC] Filtered out 832 excluded items (3571 remaining)
+[REC] BUFF prices available for 3266 items
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[REC] 30 recommendations (ECO=24, BUFF=6)
+[PRICE_HIST] Recorded ECO prices for 3988/4403 items
+[HOSTS] steamcommunity.com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1372, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1368, in main
+    push_all()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 830, in push_all
+    git_push_locally(sorted(dirty_files), f'chore: update {", ".join(sorted(dirty_files))} {time.strftime("%Y-%m-%d %H:%M")}')
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 877, in git_push_locally
+    subprocess.run(['git', '-c', 'credential.helper=', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=', 'push']' returned non-zero exit status 128.

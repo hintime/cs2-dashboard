@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS2 关联分析</title>
+<style>
+:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#f87171;--fall:#34d399;--blue:#60a5fa;--amber:#fbbf24;--purple:#a855f7;--radius:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:28px 20px 40px}
+h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:11px;color:var(--text3);margin-top:3px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:8px}
+.header .nav a:hover{text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:0 2px 16px rgba(0,0,0,.25)}
+.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--surface2);border-radius:8px;padding:12px 14px;text-align:center}
+.kpi-l{font-size:10px;color:var(--text3);margin-bottom:4px}
+.kpi-v{font-size:20px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.pair-row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid rgba(55,65,81,.08);gap:12px}
+.pair-name{flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pair-r{min-width:80px;text-align:center;font-weight:700;font-size:14px;font-family:'DM Mono',monospace}
+.pair-bar{height:6px;border-radius:3px;min-width:40px;transition:.3s}
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:12px}
+.loading-spin{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+canvas{border-radius:8px;background:var(--surface2)}
+.blue{color:var(--blue)}
+.fall{color:var(--fall)}
+.rise{color:var(--rise)}
+@media(max-width:640px){.container{padding:18px 12px 28px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div><h1>🔗 关联分析</h1><div class="sub" id="corrDate">加载中...</div></div>
+    <div class="nav"><a href="/">← 返回看板</a></div>
+  </div>
+  <div class="card">
+    <div class="kpis" id="corrKpis">
+      <div class="kpi"><div class="kpi-l">加载中</div><div class="kpi-v"><span class="loading-spin"></span></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🔺 正相关 TOP（同涨同跌）</h2>
+    <div id="posCorr"></div>
+  </div>
+  <div class="card">
+    <h2>🔻 负相关 TOP（此涨彼跌）</h2>
+    <div id="negCorr"></div>
+  </div>
+  <div class="card">
+    <h2>📈 相关性分布</h2>
+    <canvas id="corrChart" width="860" height="200"></canvas>
+  </div>
+</div>
+<script>
+// ═══════════ Pre-computed correlation data loader ═══════════
+// Loads correlation_data.json (411KB) instead of price_history.json (84MB)
+function loadCorr() {
+  var t0 = Date.now();
+  fetch('correlation_data.json?v=' + t0)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(d) {
+      if (!d || !d.top_pos) throw new Error('Invalid data');
+
+      var pos = d.top_pos || [];
+      var neg = d.top_neg || [];
+      var nameMap = d.name_map || {};
+      var days = d.days || '?';
+      var items = d.items || '?';
+      var dr = d.date_range || ['?', '?'];
+
+      // Date display
+      document.getElementById('corrDate').textContent =
+        dr[0] + ' → ' + dr[dr.length-1] + ' · ' + days + '天 · ' + items + '标的 · 预计算';
+
+      // KPIs
+      var strongPos = pos.filter(function(p) { return p.r > 0.7; }).length;
+      var strongNeg = neg.filter(function(p) { return p.r < -0.5; }).length;
+      var maxPos = pos.length ? pos[0].r.toFixed(4) : '--';
+      var maxNeg = neg.length ? neg[neg.length-1].r.toFixed(4) : '--';
+      document.getElementById('corrKpis').innerHTML =
+        '<div class="kpi"><div class="kpi-l">分析标的</div><div class="kpi-v blue">' + items + '</div><div class="kpi-sub">≥60%数据覆盖</div></div>' +
+        '<div class="kpi"><div class="kpi-l">强正相关</div><div class="kpi-v fall">' + strongPos + '</div><div class="kpi-sub">r > 0.7</div></div>' +
+        '<div class="kpi"><div class="kpi-l">强负相关</div><div class="kpi-v rise">' + strongNeg + '</div><div class="kpi-sub">r < -0.5</div></div>' +
+        '<div class="kpi"><div class="kpi-l">配对总数</div><div class="kpi-v" style="font-size:13px;color:var(--amber)">' + (pos.length + neg.length) + '</div><div class="kpi-sub">|r| > 0.3</div></div>';
+
+      // Render pairs
+      function renderPairs(list, elId, max) {
+        var el = document.getElementById(elId);
+        var shown = list.slice(0, max || 20);
+        if (!shown.length) { el.innerHTML = '<div class="empty">无显著关联</div>'; return; }
+        el.innerHTML = shown.map(function(p) {
+          var an = nameMap[p.a] || p.a;
+          var bn = nameMap[p.b] || p.b;
+          var color = p.r > 0 ? 'var(--fall)' : 'var(--rise)';
+          var barW = Math.abs(p.r) * 100;
+          return '<div class="pair-row">' +
+            '<div class="pair-name" title="' + esc(p.a) + '">' + esc(an) + '</div>' +
+            '<div class="pair-name" style="text-align:right" title="' + esc(p.b) + '">' + esc(bn) + '</div>' +
+            '<div class="pair-bar" style="width:' + barW + '%;background:' + color + '"></div>' +
+            '<div class="pair-r" style="color:' + color + '">' + (p.r>0?'+':'') + p.r.toFixed(4) + '</div>' +
+          '</div>';
+        }).join('');
+      }
+      renderPairs(pos, 'posCorr', 20);
+      renderPairs(neg.slice().reverse(), 'negCorr', 20); // Show most negative first
+
+      // Distribution chart
+      var dist = d.distribution;
+      if (dist && dist.length) {
+        var canvas = document.getElementById('corrChart');
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        var maxB = Math.max.apply(null, dist) || 1;
+        var barW = (w - 60) / dist.length;
+        for (var i = 0; i < dist.length; i++) {
+          var bh = (dist[i] / maxB) * (h - 40);
+          var x = 30 + i * barW;
+          var color = i < 10 ? 'rgba(248,113,113,0.6)' : 'rgba(52,211,153,0.6)';
+          ctx.fillStyle = color;
+          ctx.fillRect(x, h-20-bh, barW-2, bh);
+          if (i % 4 === 0) {
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '9px monospace';
+            ctx.fillText((-1 + i*0.1).toFixed(1), x, h-4);
+          }
+        }
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('← 负相关', 30, 14);
+        ctx.fillText('正相关 →', w-70, 14);
+      } else {
+        document.getElementById('corrChart').parentElement.innerHTML += '<div class="empty">分布数据不可用</div>';
+      }
+
+    }).catch(function(e) {
+      document.getElementById('corrDate').textContent = '加载失败: ' + e.message;
+    });
+}
+
+function esc(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+loadCorr();
+</script>
+</body>
+</html>

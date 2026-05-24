@@ -1,0 +1,3841 @@
+<!DOCTYPE html>
+<html data-v="20260523173300" lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="dns-prefetch" href="//hintime.github.io">
+<title>CS2 饰品投资看板 · v2026.04.23c</title>
+<style>
+:root{
+  --bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);
+  --border:rgba(55,65,81,.4);--border-hi:rgba(99,115,129,.5);
+  --text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;
+  --fall:#34d399;--rise:#f87171;--blue:#60a5fa;--amber:#fbbf24;
+  --glow-rise:rgba(248,113,113,.12);--glow-fall:rgba(52,211,153,.12);--glow-blue:rgba(96,165,250,.1);
+  --accent:#60a5fa;--radius:14px;--radius-sm:10px;--shadow:0 2px 16px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(96,165,250,.06),transparent);
+}
+.container{max-width:1280px;margin:0 auto;padding:28px 24px 40px}
+
+/* ══════════ 快速导航栏 ══════════ */
+.quick-nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;gap:6px;
+  padding:12px 0 10px;margin-bottom:18px;
+  background:var(--bg);
+  justify-content:center;flex-wrap:wrap;
+}
+.nav-btn{
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text2);font-size:12px;font-weight:600;
+  padding:7px 18px;border-radius:10px;cursor:pointer;
+  transition:all .25s cubic-bezier(.16,1,.3,1);white-space:nowrap;
+  position:relative;display:flex;align-items:center;gap:5px;
+  letter-spacing:.2px;
+}
+.nav-btn:hover{
+  border-color:rgba(96,165,250,.4);color:var(--text);
+  transform:translateY(-2px);
+  box-shadow:0 4px 16px rgba(96,165,250,.12);
+  background:rgba(96,165,250,.06);
+}
+.nav-btn:active{
+  transform:translateY(0);
+  transition-duration:.08s;
+}
+.nav-btn.active{
+  background:linear-gradient(135deg,rgba(96,165,250,.2),rgba(96,165,250,.08));
+  color:var(--blue);border-color:var(--blue);
+  box-shadow:0 2px 16px rgba(96,165,250,.2),inset 0 1px 0 rgba(255,255,255,.06);
+  text-shadow:none;
+}
+.sub-page{
+  border-color:rgba(168,85,247,.25)!important;
+  color:var(--text2)!important;
+}
+.sub-page:hover{
+  border-color:rgba(168,85,247,.5)!important;
+  color:#c084fc!important;
+  box-shadow:0 4px 16px rgba(168,85,247,.12)!important;
+  background:rgba(168,85,247,.08)!important;
+}
+.sub-page.active{
+  background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(168,85,247,.08))!important;
+  color:#c084fc!important;
+  border-color:#a855f7!important;
+  box-shadow:0 2px 16px rgba(168,85,247,.2),inset 0 1px 0 rgba(255,255,255,.06)!important;
+}
+.sub-page.active::after{
+  background:#a855f7!important;
+  box-shadow:0 0 6px #a855f7!important;
+}
+.nav-btn.active::after{
+  content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
+  width:20px;height:2px;background:var(--blue);border-radius:1px;
+  box-shadow:0 0 6px var(--blue);
+}
+@media(max-width:640px){
+  .quick-nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;justify-content:flex-start}
+  .nav-btn{flex-shrink:0;padding:6px 14px;font-size:11px}
+  .sub-page{font-size:10px!important;padding:5px 11px!important}
+  .quick-nav > span{flex-shrink:0}
+  .kpi-strip{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi{padding:14px 12px}.kpi .value{font-size:18px}
+  #recGrid{grid-template-columns:1fr!important;gap:10px!important}
+  .ac-metrics{grid-template-columns:repeat(2,1fr)!important}
+  .mi-items{grid-template-columns:repeat(2,1fr)!important;gap:6px}
+  .bt-kpis{grid-template-columns:repeat(2,1fr)!important}
+  .bt-items{grid-template-columns:1fr!important}
+  table{font-size:11px!important}
+  thead th, tbody td{padding:8px 6px!important;font-size:10px!important}
+  .container{padding:14px 10px 24px}
+  .panel-head{padding:12px 14px}
+  .panel-head h2{font-size:12px}
+  .rec-card{padding:14px 16px}
+  .rc-price{font-size:20px}
+  .row-analysis-inner{grid-template-columns:1fr!important;padding:8px 12px 10px}
+  .item-name{font-size:12px!important}
+  .wear-tag{font-size:9px!important;padding:1px 5px}
+  .cost-val{font-size:12px!important}
+  .rc-meta{font-size:10px}
+  .header h1{font-size:16px}
+  .header .sub{font-size:10px}
+}
+
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.header h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .sub{font-size:11px;color:var(--text3);margin-top:3px;letter-spacing:.02em}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);background:var(--surface);border:1px solid var(--border);padding:4px 14px;border-radius:20px;backdrop-filter:blur(8px)}
+.badge .dot{width:5px;height:5px;border-radius:50%;background:var(--fall);box-shadow:0 0 6px var(--fall);animation:blink 2.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ── Glassmorphism card base ── */
+.glass{background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+
+.mi-chart{height:400px;margin-bottom:20px}
+.news-section{margin-bottom:28px}
+.news-tabs-bar{grid-template-columns:repeat(3,1fr);margin-bottom:0}
+.news-card{display:flex;flex-direction:column;padding:16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);transition:all .2s;cursor:pointer;min-height:140px}
+.news-card:hover{border-color:rgba(96,165,250,.3);background:rgba(30,35,48,.8);transform:translateY(-1px)}
+.news-card .nc-source{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.news-card .nc-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-card .nc-body{font-size:11px;color:var(--text2);line-height:1.5;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.news-card .nc-time{font-size:10px;color:var(--text3);margin-top:8px}
+.news-card .nc-link{font-size:10px;color:var(--blue);margin-top:6px;display:flex;align-items:center;gap:4px}
+.news-loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--text2);font-size:13px;gap:8px}
+.sentiment-bar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.sentiment-label{font-size:11px;font-weight:600;min-width:60px}
+.sentiment-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.sentiment-fill{height:100%;border-radius:4px;transition:width .5s}
+.sentiment-val{font-size:12px;font-weight:700;font-family:monospace;min-width:44px;text-align:right}
+.sentiment-card{padding:16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)}
+.sentiment-card h4{font-size:13px;font-weight:600;color:var(--text);margin:0 0 10px}
+.sentiment-card p{font-size:11px;color:var(--text2);line-height:1.6;margin:0}
+.mi-items{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.mi-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;cursor:pointer;transition:all .25s ease}
+.mi-item:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.2);background:rgba(96,165,250,.04)}
+.mi-item.active{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 4px 20px var(--glow-blue)}
+.mi-item-name{font-size:13px;color:var(--text3);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi-item-price{font-size:18px;font-weight:700}
+.mi-item-chg{font-size:13px;margin-top:2px}
+.clr-up{color:var(--rise)}.clr-dn{color:var(--fall)}
+
+.kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.kpi{background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);transition:border-color .25s}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}.kpi:hover{border-color:var(--border-hi);box-shadow:0 4px 24px rgba(96,165,250,.1)}
+.kpi .label{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text3);margin-bottom:8px;font-weight:500}
+.kpi .value{font-size:24px;font-weight:800;letter-spacing:-.01em}
+.kpi .value.rise{color:var(--rise)}.kpi .value.fall{color:var(--fall)}
+.kpi .meta{font-size:11px;color:var(--text3);margin-top:5px}
+
+/* ══════════ RECOMMENDATION CARDS ══════════ */
+.rec-card{
+  display:flex;flex-direction:column;background:var(--surface);
+  border-radius:var(--radius-sm);padding:20px 22px;cursor:pointer;
+  transition:all .25s ease;position:relative;overflow:hidden;
+  border:1px solid var(--border);gap:8px;
+}
+.rec-card:hover{
+  transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.35);
+  border-color:var(--accent);background:rgba(22,27,34,.92);
+}
+.rec-card:active{transform:translateY(-2px)}
+.rec-card.eco{border-left:4px solid var(--blue);background:linear-gradient(135deg,var(--glow-blue),var(--surface))}
+.rec-card.buff{border-left:4px solid var(--rise);background:linear-gradient(135deg,var(--glow-rise),var(--surface))}
+
+.rc-tag{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;margin-bottom:4px;width:fit-content}
+.rec-card.eco .rc-tag{background:rgba(96,165,250,.15);color:var(--blue)}
+.rec-card.buff .rc-tag{background:rgba(248,113,113,.15);color:var(--rise)}
+
+.rc-name{font-size:15px;font-weight:600;color:var(--text);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:24px}
+.rc-price{font-size:26px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace;color:var(--text);letter-spacing:-.02em}
+.rc-meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--text3);margin-top:4px}
+.rc-meta .r-up{color:var(--rise);font-weight:600}
+.rc-meta .r-dn{color:var(--fall);font-weight:600}
+.rc-meta .r-buy-num{color:var(--blue);font-weight:600}
+/* ── 推荐卡片市场深度 ── */
+.rc-depth{font-size:10px;line-height:1.6;padding:4px 14px 0;color:var(--text2)}
+.rc-depth .r-depth-eco{color:var(--blue)}
+.rc-depth .r-depth-buff{color:var(--rise)}
+.rc-depth .r-dp-sell{font-weight:600;color:var(--text)}
+.rc-depth .r-dp-buy{font-weight:600;color:var(--fall)}
+.rc-depth .r-dp-num{font-size:9px;margin-left:2px}
+.rc-reason{font-size:12px;color:var(--text2);line-height:1.5;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.rc-chart{display:flex;gap:2px;align-items:center;margin-top:4px;height:32px}
+.rc-chart svg{flex:1;height:100%}
+
+.rec-pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:16px;padding:8px 0}
+.rec-page-info{font-size:11px;color:var(--text3)}
+.rec-page-btn{padding:6px 16px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text2);cursor:pointer;font-size:12px;transition:all .2s}
+.rec-page-btn:hover:not(:disabled){background:var(--blue);color:#fff;border-color:var(--blue)}
+.rec-page-btn:disabled{opacity:.3;cursor:not-allowed}
+.rec-page-num{padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text2);cursor:pointer;font-size:12px;min-width:32px;text-align:center;transition:all .2s}
+.rec-page-num:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.rec-page-num.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+
+
+/* ── Portfolio Analysis Cards ── */
+.analysis-card{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:18px 20px;display:flex;flex-direction:column;gap:10px;transition:all .25s;
+  border-left:3px solid var(--border);position:relative;overflow:hidden;
+}
+.analysis-card:hover{border-color:var(--border-hi);transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.analysis-card.rise{border-left-color:var(--rise)}
+.analysis-card.fall{border-left-color:var(--fall)}
+.analysis-card .ac-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.analysis-card .ac-name{font-size:14px;font-weight:700;color:var(--text);line-height:1.4;flex:1;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.analysis-card .ac-badge{font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0;letter-spacing:.3px;background:var(--surface);border:1px solid var(--border)}
+.analysis-card .ac-badge.buy{background:rgba(248,113,113,.12);color:var(--rise);border-color:rgba(248,113,113,.25)}
+.analysis-card .ac-badge.sell{background:rgba(52,211,153,.12);color:var(--fall);border-color:rgba(52,211,153,.25)}
+.analysis-card .ac-badge.wait{background:rgba(96,165,250,.12);color:var(--blue);border-color:rgba(96,165,250,.25)}
+.analysis-card .ac-badge.stop{background:rgba(251,191,36,.12);color:var(--amber);border-color:rgba(251,191,36,.25)}
+.analysis-card .ac-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:2px}
+.analysis-card .ac-m{display:flex;flex-direction:column;gap:1px;background:var(--surface);border-radius:6px;padding:7px 8px}
+.analysis-card .ac-ml{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.analysis-card .ac-mv{font-size:13px;font-weight:700;font-family:'DM Mono','JetBrains Mono',monospace;color:var(--text)}
+.analysis-card .ac-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:2px}
+.analysis-card .ac-label{font-size:11px;color:var(--text3)}
+.analysis-card .ac-reason{font-size:11px;color:var(--text2);background:var(--surface);border-radius:6px;padding:8px 10px;line-height:1.5;border-left:3px solid var(--border-hi);margin-top:2px}
+.analysis-card .ac-reason.buy{border-left-color:var(--rise)}
+.analysis-card .ac-reason.sell{border-left-color:var(--fall)}
+.rec-card.eco{border-left:3px solid var(--blue);background:linear-gradient(135deg,var(--glow-blue),var(--surface))}
+.rec-card.buff{border-left:3px solid var(--rise);background:linear-gradient(135deg,var(--glow-rise),var(--surface))}
+.r-channel{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:6px;background:rgba(96,165,250,.15);color:var(--blue)}
+.r-channel.buff-mode{background:rgba(248,113,113,.15);color:var(--rise)}
+.a-rank{position:absolute;bottom:8px;right:10px;font-size:10px;color:var(--text3);font-family:'DM Mono','JetBrains Mono',monospace;opacity:.5}
+
+.watch-empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:13px}
+.watch-empty p{margin:8px 0 4px;font-size:15px;font-weight:600;color:var(--text2)}
+
+.panel{background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--border);border-top:2px solid rgba(96,165,250,.25);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow)}
+.panel-head{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid var(--border)}
+.panel-head h2{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.3px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);width:100%}
+.tab{background:none;border:1px solid transparent;color:var(--text3);padding:5px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:500;transition:all .2s;outline:none}
+.tab:focus-visible{box-shadow:0 0 0 2px var(--blue)}
+.tab:hover{color:var(--text2);background:rgba(255,255,255,.03)}
+.tab.on{color:var(--blue);background:var(--glow-blue);border-color:rgba(96,165,250,.2)}
+
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);font-weight:600;padding:14px 18px;background:rgba(13,17,23,.6);position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border);cursor:pointer;user-select:none;transition:color .2s}
+thead th:hover{color:var(--text2);background:rgba(255,255,255,.03)}
+tbody td{padding:13px 18px;border-bottom:1px solid rgba(55,65,81,.12);font-size:13px;transition:background .2s}
+tbody tr{transition:all .2s}
+tbody tr:nth-child(even){background:rgba(255,255,255,.015)}
+tbody tr:hover td{background:rgba(96,165,250,.06)}
+.item-name{font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px}
+.wear-tag{font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 8px;border-radius:5px;margin-left:6px;font-family:'DM Mono','JetBrains Mono',monospace;border:1px solid var(--border);white-space:nowrap}
+thead th[data-col="w"]{min-width:68px}
+.text-r{text-align:right;font-variant-numeric:tabular-nums}
+.sort-asc::after{content:" ▲";color:var(--blue);font-size:11px;font-weight:700}.sort-desc::after{content:" ▼";color:var(--blue);font-size:11px;font-weight:700}
+.clr-rise{color:var(--rise)}.clr-fall{color:var(--fall)}.text-muted{color:var(--text3)}.mono{font-family:'DM Mono','JetBrains Mono',monospace}
+
+.cost-val{font-family:'DM Mono','JetBrains Mono',monospace;font-size:14px;cursor:pointer;border-bottom:1px dashed rgba(255,255,255,.1);transition:all .2s;padding:1px 3px}
+.cost-val:hover{border-bottom-color:var(--blue);color:var(--blue);background:rgba(96,165,250,.06);border-radius:3px}
+.cost-edited{display:inline-block;font-size:9px;font-weight:600;padding:1px 6px;border-radius:4px;margin-left:4px;background:rgba(96,165,250,.12);color:var(--blue)}
+.edit-cost{display:none}
+
+.sell-btn{
+  background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);
+  color:var(--rise);border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;
+  padding:4px 10px;transition:all .2s;
+}
+.sell-btn:hover{background:rgba(248,113,113,.2);border-color:var(--rise);box-shadow:0 0 8px rgba(248,113,113,.15)}
+
+/* ── 行展开分析 ── */
+
+
+
+.row-analysis{padding:0;border-bottom:1px solid rgba(55,65,81,.12)}
+.row-analysis-inner{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 18px 14px;background:rgba(96,165,250,.03)}
+.row-analysis .ra-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.row-analysis .ra-val{font-size:13px;font-weight:700;font-family:'DM Mono','JetBrains Mono',monospace}
+.row-analysis .ra-reason{grid-column:1/-1;font-size:11px;color:var(--text2);background:var(--surface);border-radius:6px;padding:7px 10px;line-height:1.5;border-left:3px solid var(--border-hi);margin-top:2px}
+.row-analysis .ra-reason.buy{border-left-color:var(--rise)}
+.row-analysis .ra-reason.sell{border-left-color:var(--fall)}
+.row-analysis .ra-chart{grid-column:1/-1;padding:4px 0 2px}
+
+
+.row-star{background:none;border:none;color:var(--amber);font-size:14px;cursor:pointer;padding:0 4px 0 0;line-height:1;opacity:.35;transition:all .2s}
+.row-star:hover{opacity:1}
+
+.foot{font-size:10px;color:var(--text3);text-align:center;padding:24px;opacity:.6}
+
+/* ── P&L 迷你进度条 ── */
+.pnl-bar-wrap{display:flex;align-items:center;gap:6px}
+.pnl-bar-track{flex:1;height:4px;background:var(--border);border-radius:3px;overflow:hidden;min-width:40px}
+.pnl-bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.pnl-bar-fill.profit{background:linear-gradient(90deg,transparent,var(--rise))}
+.pnl-bar-fill.loss{background:linear-gradient(90deg,transparent,var(--fall))}
+.pnl-bar-icon{font-size:10px;width:14px;text-align:center}
+
+/* ── Row P&L 指示器 ── */
+tr.pnl-profit{border-left:2px solid var(--rise)}
+tr.pnl-profit:hover{border-left-color:var(--rise);border-left-width:3px}
+tr.pnl-loss{border-left:2px solid var(--fall)}
+tr.pnl-loss:hover{border-left-color:var(--fall);border-left-width:3px}
+
+.empty-state{font-size:11px;color:var(--text3);padding:16px;text-align:center}
+
+.refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:6px 18px;border-radius:20px;cursor:pointer;transition:all .2s}
+.refresh-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--glow-blue)}
+
+/* ── 全市场扫描 Hero KPI ── */
+.scan-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 0 6px}
+.scan-kpi{background:var(--surface2);border-radius:10px;padding:14px 12px;text-align:center;border:1px solid rgba(55,65,81,.25)}
+.scan-kpi-main{border-color:rgba(96,165,250,.3);background:rgba(96,165,250,.04)}
+.scan-kpi-num{font-size:22px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace;color:var(--text);line-height:1.2}
+.scan-kpi-label{font-size:10px;color:var(--text3);margin-top:4px;letter-spacing:.5px}
+.scan-kpi-sub{font-size:9px;color:var(--text3);margin-top:2px;opacity:.7}
+@media(max-width:640px){.scan-kpis{grid-template-columns:repeat(2,1fr)}.scan-kpi-num{font-size:17px}}
+.cost-input{width:72px;background:var(--surface2);border:1px solid var(--blue);color:var(--text);padding:4px 8px;border-radius:6px 0 0 6px;font-size:12px;font-family:'DM Mono','JetBrains Mono',monospace;text-align:right;outline:none;transition:box-shadow .2s;vertical-align:middle}
+.cost-input:focus{box-shadow:0 0 0 2px rgba(96,165,250,.2)}
+.cost-edit-group{display:inline-flex;align-items:center}
+.cost-save-btn,.cost-cancel-btn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid var(--border);cursor:pointer;font-size:11px;line-height:1;transition:all .15s;vertical-align:middle;background:var(--surface2)}
+.cost-save-btn{border-radius:0 6px 6px 0;border-left:none;color:var(--fall)}
+.cost-save-btn:hover{background:var(--fall);color:#fff;border-color:var(--fall)}
+.cost-cancel-btn{border-radius:6px;margin-left:4px;color:var(--text3)}
+.cost-cancel-btn:hover{background:var(--rise);color:#fff;border-color:var(--rise)}
+.cost-edit-preview{margin-left:6px;font-size:10px;font-weight:600;font-family:'DM Mono','JetBrains Mono',monospace;display:inline-block}
+.export-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);color:var(--text3);font-size:11px;padding:5px 14px;border-radius:8px;cursor:pointer;margin-left:8px;transition:all .2s}
+.export-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--glow-blue)}
+.gear-btn{display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid var(--border);color:var(--text3);font-size:14px;width:30px;height:30px;border-radius:8px;cursor:pointer;margin-left:4px;transition:all .2s}
+.gear-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--glow-blue)}
+.sync-status{font-size:10px;color:var(--text3);margin-left:4px;opacity:0;transition:opacity .3s}
+.sync-status.show{opacity:1}.sync-status.ok{color:var(--fall)}.sync-status.err{color:var(--rise)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .25s}
+.loading-overlay{position:fixed;inset:0;z-index:998;opacity:0;pointer-events:none;transition:opacity .3s;background:rgba(13,17,23,.5);display:flex;align-items:center;justify-content:center}
+.loading-overlay.show{opacity:1;pointer-events:auto}
+.loading-overlay::after{content:"正在加载数据...";color:var(--text2);font-size:14px}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal{background:rgba(22,27,34,.95);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:28px;width:420px;max-width:90vw;box-shadow:0 16px 48px rgba(0,0,0,.4)}
+.modal h3{margin:0 0 8px;font-size:16px;font-weight:700}
+.modal p{margin:0 0 16px;font-size:13px;color:var(--text2);line-height:1.7}
+.modal input[type=password]{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;box-sizing:border-box;outline:none;transition:border-color .2s,box-shadow .2s}
+.modal input[type=password]:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(96,165,250,.15)}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.modal-btns button{padding:7px 18px;border-radius:8px;cursor:pointer;font-size:13px;border:1px solid var(--border);transition:all .2s}
+.modal-btns .btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.modal-btns .btn-primary:hover{background:#3b82f6;box-shadow:0 2px 12px rgba(96,165,250,.3)}
+.modal-btns .btn-secondary{background:none;color:var(--text2)}
+.modal-btns .btn-secondary:hover{color:var(--text);background:rgba(255,255,255,.03)}
+
+.no-data{text-align:center;padding:40px 16px;color:var(--text3);font-size:13px}
+.no-data .icon{font-size:28px;margin-bottom:12px;opacity:.3}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(99,115,129,.25);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(99,115,129,.4)}
+
+/* ── Search & Sort Controls ── */
+#searchInput:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(96,165,250,.15);outline:none}
+
+/* ── Pagination ── */
+.pager{display:flex;justify-content:center;align-items:center;gap:12px;padding:10px 0;font-size:13px;color:var(--text2)}
+.pgr-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;transition:all .15s;font-family:inherit}
+.pgr-btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue);background:var(--glow-blue)}
+.pgr-btn:disabled{opacity:.35;cursor:not-allowed}
+.pgr-info{font-size:12px;color:var(--text3);margin:0 4px}
+.page-size-bar{display:flex;justify-content:center;align-items:center;gap:8px;padding:4px 0 10px;font-size:11px;color:var(--text3)}
+.page-size-bar select{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit}
+.page-jump{display:none;justify-content:center;align-items:center;gap:8px;padding-bottom:10px;font-size:12px;color:var(--text2)}
+.page-jump input{width:56px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;text-align:center;font-size:12px;outline:none;font-family:inherit}
+.page-jump input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(96,165,250,.15)}
+.page-jump .page-go-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;transition:all .15s;font-family:inherit}
+.page-jump .page-go-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--glow-blue)}
+
+/* ── Changelog ── */
+.cl-section{margin-bottom:16px}
+.cl-section:last-child{margin-bottom:0}
+.cl-section-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.cl-section-title .cl-count{background:var(--blue);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600}
+.cl-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:6px;margin-bottom:4px;font-size:12px;transition:background .15s}
+.cl-item:hover{background:rgba(255,255,255,.03)}
+.cl-item .cl-name{color:var(--text);font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-item .cl-old{color:var(--text3);font-family:'DM Mono','JetBrains Mono',monospace;font-size:11px;margin:0 8px;text-decoration:line-through}
+.cl-item .cl-new{font-family:'DM Mono','JetBrains Mono',monospace;font-size:12px;font-weight:700;min-width:60px;text-align:right}
+.cl-item .cl-new.up{color:var(--rise)}.cl-item .cl-new.dn{color:var(--fall)}
+.cl-item .cl-tag{font-size:9px;padding:1px 6px;border-radius:4px;font-weight:600;margin-right:8px;flex-shrink:0}
+.cl-item .cl-tag.price{background:rgba(96,165,250,.12);color:var(--blue)}
+.cl-item .cl-tag.alert{background:rgba(248,113,113,.1);color:var(--rise)}
+.cl-item .cl-tag.rec{background:rgba(251,191,36,.1);color:var(--amber)}
+.cl-item .cl-tag.new{background:rgba(52,211,153,.1);color:var(--fall)}
+.cl-empty{color:var(--text3);font-size:12px;padding:8px 0}
+
+@keyframes shimmer { 0% { background-position: -400px 0 } 100% { background-position: 400px 0 } }
+.skeleton-line { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 800px 100%; animation: shimmer 1.6s infinite linear; border-radius: 4px; }
+.skeleton-card { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 800px 100%; animation: shimmer 1.6s infinite linear; border-radius: 14px; }
+
+
+@keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.body-fadein { animation: fadein 0.5s ease forwards; }
+.container { animation: fadein 0.45s ease forwards; }
+html { scroll-behavior: smooth; }
+
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)!important;pointer-events:auto}
+.toast.hide{opacity:0;transform:translateX(-50%) translateY(10px)!important;pointer-events:none}
+
+/* Sim Trade Modal */
+
+
+/* ── 推荐 Modal ── */
+.rec-modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;z-index:9999;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.rec-modal-overlay.show{opacity:1;pointer-events:auto}
+.rec-modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  width:520px;max-width:92vw;max-height:85vh;overflow-y:auto;
+  padding:28px 28px 24px;box-shadow:0 16px 64px rgba(0,0,0,.5);position:relative;
+}
+.rec-modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.rec-modal-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.5;flex:1;padding-right:16px}
+.rec-modal-close{
+  background:none;border:1px solid var(--border);color:var(--text3);
+  width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .2s;
+}
+.rec-modal-close:hover{color:var(--text);border-color:var(--text3)}
+.rec-modal-body{font-size:13px;line-height:1.7;color:var(--text2)}
+.rec-modal-price{font-size:28px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace;color:var(--text);margin-bottom:12px}
+.rec-modal-sub{font-size:11px;color:var(--text3);margin-bottom:16px}
+.rec-modal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.rec-modal-cell{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.rec-modal-cell-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.rec-modal-cell-value{font-size:15px;font-weight:700;font-family:'DM Mono','JetBrains Mono',monospace}
+.rec-modal-reason{
+  background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;
+  padding:12px 14px;font-size:12px;color:var(--text);line-height:1.7;margin-top:12px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>CS2 饰品投资看板</h1>
+      <div class="sub">数据来源: ECOSteam · CSQAQ · GitHub Pages</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="refresh-btn" id="refreshBtn" title="刷新数据，同时后台获取最新价格和异动">↻ 刷新</button>
+      <button class="gear-btn" id="gearBtn" title="设置 GitHub Token">⚙</button>
+      <span class="badge"><span class="dot"></span>实时</span>
+      <span class="badge" id="dataSourceBadge" style="font-size:10px;color:var(--text3)">数据:N/A</span>
+      <span class="badge" id="updateTime" title="数据更新时间">--</span>
+      <span id="refreshStatus" style="font-size:11px;color:var(--text3);min-width:60px"></span>
+      <button id="loginBtn" onclick="document.getElementById('authModal').style.display='flex'" style="background:var(--blue);color:#fff;border:none;padding:4px 14px;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap">登录</button>
+      <span id="userSection" style="display:none;font-size:12px">
+        <span id="userEmail" style="color:var(--text2)"></span>
+        <button onclick="syncHoldingsToGitHub()" style="background:var(--surface2);color:var(--fall);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px" title="持仓推送到GitHub仓库，换设备可恢复">📤 同步</button>
+        <button onclick="loadHoldingsFromGitHub()" style="background:var(--surface2);color:var(--blue);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px" title="从GitHub仓库恢复持仓">📥 恢复</button>
+        <button onclick="localSignOut()" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px">退出</button>
+      </span>
+    </div>
+  </div>
+
+  <!-- ══════════ 快速导航（吸顶合并）══════════ -->
+  <div class="quick-nav" id="quickNav">
+    <button class="nav-btn" onclick="scrollToPanel('scanPanel')">🌐 市场</button>
+    <button class="nav-btn" onclick="scrollToPanel('newsSection')">📰 资讯</button>
+    <button class="nav-btn" onclick="scrollToPanel('recPanel')">💡 推荐</button>
+    <button class="nav-btn" onclick="scrollToPanel('holdingsPanel')">📦 持仓</button>
+    <button class="nav-btn" onclick="scrollToPanel('changelogPanel')" id="changelogNavBtn" style="display:none">📋 变动</button>
+    <span style="width:2px;height:24px;background:var(--text3);border-radius:1px;margin:0 10px;opacity:.35"></span>
+    <span style="font-size:9px;color:var(--text3);font-weight:500;letter-spacing:1px;text-transform:uppercase;opacity:.5;align-self:center">子页</span>
+    <a href="backtest.html" class="nav-btn sub-page" style="text-decoration:none">📊 回测</a>
+    <a href="revenue.html" class="nav-btn sub-page" style="text-decoration:none">💰 收入</a>
+    <a href="fluctuation.html" class="nav-btn sub-page" style="text-decoration:none">📡 异动</a>
+    <a href="heatmap.html" class="nav-btn sub-page" style="text-decoration:none">🔥 热力</a>
+    <a href="tracking.html" class="nav-btn sub-page" style="text-decoration:none">📈 追踪</a>
+    <a href="correlation.html" class="nav-btn sub-page" style="text-decoration:none">🔗 关联</a>
+    <a href="report.html" class="nav-btn sub-page" style="text-decoration:none">📋 日报</a>
+    <a href="status.html" class="nav-btn sub-page" style="text-decoration:none">📡 状态</a>
+  </div>
+
+<!-- ══════════ 全市场扫描 ══════════ -->
+<div class="panel" id="scanPanel">
+  <div class="panel-head">
+    <h2>全市场扫描 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px" id="scanSubtitle">武器·刀·手套·探员</span></h2>
+    <span id="scanUpdateTime" style="font-size:10px;color:var(--text3)"></span>
+  </div>
+  <div id="scanContent" style="padding:0 20px 16px">
+    <div id="scanKpis" class="scan-kpis"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div id="scanTiers" style="min-width:0"></div>
+      <div id="scanCats" style="min-width:0"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
+      <div id="scanGainers"></div>
+      <div id="scanLosers"></div>
+    </div>
+    <div id="scanTopSell" style="padding:4px 0"></div>
+  </div>
+</div>
+
+    <!-- CS2 新闻与情绪 -->
+  <div class="glass news-section" id="newsSection" style="display:none">
+    <div class="panel-head">
+      <h2>CS2 资讯中心 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px">官方新闻 · 更新公告 · 市场情绪</span></h2>
+      <span id="newsUpdateTime" style="font-size:10px;color:var(--text3)"></span>
+    </div>
+    <div class="tabs news-tabs-bar" id="newsTabs">
+      <button class="tab on" data-ntab="news">📰 CS资讯</button>
+      <button class="tab" data-ntab="sentiment">📈 市场情绪</button>
+    </div>
+    <div id="newsContent" style="padding:16px 20px">
+      <div id="newsGrid"></div>
+    </div>
+  </div>
+
+
+    <!-- ══════════ 饰品购买推荐 ══════════ -->
+  <div class="panel" id="recPanel">
+    <div class="panel-head">
+      <h2>购买推荐 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px">多源数据 · 智能选品</span></h2>
+      <span id="recUpdateTime" style="font-size:10px;color:var(--text3)"></span>
+    </div>
+    <div id="recContent" style="padding:12px 16px">
+      <div id="recCompareBar" style="margin-bottom:14px;display:none"></div>
+      <div id="recGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 更新日志 ══════════ -->
+  <div class="panel" id="changelogPanel" style="display:none">
+    <div class="panel-head">
+      <h2>📋 本次刷新变动</h2>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="changelogTime" style="font-size:10px;color:var(--text3)"></span>
+        <button class="tab" id="changelogClose" style="cursor:pointer">✕ 关闭</button>
+      </div>
+    </div>
+    <div id="changelogContent" style="padding:16px;max-height:400px;overflow-y:auto"></div>
+  </div>
+
+  <div class="panel" id="holdingsPanel">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      <div style="background:var(--surface2);padding:16px 20px;border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:6px">总价值</div>
+        <div style="font-size:24px;font-weight:800" id="totalValueHeader">--</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px" id="totalCountHeader">-- 件</div>
+      </div>
+      <div style="background:var(--surface2);padding:16px 20px;border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:6px">总盈亏</div>
+        <div style="font-size:24px;font-weight:800" id="totalPnlHeader">--</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px" id="totalPnlPctHeader">--</div>
+      </div>
+      <div style="background:var(--surface2);padding:16px 20px;border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:6px">投入本金</div>
+        <div style="font-size:24px;font-weight:800" id="totalCostHeader">--</div>
+        <div id="bestPerformer" class="kpi-sub" style="display:none"></div>
+        <div id="worstPerformer" class="kpi-sub" style="display:none"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">总成本</div>
+      </div>
+    </div>
+    <div class="panel-head" style="flex-direction:column;align-items:stretch;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
+        <button id="addHoldingBtn" class="export-btn" onclick="openAddHolding()" style="margin-left:8px;display:none">+ 添加</button>
+        <button id="importSteamBtn" class="export-btn" onclick="importSteamInventory()" style="margin-left:4px">🚀 导入库存</button>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="export-btn" id="addItemBtn" title="手动添加饰品" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none">+ 添加</button>
+          <button class="export-btn" id="exportBtn" title="导出 cost-overrides.json">📥 导出</button>
+          <button class="export-btn" id="csvBtn" title="导出持仓CSV" onclick="exportCSV()">📊 CSV</button>
+          <span class="sync-status" id="syncStatus"></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="tabs" id="tabBar"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+          <input id="searchInput" placeholder="🔍 搜索饰品… (/ 或 S 键聚焦)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 12px;font-size:12px;width:160px;outline:none;transition:border-color .2s" />
+          <select id="sortOrder" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer">
+            <option value="pnlPct">按盈亏%排序</option>
+            <option value="pnl">按盈亏额排序</option>
+            <option value="ecoP">按ECO价排序</option>
+            <option value="multiP">按BUFF价排序</option>
+            <option value="c">按成本排序</option>
+            <option value="n">按名称排序</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table><thead><tr>
+        <th data-col="n">饰品</th><th data-col="w">磨损</th><th data-col="c" class="text-r">成本</th>
+        <th data-col="ecoP" class="text-r">ECO价</th><th data-col="multiP" class="text-r">BUFF价</th><th data-col="rate" class="text-r">涨跌</th><th data-col="pnl" class="text-r">盈亏</th><th data-col="pnlPct" class="text-r">盈亏%</th><th class="text-r" style="width:100px">操作</th>
+      </tr></thead><tbody id="tbody"></tbody></table>
+    </div>
+    <div id="pager" class="pager"></div>
+<div class="page-size-bar">
+  每页 <select id="pageSizeSel">
+    <option value="15">15</option>
+    <option value="30" selected>30</option>
+    <option value="50">50</option>
+    <option value="100">100</option>
+  </select> 条
+</div>
+    <div id="pageJump" class="page-jump">
+      跳至 <input id="pageNumInput" type="number" min="1" /> 页 <button id="pageGoBtn" class="page-go-btn">跳转</button>
+    </div>
+    <div id="addHoldingForm" style="display:none;margin-top:12px;padding:14px;background:var(--surface2);border-radius:8px">
+      <h4 style="font-size:12px;margin-bottom:8px">添加持仓</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <input id="hfName" placeholder="饰品名" style="padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px">
+        <input id="hfCost" placeholder="买入价 ¥" type="number" step="0.01" style="padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px">
+        <input id="hfQty" placeholder="数量" type="number" value="1" style="padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px">
+        <input id="hfHash" placeholder="market_hash（选填）" style="padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px">
+      </div>
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <button onclick="addMyHolding(hfName.value,hfHash.value,parseFloat(hfCost.value)||0,parseInt(hfQty.value)||1,'','');closeHoldingForm()" style="padding:6px 14px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:12px;cursor:pointer">保存</button>
+        <button onclick="closeHoldingForm()" style="padding:6px 14px;background:var(--surface);color:var(--text2);border:1px solid var(--border);border-radius:4px;font-size:12px;cursor:pointer">取消</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /holdingsPanel -->
+
+  <div class="foot">
+    <div id="loginGate" style="display:none;margin-bottom:16px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;text-align:left">
+        <h3 style="font-size:13px;color:var(--text);margin-bottom:10px">⭐ 我的自选 (<span id="wlCount">0</span>)</h3>
+        <div id="watchlistView"><span style="color:var(--text3);font-size:12px">暂无自选，在搜索框选物品后点 ⭐</span></div>
+      </div>
+    </div>
+    CS2 饰品投资看板 · ECOSteam · CSQAQ · <span title="J/K 上下翻页 | G 首行 | / 搜索 | Enter 选中 | Esc 清空">⌨ J/K/G / Enter / Esc</span></div>
+
+<div class="modal-overlay" id="tokenModal">
+    <h3>⚙️ GitHub 自动同步设置</h3>
+    <p>配置 GitHub Token 后，编辑购入价会自动同步到仓库，换浏览器也不丢数据。<br>
+    Token 只需要 <b>repo</b> 权限（Fine-grained token 推荐，仅授权 cs2-dashboard 仓库）。<br>
+    <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--blue)">点此创建 Token →</a></p>
+    <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx 或 github_pat_xxxx">
+    <div id="tokenStatus" style="font-size:12px;margin-top:8px;color:var(--text3)"></div>
+    <div class="modal-btns">
+      <button class="btn-secondary" id="tokenCancel">取消</button>
+      <button class="btn-secondary" id="tokenClear" style="color:#ef4444">清除 Token</button>
+      <button class="btn-primary" id="tokenSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 添加饰品 Modal ════════ -->
+<div class="modal-overlay" id="addItemOverlay">
+  <div class="modal">
+    <h3>✏️ 添加饰品</h3>
+    <p style="margin-bottom:14px;font-size:12px;color:var(--text2)">手动记录你买入的饰品，会显示在持仓表中</p>
+    <label style="display:block;font-size:11px;color:var(--text3);margin-bottom:4px">饰品名称</label>
+    <input type="text" id="addItemName" placeholder="如: AK-47 | 红线 (自动补齐)" list="nameDatalist" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;box-sizing:border-box;outline:none;margin-bottom:12px" />
+    <datalist id="nameDatalist"></datalist>
+    <label style="display:block;font-size:11px;color:var(--text3);margin-bottom:4px">磨损</label>
+    <select id="addItemWear" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text2);font-size:13px;box-sizing:border-box;outline:none;margin-bottom:12px;cursor:pointer">
+      <option value="FN">崭新出厂 (FN)</option>
+      <option value="MW">略有磨损 (MW)</option>
+      <option value="FT">久经沙场 (FT)</option>
+      <option value="WW">战火纷飞 (WW)</option>
+      <option value="BS">战痕累累 (BS)</option>
+    </select>
+    <label style="display:block;font-size:11px;color:var(--text3);margin-bottom:4px">买入价 (¥)</label>
+    <input type="number" id="addItemCost" step="0.01" min="0" placeholder="0.00" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;box-sizing:border-box;outline:none;margin-bottom:16px" />
+    <div class="modal-btns">
+      <button class="btn-secondary" id="addItemCancel">取消</button>
+      <button class="btn-primary" id="addItemConfirm" style="background:linear-gradient(135deg,#22c55e,#16a34a);border:none">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 确认卖出 Modal ════════ -->
+<div class="modal-overlay" id="sellConfirmOverlay">
+  <div class="modal" style="width:360px">
+    <h3>确认卖出</h3>
+    <p style="font-size:14px;color:var(--text);margin:16px 0">确定要 <span style="color:var(--rise);font-weight:700">卖出</span> 以下饰品？</p>
+    <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:600;color:var(--text)" id="sellConfirmItem">--</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">磨损：<span id="sellConfirmWear">--</span></div>
+    </div>
+    <!-- P&L Stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+      <div style="background:var(--surface2);border-radius:8px;padding:8px 10px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px">购入价</div>
+        <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace" id="sellConfirmCost">--</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:8px 10px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px">ECO现价</div>
+        <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace" id="sellConfirmEco">--</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:8px 10px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px">BUFF价</div>
+        <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace" id="sellConfirmMulti">--</div>
+      </div>
+    </div>
+    <div id="sellConfirmPnl" style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:16px;text-align:center;border-left:3px solid var(--text2)">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:2px">盈亏统计</div>
+      <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace" id="sellConfirmPnlVal">--</div>
+      <div style="font-size:12px;font-weight:600" id="sellConfirmPnlPct">--</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" id="sellConfirmCancel">取消</button>
+      <button class="btn-primary" id="sellConfirmOk" style="background:var(--rise);border:none">确认卖出</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ═══════════════ 骨架屏 ═══════════════
+// Skeleton as fixed overlay - preserves container DOM structure
+function showSkeleton() {
+  var skel = document.createElement('div');
+  skel.id = 'skeletonWrap';
+  skel.style.cssText = 'position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto';
+  skel.innerHTML = '<div style="width:100%;max-width:1280px;padding:0 24px 40px">'+
+    '<div class="sk-line" style="width:60%;height:14px"></div>'+
+    '<div class="sk-line" style="height:32px;margin-bottom:32px"></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">'+
+      '<div class="sk-line" style="height:100px;border-radius:14px"></div>'+
+      '<div class="sk-line" style="height:100px;border-radius:14px"></div>'+
+      '<div class="sk-line" style="height:100px;border-radius:14px"></div>'+
+    '</div>'+
+    '<div class="sk-line" style="height:14px;margin-bottom:8px"></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:20px">'+
+      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
+      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
+      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
+      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
+      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
+      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
+    '</div></div>';
+  var st = document.createElement('style');
+  st.textContent = '.sk-line{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:skShimmer 1.5s infinite;border-radius:8px;margin-bottom:12px}@keyframes skShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}';
+  document.head.appendChild(st);
+  document.body.appendChild(skel);
+}
+showSkeleton();
+
+function hideSkeleton() {
+  var el = document.getElementById('skeletonWrap');
+  if (el) {
+    el.style.transition = 'opacity 0.35s ease';
+    el.style.opacity = '0';
+    setTimeout(function() { if (el && el.parentNode) el.remove(); }, 350);
+  }
+  document.body.classList.remove('body-fadein');
+}
+
+// ═══════════════ CONSTANTS — 唯一真相源 ═══════════════
+// 磨损等级：中文 → 英文缩写 → 中文显示名
+// 与 holdings.json 的 wear 字段对齐（后端已修正：略有磨损=MW, 久经沙场=FT）
+const WEAR_MAP = {
+  'FN': '崭新出厂',
+  'MW': '略有磨损',
+  'FT': '久经沙场',
+  'WW': '战地风云',
+  'BS': '战痕累累'
+};
+
+// 从 holdings.json category 中文 → 前端分类 key
+const CAT_MAP = {
+  '步枪':   'weapon',
+  '手枪':   'weapon',
+  '冲锋枪': 'weapon',
+  '手套':   'gloves',
+  '匕首':   'knives',
+  '印花':   'sticker',
+  '音乐盒': 'music',
+  '其他':   'other'
+};
+
+// 前端分类 key → 中文显示名
+const CAT_LABELS = {
+  'weapon':  '武器',
+  'gloves':  '手套',
+  'knives':  '匕首',
+  'sticker': '印花',
+  'music':   '音乐',
+  'other':   '其他'
+};
+
+// ═══════════════ DOM CACHE ═══════════════
+const $ = id => document.getElementById(id);
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+const DOM = {
+  countBadge:$('countBadge'), tbody:$('tbody'), pager:$('pager'),
+  tabBar:$('tabBar'), recGrid:$('recGrid'), recUpdateTime:$('recUpdateTime'),
+  syncStatus:$('syncStatus'), updateTime:$('updateTime'),
+  newsSection:$('newsSection'), newsGrid:$('newsGrid'), newsUpdateTime:$('newsUpdateTime'),
+  tokenModal:$('tokenModal'), tokenInput:$('tokenInput'), tokenStatus:$('tokenStatus'),
+  searchInput:$('searchInput'), sortOrder:$('sortOrder'),
+  pageJump:$('pageJump'), pageNumInput:$('pageNumInput'), pageGoBtn:$('pageGoBtn')
+};
+
+// ═══════════════ STATE ═══════════════
+let H = [];                // holdings items (flattened)
+let costOverrides = {};    // { "饰品名|FN": cost_float }
+let marketData = null;     // raw market.json
+let recData = {};          // marketData.recommendations
+let curCat = 'all';
+let curPage = 1;
+let recPage = 1;
+let _recAllItems = [];
+let sortCol = 'pnlPct';
+let sortDir = 'desc';
+var fmtDate = v => v;
+
+
+let filteredCache = null;
+let filterCacheKey = '';
+let searchQuery = '';
+
+const PAGE_SIZE = 30;
+const REC_PAGE_SIZE = 6;
+const LS_KEY = 'cs2_cost_overrides';
+const LS_TOKEN_KEY = 'cs2_gh_token';
+const LS_STARRED = 'cs2_steam_starrings';
+const GH_REPO = 'hintime/cs2-dashboard';
+const GH_API = 'https://api.github.com/repos/' + GH_REPO + '/contents/cost-overrides.json';
+
+let ghToken = localStorage.getItem(LS_TOKEN_KEY) || '';
+let syncTimer = null;
+let starred = JSON.parse(localStorage.getItem(LS_STARRED) || '{}');
+
+// ═══════════════ UPDATE DATA (trigger GitHub Actions workflow) ═══════════════
+let updateTimer = null;
+const WORKFLOW_ID = 'update-cs2-data.yml';
+const WORKFLOW_API = 'https://api.github.com/repos/' + GH_REPO + '/actions/workflows/' + WORKFLOW_ID + '/dispatches';
+const RUNS_API = 'https://api.github.com/repos/' + GH_REPO + '/actions/runs?workflow_id=' + WORKFLOW_ID + '&per_page=1';
+
+async function pollWorkflowComplete() {
+  const MAX_WAIT = 180000; // 3 min
+  const INTERVAL = 15000;   // 15s
+  const start = Date.now();
+  while (Date.now() - start < MAX_WAIT) {
+    await sleep(INTERVAL);
+    try {
+      const r = await fetch(RUNS_API, {
+        headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const latestRun = data.workflow_runs && data.workflow_runs[0];
+        if (latestRun && (latestRun.status === 'completed')) {
+          return; // Done
+        }
+        // If still in progress, keep polling
+      }
+    } catch(e) {}
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Toast notification
+let toastEl = null;
+function showToast(msg, duration) {
+  if (!toastEl) {
+    toastEl = document.createElement('div');
+    toastEl.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(22,27,34,.97);border:1px solid rgba(96,165,250,.4);border-radius:10px;padding:10px 20px;font-size:13px;color:#d1d5db;z-index:9999;backdrop-filter:blur(12px);transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.3)';
+    document.body.appendChild(toastEl);
+  }
+  toastEl.textContent = msg;
+  toastEl.style.opacity = '1'; toastEl.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toastEl._timer);
+  toastEl._timer = setTimeout(() => { toastEl.style.opacity = '0'; toastEl.style.transform = 'translateX(-50%) translateY(8px)'; }, duration);
+}
+
+// ═══════════════ HELPERS ═══════════════
+function wearCN(code) { return WEAR_MAP[code] || code || '--'; }
+
+function overrideKey(name, wear) {
+  // Stable key: name|WEAR_CODE (e.g. "AK-47 红线|FT")
+  // Empty/other wear uses empty string
+  return name + '|' + (wear || '');
+}
+
+function isBS(item) {
+  // Unified BS filter: check both wear code and name
+  return item.w === 'BS' || item.n.includes('战痕累累');
+}
+
+// ═══════════════ OVERRIDES PERSISTENCE ═══════════════
+function saveOverrides() {
+  localStorage.setItem(LS_KEY, JSON.stringify(costOverrides));
+  if (ghToken) scheduleSync();
+}
+
+function scheduleSync() {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncToGitHub, 2000);
+}
+
+async function syncToGitHub() {
+  if (!ghToken) return;
+  const payload = JSON.stringify(costOverrides, null, 2);
+  // 防抖：仅在内容实际变化时同步
+  if (syncToGitHub._lastPayload === payload) return;
+  syncToGitHub._lastPayload = payload;
+  const el = DOM.syncStatus;
+  el.textContent = '⏳ 同步中...';
+  el.className = 'sync-status show';
+  try {
+    const getR = await fetch(GH_API, {
+      headers: {'Authorization':'token '+ghToken, 'Accept':'application/vnd.github.v3+json'}
+    });
+    let sha = null;
+    if (getR.ok) { sha = (await getR.json()).sha; }
+    const body = {
+      message: 'auto: update cost overrides',
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(costOverrides,null,2)))),
+      branch: 'main'
+    };
+    if (sha) body.sha = sha;
+    const putR = await fetch(GH_API, {
+      method: 'PUT',
+      headers: {'Authorization':'token '+ghToken, 'Accept':'application/vnd.github.v3+json', 'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    if (putR.ok) {
+      el.textContent = '✅ 已同步'; el.className = 'sync-status show ok';
+      setTimeout(() => { el.className = 'sync-status'; }, 3000);
+    } else {
+      const err = await putR.json();
+      el.textContent = '❌ ' + (err.message||putR.status); el.className = 'sync-status show err';
+    }
+  } catch(e) {
+    el.textContent = '❌ 网络错误'; el.className = 'sync-status show err';
+  }
+}
+
+async function loadOverrides() {
+  try {
+    const r = await fetch('cost-overrides.json');
+    if (r.ok) { const remote = await r.json(); if (remote && typeof remote === 'object') Object.assign(costOverrides, remote); }
+  } catch(e) {}
+  try {
+    const local = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    if (local && typeof local === 'object') Object.assign(costOverrides, local);
+  } catch(e) {}
+}
+
+// ═══════════════ HOLDINGS SYNC (跨设备同步持仓) ═══════════════
+function getHoldingsGHPath() {
+  var key = getMyKey();
+  return 'https://api.github.com/repos/' + GH_REPO + '/contents/holdings_' + key + '.json';
+}
+
+window.syncHoldingsToGitHub = async function() {
+  alert('🔄 syncHoldingsToGitHub called. key='+getMyKey()+' token='+(ghToken?'已设置':'未设置'));
+  var el = document.getElementById('syncStatus');
+  if (!el) { alert('界面未加载完成，请刷新后重试'); return; }
+  var key = getMyKey();
+  if (!key) { el.textContent = '❌ 请先登录'; el.className = 'sync-status show err'; return; }
+  if (!ghToken) { el.textContent = '❌ 请先配置 GitHub Token（⚙齿轮）'; el.className = 'sync-status show err'; return; }
+  var items = loadMyHoldings();
+  if (!items.length) { el.textContent = '❌ 持仓为空，请先导入库存'; el.className = 'sync-status show err'; return; }
+  el.textContent = '⏳ 同步持仓中...'; el.className = 'sync-status show';
+  var repo = GH_REPO;
+  var auth = {'Authorization':'token '+ghToken, 'Accept':'application/vnd.github.v3+json'};
+  try {
+    var jsonStr = JSON.stringify({update_time:new Date().toISOString(),items:items},null,2);
+    var b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+    var path = 'holdings_' + key + '.json';
+    // 1. Create blob
+    var blobR = await fetch('https://api.github.com/repos/'+repo+'/git/blobs', {
+      method:'POST', headers:auth, body:JSON.stringify({content:b64,encoding:'base64'})
+    });
+    if (!blobR.ok) { el.textContent='❌ blob失败 '+blobR.status; el.className='sync-status show err'; return; }
+    var blobSha = (await blobR.json()).sha;
+    // 2. Get latest commit on main
+    var refR = await fetch('https://api.github.com/repos/'+repo+'/git/refs/heads/main', {headers:auth});
+    if (!refR.ok) { el.textContent='❌ 获取commit失败 '+refR.status; el.className='sync-status show err'; return; }
+    var refData = await refR.json();
+    var latestCommitSha = refData.object.sha;
+    // 3. Get latest tree
+    var commitR = await fetch('https://api.github.com/repos/'+repo+'/git/commits/'+latestCommitSha, {headers:auth});
+    if (!commitR.ok) { el.textContent='❌ 获取tree失败'; el.className='sync-status show err'; return; }
+    var baseTreeSha = (await commitR.json()).tree.sha;
+    // 4. Create tree with our file
+    var treeR = await fetch('https://api.github.com/repos/'+repo+'/git/trees', {
+      method:'POST', headers:auth, body:JSON.stringify({base_tree:baseTreeSha, tree:[{path:path,mode:'100644',type:'blob',sha:blobSha}]})
+    });
+    if (!treeR.ok) { el.textContent='❌ tree失败 '+treeR.status; el.className='sync-status show err'; return; }
+    var treeSha = (await treeR.json()).sha;
+    // 5. Create commit
+    var commitBody = {message:'sync: holdings for '+key, tree:treeSha, parents:[latestCommitSha]};
+    var newCommitR = await fetch('https://api.github.com/repos/'+repo+'/git/commits', {
+      method:'POST', headers:auth, body:JSON.stringify(commitBody)
+    });
+    if (!newCommitR.ok) { el.textContent='❌ commit失败 '+newCommitR.status; el.className='sync-status show err'; return; }
+    var newCommitSha = (await newCommitR.json()).sha;
+    // 6. Update ref (force update, avoiding 409 conflicts)
+    var updateR = await fetch('https://api.github.com/repos/'+repo+'/git/refs/heads/main', {
+      method:'PATCH', headers:auth, body:JSON.stringify({sha:newCommitSha,force:true})
+    });
+    if (updateR.ok) {
+      el.textContent = '✅ 持仓已同步！'; el.className = 'sync-status show ok';
+      setTimeout(function(){el.className='sync-status'},5000);
+    } else {
+      el.textContent='❌ 更新ref失败 '+updateR.status; el.className='sync-status show err';
+    }
+  } catch(e) {
+    el.textContent = '❌ 网络错误'; el.className='sync-status show err';
+  }
+}
+
+window.loadHoldingsFromGitHub = async function() {
+  var key = getMyKey();
+  if (!ghToken || !key) { alert('请先登录并配置 GitHub Token'); return; }
+  try {
+    var r = await fetch('https://api.github.com/repos/'+GH_REPO+'/contents/holdings_'+key+'.json?ref=main', {headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
+    if (!r.ok) { alert('远程没有持仓数据（状态码：'+r.status+'）'); return; }
+    var d = await r.json();
+    var content = JSON.parse(decodeURIComponent(escape(atob(d.content))));
+    if (content && content.items && content.items.length) {
+      saveMyHoldings(content.items);
+      alert('✅ 已恢复 '+content.items.length+' 件持仓，即将刷新');
+      location.reload();
+    } else {
+      alert('远程持仓数据为空');
+    }
+  } catch(e) {
+    alert('加载失败：'+e.message);
+  }
+}
+
+// ═══════════════ STAR SYSTEM ═══════════════
+function saveStars() { localStorage.setItem(LS_STARRED, JSON.stringify(starred)); updateWatchCount(); }
+function updateWatchCount() { }
+function toggleStar(goodId) {
+  starred[goodId] = !starred[goodId];
+  saveStars();
+  document.querySelectorAll('.row-star[data-gid="'+goodId+'"]').forEach(b => { b.textContent = starred[goodId] ? '★' : '☆'; });
+}
+
+// ═══════════════ LOAD DATA ═══════════════
+const CACHE_TTL = 5 * 60 * 1000;
+const CACHE_KEY = 'cs2_market_cache';
+
+function getCachedMarket() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const data = JSON.parse(cached);
+      if (Date.now() - data.ts < CACHE_TTL) return data.market;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function setCachedMarket(market) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ts: Date.now(), market})); } catch(e) {}
+}
+
+async function loadAll() {
+  const t0 = Date.now(); // mark refresh time
+  await loadOverrides();
+
+  // 优先从缓存读取market数据
+  let marketR = getCachedMarket();
+  const fetchOpts = { cache: 'no-store' };
+  if (!marketR) {
+    marketR = await fetch('market.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
+    if (marketR) setCachedMarket(marketR);
+  }
+  // holdings每次请求最新
+  var holdingsR = await fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
+  // 如果已登录，合并个人持仓
+  var myHoldings = loadMyHoldings();
+  if (myHoldings.length > 0 && holdingsR && Array.isArray(holdingsR.items)) {
+    // 合并：个人持仓覆盖同名物品，同时保留 holdings.json 的价格数据
+    var priceMap = {};
+    holdingsR.items.forEach(function(it){ priceMap[it.market_hash] = it; });
+    myHoldings.forEach(function(mh){
+      var server = priceMap[mh.market_hash];
+      if(server) {
+        // 继承服务器端的价格、涨跌率等数据
+        mh.price = server.price;
+        mh.rate_1 = server.rate_1;
+        mh.rate_7 = server.rate_7;
+        mh.rate_30 = server.rate_30;
+        mh.buff_sell = server.buff_sell || 0;
+        mh.buff_buy = server.buff_buy || 0;
+        mh.yyyp_sell = server.yyyp_sell || 0;
+      }
+    });
+    holdingsR = { items: myHoldings };
+  } else if (myHoldings.length > 0) {
+    holdingsR = { items: myHoldings };
+  } else if (!holdingsR || !holdingsR.items) {
+    holdingsR = null;
+  }
+
+  // ── Process holdings ──
+  if (holdingsR && Array.isArray(holdingsR.items)) {
+    H = [];
+    holdingsR.items.forEach(item => {
+      const catKey = CAT_MAP[item.category] || 'other';
+      const wearCode = item.wear || '';  // FN/MW/FT/WW/BS/other/'' 
+      const q = item.qty || 1;
+      // cost: single number per item (total for qty)
+      const costTotal = item.cost;
+      const pricePerUnit = item.price;   // ECO returns per-unit price
+      const costPerUnit = costTotal / q;
+
+      for (let i = 0; i < q; i++) {
+        const key = overrideKey(item.name, wearCode === 'other' ? '' : wearCode);
+        const cU = costOverrides[key] || costPerUnit;
+        H.push({
+          n: item.name,
+          w: wearCode === 'other' ? '' : wearCode,
+          t: catKey,
+          q: 1,
+          c: cU,
+          p: pricePerUnit,
+          pnl: pricePerUnit - cU,
+          pnlPct: cU > 0 ? (pricePerUnit - cU) / cU * 100 : 0,
+          gid: item.id || 0,
+          mh: item.market_hash,
+          // 传递涨跌率字段（update.py写入）
+          rate_1: item.rate_1,
+          rate_7: item.rate_7,
+          rate_30: item.rate_30,
+          price_history: item.price_history,
+          buff_sell: item.buff_sell || 0,
+          buff_buy: item.buff_buy || 0,
+          buff_sell_num: item.buff_sell_num || 0,
+          buff_buy_num: item.buff_buy_num || 0,
+          yyyp_sell: item.yyyp_sell || 0,
+          yyyp_sell_num: item.yyyp_sell_num || 0
+        });
+      }
+    });
+  }
+
+  // ── Load Chinese name map from name_map.json (all 37k items) ──
+  window._cnNameMap = window._cnNameMap || {};
+  fetch('name_map.json?v='+t0).then(function(r){return r.ok?r.json():null;}).then(function(nm){
+    if(nm && typeof nm === 'object'){
+      window._cnNameMap = nm;
+      render();
+    }
+  }).catch(function(){});
+
+  // ── Process market ──
+  if (marketR) {
+    marketData = marketR;
+    // Store tracked names for autocomplete
+    if (marketR.eco_tracked_names && marketR.eco_tracked_names.length) {
+      window._trackedNames = marketR.eco_tracked_names;
+      // Populate datalist — 优先持仓物品（中英文都加）
+      var dl = document.getElementById('nameDatalist');
+      if (dl) {
+        dl.innerHTML = '';
+        var seen = {};
+        (H || []).forEach(function(h) {
+          var cn = h.n || '';           // 中文名 "M4A1消音版 | 苔藓石英 (崭新出厂)"
+          var en = h.mh || '';          // 英文名 "M4A1-S | Moss Quartz (Factory New)"
+          if (cn && !seen[cn]) { seen[cn] = true; addOpt(cn); }
+          if (en && !seen[en]) { seen[en] = true; addOpt(en); }
+        });
+        marketR.eco_tracked_names.slice(0, 3000).forEach(function(n) {
+          if (!seen[n]) { seen[n] = true; addOpt(n); }
+        });
+      }
+      function addOpt(v) { var o = document.createElement('option'); o.value = v; dl.appendChild(o); }
+    }
+    const ut = marketR.update_time || marketR.alerts_updated || marketR.items_updated;
+    if (DOM.updateTime) {
+      DOM.updateTime.textContent = (ut ? '数据 ' + new Date(ut).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}) : '刷新 ' + new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}));
+    }
+    recData = marketR.recommendations || {};
+    // 推荐板块显示当前加载时间（随刷新按钮更新）
+    if (DOM.recUpdateTime) DOM.recUpdateTime.textContent = ut ? new Date(ut).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}) : '';
+  } else {
+    // no market.json at all — show refresh time
+    if (DOM.updateTime) DOM.updateTime.textContent = '刷新 ' + new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  }
+
+  initDashboard();
+  // 加载 BUFF 历史数据（用于持仓折线图）
+  fetch('buff_history.json?v=' + t0).then(function(r){ return r.ok ? r.json() : {}; }).then(function(bh){
+    window._buffHistory = bh || {};
+  }).catch(function(){});
+  renderNews();
+  setTimeout(hideSkeleton, 80);
+}
+
+// ═══════════════ DASHBOARD INIT ═══════════════
+function initDashboard() {
+  buildTabs();
+  recPage = 1;
+
+  // 收集所有需要实时查价的物品（推荐 + 持仓）
+  var allItems = (recData.all || []).slice()
+  var holdingNames = (H || []).map(function(h){ return h.mh || ''; }).filter(Boolean)
+
+  fetchLivePrices(allItems, holdingNames).then(function(){
+    // 用实时数据重新计算 BUFF 评分
+    allItems.forEach(function(r){
+      var ecoPrice = r.eco_price || 0
+      var buffSell = r.buff_sell || 0
+      var buffSellNum = r.buff_sell_num || 0
+      var yyypSell = r.yyyp_sell || 0
+      var liveScore = 0
+      if (ecoPrice > 0 && buffSell > 0) {
+        var premium = (buffSell - ecoPrice) / ecoPrice * 100
+        if (premium > 2) liveScore += Math.min(premium * 0.5, 10)
+      }
+      if (buffSellNum > 0 && buffSellNum < 500) {
+        liveScore += Math.min((500 - buffSellNum) / 500 * 10, 10)
+      }
+      if (liveScore > 0) {
+        r.score = Math.max(r.score || 0, liveScore + 15)
+        r.buff_score = liveScore
+        r.tag = 'buff'
+      }
+    })
+
+    renderAllRecs()
+    render()
+    updateKPI()
+    renderNews()
+  }).catch(function(){
+    renderAllRecs()
+    render()
+    updateKPI()
+    renderNews()
+  })
+
+  // Setup all button handlers
+  setupExportBtn()
+  setupChangelogClose()
+  setupRefreshBtn()
+  setupTokenModal()
+}
+
+
+// ═══════════════ CS2 NEWS CENTER ═══════════════
+let cs2NewsData = null;
+let newsTab = 'news';
+
+async function fetchCS2News() {
+  try {
+    const r = await fetch('news.json');
+    const j = await r.json();
+    return (j.news || []).map(function(n) { return {
+      title: n.title,
+      body: n.body,
+      url: n.url || 'https://steamcommunity.com/app/730/',
+      date: new Date(n.date * 1000),
+      source: n.source || 'Steam',
+      type: 'news' }; });
+  } catch(e) {}
+  return [];
+}
+
+async function fetchCS2Updates() {
+  try {
+    const r = await fetch('news.json');
+    const j = await r.json();
+    return (j.updates || []).map(function(n) { return {
+      title: n.title,
+      body: n.body,
+      url: n.url || 'https://store.steampowered.com/news/app/730',
+      date: new Date(n.date * 1000),
+      source: n.source || 'CS2',
+      type: 'update' }; });
+  } catch(e) {}
+  return [];
+}
+
+function calcSentiment() {
+  var signals = [];
+  var score = 50;
+  if (H && H.length) {
+    // 持仓涨跌趋势分析
+    var upCount = 0, downCount = 0;
+    H.forEach(function(h) {
+      var r7 = h.rate_7 !== undefined ? h.rate_7 : 0;
+      if (r7 > 0) upCount++;
+      else if (r7 < 0) downCount++;
+    });
+    var total = upCount + downCount || 1;
+    if (upCount > downCount * 1.5) { score += 15; signals.push({emoji:'🔥', text:upCount+'/'+total+'件持仓7日上涨，趋势向好'}); }
+    else if (downCount > upCount * 1.5) { score -= 15; signals.push({emoji:'📉', text:downCount+'/'+total+'件持仓7日下跌，趋势承压'}); }
+    else { signals.push({emoji:'⚖️', text:'持仓涨跌力量均衡'}); }
+    // 平均7日涨幅
+    var sumR7 = 0, cntR7 = 0;
+    H.forEach(function(h) {
+      var r7 = h.rate_7 !== undefined ? h.rate_7 : 0;
+      sumR7 += r7; cntR7++;
+    });
+    if (cntR7 > 0) {
+      var avgR7 = sumR7 / cntR7;
+      if (avgR7 > 3) { score += 10; signals.push({emoji:'📈', text:'持仓平均7日涨幅 +' + avgR7.toFixed(1) + '%'}); }
+      else if (avgR7 < -3) { score -= 10; signals.push({emoji:'📉', text:'持仓平均7日跌幅 ' + avgR7.toFixed(1) + '%'}); }
+    }
+  }
+  if (H.length) {
+    var totalPnlPct = 0, totalCost = 0;
+    H.forEach(function(h) { var cost = h.c * (h.q||1); totalCost += cost; totalPnlPct += h.pnlPct * cost; });
+    totalPnlPct = totalCost > 0 ? totalPnlPct / totalCost : 0;
+    if (totalPnlPct > 5) { score += 10; signals.push({emoji:'💰', text:'持仓盈利>5%，健康'}); }
+    else if (totalPnlPct < -5) { score -= 10; signals.push({emoji:'⚠', text:'持仓亏损>5%，关注风险'}); }
+    else { signals.push({emoji:'💼', text:'持仓波动较小'}); }
+  }
+  score = Math.max(0, Math.min(100, score));
+  var vibe = score >= 65 ? '🐂 看多' : score <= 35 ? '🐻 看空' : '⚖ 中性';
+  var color = score >= 65 ? 'var(--rise)' : score <= 35 ? 'var(--fall)' : 'var(--text2)';
+  return { score: score, vibe: vibe, color: color, signals: signals };
+}
+
+async function renderNews() {
+  if (!DOM.newsSection) return;
+  DOM.newsSection.style.display = '';
+  if (!cs2NewsData) {
+    var grid = $('newsGrid');
+    if (grid) grid.innerHTML = '<div class="news-loading"><span class="spinner"></span>加载资讯中...</div>';
+    var results = await Promise.all([fetchCS2News(), fetchCS2Updates()]);
+    var all = results[0].concat(results[1]);
+    all.sort(function(a,b){ return b.date - a.date; });
+    cs2NewsData = { all: all };
+    if (DOM.newsUpdateTime) {
+      DOM.newsUpdateTime.textContent = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    }
+  }
+  renderNewsTab(newsTab);
+  setupNewsTabs();
+}
+
+function renderNewsTab(tab) {
+  newsTab = tab;
+  var grid = $('newsGrid');
+  if (!grid) return;
+  var html = '';
+  if (tab === 'news') {
+    var items = cs2NewsData ? cs2NewsData.all : [];
+    var itemsToShow = items.slice(0, 15);
+    itemsToShow.forEach(function(n) {
+      var isUpdate = n.type === 'update';
+      var srcLabel = isUpdate ? '🔧 更新' : '📰 新闻';
+      var srcColor = isUpdate ? '#f59e0b' : '#3b82f6';
+      var tm = n.date.toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+      html += '<div class="news-card" onclick="window.open(\''+esc(n.url||'')+'\',\'_blank\')">'+
+        '<span class="nc-source" style="color:'+srcColor+'">'+esc(srcLabel)+'</span>'+
+        '<span class="nc-title">'+esc(n.title)+'</span>'+
+        '<span class="nc-body">'+esc(n.body||n.title)+'</span>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">'+
+          '<span class="nc-time">'+tm+'</span>'+
+          '<span class="nc-link">阅读全文 ↗</span>'+
+        '</div></div>';
+    });
+    if (!items.length) html = '<div class="news-loading">暂无数据</div>';
+    grid.innerHTML = html;
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:12px';
+  } else if (tab === 'sentiment') {
+    var s = calcSentiment();
+    html += '<div class="sentiment-card" style="margin-bottom:12px">'+
+      '<h4>🎭 市场情绪指数</h4>'+
+      '<div class="sentiment-bar">'+
+        '<span class="sentiment-label" style="color:'+s.color+'">'+s.vibe+'</span>'+
+        '<div class="sentiment-track"><div class="sentiment-fill" style="width:'+s.score+'%;background:'+s.color+'"></div></div>'+
+        '<span class="sentiment-val" style="color:'+s.color+'">'+s.score+'/100</span>'+
+      '</div></div>'+
+      '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">';
+    s.signals.forEach(function(sig) {
+      html += '<div class="sentiment-card">'+
+        '<h4>'+sig.emoji+' '+sig.text+'</h4>'+
+        '<p>'+sig.text+'</p></div>';
+    });
+    html += '</div>';
+    if (H.length) {
+      var totalV = H.reduce(function(s,h) { return s + h.p * (h.q||1); }, 0);
+      var totalC = H.reduce(function(s,h) { return s + h.c * (h.q||1); }, 0);
+      var winCount = H.filter(function(h) { return h.pnl >= 0; }).length;
+      var winRate = (winCount/H.length*100).toFixed(1);
+      html += '<div class="sentiment-card" style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">'+
+        '<div><div style="font-size:20px;font-weight:700;color:var(--text)">¥'+totalV.toFixed(0)+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">持仓市值</div></div>'+
+        '<div><div style="font-size:20px;font-weight:700;color:var(--text)">'+H.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">持仓品种</div></div>'+
+        '<div><div style="font-size:20px;font-weight:700;color:var(--rise)">'+winRate+'%</div><div style="font-size:10px;color:var(--text3);margin-top:4px">盈利率</div></div>'+
+        '<div><div style="font-size:20px;font-weight:700;color:'+(totalV>=totalC?'var(--rise)':'var(--fall)')+'">¥'+(totalV-totalC).toFixed(0)+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">持仓盈亏</div></div>'+
+      '</div>';
+    }
+    grid.innerHTML = html;
+    grid.style.cssText = '';
+  }
+}
+
+function setupNewsTabs() {
+  var newsTabs = $('newsTabs');
+  if (!newsTabs || newsTabs._bound) return;
+  newsTabs._bound = 1;
+  newsTabs.onclick = function(e) {
+    var btn = e.target.closest('[data-ntab]');
+    if (!btn) return;
+    this.querySelectorAll('.tab').forEach(function(b) { b.classList.remove('on'); });
+    btn.classList.add('on');
+    renderNewsTab(btn.dataset.ntab);
+  };
+}
+
+function setupExportBtn() {
+  var exportBtn = document.getElementById('exportBtn');
+  if (exportBtn) {
+    exportBtn.onclick = function() {
+      const blob = new Blob([JSON.stringify(costOverrides, null, 2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'cost-overrides.json'; a.click();
+    };
+  }
+}
+
+function updateKPI() {
+  if (!H.length) return;
+  const tc = H.reduce((s,h) => s + h.c, 0);
+  const tp = H.reduce((s,h) => s + h.p, 0);
+  const tpct = tc > 0 ? (tp - tc) / tc * 100 : 0;
+  const isUp = tp >= tc;
+  
+  // 更新持仓汇总区域的三个指标
+  const valueEl = document.getElementById('totalValueHeader');
+  const countEl = document.getElementById('totalCountHeader');
+  const pnlEl = document.getElementById('totalPnlHeader');
+  const pnlPctEl = document.getElementById('totalPnlPctHeader');
+  const costEl = document.getElementById('totalCostHeader');
+  
+  if (valueEl) {
+    valueEl.textContent = '¥' + tp.toLocaleString();
+    valueEl.className = isUp ? 'rise' : 'fall';
+    valueEl.style.color = isUp ? 'var(--rise)' : 'var(--fall)';
+  }
+  if (countEl) countEl.textContent = H.length + ' 件';
+  
+  if (pnlEl) {
+    pnlEl.textContent = (isUp ? '+' : '') + '¥' + (tp - tc).toLocaleString();
+    pnlEl.style.color = isUp ? 'var(--rise)' : 'var(--fall)';
+  }
+  if (pnlPctEl) {
+    var winners = H.filter(function(h){return h.p > h.c;}).length;
+    pnlPctEl.textContent = (isUp ? '+' : '') + tpct.toFixed(2) + '% · ' + Math.round(winners / H.length * 100) + '% 胜率';
+  }
+  var sorted = H.slice().sort(function(a,b){return b.pnlPct - a.pnlPct;});
+  var best = sorted[0], worst = sorted[H.length-1];
+  var bestEl = document.getElementById('bestPerformer');
+  var worstEl = document.getElementById('worstPerformer');
+  if (bestEl && best) {
+    bestEl.textContent = best.n + ' ' + (best.pnlPct>=0?'+':'') + best.pnlPct.toFixed(1) + '%';
+    bestEl.style.color = best.pnlPct >= 0 ? 'var(--fall)' : 'var(--rise)';
+  }
+  if (worstEl && worst) {
+    worstEl.textContent = worst.n + ' ' + (worst.pnlPct>=0?'+':'') + worst.pnlPct.toFixed(1) + '%';
+    worstEl.style.color = worst.pnlPct >= 0 ? 'var(--fall)' : 'var(--rise)';
+  }
+  
+  if (costEl) costEl.textContent = '¥' + tc.toLocaleString();
+}
+
+function buildTabs() {
+  // Build category tabs dynamically from actual data
+  const catCounts = {};
+  H.forEach(h => { catCounts[h.t] = (catCounts[h.t] || 0) + 1; });
+
+  const cats = [{key:'all', label:'全部', count:H.length}];
+  // Show categories that exist in data, in display order
+  ['weapon','gloves','knives','sticker','music','other'].forEach(key => {
+    if (catCounts[key]) cats.push({key, label:CAT_LABELS[key], count:catCounts[key]});
+  });
+
+  let html = '';
+  cats.forEach(c => {
+    html += '<button class="tab ' + (c.key === 'all' ? 'on' : '') + '" data-cat="' + c.key + '">' + c.label + ' ' + c.count + '</button>';
+  });
+  if (DOM.tabBar) DOM.tabBar.innerHTML = html;
+}
+
+// ═══════════════ TABLE RENDER ═══════════════
+function getFiltered() {
+  const key = curCat + '|' + sortCol + '|' + sortDir + '|' + PAGE_SIZE + '|' + searchQuery;
+  if (filteredCache && filterCacheKey === key) return filteredCache;
+  let raw = curCat === 'all' ? H : H.filter(h => h.t === curCat);
+  raw = raw.filter(h => !isBS(h));
+  if (searchQuery) {
+    const q = searchQuery.trim().toLowerCase();
+    raw = raw.filter(h => h.n.toLowerCase().includes(q) || (WEAR_MAP[h.w]||'').toLowerCase().includes(q));
+  }
+  filteredCache = raw.sort((a,b) => {
+    // Map column names to data fields
+    const fieldMap = {ecoP:'p', multiP:'buff_sell'};
+    const sortField = fieldMap[sortCol] || sortCol;
+    const av = a[sortField] || 0, bv = b[sortField] || 0;
+    if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    return sortDir === 'asc' ? av - bv : bv - av;
+  });
+  filterCacheKey = key;
+  return filteredCache;
+}
+
+function invalidateCache() { filteredCache = null; filterCacheKey = ''; }
+
+// ══════════ 快速导航滚动同步 ══════════
+window.scrollToPanel = function(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  
+  // 立即设置 active 状态
+  const btns = document.querySelectorAll('.nav-btn');
+  btns.forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('onclick')?.includes(id));
+  });
+  
+  const navHeight = document.getElementById('quickNav')?.offsetHeight || 50;
+  const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 16;
+  window.scrollTo({top, behavior:'smooth'});
+};
+
+// 滚动监听同步导航栏高亮
+function updateNavActive() {
+  const sections = ['scanPanel', 'newsSection', 'holdingsPanel', 'recPanel', 'changelogPanel'];
+  const btns = document.querySelectorAll('.nav-btn');
+  const navHeight = document.getElementById('quickNav')?.offsetHeight || 50;
+  const viewMid = window.scrollY + navHeight + 80; // 导航栏下方 80px 处作为参考点
+  let bestId = null, bestDist = Infinity;
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const dist = Math.abs(el.offsetTop - viewMid);
+    if (dist < bestDist) { bestDist = dist; bestId = id; }
+  });
+  btns.forEach(btn => {
+    btn.classList.toggle('active', bestId && btn.getAttribute('onclick')?.includes(bestId));
+  });
+}
+let navScrollTimer = null;
+window.addEventListener('scroll', function() {
+  clearTimeout(navScrollTimer);
+  navScrollTimer = setTimeout(updateNavActive, 60);
+}, {passive:true});
+// 初始同步
+setTimeout(updateNavActive, 100);
+
+function render() {
+  filterHidden();
+  const items = H || [];
+  // 空状态显示占位
+  var hp = document.getElementById('holdingsPanel');
+  if (hp) {
+    var emptyEl = document.getElementById('holdingsEmpty');
+    if (items.length === 0) {
+      if (!emptyEl) {
+        var div = document.createElement('div');
+        div.id = 'holdingsEmpty';
+        div.style.cssText = 'padding:60px 20px;text-align:center;color:var(--text3);font-size:13px';
+        div.innerHTML = (getMyKey() ? '还没有持仓数据，点击"导入库存"开始' : '请先 <b style="color:var(--blue);cursor:pointer" onclick="document.getElementById(\'authModal\').style.display=\'flex\'">登录</b> 查看持仓');
+        hp.appendChild(div);
+      }
+    } else if (emptyEl) {
+      emptyEl.remove();
+    }
+  }
+  if (DOM.countBadge) DOM.countBadge.textContent = items.length;
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  if (curPage > totalPages) curPage = totalPages;
+  const start = (curPage - 1) * PAGE_SIZE;
+  const pageItems = items.slice(start, start + PAGE_SIZE);
+
+  const frag = document.createDocumentFragment();
+  pageItems.forEach((h, idx) => {
+    const realIdx = start + idx;
+    const isProfit = h.pnl >= 0;
+    const pnlCls = isProfit ? 'clr-rise' : 'clr-fall';
+    const rowCls = isProfit ? 'pnl-profit' : 'pnl-loss';
+    const key = overrideKey(h.n, h.w);
+    const edited = costOverrides[key] !== undefined;
+    // P&L 进度条：按比例显示盈亏幅度（上限 30%，下限 -20%）
+    const pnlPctClamped = Math.max(-20, Math.min(30, h.pnlPct));
+    const barPct = Math.abs(pnlPctClamped) / 30 * 100;
+    const barCls = isProfit ? 'profit' : 'loss';
+    const barIcon = isProfit ? '🔼' : '🔽';
+    const tr = document.createElement('tr');
+    tr.className = rowCls;
+    tr.innerHTML =
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(h.n)+'</div></td>'+
+      '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
+      '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
+      '<td class="text-r mono">¥'+(h.p !== undefined ? h.p.toFixed(2) : '0.00')+'</td>'+
+      '<td class="text-r mono">'+(h.buff_sell > 0 ? '¥'+h.buff_sell.toFixed(2)+'<sup style="font-size:8px;color:var(--rise);margin-left:1px">实时</sup>' : '<span class="text-muted">--</span>')+'<br><span style="font-size:10px;color:var(--amber)">'+(h.yyyp_sell > 0 ? '悠悠¥'+h.yyyp_sell.toFixed(2)+'<sup style="font-size:8px;color:var(--rise);margin-left:1px">实时</sup>' : '')+'</span></td>'+
+      '<td class="text-r mono" style="font-size:11px">'+(h.rate_1 !== undefined ? '<span class="'+(h.rate_1>=0?'clr-rise':'clr-fall')+'">'+(h.rate_1>=0?'+':'')+h.rate_1.toFixed(1)+'%</span>' : '--')+' · '+(h.rate_7 !== undefined ? '<span class="'+(h.rate_7>=0?'clr-rise':'clr-fall')+'">'+(h.rate_7>=0?'+':'')+h.rate_7.toFixed(1)+'%</span>' : '--')+'</td>'+
+      '<td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td>'+
+      '<td class="text-r"><div class="pnl-bar-wrap"><span class="'+pnlCls+'" style="font-weight:600">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span><span class="pnl-bar-icon">'+barIcon+'</span><div class="pnl-bar-track"><div class="pnl-bar-fill '+barCls+'" style="width:'+barPct.toFixed(0)+'%"></div></div></div></td>'+
+      '<td class="text-r"><button class="sell-btn" data-name="'+esc(h.n)+'" data-wear="'+(h.w||'')+'" title="卖出此饰品">卖出</button></td>'+
+      '</tr>';
+    frag.appendChild(tr);
+    // 直接在每个饰品行下渲染分析信息
+    var analysisRow = document.createElement('tr');
+    analysisRow.className = 'row-analysis';
+    analysisRow.innerHTML = '<td colspan="9">' + buildItemAnalysisHTML(h) + '</td>';
+    frag.appendChild(analysisRow);
+  });
+  if (DOM.tbody) { DOM.tbody.innerHTML = ''; DOM.tbody.appendChild(frag); }
+
+  if (totalPages <= 1) { if (DOM.pager) DOM.pager.innerHTML = ''; if (DOM.pageJump) DOM.pageJump.style.display = 'none'; return; }
+  if (DOM.pager) DOM.pager.innerHTML = '<button class="pgr-btn" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span class="pgr-info">'+curPage+' / '+totalPages+' 页 · '+items.length+' 条</span><button class="pgr-btn" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
+  if (DOM.pageJump) DOM.pageJump.style.display = 'flex';
+  if (DOM.pageNumInput) { DOM.pageNumInput.max = totalPages; DOM.pageNumInput.value = ''; }
+  if (DOM.pager) DOM.pager.onclick = e => {
+    const btn = e.target.closest('.pgr-btn');
+    if (!btn || btn.disabled) return;
+    if (btn.id === 'pgPrev') { curPage = Math.max(1, curPage - 1); render(); }
+    if (btn.id === 'pgNext') { curPage = Math.min(totalPages, curPage + 1); render(); }
+  };
+
+// ── Render 表格 ──
+}
+window.render = render;
+
+// ═══════════════ EVENT HANDLERS ═══════════════
+// tabBar click - null check with document-level fallback
+if (DOM.tabBar) {
+  DOM.tabBar.onclick = e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    DOM.tabBar.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    curCat = btn.dataset.cat;
+    curPage = 1;
+    invalidateCache();
+    render();
+  };
+} else {
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('#tabBar .tab');
+    if (!btn) return;
+    document.querySelectorAll('#tabBar .tab').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    curCat = btn.dataset.cat;
+    curPage = 1;
+    invalidateCache();
+    render();
+  });
+}
+
+document.querySelectorAll('thead th').forEach(th => {
+  th.onclick = () => {
+    const col = th.dataset.col;
+    if (!col) return;
+    if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    else { sortCol = col; sortDir = 'desc'; }
+    document.querySelectorAll('thead th').forEach(h => h.className = '');
+    th.className = sortDir === 'asc' ? 'sort-asc' : 'sort-desc';
+    invalidateCache();
+    render();
+  };
+});
+// Set default sort indicator on 6th column (盈亏%)
+const ths = document.querySelectorAll('thead th');
+if (ths[5]) ths[5].className = 'sort-desc';
+
+// 搜索框
+let searchTimer = null;
+if (DOM.searchInput) {
+  DOM.searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      searchQuery = DOM.searchInput.value;
+      curPage = 1;
+      invalidateCache();
+      render();
+    }, 200);
+  });
+}
+
+// 排序下拉框
+if (DOM.sortOrder) {
+  DOM.sortOrder.addEventListener('change', () => {
+    const v = DOM.sortOrder.value;
+    sortCol = v;
+    sortDir = 'desc';
+    curPage = 1;
+    invalidateCache();
+    render();
+  });
+}
+
+// 页码跳转
+if (DOM.pageSizeSel) {
+  DOM.pageSizeSel.addEventListener('change', function() {
+    PAGE_SIZE = parseInt(this.value) || 50;
+    curPage = 1;
+    invalidateCache();
+    render();
+  });
+}
+
+
+if (DOM.pageGoBtn) {
+  DOM.pageGoBtn.onclick = function() {
+    const n = parseInt(DOM.pageNumInput.value);
+    const totalPages = Math.max(1, Math.ceil(getFiltered().length / PAGE_SIZE));
+    if (!isNaN(n) && n >= 1 && n <= totalPages) {
+      curPage = n;
+      render();
+    }
+  };
+}
+if (DOM.pageNumInput) {
+  DOM.pageNumInput.addEventListener('keydown', e => { if (e.key === 'Enter') DOM.pageGoBtn && DOM.pageGoBtn.click(); });
+}
+if (DOM.searchInput) {
+  DOM.searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { curPage=1; invalidateCache(); render(); } });
+}
+if (DOM.tbody) {
+  DOM.tbody.onclick = function(e) {
+  const starBtn = e.target.closest('.row-star');
+  if (starBtn) { const gid = +starBtn.dataset.gid; if (gid) toggleStar(gid); return; }
+
+  const editBtn = e.target.closest('.cost-val, .edit-cost');
+  if (!editBtn) return;
+  const idx = +editBtn.dataset.idx;
+  const item = H[idx];
+  const td = editBtn.closest('td');
+  if (!td) return;
+  td.innerHTML = '<span class="cost-edit-group"><input class="cost-input" type="number" step="0.01" value="'+item.c.toFixed(2)+'"><button class="cost-save-btn" title="保存">✓</button></span><button class="cost-cancel-btn" title="取消">✕</button><span class="cost-edit-preview"></span>';
+  const inp = td.querySelector('.cost-input');
+  const saveBtn = td.querySelector('.cost-save-btn');
+  const cancelBtn = td.querySelector('.cost-cancel-btn');
+  const preview = td.querySelector('.cost-edit-preview');
+  inp.focus(); inp.select();
+  function updatePreview() {
+    var v = parseFloat(inp.value);
+    if (!isNaN(v) && v >= 0) {
+      var newPnl = item.p - v;
+      var newPct = v > 0 ? (item.p - v) / v * 100 : 0;
+      preview.textContent = (newPnl >= 0 ? '+' : '') + newPnl.toFixed(0) + ' (' + (newPct >= 0 ? '+' : '') + newPct.toFixed(1) + '%)';
+      preview.style.color = newPnl >= 0 ? 'var(--rise)' : 'var(--fall)';
+    } else {
+      preview.textContent = '';
+    }
+  }
+  inp.addEventListener('input', updatePreview);
+  updatePreview();
+  function save() {
+    const val = parseFloat(inp.value);
+    if (!isNaN(val) && val >= 0) {
+      item.c = val;
+      item.pnl = item.p - val;
+      item.pnlPct = val > 0 ? (item.p - val) / val * 100 : 0;
+      costOverrides[overrideKey(item.n, item.w)] = val;
+      saveOverridesDebounced();
+    }
+    invalidateCache(); updateKPI(); render();
+  }
+  saveBtn.onclick = save;
+  cancelBtn.onclick = function() { invalidateCache(); render(); };
+  inp.onblur = function() { setTimeout(save, 150); };
+  inp.onkeydown = function(e) { if (e.key === 'Enter') save(); if (e.key === 'Escape') { invalidateCache(); render(); } };
+};
+}
+
+function exportCSV() {
+  var rows=[['名称','成本','当前价','盈亏%','类型','品名']];
+  H.forEach(function(s){
+    var cost=getCost(s.name,true);
+    var pnlPct=cost>0?((s.price-cost)/cost*100):0;
+    rows.push([s.name,cost.toFixed(2),s.price.toFixed(2),pnlPct.toFixed(1)+'%',s.listed?'在售':'持仓',s.type||'']);
+  });
+  var csv=rows.map(function(r){return r.map(function(v){var s=String(v);return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='cs2_portfolio_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+
+// ═══════════════ REFRESH BUTTON ═══════════════
+// 状态跟踪
+let isUpdating = false;
+let prevSnapshot = null; // 刷新前的数据快照
+
+// cost-overrides 写盘防抖
+let _saveOverridesTimer = null;
+function saveOverridesDebounced() {
+  clearTimeout(_saveOverridesTimer);
+  _saveOverridesTimer = setTimeout(saveOverrides, 300);
+}
+
+// 数据快照（用于对比变更）
+function takeSnapshot() {
+  const snap = {
+    holdings: H ? H.map(h => ({n: h.n, w: h.w, c: h.c, p: h.p})) : [],
+    recs: {}
+  };
+  if (recData) {
+    snap.recs.all = (recData.all || []).map(r => r.name);
+  }
+  return snap;
+}
+
+// 对比新旧数据，生成变更列表
+function diffSnapshot(oldSnap, newSnap) {
+  if (!oldSnap) return null;
+  const changes = {prices: [], alerts: [], recs: []};
+
+  // 1. 持仓价格变动
+  const oldMap = {};
+  oldSnap.holdings.forEach(h => { oldMap[h.n + '|' + h.w] = h.p; });
+  newSnap.holdings.forEach(h => {
+    const oldP = oldMap[h.n + '|' + h.w];
+    if (oldP !== undefined && Math.abs(h.p - oldP) > 0.01) {
+      changes.prices.push({name: h.n, wear: h.w, oldPrice: oldP, newPrice: h.p, pct: oldP > 0 ? (h.p - oldP) / oldP * 100 : 0});
+    }
+  });
+  // 按变动绝对值排序
+  changes.prices.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct));
+
+
+  // 3. 推荐变动
+  for (const k of ['all']) {
+    const oldSet = new Set(oldSnap.recs[k] || []);
+    const newSet = new Set(newSnap.recs[k] || []);
+    const added = [...newSet].filter(n => !oldSet.has(n));
+    const removed = [...oldSet].filter(n => !newSet.has(n));
+    if (added.length) changes.recs.push({type: 'added', cat: k, items: added});
+    if (removed.length) changes.recs.push({type: 'removed', cat: k, items: removed});
+  }
+
+  return changes;
+}
+
+// 渲染变更日志
+function renderChangelog(changes) {
+  const panel = $('changelogPanel');
+  const content = $('changelogContent');
+  const navBtn = $('changelogNavBtn');
+  if (!changes || (!changes.prices.length && !changes.recs.length)) {
+    panel.style.display = 'none';
+    if (navBtn) navBtn.style.display = 'none';
+    return;
+  }
+  
+  // 显示面板和导航按钮
+  panel.style.display = 'block';
+  if (navBtn) navBtn.style.display = 'inline-block';
+
+  let html = '';
+
+  // 价格变动
+  if (changes.prices.length) {
+    html += '<div class="cl-section"><div class="cl-section-title">💰 持仓价格变动 <span class="cl-count">' + changes.prices.length + '</span></div>';
+    changes.prices.slice(0, 20).forEach(c => {
+      const cls = c.pct > 0 ? 'up' : 'dn';
+      const sign = c.pct > 0 ? '+' : '';
+      html += '<div class="cl-item"><span class="cl-tag price">价格</span><span class="cl-name">' + esc(c.name) + (c.wear ? ' <span class="wear-tag">' + c.wear + '</span>' : '') + '</span><span class="cl-old">¥' + c.oldPrice.toFixed(2) + '</span><span class="cl-new ' + cls + '">¥' + c.newPrice.toFixed(2) + ' ' + sign + c.pct.toFixed(1) + '%</span></div>';
+    });
+    if (changes.prices.length > 20) html += '<div class="cl-empty">...还有 ' + (changes.prices.length - 20) + ' 项变动</div>';
+    html += '</div>';
+  }
+
+  // 推荐变动
+  if (changes.recs.length) {
+    html += '<div class="cl-section"><div class="cl-section-title">🎯 推荐变化 <span class="cl-count">' + changes.recs.length + '</span></div>';
+    changes.recs.forEach(r => {
+      const label = REC_CAT_LABELS[r.cat] || r.cat;
+      r.items.slice(0, 5).forEach(name => {
+        const tag = r.type === 'added' ? 'new' : 'alert';
+        const prefix = r.type === 'added' ? '➕' : '➖';
+        html += '<div class="cl-item"><span class="cl-tag ' + tag + '">' + label + '</span><span class="cl-name">' + prefix + ' ' + esc(name) + '</span></div>';
+      });
+      if (r.items.length > 5) html += '<div class="cl-empty">...还有 ' + (r.items.length - 5) + ' 项</div>';
+    });
+    html += '</div>';
+  }
+
+  content.innerHTML = html;
+  $('changelogTime').textContent = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  panel.style.display = 'block';
+  panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+// 关闭按钮 - moved to initDashboard
+function setupChangelogClose() {
+  const el = $('changelogClose');
+  if (!el) return;
+  el.onclick = () => {
+    $('changelogPanel').style.display = 'none';
+    const navBtn = $('changelogNavBtn');
+    if (navBtn) navBtn.style.display = 'none';
+  };
+}
+
+// 轮询检查更新是否完成
+async function pollUpdateComplete(startTime) {
+  const MAX_WAIT = 120000; // 2分钟超时
+  const INTERVAL = 5000;   // 5秒轮询一次
+  const start = Date.now();
+
+  while (Date.now() - start < MAX_WAIT) {
+    await sleep(INTERVAL);
+    try {
+      // 检查 market.json 的更新时间是否比 startTime 新
+      const r = await fetch('market.json?v=' + Date.now(), { cache: 'no-store' });
+      if (r.ok) {
+        const data = await r.json();
+        // 检测多个时间戳字段（alerts / items / index）
+        const updateTime = data.alerts_updated || data.items_updated || data.index_updated;
+        if (updateTime) {
+          // 支持毫秒时间戳和 ISO 字符串两种格式
+          const updateTs = typeof updateTime === 'number' ? updateTime : new Date(updateTime).getTime();
+          // 如果更新时间比开始时间晚，说明更新完成了
+          if (updateTs > startTime) {
+            return true;
+          }
+        }
+      }
+    } catch(e) {}
+  }
+  return false; // 超时
+}
+
+document.addEventListener('keydown', function(e) {
+  var tag = e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (e.key === 'j' || e.key === 'ArrowDown') { curPage = Math.min(curPage + 1, Math.ceil(getFiltered().length / PAGE_SIZE)); render(); }
+  if (e.key === 'k' || e.key === 'ArrowUp') { curPage = Math.max(curPage - 1, 1); render(); }
+  if (e.key === 'g' && !e.shiftKey) { curPage = 1; render(); }
+  if (e.key === 'G') { curPage = Math.max(1, Math.ceil(getFiltered().length / PAGE_SIZE)); render(); }
+  if (e.key === '/' || e.key === 's') { e.preventDefault(); DOM.searchInput.focus(); }
+  if (e.key === 'Escape') { DOM.searchInput.blur(); DOM.searchInput.value = ''; searchQuery = ''; curPage = 1; invalidateCache(); render(); }
+  if (e.key === 'r') $('refreshBtn').click();
+});
+
+document.addEventListener('keydown', function(e) {
+  var tag = e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (e.key === 'j' || e.key === 'ArrowDown') { curPage = Math.min(curPage + 1, Math.ceil(getFiltered().length / PAGE_SIZE)); render(); }
+  if (e.key === 'k' || e.key === 'ArrowUp') { curPage = Math.max(curPage - 1, 1); render(); }
+  if (e.key === 'g' && !e.shiftKey) { curPage = 1; render(); }
+  if (e.key === 'G') { curPage = Math.max(1, Math.ceil(getFiltered().length / PAGE_SIZE)); render(); }
+  if (e.key === '/' || e.key === 's') { e.preventDefault(); DOM.searchInput.focus(); }
+  if (e.key === 'Escape') { DOM.searchInput.blur(); DOM.searchInput.value = ''; searchQuery = ''; curPage = 1; invalidateCache(); render(); }
+  if (e.key === 'r') $('refreshBtn').click();
+});
+
+function setupRefreshBtn() {
+const btn = $('refreshBtn');
+if (!btn) return;
+btn.onclick = async function() {
+  if (isUpdating) return; // 防止重复点击
+  
+  const btn = $('refreshBtn');
+  const startTime = Date.now();
+  isUpdating = true;
+  
+  // 保存刷新前的快照
+  prevSnapshot = takeSnapshot();
+  
+  // 阶段1：立即加载当前数据
+  btn.textContent = '⏳ 加载中...';
+  btn.disabled = true;
+  
+  try {
+    await loadAll();
+    renderAnalysis();
+    const loadTs = new Date(startTime).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+    DOM.updateTime.textContent = '刷新 ' + loadTs;
+    $('refreshStatus').textContent = '加载中';
+    $('refreshStatus').style.color = '';
+    showToast('📊 已加载本地数据，开始全量扫描...', 2000);
+  } catch (e) {
+    console.error('Load failed:', e);
+    $('refreshStatus').textContent = '❌ 失败';
+    $('refreshStatus').style.color = '#f87171';
+  }
+  
+  // 阶段2：触发全量扫描（持仓价格 + 异动 + 推荐）
+  btn.textContent = '🔍 扫描全量数据...';
+  $('refreshStatus').textContent = '扫描中';
+  
+  try {
+    // 触发本地全量更新
+    fetch('http://localhost:8765/update?mode=full').catch(() => {});
+    
+    // 同时触发 CI 更新（如果有 Token）
+    if (ghToken) {
+      // 触发数据更新 workflow
+      fetch(WORKFLOW_API, {
+        method: 'POST',
+        headers: { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/vnd.github+json' },
+        body: JSON.stringify({ ref: 'main' })
+      }).catch(() => {});
+    }
+    
+    // 阶段3：轮询等待更新完成
+    btn.textContent = '⏳ 更新中...';
+    const completed = await pollUpdateComplete(startTime);
+    
+    if (completed) {
+      // 更新完成，重新加载数据
+      await loadAll();
+      const finalTs = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+      DOM.updateTime.textContent = '更新 ' + finalTs;
+      $('refreshStatus').textContent = '✅ 成功';
+      $('refreshStatus').style.color = '#4ade80';
+      
+      const items = H?.length || 0;
+      const recs = (recData?.all?.length||0);
+      showToast('✅ 全量扫描完成 · ' + items + ' 持仓 · ' + recs + ' 推荐', 4000);
+      
+      // 对比并显示变更日志
+      const newSnap = takeSnapshot();
+      const changes = diffSnapshot(prevSnapshot, newSnap);
+      renderChangelog(changes);
+    } else {
+      showToast('⏱️ 扫描超时，数据将在后台更新', 3000);
+      $('refreshStatus').textContent = '⏱️ 超时';
+      $('refreshStatus').style.color = '#fbbf24';
+    }
+    
+  } catch (e) {
+    console.error('Update failed:', e);
+    showToast('❌ 更新失败: ' + e.message, 3000);
+    $('refreshStatus').textContent = '❌ 失败';
+    $('refreshStatus').style.color = '#f87171';
+  } finally {
+    btn.textContent = '↻ 刷新';
+    btn.disabled = false;
+    isUpdating = false;
+    setTimeout(() => { const rs=$('refreshStatus'); if(rs) { rs.textContent=''; rs.style.color=''; } }, 5000);
+  }
+};
+} // end setupRefreshBtn
+
+function setupTokenModal() {
+const gearBtn = $('gearBtn');
+if (!gearBtn) return;
+gearBtn.onclick = function() {
+  DOM.tokenInput.value = ghToken;
+  DOM.tokenStatus.textContent = ghToken ? '✅ 已配置 Token' : '⚠️ 未配置，编辑不会自动同步';
+  DOM.tokenModal.classList.add('show');
+};
+const tokenCancel = $('tokenCancel');
+if (tokenCancel) tokenCancel.onclick = () => DOM.tokenModal.classList.remove('show');
+const tokenClear = $('tokenClear');
+if (tokenClear) tokenClear.onclick = function() {
+  ghToken = ''; localStorage.removeItem(LS_TOKEN_KEY);
+  DOM.tokenInput.value = ''; DOM.tokenStatus.textContent = '🗑️ Token 已清除';
+};
+const tokenSave = $('tokenSave');
+if (tokenSave) tokenSave.onclick = async function() {
+  const token = DOM.tokenInput.value.trim();
+  if (!token) { DOM.tokenStatus.textContent = '⚠️ 请输入 Token'; return; }
+  DOM.tokenStatus.textContent = '⏳ 验证中...';
+  try {
+    const r = await fetch('https://api.github.com/repos/'+GH_REPO, {headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}});
+    if (r.ok) {
+      ghToken = token; localStorage.setItem(LS_TOKEN_KEY, token);
+      DOM.tokenStatus.textContent = '✅ Token 有效，已保存！';
+      setTimeout(() => DOM.tokenModal.classList.remove('show'), 1500);
+    } else { DOM.tokenStatus.textContent = '❌ Token 无效或无权限'; }
+  } catch(e) { DOM.tokenStatus.textContent = '❌ 网络错误'; }
+};
+if (DOM.tokenModal) DOM.tokenModal.onclick = function(e) { if (e.target === this) this.classList.remove('show'); }
+} // end setupTokenModal
+
+// ── 实时查价（通过 Cloudflare Worker）──
+const WORKER_BASE = 'https://cs2wyx.asia'
+
+async function fetchLivePrices(items, holdNames) {
+  var allNames = []
+  var seen = {}
+  ;(items || []).forEach(function(r){
+    var hn = r.hash_name || r.name
+    if (hn && !seen[hn]) { seen[hn] = true; allNames.push(hn) }
+  })
+  ;(holdNames || []).forEach(function(n){
+    if (n && !seen[n]) { seen[n] = true; allNames.push(n) }
+  })
+  if (!allNames.length) return
+  // CSQAQ 单次请求过多会导致 502，每次最多 20 个，跳过明显不追踪的类型
+  var skipTypes = ['Sticker', 'Patch', 'Charm', 'Graffiti', 'Case', 'Container', 'Capsule', 'Pin', 'Key', 'Music Kit', 'Pass', 'Souvenir', 'Collectible'];
+  var filtered = allNames.filter(function(n){
+    for(var i=0;i<skipTypes.length;i++){ if(n.indexOf(skipTypes[i])===0) return false; }
+    return true;
+  });
+  var batch = filtered.slice(0, 35)
+  try {
+    var resp = await fetch(WORKER_BASE+'/api/csqaq/batch?names='+encodeURIComponent(batch.join(',')))
+    if (!resp.ok) return
+    var csqaqData = await resp.json()
+    // 识别数据来源
+    var sourceDetected = false;
+    ;(items || []).forEach(function(r){
+      var hn = r.hash_name || r.name
+      if (hn && csqaqData[hn]) {
+        var dp = csqaqData[hn]
+        if (!sourceDetected && dp._source) { sourceDetected = dp._source; }
+        if (dp.buff_sell > 0) { r.buff_sell = dp.buff_sell; r.buff_source = 'BUFF'; }
+        if (dp.buff_sell_num > 0) r.buff_sell_num = dp.buff_sell_num
+        if (dp.yyyp_sell > 0) r.yyyp_sell = dp.yyyp_sell
+        if (dp.yyyp_sell_num > 0) r.yyyp_sell_num = dp.yyyp_sell_num
+      }
+    })
+    // 更新数据来源标记（双源显示）
+    var srcBadge = document.getElementById('dataSourceBadge');
+    if (srcBadge) {
+      var hasYyyp = (H || []).some(function(h) { return (h.yyyp_sell || 0) > 0; });
+      var hasBuff = (H || []).some(function(h) { return (h.buff_sell || 0) > 0; });
+      if (hasYyyp && hasBuff) srcBadge.textContent = '📡CSQAQ+SteamDT';
+      else if (hasYyyp) srcBadge.textContent = '📡CSQAQ';
+      else if (hasBuff) srcBadge.textContent = '📡SteamDT';
+      srcBadge.style.display = '';
+    }
+    if ((holdNames || []).length) {
+      ;(H || []).forEach(function(h){
+        var hn = h.mh || ''
+        if (!hn || !csqaqData[hn]) return
+        var dp = csqaqData[hn]
+        if (dp.buff_sell > 0) { h.p = dp.buff_sell; h.pnl = h.p - h.c; h.pnlPct = h.c > 0 ? (h.p-h.c)/h.c*100 : 0; }
+      })
+    }
+  } catch(e) {}
+}
+
+// ═══════════════ RECOMMENDATIONS ═══════════════
+const CHANNEL_LABELS = {eco:'📊 ECO信号', buff:'💰 BUFF信号'};
+// 暴露到全局供 recModalScript 使用
+window.CHANNEL_LABELS = CHANNEL_LABELS;
+
+// ── Sparkline 折线图工具（全局可用）──
+window.sparkline = function sparkline(prices, color, w, h) {
+  if (!prices || prices.length < 2) return '';
+  w = w || 120; h = h || 28;
+  var pad = 2;
+  var min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
+  var range = max - min || 1;
+  var xStep = (w - pad * 2) / (prices.length - 1);
+  var pts = prices.map(function(p, i) {
+    var x = pad + i * xStep;
+    var y = h - pad - ((p - min) / range) * (h - pad * 2);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  });
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '"><polyline fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="' + pts.join(' ') + '"/></svg>';
+};
+
+function renderAllRecs() {
+  const grid = DOM.recGrid;
+  if (!grid) return;
+
+  // Use pre-sorted top-30 from backend (already sorted by _score)
+  const allItems = (recData.all || []).slice();
+  if (!allItems.length) {
+    grid.innerHTML = '<div class="no-data"><div class="icon">🔍</div>暂无推荐<br><span style="font-size:11px">数据更新后自动生成</span></div>';
+    return;
+  }
+
+  // ── 推荐策略对比（ECO vs BUFF）──
+  renderRecCompare(allItems);
+  _recAllItems = allItems;
+
+  const totalPages = Math.ceil(allItems.length / REC_PAGE_SIZE);
+  const start = (recPage - 1) * REC_PAGE_SIZE;
+  const pageItems = allItems.slice(start, start + REC_PAGE_SIZE);
+
+  const frag = document.createDocumentFragment();
+
+  pageItems.forEach((item, idx) => {
+    const displayName = item.name || '--';
+    const div = document.createElement('div');
+    div.className = 'rec-card ' + (item.tag || 'eco');
+    div.onclick = function(){ window.showRecModal(item); };
+
+    // Channel tag
+    const channel = item.tag || 'eco';
+    const score = typeof item.score === 'number' ? item.score.toFixed(1) : '';
+    const chLabel = (CHANNEL_LABELS[channel] || channel) + (score ? ' · ' + score + '分' : '');
+    const tagHtml = '<div class="rc-tag">' + chLabel + '</div>';
+
+    // Price - show the best available (price is BUFF, fallback to eco_price)
+    let bestPrice = item.price > 0 ? item.price : (item.eco_price > 0 ? item.eco_price : 0);
+    let priceHtml = bestPrice > 0 ? '<div class="rc-price">¥' + bestPrice.toFixed(0) + '</div>' : '';
+
+    // Rates as compact inline
+    const rates = [];
+    [1, 7, 30].forEach(function(d) {
+      var key = 'rate_' + d, val = item[key];
+      if (val !== undefined && val !== 0) {
+        rates.push('<span class="' + (val >= 0 ? 'r-up' : 'r-dn') + '">' + d + '日 ' + (val >= 0 ? '+' : '') + val.toFixed(1) + '%</span>');
+      }
+    });
+    var metaHtml = rates.length || buyNumHtml ? '<div class="rc-meta">' + rates.join('') + buyNumHtml + '</div>' : '';
+
+    // Reason - cleaned
+    const rawReason = item._reason || '';
+    const parts = rawReason.indexOf('| ');
+    const cleanReason = parts >= 0 ? rawReason.substring(parts + 2) : rawReason;
+    const reasonHtml = cleanReason ? '<div class="rc-reason">' + cleanReason + '</div>' : '';
+
+    // BUFF buy order count
+    var buyNum = item.buff_buy_num || 0;
+    var buyNumHtml = buyNum > 0 ? '<span class="r-buy-num">📥 求购' + buyNum + '</span>' : '';
+
+    // ── 市场深度 ──
+    var depthHtml = '';
+    var ecoPrice = item.eco_price || 0;
+    var ecoSellNum = item.eco_selling || 0;
+    var ecoBuyNum = item.eco_qg_total || 0;
+    var buffPrice = item.buff_sell || 0;
+    var buffBuyPrice = item.buff_buy || 0;
+    var buffSellNum = item.buff_sell_num || 0;
+    var buffBuyNum = item.buff_buy_num || 0;
+    if (ecoPrice > 0 || buffPrice > 0) {
+      depthHtml = '<div class="rc-depth">';
+      if (ecoPrice > 0) {
+        depthHtml += '<span class="r-depth-eco">ECO <span class="r-dp-sell">¥' + ecoPrice.toFixed(2) + '</span>';
+        if (ecoSellNum > 0) depthHtml += ' <span class="r-dp-num">🟢' + ecoSellNum + '</span>';
+        depthHtml += '</span>';
+      }
+      if (buffPrice > 0) {
+        if (ecoPrice > 0) depthHtml += ' ';
+        var buffSource = item.buff_source || 'BUFF';
+        depthHtml += '<span class="r-depth-buff">' + buffSource + ' <span class="r-dp-sell">¥' + buffPrice.toFixed(2) + '</span><sup style="font-size:8px;color:var(--rise);margin-left:2px">实时</sup>';
+        if (buffBuyPrice > 0) depthHtml += ' 求购<span class="r-dp-buy">¥' + buffBuyPrice.toFixed(2) + '</span>';
+        if (buffSellNum > 0) depthHtml += ' <span class="r-dp-num">🟢' + buffSellNum + '</span>';
+        if (buffBuyNum > 0) depthHtml += ' <span class="r-dp-num">🔴' + buffBuyNum + '</span>';
+        depthHtml += '</span>';
+      }
+      // 悠悠有品
+      var yyypPrice = item.yyyp_sell || 0;
+      var yyypSellNum = item.yyyp_sell_num || 0;
+      if (yyypPrice > 0) {
+        if (ecoPrice > 0 || buffPrice > 0) depthHtml += ' ';
+        depthHtml += '<span style="color:var(--amber);font-size:10px">悠悠 <span class="r-dp-sell">¥' + yyypPrice.toFixed(2) + '</span><sup style="font-size:8px;color:var(--rise);margin-left:2px">实时</sup>';
+        if (yyypSellNum > 0) depthHtml += ' <span class="r-dp-num">🟢' + yyypSellNum + '</span>';
+        depthHtml += '</span>';
+      }
+      depthHtml += '</div>';
+    }
+
+    // Sparkline chart: 优先悠悠折线图，没有就用BUFF多平台
+    var ecoHist = item.eco_history || [];
+    var yyypHist = item.yyyp_history || [];
+    var multiHist = item.multi_history || [];
+    var altHist = yyypHist.length > 0 ? yyypHist : multiHist;
+    var ecoSvg = sparkline(ecoHist, 'var(--blue)');
+    var altSvg = sparkline(altHist, 'var(--amber)');
+    var chartHtml = (ecoSvg || altSvg) ? '<div class="rc-chart">' + ecoSvg + altSvg + '</div>' : '';
+
+    div.innerHTML = tagHtml + priceHtml + '<div class="rc-name" title="' + esc(displayName) + '">' + esc(displayName) + '</div>' + chartHtml + depthHtml + metaHtml + reasonHtml;
+    frag.appendChild(div);
+  });
+  grid.innerHTML = '';
+  grid.appendChild(frag);
+
+  // Pagination controls (DOM listeners, not inline onclick - IIFE compatible)
+  var rc = document.getElementById('recContent');
+  var pager = document.getElementById('recPager');
+  if (!pager) {
+    pager = document.createElement('div');
+    pager.id = 'recPager';
+    pager.className = 'rec-pager';
+    rc.appendChild(pager);
+  }
+  pager.innerHTML = '';
+  var pageInfo = document.createElement('span');
+  pageInfo.className = 'rec-page-info';
+  pageInfo.textContent = totalPages > 1 ? '第' + recPage + '/' + totalPages + '页 共' + allItems.length + '条' : '共' + allItems.length + '条推荐';
+  pager.appendChild(pageInfo);
+
+  if (totalPages > 1) {
+    var prevBtn = document.createElement('button');
+    prevBtn.className = 'rec-page-btn';
+    prevBtn.textContent = '←';
+    prevBtn.disabled = recPage <= 1;
+    if (!prevBtn.disabled) prevBtn.addEventListener('click', function() { goRecPage(recPage - 1); });
+    pager.appendChild(prevBtn);
+
+    var maxVisible = 7;
+    var startPage = Math.max(1, recPage - Math.floor(maxVisible / 2));
+    var endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    startPage = Math.max(1, endPage - maxVisible + 1);
+
+    for (var p = startPage; p <= endPage; p++) {
+      (function(pageNum) {
+        var btn = document.createElement('button');
+        btn.className = 'rec-page-num' + (pageNum === recPage ? ' active' : '');
+        btn.textContent = pageNum;
+        btn.addEventListener('click', function() { goRecPage(pageNum); });
+        pager.appendChild(btn);
+      })(p);
+    }
+
+    var nextBtn = document.createElement('button');
+    nextBtn.className = 'rec-page-btn';
+    nextBtn.textContent = '→';
+    nextBtn.disabled = recPage >= totalPages;
+    if (!nextBtn.disabled) nextBtn.addEventListener('click', function() { goRecPage(recPage + 1); });
+    pager.appendChild(nextBtn);
+  }
+}
+
+// ── 推荐策略对比（ECO vs BUFF）──
+function renderRecCompare(items) {
+  var bar = document.getElementById('recCompareBar');
+  if (!bar) return;
+  var eco = {count: 0, up: 0, ret: 0}, buff = {count: 0, up: 0, ret: 0};
+  items.forEach(function(r) {
+    var tag = (r.tag || 'eco') === 'buff' ? buff : eco;
+    tag.count++;
+    var ref = tag === buff ? (r.price || r.buff_sell || 0) : (r.eco_price || r.price || 0);
+    var cur = tag === buff ? (r.buff_sell || r.price || 0) : (r.price || r.eco_price || 0);
+    if (ref > 0 && cur > 0) { var ret = (cur - ref) / ref * 100; tag.ret += ret; if (ret > 0) tag.up++; }
+  });
+  var ecoWR = eco.count ? (eco.up / eco.count * 100).toFixed(0) : 0;
+  var buffWR = buff.count ? (buff.up / buff.count * 100).toFixed(0) : 0;
+  var ecoRet = eco.count ? (eco.ret / eco.count) : 0;
+  var buffRet = buff.count ? (buff.ret / buff.count) : 0;
+  if (!eco.count && !buff.count) { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  var maxWR = Math.max(ecoWR, buffWR, 1);
+  bar.innerHTML =
+    '<div style="display:flex;gap:16px;align-items:stretch">' +
+    '<div style="flex:1;background:var(--surface2);border-radius:8px;padding:10px 14px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">ECO推荐</div><div style="display:flex;gap:12px;align-items:center">' +
+    '<span style="font-size:11px;color:var(--text2)">' + eco.count + '条</span>' +
+    '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + (ecoWR / maxWR * 80) + '%;background:var(--blue);border-radius:3px"></div></div>' +
+    '<span style="font-size:11px;font-weight:600;color:var(--blue);min-width:40px;text-align:right">' + ecoWR + '%</span>' +
+    '<span style="font-size:10px;color:var(--text3)">均' + (ecoRet >= 0 ? '+' : '') + ecoRet.toFixed(1) + '%</span></div></div>' +
+    '<div style="flex:1;background:var(--surface2);border-radius:8px;padding:10px 14px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">BUFF推荐</div><div style="display:flex;gap:12px;align-items:center">' +
+    '<span style="font-size:11px;color:var(--text2)">' + buff.count + '条</span>' +
+    '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + (buffWR / maxWR * 80) + '%;background:var(--amber);border-radius:3px"></div></div>' +
+    '<span style="font-size:11px;font-weight:600;color:var(--amber);min-width:40px;text-align:right">' + buffWR + '%</span>' +
+    '<span style="font-size:10px;color:var(--text3)">均' + (buffRet >= 0 ? '+' : '') + buffRet.toFixed(1) + '%</span></div></div></div>';
+}
+
+function goRecPage(n) {
+  recPage = Math.max(1, Math.min(n, Math.ceil(_recAllItems.length / REC_PAGE_SIZE)));
+  renderAllRecs();
+  var el = document.getElementById('recPanel');
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══════════════ TECHNICAL ANALYSIS HELPERS ═══════════════
+/**
+ * 计算均线 (MA)
+ * @param {Array} prices 价格数组（按时间顺序，最新的在最后）
+ * @param {number} period 周期
+ * @returns {number|null} 均线值
+ */
+function calcMA(prices, period) {
+  if (prices.length < period) return null;
+  const slice = prices.slice(-period);
+  return slice.reduce((a, b) => a + b, 0) / period;
+}
+
+/**
+ * 计算布林带
+ * @param {Array} prices 价格数组
+ * @param {number} period 周期（默认10）
+ * @param {number} stdDev 标准差倍数（默认2）
+ * @returns {Object} {upper, middle, lower, width}
+ */
+function calcBollingerBands(prices, period = 10, stdDev = 2) {
+  if (prices.length < period) return { upper: null, middle: null, lower: null, width: null };
+  const slice = prices.slice(-period);
+  const middle = slice.reduce((a, b) => a + b, 0) / period;
+  const variance = slice.reduce((sum, p) => sum + Math.pow(p - middle, 2), 0) / period;
+  const std = Math.sqrt(variance);
+  return {
+    upper: middle + stdDev * std,
+    middle,
+    lower: middle - stdDev * std,
+    width: (2 * stdDev * std) / middle // 带宽，用于判断张口/收口
+  };
+}
+
+/**
+ * 判断均线排列
+ * @param {Object} mas {ma5, ma10, ma30, ma60}
+ * @returns {string} 'bull'|'bear'|'neutral'
+ */
+function checkMAStructure(mas) {
+  const { ma5, ma10, ma30, ma60 } = mas;
+  if (!ma5 || !ma10 || !ma30 || !ma60) return 'neutral';
+  if (ma5 > ma10 && ma10 > ma30 && ma30 > ma60) return 'bull'; // 多头排列
+  if (ma5 < ma10 && ma10 < ma30 && ma30 < ma60) return 'bear'; // 空头排列
+  return 'neutral';
+}
+
+/**
+ * 判断布林带形态
+ * @param {Array} bandwidths 带宽数组（历史）
+ * @returns {string} 'expanding_up'|'expanding_down'|'contracting'|'stable'
+ */
+function checkBollingerPattern(bandwidths) {
+  if (bandwidths.length < 3) return 'stable';
+  const recent = bandwidths.slice(-3);
+  const trend = recent[2] - recent[0]; // 带宽变化趋势
+  if (trend > 0.05) return 'expanding_up';  // 张口向上
+  if (trend < -0.05) return 'expanding_down'; // 张口向下
+  if (Math.max(...recent) - Math.min(...recent) < 0.02) return 'contracting'; // 收口
+  return 'stable';
+}
+
+/**
+ * 识别十字星形态
+ * @param {Object} candle {open, close, high, low}
+ * @returns {boolean} 是否为十字星
+ */
+function isDoji(candle) {
+  if (!candle) return false;
+  const { open, close, high, low } = candle;
+  const body = Math.abs(close - open);
+  const range = high - low;
+  if (range === 0) return false;
+  return body / range < 0.1; // 实体小于振幅的10%
+}
+
+/**
+ * 识别启明十字星（底部）
+ * @param {Array} candles 最近3根K线
+ * @returns {boolean}
+ */
+function isMorningDoji(candles) {
+  if (candles.length < 3) return false;
+  const [prev2, prev1, curr] = candles.slice(-3);
+  // 前两根下跌，当前是十字星，收盘高于前一根开盘
+  const isDowntrend = prev2.close < prev2.open && prev1.close < prev1.open;
+  return isDowntrend && isDoji(curr) && curr.close > prev1.open;
+}
+
+/**
+ * 识别黄昏十字星（顶部）
+ * @param {Array} candles 最近3根K线
+ * @returns {boolean}
+ */
+function isEveningDoji(candles) {
+  if (candles.length < 3) return false;
+  const [prev2, prev1, curr] = candles.slice(-3);
+  // 前两根上涨，当前是十字星，收盘低于前一根开盘
+  const isUptrend = prev2.close > prev2.open && prev1.close > prev1.open;
+  return isUptrend && isDoji(curr) && curr.close < prev1.open;
+}
+
+/**
+ * 获取技术分析信号
+ * @param {Object} params {price, prices, candles, maStructure, bollinger}
+ * @returns {Object} {signal, reason, strength}
+ */
+function getTechSignal({ price, prices = [], candles = [], maStructure, bollinger }) {
+  let signal = 'neutral';
+  let reason = '';
+  let strength = 0;
+  
+  // 均线排列信号
+  if (maStructure === 'bull') {
+    signal = 'bullish';
+    reason = '均线多头排列';
+    strength = 2;
+  } else if (maStructure === 'bear') {
+    signal = 'bearish';
+    reason = '均线空头排列';
+    strength = -2;
+  }
+  
+  // 布林带位置信号
+  if (bollinger.lower && price <= bollinger.lower * 1.02) {
+    // 价格触及下轨
+    if (signal !== 'bearish') {
+      signal = 'support';
+      reason = '触及布林下轨，可能有支撑';
+      strength = 1;
+    }
+  } else if (bollinger.upper && price >= bollinger.upper * 0.98) {
+    // 价格触及上轨
+    if (signal !== 'bullish') {
+      signal = 'resistance';
+      reason = '触及布林上轨，可能回调';
+      strength = -1;
+    }
+  }
+  
+  // 十字星信号
+  if (isMorningDoji(candles)) {
+    signal = 'buy';
+    reason = '启明十字星，见底信号';
+    strength = 3;
+  } else if (isEveningDoji(candles)) {
+    signal = 'sell';
+    reason = '黄昏十字星，见顶信号';
+    strength = -3;
+  } else if (isDoji(candles[candles.length - 1])) {
+    if (!reason) reason = '十字星形态，多空平衡';
+  }
+  
+  return { signal, reason, strength };
+}
+
+// ═══════════════ PORTFOLIO ANALYSIS ═══════════════
+function renderAnalysis() {
+  const container = document.getElementById('analysisGrid');
+  if (!container) return;
+
+  const items = H || [];
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px;font-size:13px">暂无持仓数据</div>';
+    return;
+  }
+
+
+  // Build name → is recommended
+  const allRecs = (recData?.all || []);
+  const recSet = new Set(allRecs.map(r => r.name));
+
+  // Get market recommendations for comparison signals
+  const recs = window.recData || {};
+  const recNames = new Set(
+    (recs.all || []).map(r => r.name)
+  );
+  const rateMap = window._rateMap || {};
+
+  // ── Per-item analysis ──
+  const analyses = items.map(item => {
+    const name = item.n;
+    const cost = item.c;
+    const price = item.p;
+    const pnl = price - cost;
+    const pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
+
+    // 优先使用持仓自带的rate数据（update.py已写入）
+    // fallback到alerts匹配
+    const r1 = item.rate_1 !== undefined ? item.rate_1 : (rateMap[name]?.r1 || 0);
+    const r7 = item.rate_7 !== undefined ? item.rate_7 : (rateMap[name]?.r7 || 0);
+    const r30 = item.rate_30 !== undefined ? item.rate_30 : (rateMap[name]?.r30 || 0);
+
+    const isRec = recSet.has(name);
+
+    // ── 技术分析（需要历史数据）──
+    const priceHistory = item.price_history || [];
+    const prices = priceHistory.map(h => h.price);
+    const hasTechData = prices.length >= 5;
+    
+    // 计算均线（需要至少对应周期的数据）
+    const mas = {
+      ma5: prices.length >= 5 ? calcMA(prices, 5) : null,
+      ma10: prices.length >= 10 ? calcMA(prices, 10) : null,
+      ma30: prices.length >= 30 ? calcMA(prices, 30) : null,
+      ma60: prices.length >= 60 ? calcMA(prices, 60) : null
+    };
+    
+    // 计算布林带（需要至少10天数据）
+    const bollinger = prices.length >= 10 ? calcBollingerBands(prices, 10, 2) : { upper: null, middle: null, lower: null, width: null };
+    
+    // 均线排列
+    const maStructure = checkMAStructure(mas);
+    
+    // 技术信号
+    const techSignal = hasTechData ? getTechSignal({ price, prices, mas, bollinger }) : { signal: 'neutral', reason: '', strength: 0 };
+
+    // ── Trend determination (分数制) ──
+    let trendScore = 0;
+    // 7日涨跌权重最大
+    if (r7 > 0) trendScore += Math.min(r7 * 2, 30);
+    else trendScore += Math.max(r7 * 2, -30);
+    // 30日趋势辅助判断
+    if (r30 > 0) trendScore += Math.min(r30, 15);
+    else trendScore += Math.max(r30, -15);
+    // 1日短线动量
+    if (r1 > 0) trendScore += Math.min(r1 * 3, 10);
+    else trendScore += Math.max(r1 * 3, -10);
+    // 均线结构加分
+    if (maStructure === 'bull') trendScore += 10;
+    else if (maStructure === 'bear') trendScore -= 10;
+    // 触布林带下轨（超卖）加分，触上轨（超买）减分
+    if (bollinger.lower && price <= bollinger.lower * 1.02) trendScore += 8;
+    if (bollinger.upper && price >= bollinger.upper * 0.98) trendScore -= 8;
+
+    let trend = 'neutral';
+    if (trendScore >= 20) trend = 'strong_up';
+    else if (trendScore >= 8) trend = 'up';
+    else if (trendScore <= -20) trend = 'weak';
+    else if (trendScore <= -8) trend = 'rebound';  // 弱→反弹看后续确认
+
+    // 用技术分析微调
+    if (techSignal.signal === 'bullish' && trendScore < 20) trendScore += 5;
+    if (techSignal.signal === 'bearish' && trendScore > -20) trendScore -= 5;
+
+    // ── Sell signal ──
+    let sellSignal = '持有';
+    let sellReason = '';
+    
+    // 技术分析信号优先（如黄昏十字星）
+    if (techSignal.signal === 'sell') {
+      sellSignal = '技术卖';
+      sellReason = techSignal.reason;
+    } else if (techSignal.signal === 'buy') {
+      sellSignal = '技术买';
+      sellReason = techSignal.reason;
+    } else if (pnlPct >= 30) { 
+      sellSignal = '止盈'; sellReason = '盈利已达30%，可考虑分批止盈'; 
+    } else if (pnlPct <= -15) { 
+      sellSignal = '止损'; sellReason = '浮亏超15%，风险较大，建议止损换品'; 
+    } else if (isRec) { 
+      sellSignal = '持有观察'; sellReason = '属于推荐品类，可继续持有观察'; 
+    } else if (trendScore <= -15 && pnlPct < -3) { 
+      sellSignal = '减仓'; sellReason = '趋势走弱' + (r7 <= -8 ? '，7日跌幅较大' : '') + '，建议控制仓位'; 
+    } else if (trend === 'rebound' && pnlPct > 5) { 
+      sellSignal = '反弹卖'; sellReason = '属于超跌反弹，建议趁反弹卖出锁定收益'; 
+    } else if (trend === 'neutral' && pnlPct < -5) { 
+      sellSignal = '观望'; sellReason = '短期方向不明，亏损不大可等待反弹'; 
+    } else if (techSignal.reason) {
+      // 有技术信号但未触发买卖
+      sellReason = techSignal.reason;
+    }
+
+    // ── Future outlook ──
+    let outlook = '';
+    let outlookColor = 'var(--text3)';
+    if (trend === 'strong_up') { outlook = '📈 强势上升'; outlookColor = 'var(--rise)'; }
+    else if (trend === 'up') { outlook = '↗ 温和上涨'; outlookColor = '#86efac'; }
+    else if (trend === 'rebound') { outlook = '↙ 超跌反弹'; outlookColor = 'var(--amber)'; }
+    else if (trend === 'weak') { outlook = '📉 下行通道'; outlookColor = 'var(--fall)'; }
+    else { outlook = '→ 横盘整理'; outlookColor = 'var(--text3)'; }
+
+    // ── Target price range (基于实际波动率) ──
+    let targetLow = '', targetHigh = '';
+    // 用历史价格估算日均波动率
+    let dailyVol = 0.03; // 默认3%
+    if (prices.length >= 5) {
+      var returns = [];
+      for (var vi = 1; vi < prices.length; vi++) {
+        if (prices[vi-1] > 0) returns.push(Math.abs(prices[vi] - prices[vi-1]) / prices[vi-1]);
+      }
+      if (returns.length > 0) {
+        var avgRet = returns.reduce(function(a,b){return a+b;}, 0) / returns.length;
+        dailyVol = Math.min(Math.max(avgRet, 0.01), 0.15); // 1%-15%之间
+      }
+    }
+    // 30天波动范围 = 日均波动率 * sqrt(30)
+    var monthVol = dailyVol * Math.sqrt(30);
+    if (trendScore > 0) {
+      targetLow = (price * (1 - monthVol * 0.5)).toFixed(0);
+      targetHigh = (price * (1 + monthVol)).toFixed(0);
+    } else if (trendScore < -8) {
+      targetLow = (price * (1 - monthVol * 1.2)).toFixed(0);
+      targetHigh = (price * (1 + monthVol * 0.3)).toFixed(0);
+    } else {
+      targetLow = (price * (1 - monthVol * 0.6)).toFixed(0);
+      targetHigh = (price * (1 + monthVol * 0.6)).toFixed(0);
+    }
+
+    // ── Confidence ──
+    // 可信度基于数据质量和管理方向一致性
+    let confidence = '低';
+    let confColor = 'var(--text3)';
+    const histLen = (item.price_history || []).length;
+    if (histLen >= 7) {
+      // 历史数据充足 + 均线/短线方向一致 → 高可信
+      if (Math.abs(trendScore) >= 15) { confidence = '高'; confColor = 'var(--rise)'; }
+      else { confidence = '中'; confColor = 'var(--amber)'; }
+    } else if (histLen >= 2) { confidence = '中'; confColor = 'var(--amber)'; }
+    // 1天都不到 → 低
+
+    // ── 技术分析摘要 ──
+    let techSummary = '';
+    if (hasTechData) {
+      const parts = [];
+      if (maStructure === 'bull') parts.push('多头排列');
+      else if (maStructure === 'bear') parts.push('空头排列');
+      if (bollinger.lower && price <= bollinger.lower * 1.02) parts.push('触下轨');
+      if (bollinger.upper && price >= bollinger.upper * 0.98) parts.push('触上轨');
+      if (techSignal.reason) parts.push(techSignal.reason);
+      techSummary = parts.join(' · ') || '正常区间';
+    }
+
+    return {
+      name, cost, price, pnl, pnlPct,
+      r1, r7, r30, isRec,
+      trend, sellSignal, sellReason, outlook, outlookColor,
+      targetLow, targetHigh,
+      confidence, confColor,
+      // 技术分析数据
+      hasTechData,
+      ma5: mas.ma5, ma10: mas.ma10, ma30: mas.ma30, ma60: mas.ma60,
+      maStructure,
+      bollUpper: bollinger.upper, bollMiddle: bollinger.middle, bollLower: bollinger.lower,
+      techSignal: techSignal.signal,
+      techSummary
+    };
+  });
+
+  // Sort by: sell signals first (止损 > 止盈 > 反弹卖), then by 7-day change
+  const signalOrder = { '止损': 0, '止盈': 1, '反弹卖': 2, '减仓': 3, '观望': 4, '持有观察': 5, '持有': 6 };
+  analyses.sort((a, b) => {
+    const oa = signalOrder[a.sellSignal] ?? 9;
+    const ob = signalOrder[b.sellSignal] ?? 9;
+    if (oa !== ob) return oa - ob;
+    return a.r7 - b.r7;
+  });
+
+  // ── Generate HTML ──
+  const TREND_COLORS = {
+    'strong_up': 'var(--rise)',
+    'up': '#86efac',
+    'rebound': 'var(--amber)',
+    'weak': 'var(--fall)',
+    'neutral': 'var(--text3)'
+  };
+  const SIGNAL_COLORS = {
+    '止损': '#f87171',
+    '止盈': '#4ade80',
+    '反弹卖': 'var(--amber)',
+    '减仓': '#fb923c',
+    '观望': 'var(--text2)',
+    '持有观察': 'var(--blue)',
+    '技术卖': '#f87171',
+    '技术买': '#4ade80',
+    '持有': 'var(--text3)'
+  };
+
+  container.innerHTML = analyses.map(a => {
+    // Determine badge class
+    let badgeCls = 'ac-badge';
+    if (a.sellSignal === '止盈' || a.sellSignal === '技术买') badgeCls += ' buy';
+    else if (a.sellSignal === '止损' || a.sellSignal === '减仓' || a.sellSignal === '反弹卖') badgeCls += ' sell';
+    else if (a.sellSignal === '持有观察' || a.sellSignal === '技术卖') badgeCls += ' wait';
+    else if (a.sellSignal === '观望') badgeCls += ' stop';
+    // Card PnL class
+    let cardCls = a.pnl >= 0 ? ' analysis-card rise' : 'analysis-card fall';
+    // Reason class
+    let reasonCls = a.pnl >= 0 ? 'ac-reason buy' : 'ac-reason sell';
+    return `
+    <div class="${cardCls}">
+      <div class="ac-header">
+        <span class="ac-name" title="${a.name}">${a.name.length > 22 ? a.name.substring(0, 20) + '…' : a.name}</span>
+        <span class="${badgeCls}">${a.sellSignal}</span>
+      </div>
+      <div class="ac-metrics">
+        <div class="ac-m"><span class="ac-ml">现价</span><span class="ac-mv mono">¥${a.price.toFixed(0)}</span></div>
+        <div class="ac-m"><span class="ac-ml">成本</span><span class="ac-mv mono">¥${a.cost.toFixed(0)}</span></div>
+        <div class="ac-m"><span class="ac-ml">1日</span><span class="ac-mv mono" style="color:${a.r1 >= 0 ? 'var(--rise)' : 'var(--fall)'}">${a.r1 >= 0 ? '+' : ''}${a.r1.toFixed(1)}%</span></div>
+        <div class="ac-m"><span class="ac-ml">7日</span><span class="ac-mv mono" style="color:${a.r7 >= 0 ? 'var(--rise)' : 'var(--fall)'}">${a.r7 >= 0 ? '+' : ''}${a.r7.toFixed(1)}%</span></div>
+      </div>
+      <div class="ac-row">
+        <span class="ac-label">盈亏</span>
+        <span style="color:${a.pnl >= 0 ? 'var(--rise)' : 'var(--fall)'};font-size:14px;font-weight:800;font-family:DM Mono,monospace">${a.pnl >= 0 ? '+' : ''}¥${a.pnl.toFixed(0)} (${a.pnlPct >= 0 ? '+' : ''}${a.pnlPct.toFixed(1)}%)</span>
+      </div>
+      <div class="ac-row">
+        <span class="ac-label">走势 · ${a.outlook}</span>
+        <span style="color:${a.outlookColor};font-size:12px;font-weight:600">${a.isRec ? '📌 推荐' : ''}</span>
+      </div>
+      ${a.sellReason ? '<div class="' + reasonCls + '">' + a.sellReason + '</div>' : ''}
+    </div>`;
+  }).join('');
+
+  // Also inject analysis data for KPI
+  updateAnalysisKPI(analyses);
+}
+
+// Inject analysis indicators into KPI strip
+function updateAnalysisKPI(analyses) {
+  // No KPI strip to update for now, analysis is its own section
+}
+
+// ═══════════════ 全市场扫描 ═══════════════
+function renderScan() {
+  fetch('market_scan.json?_t=' + Date.now()).then(function(r) { return r.ok ? r.json() : null; }).then(function(scan) {
+    if (!scan) return;
+    var kpis = document.getElementById('scanKpis');
+    var tiers = document.getElementById('scanTiers');
+    var cats = document.getElementById('scanCats');
+    var gainers = document.getElementById('scanGainers');
+    var losers = document.getElementById('scanLosers');
+    var topSell = document.getElementById('scanTopSell');
+
+    // ═══ Hero KPI ───
+    if (kpis) {
+      var trackedPct = scan.total > 0 ? (scan.tracked / scan.total * 100) : 0;
+      // 更新副标题
+      var sub = document.getElementById('scanSubtitle');
+      if (sub) sub.textContent = (scan.total||0).toLocaleString() + '件 · 武器/刀/手套/探员';
+      kpis.innerHTML =
+        '<div class="scan-kpi scan-kpi-main"><div class="scan-kpi-num">' + (scan.total || 0).toLocaleString() + '</div><div class="scan-kpi-label">全量饰品</div><div class="scan-kpi-sub">' + (scan.tracked||0).toLocaleString() + '个追踪 (' + trackedPct.toFixed(1) + '%)</div></div>' +
+        '<div class="scan-kpi"><div class="scan-kpi-num">¥' + (scan.avg_p||0).toFixed(0) + '</div><div class="scan-kpi-label">均价</div><div class="scan-kpi-sub">中位¥' + (scan.median_p||0).toFixed(0) + '</div></div>' +
+        '<div class="scan-kpi"><div class="scan-kpi-num">¥' + (scan.max_p||0).toFixed(0) + '</div><div class="scan-kpi-label">最高价</div><div class="scan-kpi-sub">最低¥' + (scan.min_p||0).toFixed(2) + '</div></div>' +
+        '<div class="scan-kpi"><div class="scan-kpi-num">' + (scan.categories ? Object.keys(scan.categories).length : 0) + '</div><div class="scan-kpi-label">品类</div><div class="scan-kpi-sub">武器+刀+手套+贴纸等</div></div>';
+    }
+
+    // ═══ 价格分布图 ───
+    if (tiers && scan.tiers) {
+      var t = scan.tiers;
+      var total = Object.values(t).reduce(function(a,b){return a+b;},0);
+      var colors = ['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa'];
+      var labels = ['<¥10','¥10-50','¥50-200','¥200-1k','>¥1k'];
+      var keys = Object.keys(t);
+      var maxTier = Math.max.apply(null, Object.values(t));
+      var html = '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px">📊 价格分布</div>';
+      keys.forEach(function(k, i) {
+        var pct = t[k] / total * 100;
+        var barW = Math.max(4, t[k] / maxTier * 100);
+        html += '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px"><span>' + labels[i] + '</span><span>' + t[k].toLocaleString() + '件 (' + pct.toFixed(1) + '%)</span></div>' +
+          '<div style="height:14px;background:var(--surface2);border-radius:7px;overflow:hidden"><div style="height:100%;width:' + barW + '%;background:' + colors[i] + ';border-radius:7px;opacity:0.85;transition:width 0.8s ease"></div></div></div>';
+      });
+      tiers.innerHTML = html;
+    }
+
+    // ═══ 品类构成 ───
+    if (cats && scan.categories) {
+      var cdata = scan.categories;
+      var ckeys = Object.keys(cdata).sort(function(a,b){return cdata[b].count - cdata[a].count;});
+      var maxCount = Math.max.apply(null, ckeys.map(function(k){return cdata[k].count;}));
+      var html = '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px">🏷️ 品类构成</div>';
+      ckeys.forEach(function(k) {
+        var c = cdata[k];
+        var barW = Math.max(4, c.count / maxCount * 100);
+        html += '<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:2px"><span>' + k + '</span><span>' + c.count.toLocaleString() + '件 · 均¥' + (c.avg_p||0).toFixed(0) + '</span></div>' +
+          '<div style="height:10px;background:var(--surface2);border-radius:5px;overflow:hidden"><div style="height:100%;width:' + barW + '%;background:linear-gradient(90deg,var(--blue),var(--amber));border-radius:5px;opacity:0.7"></div></div></div>';
+      });
+      cats.innerHTML = html;
+    }
+
+    // ═══ 涨跌榜 ───
+    if (gainers && scan.movers && scan.movers.gainers) {
+      var html = '<div style="font-size:11px;font-weight:700;color:var(--rise);margin-bottom:8px">📈 涨幅 TOP</div>';
+      scan.movers.gainers.forEach(function(g) {
+        html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(55,65,81,.06);font-size:11px">' +
+          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--text2)" title="' + esc(g.n) + '">' + esc(g.n) + '</span>' +
+          '<span style="color:var(--rise);font-weight:700;min-width:55px;text-align:right">+' + g.r7.toFixed(1) + '%</span></div>';
+      });
+      gainers.innerHTML = html;
+    }
+    if (losers && scan.movers && scan.movers.losers) {
+      var html = '<div style="font-size:11px;font-weight:700;color:var(--fall);margin-bottom:8px">📉 跌幅 TOP</div>';
+      scan.movers.losers.forEach(function(l) {
+        html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(55,65,81,.06);font-size:11px">' +
+          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--text2)" title="' + esc(l.n) + '">' + esc(l.n) + '</span>' +
+          '<span style="color:var(--fall);font-weight:700;min-width:55px;text-align:right">' + l.r7.toFixed(1) + '%</span></div>';
+      });
+      losers.innerHTML = html;
+    }
+
+    // ═══ 在售量 TOP ───
+    if (topSell && scan.top_sell) {
+      var rows = scan.top_sell.map(function(s, i) {
+        var rank = (i+1);
+        var medal = rank<=3 ? ['🥇','🥈','🥉'][rank-1] : rank;
+        return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(55,65,81,.06);font-size:11px">' +
+          '<span style="color:var(--text3);min-width:20px;text-align:center;font-weight:700">' + medal + '</span>' +
+          '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)">' + esc(s.n) + '</span>' +
+          '<span style="color:var(--text3);font-size:10px">¥' + (s.p||0).toFixed(1) + '</span>' +
+          '<span style="color:var(--blue);font-weight:600;min-width:70px;text-align:right">' + (s.s||0).toLocaleString() + '件</span></div>';
+      }).join('');
+      topSell.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-top:12px;margin-bottom:6px">🛒 在售量 TOP 10</div>' + rows;
+    }
+
+    var ut = document.getElementById('scanUpdateTime');
+    if (ut && scan.updated) ut.textContent = '数据 ' + scan.updated.slice(0, 10);
+  }).catch(function() {});
+}
+
+// ═══════════════ START ═══════════════
+updateWatchCount();
+loadAll().catch(err => { console.error(err); hideSkeleton(); });
+
+// ═══════════════ 自定义持仓管理 ═══════════════
+const CUSTOM_HOLDINGS_KEY = 'cs2_custom_holdings';
+const HIDDEN_ITEMS_KEY = 'cs2_hidden_items';
+const SOLD_ITEMS_KEY = 'cs2_sold_items';
+
+function loadCustomHoldings() {
+  try {
+    const saved = localStorage.getItem(CUSTOM_HOLDINGS_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch(e) { return []; }
+}
+
+function saveCustomHoldings(items) {
+  try { localStorage.setItem(CUSTOM_HOLDINGS_KEY, JSON.stringify(items)); } catch(e) {}
+}
+
+function loadHiddenItems() {
+  try {
+    const saved = localStorage.getItem(HIDDEN_ITEMS_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch(e) { return []; }
+}
+
+function saveHiddenItems(items) {
+  try { localStorage.setItem(HIDDEN_ITEMS_KEY, JSON.stringify(items)); } catch(e) {}
+}
+
+function loadSoldItems() {
+  // 优先从 localStorage 读取（快速、同步）
+  try {
+    const saved = localStorage.getItem(SOLD_ITEMS_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch(e) { return []; }
+}
+
+function saveSoldItems(items) {
+  // 先写本地（即时生效）
+  try { localStorage.setItem(SOLD_ITEMS_KEY, JSON.stringify(items)); } catch(e) {}
+  // 再异步推送到 Worker（跨设备持久化）
+  if (items.length > 0) {
+    var last = items[items.length - 1];
+    try {
+      fetch(WORKER_BASE + '/api/sold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(last),
+      }).catch(function(){});
+    } catch(e) {}
+  }
+}
+
+// Add custom holdings to H on load (must be called after H is populated)
+function mergeCustomHoldings() {
+  var customs = loadCustomHoldings();
+  customs.forEach(function(c) {
+    // Check if already exists (by unique name + wear)
+    var exists = H.some(function(h) { return h.n === c.n && h.w === c.w; });
+    if (!exists) {
+      H.push({
+        n: c.n, w: c.w || 'FN', c: c.c || 0, p: c.p || 0,
+        gid: 0, mh: '', pnl: 0, pnlPct: 0,
+        _custom: true
+      });
+    }
+  });
+}
+
+// Filter out hidden items
+function filterHidden() {
+  var hidden = loadHiddenItems();
+  if (hidden.length === 0) return;
+  H = H.filter(function(h) {
+    return !hidden.some(function(hh) { return hh.n === h.n && hh.w === h.w; });
+  });
+}
+
+// Setup add item button
+var addBtn = document.getElementById('addItemBtn');
+if (addBtn) {
+  addBtn.addEventListener('click', function() {
+    var overlay = document.getElementById('addItemOverlay');
+    if (overlay) { overlay.classList.add('show'); document.getElementById('addItemName').focus(); }
+  });
+}
+
+// Setup add item modal
+(function() {
+  var overlay = document.getElementById('addItemOverlay');
+  if (!overlay) return;
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+  document.getElementById('addItemCancel').onclick = function() { overlay.classList.remove('show'); };
+  document.getElementById('addItemConfirm').onclick = function() {
+    var name = document.getElementById('addItemName').value.trim();
+    var wear = document.getElementById('addItemWear').value;
+    var cost = parseFloat(document.getElementById('addItemCost').value) || 0;
+    if (!name) { alert('请输入饰品名称'); return; }
+    var customs = loadCustomHoldings();
+    customs.push({ n: name, w: wear, c: cost, p: cost });
+    saveCustomHoldings(customs);
+    overlay.classList.remove('show');
+    // Clear inputs
+    document.getElementById('addItemName').value = '';
+    document.getElementById('addItemCost').value = '';
+    loadAll();
+  };
+})();
+
+// ── 生成单件饰品的分析 HTML ──
+function buildItemAnalysisHTML(item) {
+  if (!item) return '';
+  const name = item.n, cost = item.c, price = item.p;
+  const pnl = price - cost, pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
+  const rateMap = window._rateMap || {};
+  const r1 = item.rate_1 !== undefined ? item.rate_1 : (rateMap[name]?.r1 || 0);
+  const r7 = item.rate_7 !== undefined ? item.rate_7 : (rateMap[name]?.r7 || 0);
+  const r30 = item.rate_30 !== undefined ? item.rate_30 : (rateMap[name]?.r30 || 0);
+  const allRecs = (window.recData?.all || []);
+  const isRec = allRecs.some(function(r) { return r.name === name; });
+
+  // ── BUFF 市场深度分析 ──
+  var buffSell = item.buff_sell || 0;
+  var buffBuy = item.buff_buy || 0;
+  var buffSellNum = item.buff_sell_num || 0;
+  var buffBuyNum = item.buff_buy_num || 0;
+  var hasBuff = buffSell > 0;
+  var hasBuffBuy = buffBuy > 0;
+  var spread = 0, spreadRate = 0;
+  if (hasBuff && hasBuffBuy) {
+    spread = buffSell - buffBuy;
+    spreadRate = buffBuy > 0 ? (spread / buffBuy * 100) : 0;
+  }
+  var ecoVsBuff = hasBuff ? ((price - buffSell) / buffSell * 100) : 0;
+
+  // ── 流动性评估 ──
+  var liq = '正常';
+  var liqColor = 'var(--text2)';
+  var supplyDemand = '';
+  if (hasBuff && hasBuffBuy) {
+    var totalDepth = buffSellNum + buffBuyNum;
+    if (totalDepth > 0) {
+      var ratio = buffBuyNum / buffSellNum; // 求购/在售比
+      if (ratio > 2) supplyDemand = '求购旺盛';
+      else if (ratio > 1) supplyDemand = '需求偏强';
+      else if (ratio > 0.5) supplyDemand = '供需平衡';
+      else supplyDemand = '供大于求';
+    }
+    if (spreadRate < 3 && buffBuyNum > 10) { liq = '活跃'; liqColor = 'var(--fall)'; }
+    else if (spreadRate > 8 || (buffSellNum > 100 && buffBuyNum < 5)) { liq = '较差'; liqColor = 'var(--rise)'; }
+  } else if (hasBuff) {
+    liq = '一般'; liqColor = 'var(--amber)';
+  }
+
+  // ── BUFF 溢价分析 ──
+  var buffPremium = '';
+  var buffPremiumColor = '';
+  if (hasBuff) {
+    if (ecoVsBuff < -2) { buffPremium = 'BUFF溢价' + Math.abs(ecoVsBuff).toFixed(1) + '%'; buffPremiumColor = 'var(--fall)'; }
+    else if (ecoVsBuff > 2) { buffPremium = 'ECO溢价' + ecoVsBuff.toFixed(1) + '%'; buffPremiumColor = 'var(--rise)'; }
+    else { buffPremium = '价格持平'; buffPremiumColor = 'var(--text3)'; }
+  }
+
+  // ── Trend ──
+  var trend = 'neutral', trendLabel = '→ 横盘整理', trendColor = 'var(--text3)';
+  if (r7 >= 5 && r1 >= 1) { trend = 'strong_up'; trendLabel = '📈 强势上升'; trendColor = 'var(--rise)'; }
+  else if (r7 >= 2 && r1 >= 0.5) { trend = 'up'; trendLabel = '↗ 温和上涨'; trendColor = '#86efac'; }
+  else if (r7 <= -5) { trend = 'weak'; trendLabel = '📉 下行通道'; trendColor = 'var(--fall)'; }
+  else if (r7 >= -1 && r1 <= -1) { trend = 'rebound'; trendLabel = '↙ 超跌反弹'; trendColor = 'var(--amber)'; }
+  // 趋势 + 流动性修正
+  if (trend === 'weak' && liq === '活跃') { trendLabel = '📉 缩量下跌'; }
+  if (trend === 'up' && liq === '较差') { trendLabel = '↗ 有价无市'; trendColor = 'var(--amber)'; }
+
+  // ── 智能信号判断 ──
+  var sellSignal = '持有', sellReason = '';
+  // 多维评分：-5 ~ +5
+  var score = 0;
+  if (r7 > 0) score += 1;
+  if (r1 > 0) score += 1;
+  if (r30 > 0) score += 1;
+  if (pnlPct > 20) score += 1;  // 盈利多加分
+  if (pnlPct < -10) score -= 1; // 亏损大减分
+  if (isRec) score += 1;
+  if (liq === '活跃') score += 1;
+  if (liq === '较差') score -= 1;
+  if (hasBuffBuy && buffBuy > price * 0.95) score += 1; // 求购价接近市价 → 需求好
+  if (hasBuff && ecoVsBuff > 3) score -= 1; // ECO价比BUFF贵 → 可能买贵了
+  // 供需加分
+  if (supplyDemand === '求购旺盛') score += 1;
+  if (buffBuyNum > buffSellNum && buffSellNum > 0) score += 1; // 求购量 > 在售量
+  // 悠悠数据加分
+  var yyypSell = item.yyyp_sell || 0;
+  var yyypSellNum = item.yyyp_sell_num || 0;
+  if (yyypSell > 0 && price > 0 && yyypSell > price * 1.02) score += 1; // 悠悠溢价→看好
+  if (yyypSellNum > 0 && yyypSellNum < 100) score += 1; // 悠悠在售少→稀缺
+  if (yyypSellNum > 0 && yyypSellNum > 500) score -= 0.5; // 在售太多→供过于求
+
+  // ── 生成信号 ──
+  if (score >= 3) {
+    sellSignal = '强势';
+    var parts = [];
+    if (trend === 'strong_up') parts.push('量价齐升');
+    if (liq === '活跃') parts.push('流动性好');
+    if (hasBuffBuy) parts.push('求购强劲');
+    sellReason = parts.length > 0 ? '✅ ' + parts.join('，') + '，可继续持有' : '✅ 综合表现强势，继续持有';
+  } else if (score >= 1) {
+    sellSignal = '持有';
+    var hints = [];
+    if (trend === 'up') hints.push('趋势偏暖');
+    if (liq === '活跃') hints.push('交投活跃');
+    if (pnlPct > 10) hints.push('浮盈可观');
+    if (isRec) hints.push('推荐品类');
+    sellReason = hints.length > 0 ? '📊 ' + hints.join('，') + '，暂时持有观察' : '📊 基本面正常，继续持有';
+  } else if (score >= -1) {
+    sellSignal = '观望';
+    if (pnlPct < -5 && r7 < -3) sellReason = '⏳ 短期承压，但观察是否有资金回补，暂不建议割肉';
+    else if (r7 > 0 && pnlPct < 0) sellReason = '⏳ 价格在回暖，浮亏有望收窄，再观察几天';
+    else if (r7 < 0 && liq === '活跃') sellReason = '⏳ 下跌但流动性尚可，可能有短线机会';
+    else sellReason = '⏳ 方向不明，等待信号明确再做决定';
+  } else {
+    sellSignal = '谨慎';
+    var warns = [];
+    if (pnlPct < -10) warns.push('浮亏较深');
+    if (trend === 'weak') warns.push('趋势偏弱');
+    if (liq === '较差') warns.push('流动性差');
+    if (r7 < -8) warns.push('加速下跌');
+    sellReason = '⚠️ ' + (warns.length > 0 ? warns.join('，') + '，' : '') + '建议分批减仓降低风险，保留现金等机会';
+  }
+
+  // ── 目标价（基于 BUFF 数据校准）──
+  var basePrice = hasBuff ? buffSell : price;
+  var targetLow, targetHigh;
+  if (trend === 'weak') {
+    targetLow = (basePrice * 0.92).toFixed(0);
+    targetHigh = (basePrice * 1.03).toFixed(0);
+  } else if (trend === 'strong_up') {
+    targetLow = (basePrice * 1.03).toFixed(0);
+    targetHigh = (basePrice * 1.15).toFixed(0);
+  } else {
+    targetLow = (basePrice * 0.97).toFixed(0);
+    targetHigh = (basePrice * 1.08).toFixed(0);
+  }
+
+  var histLen = (item.price_history || []).length;
+  var confidence = histLen >= 7 ? '高' : histLen >= 2 ? '中' : '低';
+  var confColor = histLen >= 7 ? 'var(--fall)' : histLen >= 2 ? 'var(--amber)' : 'var(--text3)';
+
+  var badgeCls = 'ac-badge';
+  if (sellSignal === '强势') badgeCls += ' buy';
+  else if (sellSignal === '谨慎') badgeCls += ' sell';
+  else if (sellSignal === '观望') badgeCls += ' stop';
+  else badgeCls += ' wait';
+
+  // ── 价格来源 & 备选平台 ──
+  var sourceLabel = hasBuff ? (item.buff_source || 'BUFF') : '';
+  var yyypSell = item.yyyp_sell || 0;
+  var yyypSellNum = item.yyyp_sell_num || 0;
+  // 检查 platforms 中有没有其他有价格的平台做备选
+  var platforms = item.platforms || {};
+  var altPlatforms = '';
+  if (!hasBuff && Object.keys(platforms).length > 0) {
+    var alts = [];
+    Object.keys(platforms).forEach(function(p) {
+      var pd = platforms[p];
+      if (pd && pd.sell > 0) alts.push(p + '¥' + pd.sell.toFixed(2));
+    });
+    if (alts.length > 0) altPlatforms = '<br><span style="font-size:10px;color:var(--amber)">备选: ' + alts.join(' / ') + '</span>';
+  }
+  var buffTag = hasBuff ? '<span style="font-size:10px;color:' + buffPremiumColor + ';margin-left:6px">' + buffPremium + '</span>' : '';
+  var liqTag = hasBuff ? '<span style="font-size:10px;color:' + liqColor + ';margin-left:6px">流动性' + liq + '</span>' : '';
+
+  // 折线图
+  var ph = item.price_history || []
+  var ecoPrices = ph.map(function(p){ return p.price; }).filter(Boolean)
+  var chartHtml = ''
+  if (ph.length > 0) {
+    var chartW = 200, chartH = 36
+    // ECO 折线
+    var chartEco = window.sparkline(ecoPrices, 'var(--blue)', chartW, chartH)
+    // BUFF 折线（从 buff_history 取）
+    // buff_history.json 结构: {date: {item_name: {buff_sell, ...}}}
+    var mh = item.mh || item.n || ''
+    var bh = window._buffHistory || {}
+    var buffPrices = []
+    if (bh && mh) {
+      var dates = Object.keys(bh).sort()
+      dates.forEach(function(d) {
+        if (bh[d] && bh[d][mh] && bh[d][mh].buff_sell) {
+          buffPrices.push(bh[d][mh].buff_sell)
+        }
+      })
+    }
+    var chartBuff = window.sparkline(buffPrices, 'var(--rise)', chartW, chartH)
+    if (chartEco || chartBuff) {
+      chartHtml = '<div class="ra-chart" style="padding:6px 0 2px">' +
+        (chartEco ? '<div style="display:flex;gap:6px;align-items:center;font-size:9px;color:var(--blue)">' + chartEco + '<span>ECO</span></div>' : '') +
+        (chartBuff ? '<div style="display:flex;gap:6px;align-items:center;font-size:9px;color:var(--rise);margin-top:2px">' + chartBuff + '<span>BUFF</span></div>' : '') +
+        '</div>'
+    }
+  }
+
+  return '<div class="row-analysis-inner">' +
+    '<div><div class="ra-label">趋势</div><div class="ra-val" style="color:' + trendColor + ';font-size:12px">' + trendLabel + '</div></div>' +
+    '<div><div class="ra-label">信号</div><div class="ra-val"><span class="' + badgeCls + '" style="font-size:11px">' + sellSignal + '</span></div></div>' +
+    '<div><div class="ra-label">涨跌率</div><div class="ra-val" style="font-size:12px"><span class="' + (r1 >= 0 ? 'clr-rise' : 'clr-fall') + '">' + (r1 >= 0 ? '+' : '') + r1.toFixed(1) + '%</span> · <span class="' + (r7 >= 0 ? 'clr-rise' : 'clr-fall') + '">' + (r7 >= 0 ? '+' : '') + r7.toFixed(1) + '%</span> · <span class="' + (r30 >= 0 ? 'clr-rise' : 'clr-fall') + '">' + (r30 >= 0 ? '+' : '') + r30.toFixed(1) + '%</span></div></div>' +
+    '<div><div class="ra-label">市场</div><div class="ra-val" style="font-size:12px"><span style="color:' + (hasBuff ? 'var(--fall)' : 'var(--text3)') + '">' + sourceLabel + '</span> 在售¥' + (hasBuff ? buffSell.toFixed(2) + '<sup style="font-size:8px;color:var(--rise);margin-left:1px">实时</sup>' : '--') + ' · 求购¥' + (hasBuffBuy ? buffBuy.toFixed(2) : '--') + buffTag + liqTag + '<br><span style="font-size:10px;color:var(--text3)">' + (hasBuff ? '🟢' + buffBuyNum + '件求购 · 🔴' + buffSellNum + '件在售' + (supplyDemand ? ' · ' + supplyDemand : '') : '暂无BUFF数据') + '</span>' + (yyypSell > 0 ? '<br><span style="font-size:10px;color:var(--amber)">悠悠 ¥' + yyypSell.toFixed(2) + '<sup style="font-size:8px;color:var(--rise);margin-left:1px">实时</sup>' + (yyypSellNum > 0 ? ' · ' + yyypSellNum + '件在售' : '') + '</span>' : '') + altPlatforms + '</div></div>' +
+    chartHtml +
+    '<div><div class="ra-label">盈亏 · 目标区间</div><div class="ra-val" style="font-size:12px"><span class="' + (pnl >= 0 ? 'clr-rise' : 'clr-fall') + '">' + (pnl >= 0 ? '+' : '') + '¥' + pnl.toFixed(2) + '</span> · ¥' + targetLow + '~¥' + targetHigh + ' <span style="font-size:10px;color:' + confColor + '">' + confidence + '置信</span></div></div>' +
+    (sellReason ? '<div class="ra-reason' + (sellSignal === '强势' ? ' buy' : (sellSignal === '谨慎' ? ' sell' : '')) + '">' + sellReason + '</div>' : '') +
+    '</div>';
+}
+
+// Setup sell buttons via event delegation on tbody
+var tbody = document.getElementById('tbody');
+if (tbody) {
+  tbody.addEventListener('click', function(e) {
+    // Sell button
+    var btn = e.target.closest('.sell-btn');
+    if (btn) {
+      var itemName = btn.dataset.name;
+      var itemWear = btn.dataset.wear || '';
+      // Find item by name + wear (stable lookup, not by index)
+      var item = null;
+    for (var i = 0; i < H.length; i++) {
+      if (H[i].n === itemName && (H[i].w || '') === itemWear) {
+        item = H[i];
+        break;
+      }
+    }
+    if (!item) return;
+    // Show sell confirm modal with P&L stats
+    var sOverlay = document.getElementById('sellConfirmOverlay');
+    if (!sOverlay) return;
+    document.getElementById('sellConfirmItem').textContent = item.n;
+    document.getElementById('sellConfirmWear').textContent = item.w ? wearCN(item.w) : '--';
+    document.getElementById('sellConfirmCost').textContent = '¥' + item.c.toFixed(2);
+    document.getElementById('sellConfirmEco').textContent = '¥' + item.p.toFixed(2);
+    document.getElementById('sellConfirmMulti').textContent = item.buff_sell > 0 ? '¥' + item.buff_sell.toFixed(2) : '--';
+    var pnl = item.pnl || 0;
+    var pnlPct = item.pnlPct || 0;
+    var pnlCls = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
+    document.getElementById('sellConfirmPnl').style.borderLeftColor = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
+    document.getElementById('sellConfirmPnlVal').textContent = (pnl >= 0 ? '+' : '') + '¥' + pnl.toFixed(2);
+    document.getElementById('sellConfirmPnlVal').style.color = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
+    document.getElementById('sellConfirmPnlPct').textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+    document.getElementById('sellConfirmPnlPct').style.color = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
+    sOverlay._sellItem = item;
+    sOverlay.classList.add('show');
+    } // end if(btn)
+  });
+}
+
+// Sell confirm modal handlers
+(function(){
+  var overlay = document.getElementById('sellConfirmOverlay');
+  if (!overlay) return;
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+  document.getElementById('sellConfirmCancel').onclick = function() { overlay.classList.remove('show'); };
+  document.getElementById('sellConfirmOk').onclick = function() {
+    var item = overlay._sellItem;
+    if (!item) return;
+    // Record sold item with P&L
+    var sold = loadSoldItems();
+    sold.push({
+      n: item.n, w: item.w, c: item.c, p: item.p,
+      pnl: item.pnl || 0, pnlPct: item.pnlPct || 0,
+      date: new Date().toLocaleString('zh-CN')
+    });
+    saveSoldItems(sold);
+    if (item._custom) {
+      var customs = loadCustomHoldings();
+      customs = customs.filter(function(c) { return c.n !== item.n || c.w !== item.w; });
+      saveCustomHoldings(customs);
+    } else {
+      var hidden = loadHiddenItems();
+      hidden.push({ n: item.n, w: item.w });
+      saveHiddenItems(hidden);
+    }
+    overlay.classList.remove('show');
+    loadAll();
+  };
+})();
+
+// Override loadAll to merge customs + filter hidden
+var _origInitDashboard = initDashboard;
+initDashboard = function() {
+  mergeCustomHoldings();
+  filterHidden();
+  _origInitDashboard();
+  invalidateCache();
+  render();
+  renderScan();
+};
+
+// ── 暴露接口到全局 ──
+window.H = H;
+window.recData = recData;
+
+})();
+</script>
+<!-- ════════ 推荐卡片放大 Modal ════════ -->
+  <div class="rec-modal-overlay" id="recModalOverlay" onclick="closeRecModal(event)">
+    <div class="rec-modal" onclick="event.stopPropagation()">
+      <div class="rec-modal-head">
+        <span class="rec-modal-title" id="recModalTitle"></span>
+        <button class="rec-modal-close" onclick="closeRecModal()">✕</button>
+      </div>
+      <div class="rec-modal-body" id="recModalBody"></div>
+    </div>
+  </div>
+
+<script id="recModalScript">
+(function(){
+  window.showRecModal = function(item){
+    var title = document.getElementById('recModalTitle');
+    var body  = document.getElementById('recModalBody');
+    if(!item) return;
+    title.textContent = item.name || '--';
+
+    var priceHtml = '';
+    if(item.price > 0) priceHtml += '<span style="color:var(--text)">BUFF ¥' + item.price.toFixed(0) + '</span>';
+    if(item.eco_price > 0) priceHtml += '  <span style="font-size:12px;color:var(--text3)">ECO ¥' + item.eco_price.toFixed(0) + '</span>';
+    body.innerHTML = '<div class="rec-modal-price">' + (priceHtml||'--') + '</div>';
+
+    // 供需数据网格
+    var cells = [];
+    var add = function(label, value, color){
+      if(value === undefined || value === 0) return;
+      cells.push('<div class="rec-modal-cell"><div class="rec-modal-cell-label">' + label + '</div><div class="rec-modal-cell-value" style="color:' + (color||'var(--text)') + '">' + value + '</div></div>');
+    };
+    var sourceLabel = item.buff_source || 'BUFF';
+    var sourceColor = sourceLabel === 'BUFF' ? 'var(--text)' : 'var(--amber)';
+    add(sourceLabel + ' 在售', item.buff_sell > 0 ? '¥' + item.buff_sell.toFixed(2) + '<sup style="font-size:8px;color:var(--rise);margin-left:2px">实时</sup>' + (item.buff_sell_num > 0 ? ' · ' + item.buff_sell_num + '件' : '') : '--', sourceColor);
+    add('悠悠 在售', item.yyyp_sell > 0 ? '¥' + item.yyyp_sell.toFixed(2) + '<sup style="font-size:8px;color:var(--rise);margin-left:2px">实时</sup>' + (item.yyyp_sell_num > 0 ? ' · ' + item.yyyp_sell_num + '件' : '') : '--', 'var(--amber)');
+    add('ECO 在售', item.eco_price > 0 ? '¥' + item.eco_price.toFixed(2) + (item.eco_selling > 0 ? ' · ' + item.eco_selling + '件' : '') : '--', 'var(--text2)');
+    if(cells.length) body.innerHTML += '<div class="rec-modal-grid">' + cells.join('') + '</div>';
+
+    // 多平台数据（SteamDT 采集的其他平台）
+    var platforms = item.platforms;
+    if (platforms && typeof platforms === 'object') {
+      var platNames = Object.keys(platforms).filter(function(p) { return p !== (item.buff_source || 'BUFF'); });
+      if (platNames.length > 0) {
+        var platHtml = '<div style="margin-top:8px;font-size:11px;color:var(--text3)">其他平台:</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin-top:4px">';
+        platNames.forEach(function(p) {
+          var pd = platforms[p];
+          if (!pd) return;
+          platHtml += '<div style="background:var(--surface2);border-radius:6px;padding:6px 8px;font-size:10px">' +
+            '<div style="font-weight:600;color:var(--blue);margin-bottom:2px">' + p + '</div>' +
+            (pd.sell > 0 ? '售¥' + pd.sell.toFixed(2) : '') +
+            (pd.buy > 0 ? ' 求¥' + pd.buy.toFixed(2) : '') +
+            (pd.sell_num > 0 ? '<br>🟢' + pd.sell_num + '件' : '') +
+            (pd.buy_num > 0 ? ' 🔴' + pd.buy_num + '件' : '') +
+            '</div>';
+        });
+        body.innerHTML += platHtml + '</div>';
+      }
+    }
+
+    // 价格趋势
+    var rates = [];
+    [1,7,30].forEach(function(d){
+      var k='rate_' + d, v=item[k];
+      if(v!==undefined && v!==0){
+        var clr = v>=0 ? 'var(--rise)' : 'var(--fall)';
+        rates.push('<span style="color:' + clr + '">' + d + '日 ' + (v>=0?'+':'') + v.toFixed(1) + '%</span>');
+      }
+    });
+    if(rates.length) body.innerHTML += '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">' + rates.join(' · ') + '</div>';
+
+    // 信号通道与评分
+    var channel = item.tag || 'eco';
+    var chLabel = CHANNEL_LABELS[channel] || channel;
+    var ecoScore = typeof item.eco_score === 'number' ? item.eco_score.toFixed(1) : '-';
+    var buffScore = typeof item.buff_score === 'number' ? item.buff_score.toFixed(1) : '-';
+    var totalScore = typeof item.score === 'number' ? item.score.toFixed(1) : '';
+    var chExtra = channel === 'buff' ? ' buff-mode' : '';
+    body.innerHTML += '<div style="margin-bottom:10px"><span class="r-channel' + chExtra + '" style="margin-bottom:0">' + chLabel + ' · ' + totalScore + '分</span><span style="font-size:10px;color:var(--text3);margin-left:8px">ECO ' + ecoScore + ' / BUFF ' + buffScore + '</span></div>';
+    // 推荐理由 - split into readable sections
+    var raw = item._reason || '';
+    var parts = raw.split('|');
+    if (parts.length >= 3) {
+      var scores = parts[1] || '';
+      var dataPart = parts[2] || '';
+      var advicePart = '';
+      // Find the 💡 advice section
+      for (var pi = 3; pi < parts.length; pi++) {
+        if (parts[pi].indexOf('💡') >= 0) {
+          advicePart = parts[pi].substring(parts[pi].indexOf('💡'));
+          break;
+        }
+      }
+      // Build modal content
+      var modalHtml = '';
+      // Score line
+      modalHtml += '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">📊 <span style="font-weight:600">' + scores.trim() + '</span></div>';
+      // Data reason line
+      if (dataPart.trim()) {
+        modalHtml += '<div style="font-size:12px;color:var(--text);background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;line-height:1.6">' + dataPart.trim() + '</div>';
+      }
+      // Advice line
+      if (advicePart) {
+        modalHtml += '<div style="font-size:12px;color:var(--text);background:rgba(52,211,153,.08);border-radius:8px;padding:10px 12px;margin-bottom:10px;border-left:3px solid var(--fall);line-height:1.6">' + advicePart.trim() + '</div>';
+      }
+      body.innerHTML += modalHtml;
+    } else {
+      var reason = raw.indexOf('| ') >= 0 ? raw.substring(raw.indexOf('| ') + 2) : raw;
+      if(reason) body.innerHTML += '<div class="rec-modal-reason">' + reason + '</div>';
+    }
+
+    // 价格趋势折线图（YYYP优先，无YYYP则用BUFF多平台）
+    var modalEco = item.eco_history || [];
+    var modalYyyp = item.yyyp_history || [];
+    var modalMulti = item.multi_history || [];
+    var modalAlt = modalYyyp.length > 0 ? modalYyyp : modalMulti;
+    var altLabel = modalYyyp.length > 0 ? '悠悠价格' : 'BUFF价格';
+    var altColor = modalYyyp.length > 0 ? 'var(--amber)' : 'var(--rise)';
+    if (modalEco.length >= 2 || modalAlt.length >= 2) {
+      var ecoSvg = window.sparkline(modalEco, 'var(--blue)', 240, 40);
+      var altSvg = window.sparkline(modalAlt, altColor, 240, 40);
+      body.innerHTML += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-top:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:6px">价格走势</div><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">' +
+        (ecoSvg ? '<div><div style="font-size:9px;color:var(--blue);margin-bottom:2px">ECO价格</div>' + ecoSvg + '</div>' : '') +
+        (altSvg ? '<div><div style="font-size:9px;color:' + altColor + ';margin-bottom:2px">' + altLabel + '</div>' + altSvg + '</div>' : '') +
+        '</div></div>';
+    }
+
+    // 图片
+    if(item.img){
+      body.innerHTML += '<div style="margin-top:14px;text-align:center"><img src="' + item.img + '" style="max-width:100%;border-radius:8px;border:1px solid var(--border)"></div>';
+    }
+
+    document.getElementById('recModalOverlay').classList.add('show');
+  };
+
+  window.closeRecModal = function(evt){
+    if(evt && evt.target !== document.getElementById('recModalOverlay')) return;
+    document.getElementById('recModalOverlay').classList.remove('show');
+  };
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape') window.closeRecModal();
+  });
+})(); // end recModal IIFE
+
+// ── 自动刷新 ──
+(function(){
+  var _lastUpdate = Date.now();
+  setInterval(function(){
+    var holdNames = (window.H || []).map(function(h){ return h.mh || ''; }).filter(Boolean)
+    if (typeof fetchLivePrices === 'function') fetchLivePrices((window.recData && window.recData.all) || [], holdNames)
+    fetch('market.json?v=' + Date.now(), {cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var ut = data.update_time || data.alerts_updated || '';
+        if (!ut) return;
+        var t = new Date(ut).getTime();
+        if (t > _lastUpdate) { _lastUpdate = t; showToast('📊 数据已更新', 3000); loadAll(); }
+      })
+      .catch(function(){});
+  }, 60000);
+})();
+</script>
+
+<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)closeAuth()">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:340px;max-width:90vw">
+    <h3 style="font-size:16px;margin-bottom:16px;color:var(--text)">专属账号登录</h3>
+    <input id="authEmail" placeholder="账号" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);margin-bottom:10px;font-size:14px">
+    <input id="authPass" type="password" placeholder="密码" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);margin-bottom:6px;font-size:14px">
+    <div id="authMsg" style="display:none;color:var(--rise);font-size:11px;margin-bottom:10px"></div>
+    <button onclick="localSignIn()" style="width:100%;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">登录</button>
+  </div>
+</div>
+
+<script>
+// ── 简易本地登录（替换 Supabase）──
+var AUTH_ACCOUNTS = {'admin':'11111111','user1':'cs2pass1'}; // 账号:密码
+function localSignIn() {
+  var a=document.getElementById('authEmail').value.trim(),p=document.getElementById('authPass').value.trim();
+  if (AUTH_ACCOUNTS[a] === p) {
+    localStorage.setItem('cs2_user', JSON.stringify({account:a,time:Date.now()}));
+    showLoggedIn(a);
+    location.reload(); // 加载持仓数据
+  } else { document.getElementById('authMsg').textContent='账号或密码错误'; document.getElementById('authMsg').style.display=''; }
+}
+function localSignOut() {
+  localStorage.removeItem('cs2_user');
+  location.reload(); // 清空持仓数据
+  document.getElementById('userSection').style.display='none';
+  document.getElementById('loginBtn').style.display='';
+  document.getElementById('loginGate').style.display='none';
+}
+function showLoggedIn(account){
+  document.getElementById('loginBtn').style.display='none';
+  document.getElementById('userSection').style.display='';
+  document.getElementById('userEmail').textContent=account||'已登录';
+  document.getElementById('authModal').style.display='none';
+  document.getElementById('loginGate').style.display='';
+  var btn = document.getElementById('addHoldingBtn');
+  if(btn) btn.style.display='';
+  var ibtn = document.getElementById('importSteamBtn');
+  if(ibtn) ibtn.style.display='';
+  loadMyWatchlist();
+}
+(function(){
+  var u = localStorage.getItem('cs2_user');
+  if (u) {
+    try { var d=JSON.parse(u); if (Date.now()-d.time < 86400000) {
+      showLoggedIn(d.account);
+    }} catch(e){}
+  }
+})();
+
+// ── 自选（localStorage）──
+function loadMyWatchlist(){
+  var wl = localStorage.getItem('cs2_watchlist');
+  var items = wl ? JSON.parse(wl) : [];
+  document.getElementById('wlCount').textContent = items.length;
+  var el = document.getElementById('watchlistView');
+  if(!items.length){ el.innerHTML='<span style="color:var(--text3);font-size:12px">暂无自选</span>'; return; }
+  el.innerHTML = items.map(function(it,i){
+    return '<span style="display:inline-block;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;margin:3px;font-size:11px;cursor:pointer" title="点击移除" onclick="removeWatchlist('+i+')">⭐ '+esc(it.name||it.hash_name)+'</span>';
+  }).join('');
+}
+function addToWatchlist(name, hashName){
+  var wl = localStorage.getItem('cs2_watchlist');
+  var items = wl ? JSON.parse(wl) : [];
+  if(items.some(function(it){return it.hash_name===hashName;})) return;
+  items.push({name: name||hashName, hash_name: hashName});
+  localStorage.setItem('cs2_watchlist', JSON.stringify(items));
+  loadMyWatchlist();
+}
+function removeWatchlist(idx){
+  var wl = localStorage.getItem('cs2_watchlist');
+  var items = wl ? JSON.parse(wl) : [];
+  items.splice(idx,1);
+  localStorage.setItem('cs2_watchlist', JSON.stringify(items));
+  loadMyWatchlist();
+}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── 个人持仓（localStorage 按账号隔离）──
+function getMyKey(){ var u=localStorage.getItem('cs2_user'); if(!u)return''; try{return JSON.parse(u).account||'';}catch(e){return'';} }
+function loadMyHoldings(){
+  var key = getMyKey(); if(!key) return [];
+  var raw = localStorage.getItem('cs2_holdings_'+key);
+  return raw ? JSON.parse(raw) : [];
+}
+function saveMyHoldings(items){
+  var key = getMyKey(); if(!key) return;
+  localStorage.setItem('cs2_holdings_'+key, JSON.stringify(items));
+}
+function addMyHolding(name, market_hash, cost, qty, wear, category){
+  var items = loadMyHoldings();
+  var exist = items.find(function(it){ return it.market_hash === market_hash; });
+  if(exist){ exist.qty += qty; exist.cost = cost; }
+  else { items.push({id: Date.now(), name: name, market_hash: market_hash, cost: cost, qty: qty||1, wear: wear||'', category: category||''}); }
+  saveMyHoldings(items);
+  location.reload();
+}
+function removeMyHolding(gid){
+  var items = loadMyHoldings();
+  items = items.filter(function(it){ return it.id !== gid; });
+  saveMyHoldings(items);
+  location.reload();
+}
+function openAddHolding(){ document.getElementById('addHoldingForm').style.display=''; }
+function closeHoldingForm(){ document.getElementById('addHoldingForm').style.display='none'; }
+
+// ── 导入 Steam 库存（手动粘贴 JSON）──
+function importSteamInventory(){
+  document.getElementById('steamImportModal').style.display='flex';
+  // 自动检测剪贴板 — 用户从 Steam 页面复制回来就直接读
+  setTimeout(checkClipboard, 300);
+}
+function closeSteamImport(){ document.getElementById('steamImportModal').style.display='none'; }
+
+// ── 自动检测剪贴板中的 Steam 库存 JSON ──
+function checkClipboard(){
+  var ta = document.getElementById('steamJson');
+  if(!ta || ta.value.trim()) return; // 已经有内容就不管
+  if(!navigator.clipboard || !navigator.clipboard.readText){
+    ta.placeholder = '浏览器不支持读取剪贴板 — 请手动 Ctrl+V 粘贴';
+    return;
+  }
+  // 请求剪贴板读取权限（需要用户手势触发，比如按钮点击）
+  navigator.clipboard.readText().then(function(txt){
+    if(txt.trim().length === 0){
+      ta.placeholder = '剪贴板为空 — 请先去 Steam 页面复制 JSON';
+      return;
+    }
+    txt = txt.trim();
+    if(txt && txt[0]=='{' && txt.includes('"success":')){
+      try {
+        var d = JSON.parse(txt);
+        if(d.success && d.assets){
+          if(d.assets.length > 0){
+            ta.value = txt;
+            ta.style.borderColor = 'var(--fall)';
+            setTimeout(function() {
+              if(confirm('✓ 检测到库存 JSON（'+d.assets.length+' 件物品）\n是否立即导入？')){
+                processSteamJson(d);
+              }
+            }, 200);
+          } else {
+            ta.placeholder = '✓ 剪贴板有库存JSON，但物品数为0（库存为空或未公开）';
+          }
+        } else if(d.rgInventory && typeof d.rgInventory === 'object'){
+          var cnt = 0;
+          Object.keys(d.rgInventory).forEach(function(k){ cnt += parseInt(d.rgInventory[k].amount) || 1; });
+          if(cnt > 0){
+            ta.value = txt;
+            ta.style.borderColor = 'var(--fall)';
+            setTimeout(function() {
+              if(confirm('✓ 检测到库存 JSON（'+cnt+' 件物品）\n是否立即导入？')){
+                processSteamJson(d);
+              }
+            }, 200);
+          } else {
+            ta.placeholder = '有 rgInventory 但物品数为0';
+          }
+        } else if(d.success && !d.assets) {
+          ta.placeholder = '剪贴板内容不是库存（缺少 assets 字段）';
+        } else {
+          ta.placeholder = '剪贴板数据不是库存（success=false）';
+        }
+      } catch(e){
+        ta.placeholder = '剪贴板有文本但不是合法JSON';
+      }
+    } else if(txt && txt.length > 50) {
+      ta.placeholder = '剪贴板内容不是库存JSON — 确认页面是 /730/2 结尾';
+    } else if(txt.length > 0) {
+      ta.placeholder = '剪贴板内容太短 — 确认是否复制了完整 JSON';
+    }
+  }).catch(function(err){
+    ta.placeholder = '⚠ 无法读取剪贴板 — 请粘贴或检查浏览器权限设置';
+    // 部分浏览器首次需要手动粘贴一次以授权
+  });
+}
+function switchImportTab(tab) {
+  document.getElementById('importTabPaste').style.display = (tab==='paste' ? '' : 'none');
+  document.getElementById('importTabEasy').style.display = (tab==='easy' ? '' : 'none');
+  ['tabPaste','tabEasy'].forEach(function(id){
+    var b=document.getElementById(id);
+    if(b) b.style.background = (id==='tab'+tab.charAt(0).toUpperCase()+tab.slice(1) ? 'var(--blue)' : 'var(--surface2)');
+  });
+}
+function doSteamImport(){
+  var raw = document.getElementById('steamJson').value.trim();
+  if(!raw){ alert('请先粘贴JSON'); return; }
+  try { var data=JSON.parse(raw); processSteamJson(data); } catch(e){ alert('JSON解析失败: '+e.message); }
+}
+function processSteamJson(data){
+  var nm = window._cnNameMap || {};  // 中文名映射
+  var items = loadMyHoldings();
+  var imported = 0;
+
+  // 用 Map 加速去重
+  var itemMap = {};
+  items.forEach(function(it){ itemMap[it.market_hash] = it; });
+
+  function addItem(mhn, qty, wearCode){
+    if(!mhn) return;
+    var chName = nm[mhn] || mhn;  // 优先中文名
+    chName = chName.replace(/[\u2605\u2122\u00ae]/g,'').trim();
+    var exist = itemMap[mhn];
+    if(exist){
+      exist.qty += qty || 1;
+    } else {
+      var newItem = {
+        id: Date.now() + '_' + (Math.random()*1e6|0),
+        name: chName,
+        market_hash: mhn,
+        cost: 0,
+        qty: qty || 1,
+        wear: wearCode || '',
+        category: ''
+      };
+      itemMap[mhn] = newItem;
+      items.push(newItem);
+    }
+    imported += (qty || 1);
+  }
+
+  if(data.assets && Array.isArray(data.assets)){
+    // 格式1: assets 数组 (直接 API)
+    var classes = {};
+    if(data.descriptions) data.descriptions.forEach(function(d){
+      classes[d.classid+'_'+d.instanceid] = d.market_hash_name;
+    });
+    data.assets.forEach(function(a){
+      addItem(classes[a.classid+'_'+a.instanceid] || a.market_hash_name);
+    });
+  } else if(data.items && Array.isArray(data.items)){
+    // 格式2: items 数组
+    data.items.forEach(function(it){
+      addItem(it.market_hash || it.hash);
+    });
+  } else if(data.rgInventory && typeof data.rgInventory === 'object'){
+    // 格式3: rgInventory 对象 (Steam 网页版库存)
+    var classes = {};
+    if(data.rgDescriptions) Object.keys(data.rgDescriptions).forEach(function(k){
+      classes[k] = data.rgDescriptions[k].market_hash_name;
+    });
+    Object.keys(data.rgInventory).forEach(function(key){
+      var a = data.rgInventory[key];
+      addItem(classes[a.classid+'_'+a.instanceid], parseInt(a.amount) || 1);
+    });
+  } else {
+    var hint = data ? (data.assets ? 'assets 不是数组' : '缺少 assets 字段') : '数据为空';
+    var preview = data ? JSON.stringify(data).slice(0,200) : 'null';
+    alert('✗ 数据格式不对 — ' + hint + '\n\n数据预览：' + preview + '\n\n请确认：\n① 库存已设为公开\n② 复制的是 steamcommunity.com/inventory/.../730/2 的纯文本页面\n③ 页面开头是 {"success":true,...}');
+    return;
+  }
+
+  saveMyHoldings(items);
+  closeSteamImport();
+  alert('✓ 导入 '+imported+' 件');
+  location.reload();
+}
+async function tryFetchSteam(){
+  var sid = document.getElementById('steamUrl').value.trim();
+  if(!sid){ alert('请输入 Steam ID64'); return; }
+  var status = document.getElementById('steamFetchStatus');
+  status.textContent = '获取中...';
+  // ── 代理优先级：云端(Vercel) > 本地 > 直连 > CORS公共代理 ──
+  var VERCEL_PROXY_URL = '';
+  var steamPath = '/inventory/'+encodeURIComponent(sid)+'/730/2?l=schinese&count=5000';
+  var proxies = [];
+  if (VERCEL_PROXY_URL) {
+    proxies.push([VERCEL_PROXY_URL + '/api/steam?sid=' + encodeURIComponent(sid), '云端代理']);
+  }
+  proxies.push(
+    ['http://localhost:8765' + steamPath, '本地代理'],
+    ['https://corsproxy.io/?' + encodeURIComponent('https://steamcommunity.com' + steamPath), 'corsproxy.io'],
+    ['https://api.allorigins.win/raw?url=' + encodeURIComponent('https://steamcommunity.com' + steamPath), 'allorigins.win']
+  );
+  for(var pi=0; pi<proxies.length; pi++){
+    status.textContent = '获取中... (' + proxies[pi][1] + ')';
+    try {
+      var r = await fetch(proxies[pi][0], {signal: AbortSignal.timeout(15000)});
+      if(r.ok){
+        var data = await r.json();
+        document.getElementById('steamJsonUrl').value = JSON.stringify(data);
+        status.textContent = '✓ 成功！点下方"导入"';
+        return;
+      }
+      if(r.status === 403 || r.status === 401) { continue; }
+    } catch(e){}
+  }
+  status.textContent = '✗ 自动获取失败（CORS限制）— 切到"粘贴JSON"手动导入';
+}
+
+// ── 一键导入：输入个人资料链接，全自动 ──
+async function autoImportFromProfile(){
+  var link = document.getElementById('steamProfile').value.trim();
+  if(!link){ alert('请粘贴 Steam 个人资料链接'); return; }
+  var m = link.match(/profiles\/(\d+)|id\/([\w-]+)/);
+  if(!m){ alert('链接格式不对，需要包含 profiles/xxx 或 id/xxx'); return; }
+  var sid = m[1] || m[2];
+  var status = document.getElementById('easyStatus');
+  status.textContent = '⏳ 正在获取库存...';
+  
+  // ── 代理优先级：本地代理(需启动) > CORS公共代理 ──
+  var steamPath = '/inventory/'+encodeURIComponent(sid)+'/730/2?l=schinese&count=5000';
+  var proxies = [];
+  if (VERCEL_PROXY_URL) {
+    proxies.push([VERCEL_PROXY_URL + '/api/steam?sid=' + encodeURIComponent(sid), '云端代理']);
+  }
+  proxies.push(
+    ['http://localhost:8765' + steamPath, '本地代理'],
+    ['https://corsproxy.io/?' + encodeURIComponent('https://steamcommunity.com' + steamPath), 'corsproxy.io'],
+    ['https://api.allorigins.win/raw?url=' + encodeURIComponent('https://steamcommunity.com' + steamPath), 'allorigins.win']
+  );
+
+  for(var pi=0; pi<proxies.length; pi++){
+    var fetchUrl = proxies[pi][0];
+    var label = proxies[pi][1];
+    status.textContent = '⏳ 正在获取库存... (' + label + ')';
+    try {
+      var r = await fetch(fetchUrl, {signal: AbortSignal.timeout(15000)});
+      if(r.ok){
+        var data = await r.json();
+        if(data && data.assets){
+          status.textContent = '✓ 获取成功！ ' + data.assets.length + ' 件物品，已导入';
+          processSteamJson(data);
+          return;
+        }
+        if(!data.assets) { status.textContent = '✗ 库存为空或无权限访问'; return; }
+      }
+      // 403/401 = 无权限（代理无登录态或库存确实未公开），继续试下一个
+      if(r.status === 403 || r.status === 401) {
+        // Don't give up yet — try next proxy
+        continue;
+      }
+    } catch(e){}
+  }
+  status.textContent = '✗ 自动获取失败（CORS限制）— 请切到"粘贴JSON"手动导入';
+}
+
+// ═══ 检测书签跳转导入（window.name 跨域传递数据）═══
+(function(){
+  if(window.name && location.search.indexOf('auto_import=1') >= 0){
+    try {
+      var data = JSON.parse(window.name);
+      if(data && data.assets) {
+        window.name = ''; // 清空防止重复导入
+        processSteamJson(data);
+      }
+    } catch(e){}
+  }
+})();
+
+// ═══ 页面获得焦点时检测剪贴板（用户从 Steam 切回来）═══
+window.addEventListener('focus', function(){
+  checkClipboard();
+});
+</script>
+
+<!-- Steam 库存导入弹窗 -->
+<div id="steamImportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)closeSteamImport()">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:560px;max-width:95vw">
+    <h3 style="font-size:16px;margin-bottom:6px;color:var(--text)">🚀 导入 Steam 库存</h3>
+    <p style="font-size:10px;color:var(--text3);margin-bottom:12px">所有用户都可用，无需安装任何东西</p>
+    <div style="display:flex;gap:4px;margin-bottom:14px">
+      <button onclick="switchImportTab('paste')" id="tabPaste" class="export-btn" style="font-size:11px;background:var(--blue);color:#fff">📋 粘贴JSON · 推荐</button>
+      <button onclick="switchImportTab('easy')" id="tabEasy" class="export-btn" style="font-size:11px">✨ 一键导入</button>
+    </div>
+    <div id="importTabPaste">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--text2)">①</span>
+        <button onclick="window.open('https://steamcommunity.com/my/inventory/json/730/2','_blank')" style="padding:8px 16px;background:var(--fall);color:#000;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">📦 打开 Steam 库存 JSON 页面</button>
+        <span style="font-size:10px;color:var(--text3)">(需开 Steam++)</span>
+      </div>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:8px">
+        ② 新页面打开后：<b>Ctrl+A</b> 全选 → <b>Ctrl+C</b> 复制<br>
+        ③ <b>切回本页</b> → 自动检测 → 确认导入 ✅
+      </p>
+      <textarea id="steamJson" placeholder="去 Steam 库存页面复制后切回来，自动识别剪贴板..." style="width:100%;height:180px;padding:10px;background:var(--surface2);color:var(--text);border:2px solid var(--border);border-radius:8px;font-size:11px;resize:vertical;font-family:monospace"></textarea>
+      <div style="display:flex;gap:6px;justify-content:center;align-items:center;margin-top:6px">
+        <button onclick="checkClipboard()" style="padding:3px 10px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:10px">📋 检测剪贴板</button>
+        <span style="font-size:10px;color:var(--text3)">或切回本页自动检测</span>
+        <a href="bookmarklet.html" target="_blank" style="color:var(--amber);font-size:10px">🔖 书签备选</a>
+      </div>
+    </div>
+    <div id="importTabEasy" style="display:none">
+      <p style="font-size:11px;color:var(--amber);margin-bottom:10px">
+        ⚡ 输入 Steam 链接，自动抓取（海外自动 / 国内需运行本地代理）
+      </p>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:8px">
+        Steam 个人资料链接：<br>
+        <input id="steamProfile" placeholder="https://steamcommunity.com/profiles/7656119xxxxxxxxx" style="width:100%;padding:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;margin-top:6px">
+      </p>
+      <button onclick="autoImportFromProfile()" style="padding:8px 18px;background:var(--fall);color:#000;border:none;border-radius:8px;font-size:13px;cursor:pointer;margin-bottom:8px;font-weight:600">✨ 一键导入</button>
+      <span id="easyStatus" style="font-size:11px;color:var(--text3)"></span>
+      <p style="font-size:10px;color:var(--text3);margin-top:8px">失败会自动尝试多个代理。切到 <a href="#" onclick="event.preventDefault();switchImportTab('paste')" style="color:var(--blue)">📋 粘贴JSON</a> 最稳</p>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button onclick="doSteamImport()" style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">导入</button>
+      <button onclick="closeSteamImport()" style="padding:8px 20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">取消</button>
+    </div>
+  </div>
+</div>
+
+</html>
+
+
+
