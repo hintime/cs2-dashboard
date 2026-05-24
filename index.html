@@ -476,6 +476,7 @@ html { scroll-behavior: smooth; }
     <button class="nav-btn" onclick="scrollToPanel('changelogPanel')" id="changelogNavBtn" style="display:none">📋 变动</button>
     <span style="width:2px;height:24px;background:var(--text3);border-radius:1px;margin:0 10px;opacity:.35"></span>
     <span style="font-size:9px;color:var(--text3);font-weight:500;letter-spacing:1px;text-transform:uppercase;opacity:.5;align-self:center">子页</span>
+    <div id="subPagesArea" style="display:flex;gap:1px;flex-wrap:wrap">
     <a href="backtest.html" class="nav-btn sub-page" style="text-decoration:none">📊 回测</a>
     <a href="revenue.html" class="nav-btn sub-page" style="text-decoration:none">💰 收入</a>
     <a href="fluctuation.html" class="nav-btn sub-page" style="text-decoration:none">📡 异动</a>
@@ -484,7 +485,10 @@ html { scroll-behavior: smooth; }
     <a href="correlation.html" class="nav-btn sub-page" style="text-decoration:none">🔗 关联</a>
     <a href="report.html" class="nav-btn sub-page" style="text-decoration:none">📋 日报</a>
     <a href="status.html" class="nav-btn sub-page" style="text-decoration:none">📡 状态</a>
+    </div>
   </div>
+
+<div id="mainContent" style="display:none">
 
 <!-- ══════════ 全市场扫描 ══════════ -->
 <div class="panel" id="scanPanel">
@@ -651,6 +655,7 @@ html { scroll-behavior: smooth; }
     </div>
   </div>
 </div>
+</div><!-- end mainContent -->
 
 <!-- ════════ 添加饰品 Modal ════════ -->
 <div class="modal-overlay" id="addItemOverlay">
@@ -3459,6 +3464,8 @@ function localSignIn() {
 }
 function localSignOut() {
   localStorage.removeItem('cs2_user');
+  var mc = document.getElementById('mainContent');
+  if(mc) mc.style.display='none';
   location.reload(); // 清空持仓数据
   document.getElementById('userSection').style.display='none';
   document.getElementById('loginBtn').style.display='';
@@ -3470,6 +3477,8 @@ function showLoggedIn(account){
   document.getElementById('userEmail').textContent=account||'已登录';
   document.getElementById('authModal').style.display='none';
   document.getElementById('loginGate').style.display='';
+  var mc = document.getElementById('mainContent');
+  if(mc) mc.style.display='';
   var btn = document.getElementById('addHoldingBtn');
   if(btn) btn.style.display='';
   var ibtn = document.getElementById('importSteamBtn');
