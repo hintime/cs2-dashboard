@@ -895,7 +895,7 @@ def git_push_locally(files, message):
     # Hide git console window on Windows
     cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
     for f in files:
-        subprocess.run(['git', 'add', f], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+        subprocess.run(['git', 'add', '-f', f], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
     subprocess.run(['git', 'commit', '-m', message], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
     # Use manager credential (cached in Windows Credential Manager, no popup)
     subprocess.run(['git', '-c', 'credential.helper=manager', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
