@@ -1076,6 +1076,8 @@ async function loadAll() {
   }
   // holdings每次请求最新
   var holdingsR = await fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
+  // 未登录不显示任何持仓数据
+  if (!getMyKey()) { holdingsR = null; }
   // 如果已登录，合并个人持仓
   var myHoldings = loadMyHoldings();
   if (myHoldings.length > 0 && holdingsR && Array.isArray(holdingsR.items)) {
@@ -3474,15 +3476,7 @@ function showLoggedIn(account){
   if(ibtn) ibtn.style.display='';
   loadMyWatchlist();
 }
-(function(){
-  var u = localStorage.getItem('cs2_user');
-  if (u) {
-    try { var d=JSON.parse(u); if (Date.now()-d.time < 86400000) {
-      showLoggedIn(d.account);
-    }} catch(e){}
-  }
-})();
-
+// 不自动恢复登录，需要用户手动点击登录
 // ── 自选（localStorage）──
 function loadMyWatchlist(){
   var wl = localStorage.getItem('cs2_watchlist');
