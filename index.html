@@ -958,7 +958,6 @@ function getHoldingsGHPath() {
 }
 
 window.syncHoldingsToGitHub = async function() {
-  alert('🔄 syncHoldingsToGitHub called. key='+getMyKey()+' token='+(ghToken?'已设置':'未设置'));
   var el = document.getElementById('syncStatus');
   if (!el) { alert('界面未加载完成，请刷新后重试'); return; }
   var key = getMyKey();
