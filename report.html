@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS2 日报 · 投资分析</title>
+<style>
+:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#f87171;--fall:#34d399;--blue:#60a5fa;--amber:#fbbf24;--radius:14px;--shadow:0 2px 16px rgba(0,0,0,.25)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:28px 20px 40px}
+h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:11px;color:var(--text3);margin-top:3px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}
+.header .nav a:hover{text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.3px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--surface2);border-radius:8px;padding:12px 14px;text-align:center}
+.kpi-l{font-size:10px;color:var(--text3);margin-bottom:4px}
+.kpi-v{font-size:20px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
+.kpi-v.rise{color:var(--rise)}.kpi-v.fall{color:var(--fall)}
+.kpi-v.blue{color:var(--blue)}.kpi-v.amber{color:var(--amber)}
+.kpi-sub{font-size:10px;color:var(--text4,#6b7280);margin-top:2px}
+.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(55,65,81,.08);font-size:12px}
+.row:last-child{border-bottom:none}
+.row .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)}
+.row .v{min-width:50px;text-align:right;font-weight:600;font-family:'DM Mono',monospace}
+.bar-wrap{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(55,65,81,.06)}
+.bar-label{font-size:11px;color:var(--text2);min-width:36px}
+.bar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .8s ease}
+.bar-val{font-size:10px;color:var(--text3);min-width:60px;text-align:right}
+.empty{text-align:center;padding:24px;color:var(--text3);font-size:12px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>CS2 每日报告</h1>
+      <div class="sub" id="reportDate">加载中...</div>
+    </div>
+    <div class="nav">
+      <a href="/">← 返回看板</a>
+    </div>
+  </div>
+
+  <!-- ═══ 持仓概览 ═══ -->
+  <div class="card" id="portfolioSection">
+    <h2>📦 持仓概览</h2>
+    <div class="kpis" id="portfolioKpis"></div>
+
+    <h2 style="margin-top:4px">📈 涨跌排行</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-size:11px;color:var(--rise);margin-bottom:4px;font-weight:600">涨幅 TOP 5</div>
+        <div id="gainersList"></div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--fall);margin-bottom:4px;font-weight:600">跌幅 TOP 5</div>
+        <div id="losersList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 推荐对比 ═══ -->
+  <div class="card" id="recSection">
+    <h2>🎯 推荐策略对比</h2>
+    <div class="kpis" id="recKpis"></div>
+    <div id="recBarChart"></div>
+  </div>
+
+  <!-- ═══ 市场概览 ═══ -->
+  <div class="card" id="marketSection">
+    <h2>🌐 市场概览</h2>
+    <div class="kpis" id="marketKpis"></div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600">在售量 TOP 5</div>
+    <div id="topSellList"></div>
+  </div>
+
+  <!-- ═══ 本地跟踪数据 ═══ -->
+  <div class="card" id="trackingSection">
+    <h2>📈 推荐追踪（浏览器本地数据）</h2>
+    <div id="trackingContent" class="empty">加载本地数据...</div>
+  </div>
+</div>
+
+<script>
+async function loadReport() {
+  try {
+    const r = await fetch('daily_report.json?_t=' + Date.now());
+    if (!r.ok) throw Error('no data');
+    return await r.json();
+  } catch(e) {
+    document.getElementById('reportDate').textContent = '暂无日报数据，请先运行数据更新';
+    return null;
+  }
+}
+
+function renderReport(report) {
+  if (!report) return;
+  document.getElementById('reportDate').textContent = '📅 ' + report.date + ' · 更新于 ' + (report.generated || '').slice(0, 10);
+
+  // ── 持仓概览 ──
+  var p = report.portfolio;
+  if (p) {
+    var pc = p.pnl >= 0 ? 'rise' : 'fall';
+    document.getElementById('portfolioKpis').innerHTML =
+      '<div class="kpi"><div class="kpi-l">持仓数</div><div class="kpi-v blue">' + p.count + '</div></div>' +
+      '<div class="kpi"><div class="kpi-l">总成本</div><div class="kpi-v">¥' + (p.total_cost || 0).toFixed(0) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-l">总市值</div><div class="kpi-v">¥' + (p.total_value || 0).toFixed(0) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-l">总盈亏</div><div class="kpi-v ' + pc + '">' + (p.pnl >= 0 ? '+' : '') + '¥' + (p.pnl || 0).toFixed(0) + '</div><div class="kpi-sub">' + (p.pnl_pct >= 0 ? '+' : '') + p.pnl_pct.toFixed(1) + '%</div></div>';
+
+    var gl = document.getElementById('gainersList');
+    if (gl && p.top_gainers) {
+      gl.innerHTML = p.top_gainers.length ? p.top_gainers.map(function(g) {
+        return '<div class="row"><span class="n">' + esc(g.n) + '</span><span class="v" style="color:var(--rise)">+' + g.r7.toFixed(1) + '%</span></div>';
+      }).join('') : '<div class="empty">暂无数据</div>';
+    }
+    var ll = document.getElementById('losersList');
+    if (ll && p.top_losers) {
+      ll.innerHTML = p.top_losers.length ? p.top_losers.map(function(l) {
+        return '<div class="row"><span class="n">' + esc(l.n) + '</span><span class="v" style="color:var(--fall)">' + l.r7.toFixed(1) + '%</span></div>';
+      }).join('') : '<div class="empty">暂无数据</div>';
+    }
+  }
+
+  // ── 推荐对比 ──
+  var rec = report.recommendations;
+  if (rec) {
+    var ecoW = rec.eco.win_rate || 0, buffW = rec.buff.win_rate || 0;
+    document.getElementById('recKpis').innerHTML =
+      '<div class="kpi"><div class="kpi-l">ECO推荐</div><div class="kpi-v blue">' + rec.eco.count + '条</div><div class="kpi-sub">胜率' + ecoW + '% · 均收益' + (rec.eco.avg_ret >= 0 ? '+' : '') + rec.eco.avg_ret + '%</div></div>' +
+      '<div class="kpi"><div class="kpi-l">BUFF推荐</div><div class="kpi-v amber">' + rec.buff.count + '条</div><div class="kpi-sub">胜率' + buffW + '% · 均收益' + (rec.buff.avg_ret >= 0 ? '+' : '') + rec.buff.avg_ret + '%</div></div>' +
+      '<div class="kpi"><div class="kpi-l">差异</div><div class="kpi-v">' + (ecoW - buffW >= 0 ? '+' : '') + (ecoW - buffW).toFixed(1) + '%</div><div class="kpi-sub">ECO胜率 - BUFF胜率</div></div>';
+
+    // Bar chart
+    var chartEl = document.getElementById('recBarChart');
+    if (chartEl) {
+      var maxV = Math.max(ecoW, buffW, 1);
+      chartEl.innerHTML =
+        '<div class="bar-wrap"><span class="bar-label">ECO</span><div class="bar-track"><div class="bar-fill" style="width:' + (ecoW/maxV*80) + '%;background:var(--blue)"></div></div><span class="bar-val" style="color:var(--blue)">' + ecoW + '%</span></div>' +
+        '<div class="bar-wrap"><span class="bar-label">BUFF</span><div class="bar-track"><div class="bar-fill" style="width:' + (buffW/maxV*80) + '%;background:var(--amber)"></div></div><span class="bar-val" style="color:var(--amber)">' + buffW + '%</span></div>';
+    }
+  }
+
+  // ── 市场概览 ──
+  var m = report.market;
+  if (m) {
+    document.getElementById('marketKpis').innerHTML =
+      '<div class="kpi"><div class="kpi-l">全量饰品</div><div class="kpi-v blue">' + (m.total || 0).toLocaleString() + '</div></div>' +
+      '<div class="kpi"><div class="kpi-l">均价</div><div class="kpi-v">¥' + (m.avg_p || 0).toFixed(0) + '</div></div>';
+
+    var tsl = document.getElementById('topSellList');
+    if (tsl && m.top_sell) {
+      tsl.innerHTML = m.top_sell.map(function(s) {
+        return '<div class="row"><span class="n">' + esc(s.n) + '</span><span class="v" style="color:var(--text3)">' + s.s.toLocaleString() + '件</span></div>';
+      }).join('');
+    }
+  }
+
+  // ── 本地追踪数据 ──
+  var tc = document.getElementById('trackingContent');
+  if (tc) {
+    try {
+      var tracks = JSON.parse(localStorage.getItem('cs2_rec_tracks')) || [];
+      if (tracks.length === 0) { tc.innerHTML = '<div class="empty">还没有记录，访问主页面后自动记录推荐数据</div>'; }
+      else {
+        var cur = {};
+        try {
+          fetch('market.json?_t=' + Date.now()).then(function(r) { return r.json(); }).then(function(data) {
+            var recs = (data.recommendations && data.recommendations.all) || data.steam_market_recs || [];
+            recs.forEach(function(r) { cur[r.name] = r; });
+          }).catch(function() {});
+        } catch(e) {}
+        var rows = tracks.slice().reverse().slice(0, 50).map(function(t) {
+          var c = cur[t.name];
+          var cp = c ? (c.price || c.eco_price || 0) : 0;
+          var ret = t.recPrice > 0 && cp > 0 ? ((cp - t.recPrice) / t.recPrice * 100) : 0;
+          var cl = ret > 2 ? 'rise' : ret < -2 ? 'fall' : 'text3';
+          return '<div class="row"><span class="n">' + esc(t.name) + '</span><span style="font-size:10px;color:var(--text3);min-width:80px">' + t.date + '</span><span class="v" style="color:var(' + cl + ')">' + (ret >= 0 ? '+' : '') + ret.toFixed(1) + '%</span></div>';
+        }).join('');
+        tc.innerHTML = '<div style="font-size:10px;color:var(--text3);margin-bottom:4px">共 ' + tracks.length + ' 条记录</div>' + rows;
+      }
+    } catch(e) { tc.innerHTML = '<div class="empty">读取本地数据失败</div>'; }
+  }
+}
+
+function esc(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+}
+
+// Load
+loadReport().then(renderReport).catch(function(e) {
+  document.getElementById('reportDate').textContent = '加载失败: ' + e.message;
+});
+(function(){var _l=Date.now();setInterval(function(){fetch('market.json?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.update_time||d.alerts_updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadReport().then(renderReport);}}).catch(function(){})},60000)})();
+</script>
+</body>
+</html>

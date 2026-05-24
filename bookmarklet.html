@@ -1,0 +1,65 @@
+
+<style>
+body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,sans-serif;background:#0d1117;color:#d1d5db;margin:0;padding:40px 20px}
+.container{max-width:640px;margin:0 auto}
+h1{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.sub{font-size:12px;color:#9ca3af;margin-bottom:24px}
+.card{background:rgba(22,27,34,.85);border:1px solid rgba(55,65,81,.4);border-radius:14px;padding:24px;margin-bottom:16px}
+.card h2{font-size:14px;font-weight:700;color:#9ca3af;margin-bottom:12px}
+code{background:rgba(30,36,46,.7);padding:2px 6px;border-radius:6px;font-size:11px;color:#e2e8f0}
+.steps li{margin-bottom:10px;font-size:12px;color:#d1d5db;line-height:1.6}
+.steps li b{color:#fbbf24}
+.btn-copy{padding:10px 24px;background:#34d399;color:#000;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;margin:8px 0}
+.btn-copy:hover{background:#2bc48a}
+.code-box{background:rgba(30,36,46,.7);border:1px solid rgba(55,65,81,.4);border-radius:8px;padding:12px;font-size:10px;font-family:monospace;color:#e2e8f0;word-break:break-all;margin-bottom:10px;user-select:all}
+.alert{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:12px 16px;font-size:11px;color:#fbbf24;margin-top:12px}
+.guide{display:flex;gap:12px;margin:12px 0;flex-wrap:wrap}
+.guide-step{background:rgba(30,36,46,.5);border:1px solid rgba(55,65,81,.3);border-radius:10px;padding:14px;flex:1;min-width:160px}
+.guide-step .num{display:inline-block;background:#60a5fa;color:#fff;border-radius:50%;width:20px;height:20px;text-align:center;line-height:20px;font-size:11px;font-weight:700;margin-right:6px}
+.guide-step p{font-size:11px;color:#d1d5db;margin:6px 0 0}
+</style>
+
+<div class="container">
+  <h1>🔖 安装书签 · 一键导入库存</h1>
+  <p class="sub">不需要任何扩展，添加一个浏览器书签即可。以后每次 2 秒完成。</p>
+
+  <div class="card">
+    <h2>📋 复制代码 → 新建书签</h2>
+    <p style="font-size:12px;color:#9ca3af;margin-bottom:8px">点下面按钮复制代码，然后按提示添加书签：</p>
+    <div class="code-box" id="bookmarkletCode">javascript:(function(){var u=location.href;if(!u.includes("steamcommunity.com")){alert("❌ 必须在 Steam 库存JSON页面使用\n\n当前页面："+u+"\n\n正确操作：\n① 打开 steamcommunity.com/my/inventory/json/730/2\n② 等页面加载完\n③ 再点这个书签");return}var t=document.body.textContent.trim();if(!t||t.length<10){alert("⚙ 页面内容为空 — 请确认 Steam++ 开着能访问社区");return}if(!t.startsWith("{")&&!t.startsWith("[")){alert("⚙ 页面不是JSON格式 — 确认你是不是在 JSON 页面上（URL以 /730/2 结尾）\n\n页面开头："+t.slice(0,80));return}try{var d=JSON.parse(t);if(!d.assets||!d.success){alert("⚙ 库存数据异常 — 可能库存未公开或 Steam 返回了其他响应");return}window.name=t;window.location="https://cs2wyx.asia/?auto_import=1"}catch(e){if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){alert("⚠ 自动导入失败，但JSON已复制到剪贴板\n\n请手动切换到看板 → Ctrl+V 粘贴 → 导入")})}else{alert("⚠ 解析失败，请手动 Ctrl+A 全选 → Ctrl+C 复制 → 到看板粘贴导入")}}})();</div>
+    <button class="btn-copy" onclick="var b=this,c=document.getElementById('bookmarkletCode').textContent;navigator.clipboard.writeText(c).then(function(){b.textContent='✓ 代码已复制，现在按步骤添加书签'}).catch(function(){b.textContent='复制失败，请手动选中上方代码复制'})">📋 复制代码</button>
+    <p style="font-size:11px;color:#6b7280;margin-top:8px"><b>👇 复制后，按下面步骤操作：</b></p>
+
+    <div class="guide">
+      <div class="guide-step">
+        <div><span class="num">1</span> <b style="font-size:11px;color:#fbbf24">打开书签管理器</b></div>
+        <p>按 <code style="font-size:10px">Ctrl+Shift+O</code>（Chrome/Edge 通用）</p>
+      </div>
+      <div class="guide-step">
+        <div><span class="num">2</span> <b style="font-size:11px;color:#fbbf24">新建书签</b></div>
+        <p>点「添加新书签」或「新建书签」</p>
+      </div>
+      <div class="guide-step">
+        <div><span class="num">3</span> <b style="font-size:11px;color:#fbbf24">粘贴代码</b></div>
+        <p>名称填 <b>CS2 导入</b>，网址栏 <b>Ctrl+V</b> → 保存到书签栏</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📖 使用方式</h2>
+    <p style="font-size:12px;color:#fbbf24;margin-bottom:10px"><b>⚠ 重要：书签只能在 steamcommunity.com 上用</b></p>
+    <ol class="steps">
+      <li>开 Steam++，浏览器新开标签页，输入：
+        <code style="display:block;margin:6px 0;padding:10px;background:rgba(30,36,46,.7);font-size:13px;text-align:center">steamcommunity.com/my/inventory/json/730/2</code>
+      </li>
+      <li>看到满屏 JSON 后，<b>点到书签栏</b> → 点一下刚装的那个书签</li>
+      <li>自动跳转到看板，库存已自动导入 ✅</li>
+    </ol>
+  </div>
+
+  <div class="alert">
+    ⚠ 注意：书签只能在你自己的电脑上用。<br>
+    如果弹出"必须在 Steam 库存JSON页面使用"——说明你点书签的时候不在那页面上。
+  </div>
+</div>

@@ -1,0 +1,20 @@
+name: Test SteamDT API
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: HTTP connectivity check
+        run: |
+          echo "=== Connectivity ==="
+          curl -s -o /dev/null -w "HTTP %{http_code}\n" https://open.steamdt.com/
+
+      - name: Run SteamDT K-line test
+        run: python3 .github/scripts/test_steamdt.py
+        env:
+          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}

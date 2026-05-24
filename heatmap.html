@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS2 资金流向热力图</title>
+<style>
+:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#f87171;--fall:#34d399;--blue:#60a5fa;--amber:#fbbf24;--radius:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:1000px;margin:0 auto;padding:28px 20px 40px}
+h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:11px;color:var(--text3);margin-top:3px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}
+.header .nav a:hover{text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:0 2px 16px rgba(0,0,0,.25)}
+.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.3px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--surface2);border-radius:8px;padding:12px 14px;text-align:center}
+.kpi-l{font-size:10px;color:var(--text3);margin-bottom:4px}
+.kpi-v{font-size:20px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
+.kpi-v.rise{color:var(--rise)}.kpi-v.fall{color:var(--fall)}.kpi-v.blue{color:var(--blue)}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.heat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px}
+.heat-cell{background:var(--surface2);border-radius:12px;padding:20px;text-align:center;border:1px solid var(--border);transition:all .3s;cursor:default}
+.heat-cell:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.35);border-color:rgba(96,165,250,.3)}
+.heat-cell .cell-icon{font-size:28px;margin-bottom:8px}
+.heat-cell .cell-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px}
+.heat-cell .cell-count{font-size:28px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace;color:var(--blue);margin-bottom:4px}
+.heat-cell .cell-stat{font-size:11px;color:var(--text2);line-height:1.8}
+.heat-cell .cell-bar{height:6px;border-radius:3px;margin-top:10px}
+.heat-cell .cell-rate{font-size:16px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace;margin-top:8px}
+
+.flow-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(55,65,81,.08)}
+.flow-label{min-width:60px;font-size:12px;font-weight:700;color:var(--text2)}
+.flow-track{flex:1;height:28px;background:var(--surface2);border-radius:6px;position:relative;overflow:hidden}
+.flow-fill{height:100%;border-radius:6px;position:absolute;transition:width .8s ease;opacity:.85}
+.flow-val{min-width:90px;font-size:12px;font-weight:600;text-align:right;font-family:'DM Mono',monospace}
+
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:12px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+th{padding:12px 20px;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1.5px;border-bottom:2px solid var(--border);text-align:left}
+td{padding:14px 20px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)}
+tr:hover td{background:rgba(96,165,250,.04)}
+.loading{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:640px){.container{padding:18px 12px 28px}.heat-grid{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div><h1>🔥 资金流向热力图</h1><div class="sub" id="heatDate">加载中...</div></div>
+    <div class="nav"><a href="/">← 返回看板</a></div>
+  </div>
+  <div class="card">
+    <div class="kpis" id="heatKpis">
+      <div class="kpi"><div class="kpi-l">加载中</div><div class="kpi-v"><span class="loading"></span></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>📊 分类资金规模</h2>
+    <div class="heat-grid" id="heatGrid"></div>
+  </div>
+  <div class="card">
+    <h2>💰 资金占比流向</h2>
+    <div id="flowChart"></div>
+  </div>
+  <div class="card">
+    <h2>📋 分类明细</h2>
+    <table><thead><tr><th>分类</th><th>追踪标的</th><th>均价 ¥</th><th>总在售</th><th>占总市值</th><th>7日走向</th><th>热度</th></tr></thead><tbody id="detailTable"></tbody></table>
+  </div>
+</div>
+<script>
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function classify(hn) {
+  if (!hn) return '武器';
+  if (hn.includes('Knife')) return '刀';
+  var gl = ['Gloves','Hand Wraps','Sport Gloves','Specialist Gloves','Moto Gloves','Driver Gloves','Bloodhound Gloves'];
+  for (var i=0;i<gl.length;i++) { if (hn.includes(gl[i])) return '手套'; }
+  // 排除品类
+  if (hn.startsWith('Sticker') || hn.includes('Music Kit') || hn.includes('Charm') || hn.includes('Pin') || 
+      hn.includes('Graffiti') || hn.includes('Patch') || hn.includes('Case') || hn.includes('Container') || hn.includes('Terminal'))
+    return null;
+  // 探员判断：没有磨损等级 + 前缀不是武器
+  var wearWords = ['Factory New','Minimal Wear','Field-Tested','Well-Worn','Battle-Scarred',
+                   '崭新出厂','略有磨损','久经沙场','破损不堪','战痕累累'];
+  var hasWear = false;
+  for (var i=0;i<wearWords.length;i++) { if (hn.includes(wearWords[i])) { hasWear = true; break; } }
+  if (!hasWear) {
+    // 武器前缀列表
+    var weaponPs = ['AK-47','M4A4','M4A1-S','AWP','AUG','SG','FAMAS','Galil','SSG','SCAR','G3SG1',
+      'P250','P2000','USP','Glock','Desert Eagle','Five-SeveN','CZ75','Dual Berettas','Tec-9','R8',
+      'MP5','MP7','MP9','MAC-10','PP-','UMP','P90',
+      'Nova','XM1014','MAG-7','Sawed-Off','Negev','M249',
+      'Zeus','Flashbang','Smoke','HE Grenade','Molotov','Incendiary','Decoy','★'];
+    var pref = hn.split('|')[0].trim();
+    var isWeapon = false;
+    for (var i=0;i<weaponPs.length;i++) { if (pref.startsWith(weaponPs[i])) { isWeapon = true; break; } }
+    if (!isWeapon) return '探员';
+  }
+  return '武器';
+}
+
+var CATS = ['武器','刀','手套','探员'];
+var ICONS = {'武器':'🔫','刀':'🔪','手套':'🧤','探员':'🕵️'};
+var COLORS = {'武器':'#60a5fa','刀':'#a78bfa','手套':'#fbbf24','探员':'#34d399'};
+
+function loadHeatmap() {
+  var t0 = Date.now();
+  Promise.all([
+    fetch('eco_tracked.json?v=' + t0).then(function(r) { return r.ok ? r.json() : null; }),
+    fetch('market.json?v=' + t0).then(function(r) { return r.ok ? r.json() : {}; })
+  ]).then(function(results) {
+    var ecoData = results[0];
+    var marketR = results[1];
+
+    if (!Array.isArray(ecoData) || ecoData.length === 0) {
+      document.getElementById('heatDate').textContent = '暂无追踪数据';
+      return;
+    }
+
+    // 收集 alerts 中的 rate_7 数据（用英文 HashName 匹配）
+    var rateMap = {};
+    if (marketR && marketR.alerts) {
+      marketR.alerts.forEach(function(a) {
+        rateMap[a.name] = a.rate_7;
+      });
+    }
+
+    // 全量分类统计
+    var stats = {};
+    CATS.forEach(function(c) { stats[c] = {count:0, totalPrice:0, priceCount:0, totalSell:0, totalRate:0, rateCount:0}; });
+
+    ecoData.forEach(function(item) {
+      if (!item.HashName) return;
+      var cat = classify(item.HashName);
+      if (!cat || !stats[cat]) return;
+      
+      stats[cat].count++;
+      stats[cat].totalSell += parseInt(item.SellingTotal) || 0;
+      var p = parseFloat(item.Price) || 0;
+      if (p > 0) {
+        stats[cat].totalPrice += p;
+        stats[cat].priceCount++;
+      }
+      // 用 HashName（英文）匹配 rateMap
+      var rateVal = rateMap[item.HashName];
+      if (rateVal !== undefined) {
+        stats[cat].totalRate += rateVal;
+        stats[cat].rateCount++;
+      }
+    });
+
+    // 计算平均值
+    CATS.forEach(function(c) {
+      stats[c].avgPrice = stats[c].priceCount > 0 ? stats[c].totalPrice / stats[c].priceCount : 0;
+      stats[c].avgRate = stats[c].rateCount > 0 ? stats[c].totalRate / stats[c].rateCount : 0;
+    });
+
+    var totalCount = CATS.reduce(function(s,c) { return s + stats[c].count; }, 0);
+    var totalValue = CATS.reduce(function(s,c) { return s + stats[c].totalPrice; }, 0);
+
+    document.getElementById('heatDate').textContent = '共 ' + totalCount.toLocaleString() + ' 个追踪标的 · 数据来自 eco_tracked.json';
+
+    // KPI
+    var maxCat = CATS.reduce(function(a,b) { return stats[a].count > stats[b].count ? a : b; });
+    var maxPriceCat = CATS.reduce(function(a,b) { return stats[a].avgPrice > stats[b].avgPrice ? a : b; });
+    var maxSellCat = CATS.reduce(function(a,b) { return stats[a].totalSell > stats[b].totalSell ? a : b; });
+
+    document.getElementById('heatKpis').innerHTML =
+      '<div class="kpi"><div class="kpi-l">追踪品类</div><div class="kpi-v blue">' + CATS.length + '</div><div class="kpi-sub">' + totalCount.toLocaleString() + '个标的</div></div>' +
+      '<div class="kpi"><div class="kpi-l">最多标的</div><div class="kpi-v" style="font-size:14px">' + (ICONS[maxCat]||'') + ' ' + maxCat + '</div><div class="kpi-sub">' + stats[maxCat].count.toLocaleString() + '个</div></div>' +
+      '<div class="kpi"><div class="kpi-l">最贵品类</div><div class="kpi-v" style="font-size:14px">' + (ICONS[maxPriceCat]||'') + ' ' + maxPriceCat + '</div><div class="kpi-sub">均¥' + stats[maxPriceCat].avgPrice.toFixed(0) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-l">最活跃</div><div class="kpi-v" style="font-size:14px">' + (ICONS[maxSellCat]||'') + ' ' + maxSellCat + '</div><div class="kpi-sub">在售' + stats[maxSellCat].totalSell.toLocaleString() + '件</div></div>';
+
+    // 热力图网格
+    var maxCount = Math.max.apply(null, CATS.map(function(c) { return stats[c].count; }));
+    document.getElementById('heatGrid').innerHTML = CATS.map(function(c) {
+      var s = stats[c];
+      var barPct = Math.max(4, s.count / maxCount * 100);
+      var valPct = totalValue > 0 ? (s.totalPrice / totalValue * 100) : 0;
+      var r = s.avgRate || 0;
+      var rateColor = r >= 0 ? 'var(--rise)' : 'var(--fall)';
+      var heatEmoji = r > 2 ? '🔥' : r > 0 ? '♨️' : r > -2 ? '➖' : '❄️';
+      return '<div class="heat-cell">' +
+        '<div class="cell-icon">' + (ICONS[c]||'📊') + '</div>' +
+        '<div class="cell-name">' + c + '</div>' +
+        '<div class="cell-count">' + (s.count||0).toLocaleString() + '</div>' +
+        '<div class="cell-stat">均¥' + (s.avgPrice||0).toFixed(0) + ' · 在售' + (s.totalSell||0).toLocaleString() + '件</div>' +
+        '<div class="cell-stat">占总市值 ' + valPct.toFixed(1) + '%</div>' +
+        '<div class="cell-rate" style="color:' + rateColor + '">' + heatEmoji + ' ' + (r >= 0 ? '+' : '') + r.toFixed(1) + '%</div>' +
+        '<div class="cell-bar" style="width:' + barPct + '%;background:' + (COLORS[c]||'var(--blue)') + '"></div>' +
+      '</div>';
+    }).join('');
+
+    // ═══ 资金占比流向 ═══
+    var flowHtml = '';
+    CATS.forEach(function(c) {
+      var s = stats[c];
+      var share = totalValue > 0 ? (s.totalPrice / totalValue * 100) : 0;
+      var r = s.avgRate || 0;
+      var rateArrow = r > 1 ? ' ↗' : r < -1 ? ' ↘' : '';
+      flowHtml += '<div class="flow-row">' +
+        '<span class="flow-label">' + (ICONS[c]||'') + ' ' + c + '</span>' +
+        '<div class="flow-track">' +
+          '<div class="flow-fill" style="width:' + Math.max(2, share) + '%;background:' + (COLORS[c]||'var(--blue)') + '"></div>' +
+        '</div>' +
+        '<span class="flow-val">' + share.toFixed(1) + '% · ¥' + ((s.totalPrice||0)/1e6).toFixed(1) + 'M' + rateArrow + '</span>' +
+      '</div>';
+    });
+    document.getElementById('flowChart').innerHTML = flowHtml;
+
+    // ═══ 明细表 ═══
+    document.getElementById('detailTable').innerHTML = CATS.map(function(c) {
+      var s = stats[c];
+      var valPct = totalValue > 0 ? (s.totalPrice / totalValue * 100) : 0;
+      var r = s.avgRate || 0;
+      var rateStr = r !== 0 ? 
+        '<span style="color:' + (r >= 0 ? 'var(--rise)' : 'var(--fall)') + ';font-weight:600">' + (r >= 0 ? '+' : '') + r.toFixed(1) + '%</span>' : 
+        '<span style="color:var(--text3)">--</span>';
+      var heatLabel = r > 2 ? '🔥 热' : r > 0 ? '♨️ 暖' : r > -2 ? '➖ 平' : r < -2 ? '❄️ 冷' : '';
+      return '<tr><td><b>' + (ICONS[c]||'') + ' ' + c + '</b></td>' +
+        '<td>' + (s.count||0).toLocaleString() + '</td>' +
+        '<td>¥' + (s.avgPrice||0).toFixed(0) + '</td>' +
+        '<td>' + (s.totalSell||0).toLocaleString() + '</td>' +
+        '<td>' + valPct.toFixed(1) + '%</td>' +
+        '<td>' + rateStr + '</td>' +
+        '<td>' + heatLabel + '</td></tr>';
+    }).join('');
+
+  }).catch(function() {
+    document.getElementById('heatDate').textContent = '加载失败';
+  });
+}
+
+loadHeatmap();
+
+(function(){
+  var _last = Date.now();
+  setInterval(function(){
+    fetch('market.json?v=' + Date.now(), {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+      var ut = d.update_time || d.alerts_updated || '';
+      if (ut && new Date(ut).getTime() > _last) { _last = new Date(ut).getTime(); loadHeatmap(); }
+    }).catch(function(){});
+  }, 60000);
+})();
+</script>
+</body>
+</html>

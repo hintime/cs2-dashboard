@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS2 持仓回测</title>
+<style>
+:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#f87171;--fall:#34d399;--blue:#60a5fa;--amber:#fbbf24;--radius:14px;--shadow:0 2px 16px rgba(0,0,0,.25)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:28px 20px 40px}
+h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:11px;color:var(--text3);margin-top:3px}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}.header .nav a:hover{text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.3px}
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:12px}
+
+/* ── KPI ── */
+.bt-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.bt-kpi{background:var(--surface2);border-radius:8px;padding:12px 14px;text-align:center}
+.bt-kpi-l{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.3px}
+.bt-kpi-v{font-size:18px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
+.bt-kpi.rise .bt-kpi-v{color:var(--rise)}
+.bt-kpi.fall .bt-kpi-v{color:var(--fall)}
+.bt-kpi .bt-kpi-sub{font-size:10px;color:var(--text3);margin-top:2px;font-weight:400}
+
+/* ── Chart ── */
+.bt-chart-wrap{width:100%}
+.bt-chart-svg{width:100%;height:auto;background:var(--surface2);border-radius:8px;cursor:crosshair}
+.bt-chart-area{opacity:.12}
+.bt-chart-line{fill:none;stroke-width:2;stroke-linejoin:round}
+.bt-zero-line{stroke:rgba(255,255,255,.08);stroke-width:1;stroke-dasharray:4,3}
+
+/* ── Items ── */
+.bt-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.bt-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.bt-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.bt-item-name{font-size:12px;font-weight:600;color:var(--text);max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt-item-pnl{font-size:13px;font-weight:700;font-family:'DM Mono','JetBrains Mono',monospace}
+.bt-item-chart{margin-top:4px;height:40px}
+
+@media(max-width:640px){
+  .bt-kpis{grid-template-columns:repeat(2,1fr)!important}
+  .bt-items{grid-template-columns:1fr!important}
+  .container{padding:18px 12px 28px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div><h1>持仓回测</h1><div class="sub" id="btInfo">加载中...</div></div>
+    <div class="nav"><a href="/">← 返回看板</a></div>
+  </div>
+  <div class="card">
+    <div id="backtestContent">
+      <div class="empty">加载中...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var H = [];
+var WORKER_BASE = 'https://cs2wyx.asia';
+
+// ── 从 index.html 移植的 sparkline ──
+window.sparkline = function(vals, color, w, h) {
+  if (!vals || vals.length < 2) return '';
+  var n = vals.length, min = Math.min.apply(null, vals), max = Math.max.apply(null, vals), r = max - min || 1;
+  var pts = vals.map(function(v, i) { var x = (i / (n - 1 || 1)) * (w - 4) + 2; var y = h - 2 - ((v - min) / r) * (h - 4); return x.toFixed(1) + ',' + y.toFixed(1); }).join(' ');
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" style="display:block"><polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+};
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── 加载 holdings + 渲染回测 ──
+function loadBacktest() {
+  var t0 = Date.now();
+  Promise.all([
+    fetch('holdings.json?v=' + t0).then(function(r) { return r.ok ? r.json() : null; }),
+    fetch('eco_tracked.json?v=' + t0).then(function(r) { return r.ok ? r.json() : null; }),
+    fetch('buff_history.json?v=' + t0).then(function(r) { return r.ok ? r.json() : {}; })
+  ]).then(function(results) {
+    var holdingsR = results[0];
+    var ecoData = results[1];
+    var bh = results[2] || {};
+    window._buffHistory = bh;
+
+    if (!holdingsR || !Array.isArray(holdingsR.items)) {
+      document.getElementById('backtestContent').innerHTML = '<div class="empty">暂无持仓数据</div>';
+      document.getElementById('btInfo').textContent = '无数据';
+      return;
+    }
+
+    // 构建 H（精简版，只保留回测需要的字段）
+    H = [];
+    holdingsR.items.forEach(function(item) {
+      var q = item.qty || 1;
+      var costTotal = item.cost;
+      var pricePerUnit = item.price;
+      var costPerUnit = costTotal / q;
+      var wearCode = item.wear || '';
+      for (var i = 0; i < q; i++) {
+        H.push({
+          n: item.name,
+          w: wearCode === 'other' ? '' : wearCode,
+          c: costPerUnit,
+          p: pricePerUnit,
+          pnl: pricePerUnit - costPerUnit,
+          pnlPct: costPerUnit > 0 ? (pricePerUnit - costPerUnit) / costPerUnit * 100 : 0,
+          mh: item.market_hash,
+          price_history: item.price_history || []
+        });
+      }
+    });
+
+    H = H.filter(function(h) {
+      return h.c > 0 && (h.price_history || []).length > 0;
+    });
+
+    document.getElementById('btInfo').textContent = '共 ' + holdingsR.items.length + ' 件持仓，' + H.length + ' 件有价格历史可回测';
+
+    if (H.length === 0) {
+      document.getElementById('backtestContent').innerHTML = '<div class="empty">没有含价格历史的持仓数据，请先积累数据</div>';
+      return;
+    }
+
+    renderBacktest();
+  }).catch(function() {
+    document.getElementById('backtestContent').innerHTML = '<div class="empty">加载失败，请检查网络</div>';
+  });
+}
+
+function renderBacktest() {
+  var container = document.getElementById('backtestContent');
+  if (!container || !H || H.length === 0) return;
+
+  var timeline = {}, totalCost = 0;
+  H.forEach(function(h) {
+    var ph = h.price_history || [];
+    if (ph.length === 0) return;
+    var cost = h.c || 0;
+    ph.forEach(function(entry) {
+      var d = entry.date;
+      if (!timeline[d]) timeline[d] = {value: 0, cost: 0};
+      timeline[d].value += entry.price;
+      timeline[d].cost += cost;
+    });
+    totalCost += cost;
+  });
+
+  var dates = Object.keys(timeline).sort();
+  if (dates.length < 2) {
+    container.innerHTML = '<div class="empty">数据不足，需要至少2天的价格历史才能生成回测</div>';
+    return;
+  }
+
+  var chartData = dates.map(function(d) {
+    var v = timeline[d].value, c = timeline[d].cost;
+    return {date: d, value: v, cost: c, pnl: v - c, pnlPct: c > 0 ? ((v - c) / c * 100) : 0};
+  });
+
+  var firstCost = chartData[0].cost, lastVal = chartData[chartData.length - 1].value;
+  var totalReturn = firstCost > 0 ? ((lastVal - firstCost) / firstCost * 100) : 0;
+  var curPnl = chartData[chartData.length - 1].pnl, curPnlPct = chartData[chartData.length - 1].pnlPct;
+
+  var peak = chartData[0].value, maxDDPct = 0;
+  chartData.forEach(function(d) { if (d.value > peak) peak = d.value; var ddPct = peak > 0 ? (peak - d.value) / peak * 100 : 0; if (ddPct > maxDDPct) maxDDPct = ddPct; });
+
+  var dailyRet = [];
+  for (var i = 1; i < chartData.length; i++) { var prev = chartData[i - 1].value; if (prev > 0) dailyRet.push((chartData[i].value - prev) / prev); }
+  var avgR = dailyRet.length ? dailyRet.reduce(function(a, b) { return a + b; }, 0) / dailyRet.length : 0;
+  var vol = Math.sqrt(dailyRet.reduce(function(s, r) { return s + (r - avgR) * (r - avgR); }, 0) / dailyRet.length) * 100;
+
+  var bestItem = '', bestPct = -Infinity, worstItem = '', worstPct = Infinity;
+  H.forEach(function(h) { var p = h.c > 0 ? ((h.p - h.c) / h.c * 100) : 0; if (p > bestPct) { bestPct = p; bestItem = h.n; } if (p < worstPct) { worstPct = p; worstItem = h.n; } });
+
+  var kpiHtml = '<div class="bt-kpis">' +
+    '<div class="bt-kpi"><div class="bt-kpi-l">总收益率</div><div class="bt-kpi-v ' + (totalReturn >= 0 ? 'rise' : 'fall') + '">' + (totalReturn >= 0 ? '+' : '') + totalReturn.toFixed(1) + '%</div><div class="bt-kpi-sub">成本¥' + firstCost.toFixed(0) + '</div></div>' +
+    '<div class="bt-kpi ' + (curPnl >= 0 ? 'rise' : 'fall') + '"><div class="bt-kpi-l">当前盈亏</div><div class="bt-kpi-v">' + (curPnl >= 0 ? '+' : '') + '¥' + curPnl.toFixed(0) + '</div><div class="bt-kpi-sub">' + (curPnlPct >= 0 ? '+' : '') + curPnlPct.toFixed(1) + '%</div></div>' +
+    '<div class="bt-kpi fall"><div class="bt-kpi-l">最大回撤</div><div class="bt-kpi-v">' + maxDDPct.toFixed(1) + '%</div></div>' +
+    '<div class="bt-kpi"><div class="bt-kpi-l">日波动率</div><div class="bt-kpi-v">' + vol.toFixed(1) + '%</div><div class="bt-kpi-sub">' + dailyRet.length + '个样本</div></div>' +
+    '<div class="bt-kpi rise"><div class="bt-kpi-l">最佳</div><div class="bt-kpi-v" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (bestItem ? bestItem.substring(0, 16) : '--') + '</div><div class="bt-kpi-sub">+' + bestPct.toFixed(1) + '%</div></div>' +
+    '<div class="bt-kpi fall"><div class="bt-kpi-l">最差</div><div class="bt-kpi-v" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (worstItem ? worstItem.substring(0, 16) : '--') + '</div><div class="bt-kpi-sub">' + worstPct.toFixed(1) + '%</div></div></div>';
+
+  // ── SVG 累计盈亏走势图 ──
+  var vals = chartData.map(function(d) { return d.pnl; });
+  var yMin = Math.min(0, Math.min.apply(null, vals)), yMax = Math.max(0, Math.max.apply(null, vals)), yR = yMax - yMin || 1;
+  var cw = 600, ch = 200, pad = {t: 24, r: 20, b: 30, l: 65}, pW = cw - pad.l - pad.r, pH = ch - pad.t - pad.b;
+  var yL = '', yi;
+  for (yi = 0; yi <= 4; yi++) { var v = yMin + yR * yi / 4; var yy = pad.t + pH - (yi / 4) * pH; yL += '<text x="' + (pad.l - 8) + '" y="' + (yy + 4) + '" text-anchor="end" fill="var(--text3)" font-size="10">' + (v >= 0 ? '+' : '') + '¥' + v.toFixed(0) + '</text>'; }
+  var xL = '', xS = Math.max(1, Math.floor(chartData.length / 7));
+  chartData.forEach(function(d, i) { if (i % xS === 0 || i === chartData.length - 1) { var x = pad.l + (i / (chartData.length - 1 || 1)) * pW; xL += '<text x="' + x + '" y="' + (ch - 6) + '" text-anchor="middle" fill="var(--text3)" font-size="9">' + d.date.slice(5) + '</text>'; } });
+  var lD = ''; chartData.forEach(function(d, i) { var x = pad.l + (i / (chartData.length - 1 || 1)) * pW; var y = pad.t + pH - ((d.pnl - yMin) / yR) * pH; lD += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1); });
+  var aD = lD + 'L' + (pad.l + pW) + ',' + (pad.t + pH) + 'L' + pad.l + ',' + (pad.t + pH) + 'Z';
+  var zY = pad.t + pH - ((0 - yMin) / yR) * pH;
+  var chartHtml = '<svg width="100%" height="' + ch + '" viewBox="0 0 ' + cw + ' ' + ch + '" class="bt-chart-svg"><defs><linearGradient id="btG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--blue)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--blue)" stop-opacity="0.02"/></linearGradient></defs>' +
+    (yMin < 0 && yMax > 0 ? '<line x1="' + pad.l + '" y1="' + zY.toFixed(1) + '" x2="' + (cw - pad.r) + '" y2="' + zY.toFixed(1) + '" class="bt-zero-line"/>' : '') + yL + xL +
+    '<path d="' + aD + '" fill="url(#btG)" class="bt-chart-area"/><path d="' + lD + '" class="bt-chart-line" stroke="var(--blue)"/>' +
+    chartData.map(function(d, i) { var x = pad.l + (i / (chartData.length - 1 || 1)) * pW; var y = pad.t + pH - ((d.pnl - yMin) / yR) * pH; return '<circle cx="' + x + '" cy="' + y + '" r="2.5" fill="' + (d.pnl >= 0 ? 'var(--rise)' : 'var(--fall)') + '" stroke="var(--surface2)" stroke-width="1.5" opacity="0.8"/>'; }).join('') +
+    '</svg><div style="text-align:center;font-size:10px;color:var(--text3);margin-top:4px">累计盈亏走势</div>';
+
+  // ── 单品详情 ──
+  var itemHtml = H.map(function(h) {
+    var ph = h.price_history || [];
+    if (ph.length < 2) return '';
+    var prices = ph.map(function(p) { return p.price; }), ip = h.pnl || 0, ipPct = h.pnlPct || 0, ic = ip >= 0 ? 'var(--rise)' : 'var(--fall)';
+    var svg = window.sparkline ? window.sparkline(prices, ic, 260, 36) : '';
+    return '<div class="bt-item"><div class="bt-item-header"><span class="bt-item-name" title="' + esc(h.n) + '">' + esc(h.n) + '</span><span class="bt-item-pnl" style="color:' + ic + '">' + (ip >= 0 ? '+' : '') + '¥' + ip.toFixed(0) + '</span></div><div style="display:flex;gap:12px;font-size:10px;color:var(--text3)"><span>成本¥' + (h.c || 0).toFixed(0) + '</span><span>现价¥' + (h.p || 0).toFixed(0) + '</span><span style="color:' + ic + '">' + (ipPct >= 0 ? '+' : '') + ipPct.toFixed(1) + '%</span><span>' + ph.length + '个点</span></div>' + (svg ? '<div class="bt-item-chart">' + svg + '</div>' : '') + '</div>';
+  }).join('');
+
+  container.innerHTML = kpiHtml + '<div class="bt-chart-wrap" style="margin-top:16px">' + chartHtml + '</div>' + (itemHtml ? '<div style="padding:8px 0;font-size:11px;color:var(--text3)">单品详情</div><div class="bt-items">' + itemHtml + '</div>' : '');
+}
+
+loadBacktest();
+
+// 自动检测数据更新
+(function(){
+  var _last = Date.now();
+  setInterval(function(){
+    fetch('market.json?v=' + Date.now(), {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+      var ut = d.update_time || d.alerts_updated || '';
+      if (ut && new Date(ut).getTime() > _last) { _last = new Date(ut).getTime(); loadBacktest(); }
+    }).catch(function(){});
+  }, 60000);
+})();
+</script>
+</body>
+</html>
