@@ -333,6 +333,7 @@ tr.pnl-loss:hover{border-left-color:var(--fall);border-left-width:3px}
 .sync-status.show{opacity:1}.sync-status.ok{color:var(--fall)}.sync-status.err{color:var(--rise)}
 #syncBtn.syncing{opacity:.5;pointer-events:none}
 #syncBtn.syncing::before{content:'⏳'}
+body.logged-in #loginLanding{display:none!important}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .25s}
 .loading-overlay{position:fixed;inset:0;z-index:998;opacity:0;pointer-events:none;transition:opacity .3s;background:rgba(13,17,23,.5);display:flex;align-items:center;justify-content:center}
@@ -492,7 +493,7 @@ html { scroll-behavior: smooth; }
     </div>
   </div>
 
-<div id="loginLanding" style="display:none;text-align:center;padding:80px 20px 60px;max-width:560px;margin:0 auto">
+<div id="loginLanding" style="text-align:center;padding:80px 20px 60px;max-width:560px;margin:0 auto">
   <div style="font-size:64px;margin-bottom:20px">🎯</div>
   <h1 style="font-size:28px;font-weight:800;color:var(--text);margin-bottom:8px;letter-spacing:-.03em">CS2 饰品投资看板</h1>
   <p style="font-size:14px;color:var(--text3);line-height:1.7;margin-bottom:40px">
@@ -3501,6 +3502,7 @@ function localSignIn() {
   } else { document.getElementById('authMsg').textContent='账号或密码错误'; document.getElementById('authMsg').style.display=''; }
 }
 function localSignOut() {
+  document.body.classList.remove('logged-in');
   localStorage.removeItem('cs2_user');
   document.getElementById('userSection').style.display='none';
   document.getElementById('loginBtn').style.display='';
@@ -3515,6 +3517,7 @@ function localSignOut() {
   if(lp) lp.style.display='';
 }
 function showLoggedIn(account){
+  document.body.classList.add('logged-in');
   document.getElementById('loginBtn').style.display='none';
   document.getElementById('userSection').style.display='';
   document.getElementById('userEmail').textContent=account||'已登录';
