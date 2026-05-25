@@ -331,6 +331,8 @@ tr.pnl-loss:hover{border-left-color:var(--fall);border-left-width:3px}
 .gear-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--glow-blue)}
 .sync-status{font-size:10px;color:var(--text3);margin-left:4px;opacity:0;transition:opacity .3s}
 .sync-status.show{opacity:1}.sync-status.ok{color:var(--fall)}.sync-status.err{color:var(--rise)}
+#syncBtn.syncing{opacity:.5;pointer-events:none}
+#syncBtn.syncing::before{content:'⏳'}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .25s}
 .loading-overlay{position:fixed;inset:0;z-index:998;opacity:0;pointer-events:none;transition:opacity .3s;background:rgba(13,17,23,.5);display:flex;align-items:center;justify-content:center}
@@ -462,7 +464,7 @@ html { scroll-behavior: smooth; }
       <button id="loginBtn" onclick="document.getElementById('authModal').style.display='flex'" style="background:var(--blue);color:#fff;border:none;padding:4px 14px;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap">登录</button>
       <span id="userSection" style="display:none;font-size:12px">
         <span id="userEmail" style="color:var(--text2)"></span>
-        <button onclick="syncHoldingsToGitHub()" style="background:var(--surface2);color:var(--fall);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px" title="持仓推送到GitHub仓库，换设备可恢复">📤 同步</button>
+        <button onclick="syncHoldingsToGitHub()" id="syncBtn" style="background:var(--surface2);color:var(--fall);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px" title="持仓推送到GitHub仓库，换设备可恢复">📤 同步</button>
         <button onclick="loadHoldingsFromGitHub()" style="background:var(--surface2);color:var(--blue);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px" title="从GitHub仓库恢复持仓">📥 恢复</button>
         <button onclick="localSignOut()" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px">退出</button>
       </span>
@@ -996,61 +998,64 @@ function getHoldingsGHPath() {
 }
 
 window.syncHoldingsToGitHub = async function() {
+  var btn = document.getElementById('syncBtn');
+  var origText = btn ? btn.innerHTML : '';
+  if (btn) { btn.classList.add('syncing'); btn.innerHTML = '⏳同步中'; btn.style.opacity='.6'; btn.style.pointerEvents='none'; }
   var el = document.getElementById('syncStatus');
-  if (!el) { alert('界面未加载完成，请刷新后重试'); return; }
+  if (!el) { showToast('同步失败：界面未加载',3000); resetBtn(); return; }
   var key = getMyKey();
-  if (!key) { el.textContent = '❌ 请先登录'; el.className = 'sync-status show err'; return; }
-  if (!ghToken) { el.textContent = '❌ 请先配置 GitHub Token（⚙齿轮）'; el.className = 'sync-status show err'; return; }
+  if (!key) { el.textContent='❌ 请先登录'; el.className='sync-status show err'; showToast('❌ 请先登录',3000); resetBtn(); return; }
+  if (!ghToken) { el.textContent='❌ 请先配置 GitHub Token（⚙齿轮）'; el.className='sync-status show err'; showToast('❌ 没有 GitHub Token',3000); resetBtn(); return; }
   var items = loadMyHoldings();
-  if (!items.length) { el.textContent = '❌ 持仓为空，请先导入库存'; el.className = 'sync-status show err'; return; }
-  el.textContent = '⏳ 同步持仓中...'; el.className = 'sync-status show';
+  if (!items.length) { el.textContent='❌ 持仓为空'; el.className='sync-status show err'; showToast('❌ 持仓为空',3000); resetBtn(); return; }
+  el.textContent='⏳ 同步持仓中...'; el.className='sync-status show';
   var repo = GH_REPO;
   var auth = {'Authorization':'token '+ghToken, 'Accept':'application/vnd.github.v3+json'};
   try {
     var jsonStr = JSON.stringify({update_time:new Date().toISOString(),items:items},null,2);
     var b64 = btoa(unescape(encodeURIComponent(jsonStr)));
     var path = 'holdings_' + key + '.json';
-    // 1. Create blob
     var blobR = await fetch('https://api.github.com/repos/'+repo+'/git/blobs', {
       method:'POST', headers:auth, body:JSON.stringify({content:b64,encoding:'base64'})
     });
-    if (!blobR.ok) { el.textContent='❌ blob失败 '+blobR.status; el.className='sync-status show err'; return; }
+    if (!blobR.ok) { el.textContent='❌ blob失败 '+blobR.status; el.className='sync-status show err'; showToast('❌ blob失败',3000); resetBtn(); return; }
     var blobSha = (await blobR.json()).sha;
-    // 2. Get latest commit on main
     var refR = await fetch('https://api.github.com/repos/'+repo+'/git/refs/heads/main', {headers:auth});
-    if (!refR.ok) { el.textContent='❌ 获取commit失败 '+refR.status; el.className='sync-status show err'; return; }
+    if (!refR.ok) { el.textContent='❌ 获取commit失败 '+refR.status; el.className='sync-status show err'; showToast('❌ commit失败',3000); resetBtn(); return; }
     var refData = await refR.json();
     var latestCommitSha = refData.object.sha;
-    // 3. Get latest tree
     var commitR = await fetch('https://api.github.com/repos/'+repo+'/git/commits/'+latestCommitSha, {headers:auth});
-    if (!commitR.ok) { el.textContent='❌ 获取tree失败'; el.className='sync-status show err'; return; }
+    if (!commitR.ok) { el.textContent='❌ 获取tree失败'; el.className='sync-status show err'; showToast('❌ tree失败',3000); resetBtn(); return; }
     var baseTreeSha = (await commitR.json()).tree.sha;
-    // 4. Create tree with our file
     var treeR = await fetch('https://api.github.com/repos/'+repo+'/git/trees', {
       method:'POST', headers:auth, body:JSON.stringify({base_tree:baseTreeSha, tree:[{path:path,mode:'100644',type:'blob',sha:blobSha}]})
     });
-    if (!treeR.ok) { el.textContent='❌ tree失败 '+treeR.status; el.className='sync-status show err'; return; }
+    if (!treeR.ok) { el.textContent='❌ tree失败 '+treeR.status; el.className='sync-status show err'; showToast('❌ tree失败',3000); resetBtn(); return; }
     var treeSha = (await treeR.json()).sha;
-    // 5. Create commit
     var commitBody = {message:'sync: holdings for '+key, tree:treeSha, parents:[latestCommitSha]};
     var newCommitR = await fetch('https://api.github.com/repos/'+repo+'/git/commits', {
       method:'POST', headers:auth, body:JSON.stringify(commitBody)
     });
-    if (!newCommitR.ok) { el.textContent='❌ commit失败 '+newCommitR.status; el.className='sync-status show err'; return; }
+    if (!newCommitR.ok) { el.textContent='❌ commit失败 '+newCommitR.status; el.className='sync-status show err'; showToast('❌ commit失败',3000); resetBtn(); return; }
     var newCommitSha = (await newCommitR.json()).sha;
-    // 6. Update ref (force update, avoiding 409 conflicts)
     var updateR = await fetch('https://api.github.com/repos/'+repo+'/git/refs/heads/main', {
       method:'PATCH', headers:auth, body:JSON.stringify({sha:newCommitSha,force:true})
     });
     if (updateR.ok) {
-      el.textContent = '✅ 持仓已同步！'; el.className = 'sync-status show ok';
+      el.textContent='✅ 持仓已同步'; el.className='sync-status show ok';
+      showToast('✅ 持仓同步成功！',3000);
       setTimeout(function(){el.className='sync-status'},5000);
     } else {
       el.textContent='❌ 更新ref失败 '+updateR.status; el.className='sync-status show err';
+      showToast('❌ 同步失败（'+updateR.status+'）',3000);
     }
+    resetBtn();
   } catch(e) {
-    el.textContent = '❌ 网络错误'; el.className='sync-status show err';
+    el.textContent='❌ 网络错误'; el.className='sync-status show err';
+    showToast('❌ 同步失败：网络错误',3000);
+    resetBtn();
   }
+  function resetBtn(){ if(btn){ btn.classList.remove('syncing'); btn.innerHTML='📤 同步'; btn.style.opacity=''; btn.style.pointerEvents=''; } }
 }
 
 window.loadHoldingsFromGitHub = async function() {
