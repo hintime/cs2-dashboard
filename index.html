@@ -2234,10 +2234,13 @@ window.showPriceChart = async function(itemName) {
   document.body.appendChild(overlay);
   
   try {
-    var r = await fetch('/api/pricechart?name=' + encodeURIComponent(itemName));
+    var url = 'https://raw.githubusercontent.com/hintime/cs2-dashboard/main/price_history.json';
+    var r = await fetch(url);
     if (!r.ok) { box.querySelector('div:not(button)').textContent = '❌ 暂无走势数据'; return; }
-    var data = await r.json();
-    var prices = (data.eco || []).map(function(e){ return e.p; }).filter(function(p){ return p > 0; });
+    var allData = await r.json();
+    var itemData = allData[itemName];
+    if (!itemData) { box.querySelector('div:not(button)').textContent = '❌ 暂无走势数据'; return; }
+    var prices = (itemData.eco || []).map(function(e){ return e.p; }).filter(function(p){ return p > 0; });
     if (prices.length < 2) { box.querySelector('div:not(button)').textContent = '❌ 数据不足'; return; }
     var canvas = document.createElement('canvas');
     canvas.width = 560; canvas.height = 240;
