@@ -1050,9 +1050,8 @@ window.syncHoldingsToGitHub = async function() {
     });
     if (updateR.ok) {
       el.textContent='✅ 持仓已同步'; el.className='sync-status show ok';
-      showToast('✅ 持仓同步成功，正在刷新数据...',4000);
+      showToast('✅ 持仓同步成功',3000);
       setTimeout(function(){el.className='sync-status'},5000);
-      setTimeout(function(){ loadAll(); }, 800); // 同步后自动刷新数据
     } else {
       el.textContent='❌ 更新ref失败 '+updateR.status; el.className='sync-status show err';
       showToast('❌ 同步失败（'+updateR.status+'）',3000);
