@@ -504,17 +504,23 @@ html { scroll-behavior: smooth; }
     <button onclick="document.getElementById('authModal').style.display='flex'" style="padding:12px 32px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:0 4px 20px rgba(96,165,250,.3)">👤 登录账号</button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center">
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px;transition:all .25s;cursor:default"
+         onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='#60a5fa';this.style.background='linear-gradient(135deg,rgba(96,165,250,.1),var(--surface2))'"
+         onmouseout="this.style.transform='';this.style.borderColor='';this.style.background=''">
       <div style="font-size:28px;margin-bottom:8px">📊</div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">全市场扫描</div>
       <div style="font-size:10px;color:var(--text3)">武器·刀·手套·探员<br>实时价格追踪</div>
     </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px;transition:all .25s;cursor:default"
+         onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='#f472b6';this.style.background='linear-gradient(135deg,rgba(244,114,182,.1),var(--surface2))'"
+         onmouseout="this.style.transform='';this.style.borderColor='';this.style.background=''">
       <div style="font-size:28px;margin-bottom:8px">💡</div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">智能推荐</div>
       <div style="font-size:10px;color:var(--text3)">多源数据评分<br>潜力饰品筛选</div>
     </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px;transition:all .25s;cursor:default"
+         onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='#fb923c';this.style.background='linear-gradient(135deg,rgba(251,146,60,.1),var(--surface2))'"
+         onmouseout="this.style.transform='';this.style.borderColor='';this.style.background=''">
       <div style="font-size:28px;margin-bottom:8px">📦</div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">持仓管理</div>
       <div style="font-size:10px;color:var(--text3)">Steam库存导入<br>盈亏实时分析</div>
@@ -1044,8 +1050,9 @@ window.syncHoldingsToGitHub = async function() {
     });
     if (updateR.ok) {
       el.textContent='✅ 持仓已同步'; el.className='sync-status show ok';
-      showToast('✅ 持仓同步成功！',3000);
+      showToast('✅ 持仓同步成功，正在刷新数据...',4000);
       setTimeout(function(){el.className='sync-status'},5000);
+      setTimeout(function(){ loadAll(); }, 800); // 同步后自动刷新数据
     } else {
       el.textContent='❌ 更新ref失败 '+updateR.status; el.className='sync-status show err';
       showToast('❌ 同步失败（'+updateR.status+'）',3000);
