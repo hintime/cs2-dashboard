@@ -451,12 +451,14 @@ html { scroll-behavior: smooth; }
       <div class="sub">数据来源: ECOSteam · CSQAQ · GitHub Pages</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
+    <div id="headerTools" style="display:none">
       <button class="refresh-btn" id="refreshBtn" title="刷新数据，同时后台获取最新价格和异动">↻ 刷新</button>
       <button class="gear-btn" id="gearBtn" title="设置 GitHub Token">⚙</button>
       <span class="badge"><span class="dot"></span>实时</span>
       <span class="badge" id="dataSourceBadge" style="font-size:10px;color:var(--text3)">数据:N/A</span>
       <span class="badge" id="updateTime" title="数据更新时间">--</span>
       <span id="refreshStatus" style="font-size:11px;color:var(--text3);min-width:60px"></span>
+    </div>
       <button id="loginBtn" onclick="document.getElementById('authModal').style.display='flex'" style="background:var(--blue);color:#fff;border:none;padding:4px 14px;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap">登录</button>
       <span id="userSection" style="display:none;font-size:12px">
         <span id="userEmail" style="color:var(--text2)"></span>
@@ -468,7 +470,7 @@ html { scroll-behavior: smooth; }
   </div>
 
   <!-- ══════════ 快速导航（吸顶合并）══════════ -->
-  <div class="quick-nav" id="quickNav">
+  <div class="quick-nav" id="quickNav" style="display:none">
     <button class="nav-btn" onclick="scrollToPanel('scanPanel')">🌐 市场</button>
     <button class="nav-btn" onclick="scrollToPanel('newsSection')">📰 资讯</button>
     <button class="nav-btn" onclick="scrollToPanel('recPanel')">💡 推荐</button>
@@ -3490,7 +3492,7 @@ function localSignIn() {
   if (AUTH_ACCOUNTS[a] === p) {
     localStorage.setItem('cs2_user', JSON.stringify({account:a,time:Date.now()}));
     showLoggedIn(a);
-    location.reload(); // 加载持仓数据
+    loadAll(); // 刷新数据
   } else { document.getElementById('authMsg').textContent='账号或密码错误'; document.getElementById('authMsg').style.display=''; }
 }
 function localSignOut() {
@@ -3498,6 +3500,10 @@ function localSignOut() {
   document.getElementById('userSection').style.display='none';
   document.getElementById('loginBtn').style.display='';
   document.getElementById('loginGate').style.display='none';
+  var ht = document.getElementById('headerTools');
+  if(ht) ht.style.display='none';
+  var qn = document.getElementById('quickNav');
+  if(qn) qn.style.display='none';
   var mc = document.getElementById('mainContent');
   if(mc) mc.style.display='none';
   var lp = document.getElementById('loginLanding');
@@ -3509,6 +3515,10 @@ function showLoggedIn(account){
   document.getElementById('userEmail').textContent=account||'已登录';
   document.getElementById('authModal').style.display='none';
   document.getElementById('loginGate').style.display='';
+  var ht = document.getElementById('headerTools');
+  if(ht) ht.style.display='';
+  var qn = document.getElementById('quickNav');
+  if(qn) qn.style.display='';
   var mc = document.getElementById('mainContent');
   if(mc) mc.style.display='';
   var btn = document.getElementById('addHoldingBtn');
@@ -3522,12 +3532,14 @@ function showLoggedIn(account){
   var mc = document.getElementById('mainContent');
   if(mc) mc.style.display='';
 }
-// 不自动恢复登录，需要用户手动点击登录
-// 页面加载时显示引导页
+// 检查是否已有登录 session（刷新后恢复 UI 状态）
 (function(){
-  if(!localStorage.getItem('cs2_user')){
-    var lp = document.getElementById('loginLanding');
-    if(lp) lp.style.display='';
+  var u = localStorage.getItem('cs2_user');
+  if (u) {
+    try {
+      var d = JSON.parse(u);
+      showLoggedIn(d.account);
+    } catch(e){}
   }
 })();
 // ── 自选（localStorage）──
