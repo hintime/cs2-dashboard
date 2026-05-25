@@ -19,7 +19,7 @@
  *   用途: 存储卖出记录
  */
 
-const GH_PAGES = 'https://hintime.github.io/cs2-dashboard'
+const GH_PAGES = 'https://raw.githubusercontent.com/hintime/cs2-dashboard/main'
 const CSQAQ_BATCH = 'https://api.csqaq.com/v2/multi/batch'
 const CSQAQ_ALERTS = 'https://api.csqaq.com/v2/multi/alert'
 const STEAMDT_BATCH = 'https://open.steamdt.com/open/cs2/v1/price/batch'
