@@ -1477,8 +1477,8 @@ function setupExportBtn() {
 
 function updateKPI() {
   if (!H.length) return;
-  const tc = H.reduce((s,h) => s + h.c, 0);
-  const tp = H.reduce((s,h) => s + h.p, 0);
+  const tc = H.reduce((s,h) => s + (isNaN(h.c)?0:h.c), 0);
+  const tp = H.reduce((s,h) => s + (isNaN(h.p)?0:h.p), 0);
   const tpct = tc > 0 ? (tp - tc) / tc * 100 : 0;
   const isUp = tp >= tc;
   
@@ -1497,7 +1497,7 @@ function updateKPI() {
   if (countEl) countEl.textContent = H.length + ' 件';
   
   if (pnlEl) {
-    pnlEl.textContent = (isUp ? '+' : '') + '¥' + (tp - tc).toLocaleString();
+    pnlEl.textContent = (isUp ? '+' : '') + '¥' + ((tp||0) - (tc||0)).toLocaleString();
     pnlEl.style.color = isUp ? 'var(--rise)' : 'var(--fall)';
   }
   if (pnlPctEl) {
