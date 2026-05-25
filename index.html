@@ -2270,15 +2270,6 @@ window.showPriceChart = async function(itemName) {
     box.querySelector('div:not(button)').textContent = '❌ 加载失败';
   }
 }
-  var range = max - min || 1;
-  var xStep = (w - pad * 2) / (prices.length - 1);
-  var pts = prices.map(function(p, i) {
-    var x = pad + i * xStep;
-    var y = h - pad - ((p - min) / range) * (h - pad * 2);
-    return x.toFixed(1) + ',' + y.toFixed(1);
-  });
-  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '"><polyline fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="' + pts.join(' ') + '"/></svg>';
-};
 
 function renderAllRecs() {
   const grid = DOM.recGrid;
