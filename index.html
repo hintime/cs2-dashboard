@@ -1652,10 +1652,10 @@ function render() {
       '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(h.n)+'</div></td>'+
       '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
       '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
-      '<td class="text-r mono">¥'+(h.p !== undefined ? h.p.toFixed(2) : '0.00')+'</td>'+
+      '<td class="text-r mono">'+(h.p && h.p > 0 ? '¥'+h.p.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
       '<td class="text-r mono">'+(h.buff_sell > 0 ? '¥'+h.buff_sell.toFixed(2)+'<sup style="font-size:8px;color:var(--rise);margin-left:1px">实时</sup>' : '<span class="text-muted">--</span>')+'<br><span style="font-size:10px;color:var(--amber)">'+(h.yyyp_sell > 0 ? '悠悠¥'+h.yyyp_sell.toFixed(2)+'<sup style="font-size:8px;color:var(--rise);margin-left:1px">实时</sup>' : '')+'</span></td>'+
-      '<td class="text-r mono" style="font-size:11px">'+(h.rate_1 !== undefined ? '<span class="'+(h.rate_1>=0?'clr-rise':'clr-fall')+'">'+(h.rate_1>=0?'+':'')+h.rate_1.toFixed(1)+'%</span>' : '--')+' · '+(h.rate_7 !== undefined ? '<span class="'+(h.rate_7>=0?'clr-rise':'clr-fall')+'">'+(h.rate_7>=0?'+':'')+h.rate_7.toFixed(1)+'%</span>' : '--')+'</td>'+
-      '<td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+h.pnl.toFixed(2)+'</span></td>'+
+      '<td class="text-r mono" style="font-size:11px">'+(h.rate_1 !== undefined && !isNaN(h.rate_1) ? '<span class="'+(h.rate_1>=0?'clr-rise':'clr-fall')+'">'+(h.rate_1>=0?'+':'')+h.rate_1.toFixed(1)+'%</span>' : '--')+' · '+(h.rate_7 !== undefined && !isNaN(h.rate_7) ? '<span class="'+(h.rate_7>=0?'clr-rise':'clr-fall')+'">'+(h.rate_7>=0?'+':'')+h.rate_7.toFixed(1)+'%</span>' : '--')+'</td>'+
+      '<td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+(isNaN(h.pnl)?'0.00':h.pnl.toFixed(2))+'</span></td>'+
       '<td class="text-r"><div class="pnl-bar-wrap"><span class="'+pnlCls+'" style="font-weight:600">'+(h.pnlPct>=0?'+':'')+h.pnlPct.toFixed(1)+'%</span><span class="pnl-bar-icon">'+barIcon+'</span><div class="pnl-bar-track"><div class="pnl-bar-fill '+barCls+'" style="width:'+barPct.toFixed(0)+'%"></div></div></div></td>'+
       '<td class="text-r"><button class="sell-btn" data-name="'+esc(h.n)+'" data-wear="'+(h.w||'')+'" title="卖出此饰品">卖出</button></td>'+
       '</tr>';
