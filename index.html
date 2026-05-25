@@ -1436,8 +1436,8 @@ function renderNewsTab(tab) {
     });
     html += '</div>';
     if (H.length) {
-      var totalV = H.reduce(function(s,h) { return s + h.p * (h.q||1); }, 0);
-      var totalC = H.reduce(function(s,h) { return s + h.c * (h.q||1); }, 0);
+      var totalV = H.reduce(function(s,h) { var v = h.p * (h.q||1); return s + (isNaN(v)?0:v); }, 0);
+      var totalC = H.reduce(function(s,h) { var c = h.c * (h.q||1); return s + (isNaN(c)?0:c); }, 0);
       var winCount = H.filter(function(h) { return h.pnl >= 0; }).length;
       var winRate = (winCount/H.length*100).toFixed(1);
       html += '<div class="sentiment-card" style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">'+
@@ -1631,6 +1631,11 @@ function render() {
   const frag = document.createDocumentFragment();
   pageItems.forEach((h, idx) => {
     const realIdx = start + idx;
+    // 防止 NaN 污染显示
+    if(isNaN(h.p)) h.p = 0;
+    if(isNaN(h.c)) h.c = 0;
+    if(isNaN(h.pnl)) h.pnl = 0;
+    if(isNaN(h.pnlPct)) h.pnlPct = 0;
     const isProfit = h.pnl >= 0;
     const pnlCls = isProfit ? 'clr-rise' : 'clr-fall';
     const rowCls = isProfit ? 'pnl-profit' : 'pnl-loss';
