@@ -3544,8 +3544,12 @@ function showLoggedIn(account){
     try {
       var d = JSON.parse(u);
       showLoggedIn(d.account);
+      return;
     } catch(e){}
   }
+  // 未登录 → 显示引导页
+  var lp = document.getElementById('loginLanding');
+  if(lp) lp.style.display='';
 })();
 // ── 自选（localStorage）──
 function loadMyWatchlist(){
