@@ -17,3 +17,10 @@ run_update.cmd
 
 # Large data files (uploaded via CI, not git)
 price_history.json
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
