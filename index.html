@@ -302,6 +302,9 @@ tr.pnl-profit{border-left:2px solid var(--rise)}
 tr.pnl-profit:hover{border-left-color:var(--rise);border-left-width:3px}
 tr.pnl-loss{border-left:2px solid var(--fall)}
 tr.pnl-loss:hover{border-left-color:var(--fall);border-left-width:3px}
+tr.hold-row{cursor:pointer}
+.row-analysis{display:none}
+.row-analysis.open{display:table-row}
 
 .empty-state{font-size:11px;color:var(--text3);padding:16px;text-align:center}
 
@@ -1647,7 +1650,15 @@ function render() {
     const barCls = isProfit ? 'profit' : 'loss';
     const barIcon = isProfit ? '🔼' : '🔽';
     const tr = document.createElement('tr');
-    tr.className = rowCls;
+    tr.className = rowCls + ' hold-row';
+    tr.dataset.idx = realIdx;
+    tr.onclick = function(e) {
+      if (e.target.closest('button') || e.target.closest('.cost-val')) return;
+      var ar = this.nextElementSibling;
+      if (ar && ar.classList.contains('row-analysis')) {
+        ar.classList.toggle('open');
+      }
+    };
     tr.innerHTML =
       '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(h.n)+'</div></td>'+
       '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
