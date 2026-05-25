@@ -1290,6 +1290,8 @@ function initDashboard() {
   setupChangelogClose()
   setupRefreshBtn()
   setupTokenModal()
+  var lb2 = document.getElementById('loadBar');
+  if(lb2) { lb2.classList.remove('active'); lb2.classList.add('done'); }
 }
 
 
