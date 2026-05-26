@@ -150,13 +150,24 @@ export default {
       if (path === '/api/pricechart') {
         const name = url.searchParams.get('name') || '';
         if (!name) return json({ error: 'missing name' }, 400, cors);
-        const historyUrl = 'https://raw.githubusercontent.com/hintime/cs2-dashboard/main/price_history.json';
+        // 读 buff_history.json（4MB，按日期组织），提取指定物品的价格序列
+        const historyUrl = 'https://raw.githubusercontent.com/hintime/cs2-dashboard/main/buff_history.json';
         const resp = await fetch(historyUrl, { cf: { cacheTtl: 300, cacheEverything: true } });
         if (!resp.ok) return json({ error: 'history not available' }, 502, cors);
         const allData = await resp.json();
-        const itemData = allData[name];
-        if (!itemData) return json({ error: 'not found' }, 404, cors);
-        return json(itemData, 200, cors);
+        var prices = [];
+        Object.keys(allData).sort().forEach(function(date) {
+          var day = allData[date];
+          if (day && day[name]) {
+            var item = day[name];
+            if (item.buff_sell && item.buff_sell > 0) {
+              prices.push({ t: date.substring(0,16), p: item.buff_sell });
+            }
+          }
+        });
+        if (prices.length < 2) return json({ error: 'not enough data' }, 404, cors);
+        // 返回格式与前端预期兼容：{ eco: [{t, p}, ...] }
+        return json({ eco: prices }, 200, cors);
       }
 
       // ── 代理 GitHub Pages 静态文件 ──

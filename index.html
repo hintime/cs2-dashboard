@@ -932,6 +932,20 @@ function showToast(msg, duration) {
 // ═══════════════ HELPERS ═══════════════
 function wearCN(code) { return WEAR_MAP[code] || code || '--'; }
 
+// 翻译饰品名：中文名映射 + 磨损中文
+function cnName(name) {
+  if (!name) return name;
+  var nm = window._cnNameMap || {};
+  var cn = nm[name] || name;
+  // 替换磨损
+  cn = cn.replace(/\(Factory New\)/g,'(崭新出厂)')
+    .replace(/\(Minimal Wear\)/g,'(略有磨损)')
+    .replace(/\(Field-Tested\)/g,'(久经沙场)')
+    .replace(/\(Well-Worn\)/g,'(战地风云)')
+    .replace(/\(Battle-Scarred\)/g,'(战痕累累)');
+  return cn;
+}
+
 function overrideKey(name, wear) {
   // Stable key: name|WEAR_CODE (e.g. "AK-47 红线|FT")
   // Empty/other wear uses empty string
@@ -1662,7 +1676,7 @@ function render() {
       }
     };
     tr.innerHTML =
-      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(h.n)+'<span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span></div></td>'+
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span></div></td>'+
       '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
       '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
       '<td class="text-r mono">'+(h.p && h.p > 0 ? '¥'+h.p.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
