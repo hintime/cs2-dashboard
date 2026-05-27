@@ -1409,38 +1409,41 @@ async function fetchCS2Updates() {
 function calcSentiment() {
   var signals = [];
   var score = 50;
+  // 全量市场数据（从 market_scan.json）
+  var scan = window._marketScan || {};
+  if (scan.movers) {
+    var gainers = scan.movers.gainers || [], losers = scan.movers.losers || [];
+    var totalMovers = gainers.length + losers.length || 1;
+    var gainRatio = gainers.length / totalMovers;
+    // 涨跌比影响分数
+    if (gainRatio >= 0.7)       { score += 20; signals.push({emoji:'🚀', text:'涨跌比 '+gainers.length+':'+losers.length+'，市场强势'}); }
+    else if (gainRatio <= 0.3)  { score -= 20; signals.push({emoji:'📉', text:'涨跌比 '+gainers.length+':'+losers.length+'，市场普跌'}); }
+    else if (gainRatio >= 0.5)  { score += 8;  signals.push({emoji:'📈', text:'涨跌比 '+gainers.length+':'+losers.length+'，市场偏多'}); }
+    else                        { score -= 8;  signals.push({emoji:'📊', text:'涨跌比 '+gainers.length+':'+losers.length+'，市场承压'}); }
+    // 平均涨跌幅度
+    var avgGain = gainers.length ? gainers.reduce(function(s,g){return s+g.r7;},0)/gainers.length : 0;
+    var avgLoss = losers.length ? losers.reduce(function(s,l){return s+l.r7;},0)/losers.length : 0;
+    if (avgGain > 20)      { score += 10; signals.push({emoji:'🔥', text:'平均涨幅 +'+avgGain.toFixed(0)+'%，资金活跃'}); }
+    else if (avgGain > 5)  { score += 5;  signals.push({emoji:'📈', text:'平均涨幅 +'+avgGain.toFixed(0)+'%'}); }
+    if (avgLoss < -30)     { score -= 10; signals.push({emoji:'❄', text:'平均跌幅 '+avgLoss.toFixed(0)+'%，抛压明显'}); }
+    else if (avgLoss < -10){ score -= 5;  signals.push({emoji:'📉', text:'平均跌幅 '+avgLoss.toFixed(0)+'%'}); }
+  }
+  // 价格分布
+  if (scan.tiers) {
+    var t = scan.tiers, tierTotal = Object.values(t).reduce(function(a,b){return a+b;},0)||1;
+    var highEnd = (t['200-1000']||0) + (t['>1000']||0);
+    var highRatio = highEnd / tierTotal;
+    if (highRatio > 0.3) { score += 5; signals.push({emoji:'💎', text:'高端饰品占比'+(highRatio*100).toFixed(0)+'%，市场活跃'}); }
+  }
+  // 持仓对比
   if (H && H.length) {
-    // 持仓涨跌趋势分析
     var upCount = 0, downCount = 0;
-    H.forEach(function(h) {
-      var r7 = h.rate_7 !== undefined ? h.rate_7 : 0;
-      if (r7 > 0) upCount++;
-      else if (r7 < 0) downCount++;
-    });
-    var total = upCount + downCount || 1;
-    if (upCount > downCount * 1.5) { score += 15; signals.push({emoji:'🔥', text:upCount+'/'+total+'件持仓7日上涨，趋势向好'}); }
-    else if (downCount > upCount * 1.5) { score -= 15; signals.push({emoji:'📉', text:downCount+'/'+total+'件持仓7日下跌，趋势承压'}); }
-    else { signals.push({emoji:'⚖️', text:'持仓涨跌力量均衡'}); }
-    // 平均7日涨幅
-    var sumR7 = 0, cntR7 = 0;
-    H.forEach(function(h) {
-      var r7 = h.rate_7 !== undefined ? h.rate_7 : 0;
-      sumR7 += r7; cntR7++;
-    });
-    if (cntR7 > 0) {
-      var avgR7 = sumR7 / cntR7;
-      if (avgR7 > 3) { score += 10; signals.push({emoji:'📈', text:'持仓平均7日涨幅 +' + avgR7.toFixed(1) + '%'}); }
-      else if (avgR7 < -3) { score -= 10; signals.push({emoji:'📉', text:'持仓平均7日跌幅 ' + avgR7.toFixed(1) + '%'}); }
-    }
+    H.forEach(function(h){ if(h.pnl>=0) upCount++; else downCount++; });
+    var winRate = upCount/H.length;
+    if (winRate > 0.7)      { score += 10; signals.push({emoji:'🏆', text:'持仓胜率'+(winRate*100).toFixed(0)+'%，优于市场'}); }
+    else if (winRate < 0.3) { score -= 10; signals.push({emoji:'⚠', text:'持仓胜率'+(winRate*100).toFixed(0)+'%，需关注'}); }
   }
-  if (H.length) {
-    var totalPnlPct = 0, totalCost = 0;
-    H.forEach(function(h) { var cost = h.c * (h.q||1); totalCost += cost; totalPnlPct += h.pnlPct * cost; });
-    totalPnlPct = totalCost > 0 ? totalPnlPct / totalCost : 0;
-    if (totalPnlPct > 5) { score += 10; signals.push({emoji:'💰', text:'持仓盈利>5%，健康'}); }
-    else if (totalPnlPct < -5) { score -= 10; signals.push({emoji:'⚠', text:'持仓亏损>5%，关注风险'}); }
-    else { signals.push({emoji:'💼', text:'持仓波动较小'}); }
-  }
+  score = Math.max(0, Math.min(100, score));
   score = Math.max(0, Math.min(100, score));
   var vibe = score >= 65 ? '🐂 看多' : score <= 35 ? '🐻 看空' : '⚖ 中性';
   var color = score >= 65 ? 'var(--rise)' : score <= 35 ? 'var(--fall)' : 'var(--text2)';
@@ -3072,6 +3075,7 @@ function updateAnalysisKPI(analyses) {
 // ═══════════════ 全市场扫描 ═══════════════
 function renderScan() {
   fetch('market_scan.json?_t=' + Date.now()).then(function(r) { return r.ok ? r.json() : null; }).then(function(scan) {
+    window._marketScan = scan || {};
     if (!scan) return;
     var kpis = document.getElementById('scanKpis');
     var tiers = document.getElementById('scanTiers');
