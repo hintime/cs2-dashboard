@@ -130,6 +130,28 @@ export default {
           } catch (_) {}
         }
 
+        // 3️⃣ 双源都挂了 → buff_history 兜底
+        try {
+          const historyUrl = 'https://raw.githubusercontent.com/hintime/cs2-dashboard/main/buff_history.json';
+          const resp = await fetch(historyUrl, { cf: { cacheTtl: 300, cacheEverything: true } });
+          if (resp.ok) {
+            const allData = await resp.json();
+            var dates = Object.keys(allData).sort();
+            var latest = dates[dates.length - 1];
+            if (latest && allData[latest]) {
+              var result = {};
+              hnList.forEach(function(name) {
+                var item = allData[latest][name];
+                if (item && item.buff_sell > 0) {
+                  result[name] = { buff_sell: item.buff_sell, buff_buy: item.buff_buy || 0, source: 'BUFF', buff_source: 'BUFF', buff_sell_num: item.buff_sell_num || 0, buff_buy_num: item.buff_buy_num || 0, _source: 'buff_history' };
+                  if (item.yyyp_sell > 0) { result[name].yyyp_sell = item.yyyp_sell; result[name].yyyp_sell_num = item.yyyp_sell_num || 0; }
+                }
+              });
+              if (Object.keys(result).length) return json(result, 200, cors);
+            }
+          }
+        } catch (_) {}
+
         return json({ error: '价格源不可用（CSQAQ 和 SteamDT 都挂了）' }, 502, cors)
       }
 
