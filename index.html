@@ -2260,45 +2260,81 @@ window.showPriceChart = async function(itemName) {
     canvas.style.cssText = 'width:100%;height:auto;border-radius:8px;background:#0d1117';
     box.querySelector('div:not(button)').replaceWith(canvas);
     var ctx = canvas.getContext('2d');
-    var W = canvas.width, H = canvas.height, pad = {t:24,b:32,l:48,r:20};
+    var W = canvas.width, H = canvas.height;
+    var padT = 28, padB = 38, padL = 52, padR = 24;
+    var pw = W - padL - padR, ph = H - padT - padB;
     var min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
     var range = max - min;
     if (range < 0.5) { range = 1; min -= 0.5; }
-    function px(i) { return pad.l + i / (prices.length - 1) * (W - pad.l - pad.r); }
-    function py(v) { return pad.t + (max - v) / range * (H - pad.t - pad.b); }
-    ctx.clearRect(0,0,W,H);
+    function px(i) { return padL + i / (prices.length - 1) * pw; }
+    function py(v) { return padT + (max - v) / range * ph; }
+    
+    // 深色背景
     ctx.fillStyle = '#0d1117'; ctx.fillRect(0,0,W,H);
-    // 网格
-    ctx.strokeStyle = 'rgba(55,65,81,.4)'; ctx.lineWidth = 0.5;
-    for (var g = 0; g <= 4; g++) { var gy = pad.t + g/4*(H-pad.t-pad.b); ctx.beginPath(); ctx.moveTo(pad.l,gy); ctx.lineTo(W-pad.r,gy); ctx.stroke(); }
-    // 渐变填充
-    var grad = ctx.createLinearGradient(0, pad.t, 0, H-pad.b);
-    grad.addColorStop(0, 'rgba(96,165,250,.25)'); grad.addColorStop(1, 'rgba(96,165,250,.02)');
+    ctx.fillStyle = 'rgba(96,165,250,.03)'; ctx.fillRect(padL,padT,pw,ph);
+    
+    // 网格线 + Y轴标签
+    for (var g = 0; g <= 3; g++) {
+      var gy = padT + g/3*ph;
+      var val = max - g/3*range;
+      ctx.strokeStyle = 'rgba(55,65,81,.25)'; ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(padL,gy); ctx.lineTo(W-padR,gy); ctx.stroke();
+      ctx.fillStyle = '#64748b'; ctx.font = '10px -apple-system,sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText('¥'+val.toFixed(0), padL-8, gy+4);
+    }
+    
+    // X轴日期标签（取首尾+中间2个）
+    var xLabels = [0];
+    if (prices.length > 3) { xLabels.push(Math.floor(prices.length/3)); xLabels.push(Math.floor(prices.length*2/3)); }
+    xLabels.push(prices.length-1);
+    xLabels.forEach(function(i){
+      ctx.fillStyle = '#64748b'; ctx.font = '9px -apple-system,sans-serif'; ctx.textAlign = 'center';
+      var ts = (data.eco||prices)[i] ? (data.eco||[{t:''}])[i].t : '';
+      var label = ts.length>10 ? ts.substring(5,10) : '#'+(i+1);
+      ctx.fillText(label, px(i), H-padB+16);
+    });
+    
+    // 渐变区域填充
+    var grad = ctx.createLinearGradient(0, padT, 0, H-padB);
+    grad.addColorStop(0, 'rgba(96,165,250,.20)'); grad.addColorStop(1, 'rgba(96,165,250,.02)');
     ctx.beginPath();
     prices.forEach(function(v,i){ i===0 ? ctx.moveTo(px(i),py(v)) : ctx.lineTo(px(i),py(v)); });
-    ctx.lineTo(px(prices.length-1),H-pad.b); ctx.lineTo(pad.l,H-pad.b); ctx.closePath();
+    ctx.lineTo(px(prices.length-1),H-padB); ctx.lineTo(padL,H-padB); ctx.closePath();
     ctx.fillStyle = grad; ctx.fill();
-    // 折线 + 发光
+    
+    // 发光折线
     ctx.beginPath();
-    prices.forEach(function(v,i){ i===0 ? ctx.moveTo(px(i),py(v)) : ctx.lineTo(px(i),py(v)); });
-    ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2; ctx.shadowColor = 'rgba(96,165,250,.5)'; ctx.shadowBlur = 6; ctx.stroke();
+    ctx.moveTo(px(0), py(prices[0]));
+    for (var i=1; i<prices.length; i++) {
+      var cp1x = px(i-1)+pw/prices.length*0.4, cp1y = py(prices[i-1]);
+      var cp2x = px(i)-pw/prices.length*0.4, cp2y = py(prices[i]);
+      ctx.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,px(i),py(prices[i]));
+    }
+    ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(96,165,250,.6)'; ctx.shadowBlur = 8; ctx.stroke();
     ctx.shadowBlur = 0;
-    // 最新点
-    var last = prices[prices.length-1];
-    ctx.beginPath(); ctx.arc(px(prices.length-1), py(last), 4, 0, Math.PI*2);
-    ctx.fillStyle = '#60a5fa'; ctx.fill();
-    // 价格标签
-    ctx.fillStyle = '#94a3b8'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('¥'+min.toFixed(0), pad.l-6, H-pad.b+14);
-    ctx.fillText('¥'+max.toFixed(0), pad.l-6, pad.t-4);
+    
+    // 数据点标记
+    prices.forEach(function(v,i){
+      ctx.beginPath(); ctx.arc(px(i), py(v), (i===0||i===prices.length-1)?3:2, 0, Math.PI*2);
+      ctx.fillStyle = '#0d1117'; ctx.fill();
+      ctx.strokeStyle = (i===prices.length-1)?'#60a5fa':'rgba(96,165,250,.5)';
+      ctx.lineWidth = (i===prices.length-1)?2.5:1.5; ctx.stroke();
+    });
+    
+    // 最新价格高亮标签
+    var lastV = prices[prices.length-1];
+    ctx.fillStyle = '#60a5fa'; ctx.font = 'bold 14px -apple-system,sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('¥'+lastV.toFixed(2), px(prices.length-1)+10, py(lastV)+5);
+    
     // 涨跌率
-    var change = prices.length>1 ? ((prices[prices.length-1]-prices[0])/prices[0]*100) : 0;
-    var chgColor = change>=0 ? '#4ade80' : '#f87171';
-    ctx.fillStyle = chgColor; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText((change>=0?'+':'')+change.toFixed(1)+'%', pad.l, pad.t-6);
-    // 底栏
-    ctx.fillStyle = '#526477'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('BUFF走势 · '+prices.length+'期', W-pad.r, H-pad.b+16);
+    var change = prices.length>1 ? ((lastV-prices[0])/prices[0]*100) : 0;
+    ctx.fillStyle = change>=0 ? '#4ade80' : '#f87171'; ctx.font = '11px -apple-system,sans-serif';
+    ctx.fillText((change>=0?'↑ +':'↓ ')+change.toFixed(1)+'%', px(prices.length-1)+10, py(lastV)+20);
+    
+    // 底部信息栏
+    ctx.fillStyle = '#526477'; ctx.font = '10px -apple-system,sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('BUFF实时走势 · '+prices.length+'期', W-padR, H-padB+14);
   } catch(e) {
     box.querySelector('div:not(button)').textContent = '❌ 加载失败';
   }
