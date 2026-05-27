@@ -1487,32 +1487,52 @@ function renderNewsTab(tab) {
     grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:12px';
   } else if (tab === 'sentiment') {
     var s = calcSentiment();
-    html += '<div class="sentiment-card" style="margin-bottom:12px">'+
-      '<h4>🎭 市场情绪指数</h4>'+
-      '<div class="sentiment-bar">'+
-        '<span class="sentiment-label" style="color:'+s.color+'">'+s.vibe+'</span>'+
-        '<div class="sentiment-track"><div class="sentiment-fill" style="width:'+s.score+'%;background:'+s.color+'"></div></div>'+
-        '<span class="sentiment-val" style="color:'+s.color+'">'+s.score+'/100</span>'+
-      '</div></div>'+
-      '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">';
-    s.signals.forEach(function(sig) {
-      html += '<div class="sentiment-card">'+
-        '<h4>'+sig.emoji+' '+sig.text+'</h4>'+
-        '<p>'+sig.text+'</p></div>';
-    });
-    html += '</div>';
-    if (H.length) {
-      var totalV = H.reduce(function(s,h) { var v = h.p * (h.q||1); return s + (isNaN(v)?0:v); }, 0);
-      var totalC = H.reduce(function(s,h) { var c = h.c * (h.q||1); return s + (isNaN(c)?0:c); }, 0);
-      var winCount = H.filter(function(h) { return h.pnl >= 0; }).length;
-      var winRate = (winCount/H.length*100).toFixed(1);
-      html += '<div class="sentiment-card" style="margin-top:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center">'+
-        '<div><div style="font-size:20px;font-weight:700;color:var(--text)">¥'+totalV.toFixed(0)+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">持仓市值</div></div>'+
-        '<div><div style="font-size:20px;font-weight:700;color:var(--text)">'+H.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">持仓品种</div></div>'+
-        '<div><div style="font-size:20px;font-weight:700;color:var(--rise)">'+winRate+'%</div><div style="font-size:10px;color:var(--text3);margin-top:4px">盈利率</div></div>'+
-        '<div><div style="font-size:20px;font-weight:700;color:'+(totalV>=totalC?'var(--rise)':'var(--fall)')+'">¥'+(totalV-totalC).toFixed(0)+'</div><div style="font-size:10px;color:var(--text3);margin-top:4px">持仓盈亏</div></div>'+
-      '</div>';
-    }
+    var upCount = H.filter(function(h){return (h.rate_7||0)>0;}).length;
+    var dnCount = H.filter(function(h){return (h.rate_7||0)<0;}).length;
+    var totalV = H.reduce(function(sum,h){var v=h.p*(h.q||1);return sum+(isNaN(v)?0:v);},0);
+    var totalC = H.reduce(function(sum,h){var c=h.c*(h.q||1);return sum+(isNaN(c)?0:c);},0);
+    var pnl = totalV - totalC;
+    var pnlPct = totalC>0?(pnl/totalC*100):0;
+    var winCount = H.filter(function(h){return h.pnl>=0;}).length;
+    var winRate = H.length?(winCount/H.length*100).toFixed(1):'0';
+    
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+      // 左：情绪仪表盘
+      '<div class="sentiment-card">'+
+        '<h4>🎭 市场情绪</h4>'+
+        '<div style="text-align:center;padding:16px 0">'+
+          '<div style="font-size:48px;margin-bottom:4px">'+(s.score>=65?'🐂':s.score<=35?'🐻':'⚖')+'</div>'+
+          '<div style="font-size:20px;font-weight:700;color:'+s.color+'">'+s.score+'/100 · '+s.vibe+'</div>'+
+        '</div>'+
+        '<div class="sentiment-track" style="height:6px;margin-top:8px"><div class="sentiment-fill" style="width:'+s.score+'%;background:linear-gradient(90deg,#f87171,#fbbf24,#4ade80);border-radius:3px"></div></div>'+
+        '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:2px"><span>🐻 看空0</span><span>⚖ 中性50</span><span>🐂 看多100</span></div>'+
+      '</div>'+
+      // 右：持仓健康
+      '<div class="sentiment-card">'+
+        '<h4>💼 持仓健康</h4>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">'+
+          '<div style="text-align:center"><div style="font-size:24px;font-weight:700;color:'+(pnlPct>=0?'var(--rise)':'var(--fall)')+'">'+(pnlPct>=0?'+':'')+pnlPct.toFixed(1)+'%</div><div style="font-size:10px;color:var(--text3);margin-top:2px">持仓盈亏率</div></div>'+
+          '<div style="text-align:center"><div style="font-size:24px;font-weight:700;color:var(--rise)">'+winRate+'%</div><div style="font-size:10px;color:var(--text3);margin-top:2px">胜率</div></div>'+
+          '<div style="text-align:center"><div style="font-size:24px;font-weight:700;color:var(--text)">'+H.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">持仓品种</div></div>'+
+          '<div style="text-align:center"><div style="font-size:24px;font-weight:700;color:'+(pnl>=0?'var(--rise)':'var(--fall)')+'">¥'+(pnl>=0?'+':'')+pnl.toFixed(0)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">总盈亏</div></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    // 涨跌分布 + 信号
+    '<div class="sentiment-card" style="margin-top:12px">'+
+      '<h4>📊 持仓涨跌分布</h4>'+
+      '<div style="display:flex;align-items:center;gap:12px;margin-top:10px">'+
+        '<span style="color:var(--rise);font-size:12px;font-weight:600;min-width:44px">📈 '+upCount+'只</span>'+
+        '<div style="flex:1;height:20px;background:var(--border);border-radius:10px;overflow:hidden;display:flex">'+
+          '<div style="height:100%;width:'+(H.length?upCount/H.length*100:0)+'%;background:linear-gradient(90deg,#34d399,#4ade80);border-radius:10px 0 0 10px;transition:width .6s"></div>'+
+          '<div style="height:100%;width:'+(H.length?dnCount/H.length*100:0)+'%;background:linear-gradient(90deg,#f87171,#ef4444);border-radius:0 10px 10px 0;transition:width .6s"></div>'+
+        '</div>'+
+        '<span style="color:var(--fall);font-size:12px;font-weight:600;min-width:44px;text-align:right">📉 '+dnCount+'只</span>'+
+      '</div>'+
+      '<div style="margin-top:12px;font-size:11px;color:var(--text2)">'+
+        s.signals.map(function(sig){return '<span style="margin-right:16px">'+sig.emoji+' '+sig.text+'</span>';}).join('')+
+      '</div>'+
+    '</div>';
     grid.innerHTML = html;
     grid.style.cssText = '';
   }
