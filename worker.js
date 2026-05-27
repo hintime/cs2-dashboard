@@ -20,7 +20,7 @@
  */
 
 const GH_PAGES = 'https://raw.githubusercontent.com/hintime/cs2-dashboard/main'
-const CSQAQ_BATCH = 'https://api.csqaq.com/v2/multi/batch'
+const CSQAQ_BATCH = 'https://api.csqaq.com/api/v1/goods/getPriceByMarketHashName'
 const CSQAQ_ALERTS = 'https://api.csqaq.com/v2/multi/alert'
 const STEAMDT_BATCH = 'https://open.steamdt.com/open/cs2/v1/price/batch'
 const KV_KEY = 'sold:items'
@@ -70,14 +70,23 @@ export default {
             const resp = await fetch(CSQAQ_BATCH, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'ApiToken': env.CSQAQ_API_TOKEN },
-              body: JSON.stringify({ hash_names: hnList }),
+              body: JSON.stringify({ marketHashNameList: hnList }),
             })
             if (resp.ok) {
               const data = await resp.json()
-              if (data && !data.error) {
-                // 标记来源
-                Object.keys(data).forEach(function(k) { if (typeof data[k] === 'object') data[k]._source = 'csqaq'; });
-                return json(data, 200, cors)
+              if (data && data.code === 0 && data.data && data.data.success) {
+                var result = {};
+                Object.keys(data.data.success).forEach(function(k){
+                  var item = data.data.success[k];
+                  result[k] = {
+                    buff_sell: item.buffSellPrice || 0,
+                    buff_sell_num: item.buffSellNum || 0,
+                    yyyp_sell: item.yyypSellPrice || 0,
+                    yyyp_sell_num: item.yyypSellNum || 0,
+                    _source: 'csqaq'
+                  };
+                });
+                return json(result, 200, cors)
               }
             }
           } catch (_) {}
