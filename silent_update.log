@@ -229,3 +229,18 @@ subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=manager
 [OK] Git pushed: chore: update correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_history.json 2026-05-25 02:05
 === Done ===
 2026-05-25 02:05:35 [update.py ERR] [NAME] name_map generation skipped: cannot access local variable 'json' where it is not associated with a value
+2026-05-28 01:06:27 [update.py] .com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+[SCAN] Total: 37312, Valid: 8793
+[SCAN] Saved: 8793 items (from 37312), 8449 with prices, 4 categories, movers: True
+[SCAN] market_scan.json regenerated
+[CORR] Loading price_history.json...
+[CORR] 4298 items × 11 days
+[CORR] Computing correlations for 298 items...
+[CORR] Saved 200 pairs (30 pos, 2 neg) in 1.4s
+[REPORT] Saved daily report for 2026-05-28
+[STATUS] Summary generated: 7 fields
+2026-05-28 01:06:27 [update.py ERR] , 'credential.helper=manager', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=manager', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push']' returned non-zero exit status 1.

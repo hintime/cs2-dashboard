@@ -2257,8 +2257,8 @@ window.showPriceChart = async function(itemName) {
   overlay.style.cssText = 'opacity:1;pointer-events:auto;display:flex';
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
   var box = document.createElement('div');
-  box.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:620px;width:92%;position:relative;box-shadow:0 16px 48px rgba(0,0,0,.5)';
-  box.innerHTML = '<div style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:8px"><span style="font-size:20px">📈</span>' + esc(cnName(itemName)) + ' 价格走势</div><div id="chartLoading" style="text-align:center;color:var(--text3);padding:48px 0">⏳ 加载数据...</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.background=\'var(--surface)\'" onmouseout="this.style.background=\'none\'">✕</button>';
+  box.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:660px;width:92%;position:relative;box-shadow:0 16px 48px rgba(0,0,0,.5)';
+  box.innerHTML = '<div style="font-size:15px;font-weight:700;margin-bottom:10px;color:var(--text);display:flex;align-items:center;gap:8px"><span>📈</span>' + esc(cnName(itemName)) + '</div><div id="chartLoading" style="text-align:center;color:var(--text3);padding:48px 0">⏳ 加载数据...</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.background=\'var(--surface)\'" onmouseout="this.style.background=\'none\'">✕</button>';
   overlay.appendChild(box);
   document.body.appendChild(overlay);
   
@@ -2269,12 +2269,12 @@ window.showPriceChart = async function(itemName) {
     var prices = (data.eco || []).map(function(e){ return e.p; }).filter(function(p){ return p > 0; });
     if (prices.length < 2) { document.getElementById('chartLoading').textContent = '❌ 数据不足'; return; }
     var canvas = document.createElement('canvas');
-    canvas.width = 580; canvas.height = 300;
+    canvas.width = 620; canvas.height = 320;
     canvas.style.cssText = 'width:100%;height:auto;display:block';
     document.getElementById('chartLoading').replaceWith(canvas);
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
-    var padT = 32, padB = 40, padL = 60, padR = 30;
+    var padT = 32, padB = 44, padL = 56, padR = 80;
     var pw = W - padL - padR, ph = H - padT - padB;
     var min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
     var range = max - min || 1;
@@ -2329,23 +2329,31 @@ window.showPriceChart = async function(itemName) {
       ctx.strokeStyle = 'rgba(59,130,246,.7)'; ctx.lineWidth = 2; ctx.stroke();
     });
     
-    // 最新价标签
-    var last = prices[prices.length-1], first = prices[0];
-    var changePct = ((last-first)/first*100)||0;
+    // 右侧信息面板
+    var lastV = prices[prices.length-1], firstV = prices[0];
+    var changePct = ((lastV-firstV)/firstV*100)||0;
     var isUp = changePct >= 0;
-    var chgColor = isUp ? '#34d399' : '#f87171';
-    var lx = px(prices.length-1), ly = py(last);
-    // Badge
-    ctx.beginPath(); ctx.roundRect(lx+8, ly-26, 72, 48, 6); ctx.fillStyle = 'rgba(59,130,246,.15)'; ctx.fill();
-    ctx.strokeStyle = 'rgba(59,130,246,.3)'; ctx.lineWidth = 1; ctx.stroke();
-    ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 14px system-ui,sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('¥'+last.toFixed(2), lx+44, ly-2);
-    ctx.fillStyle = chgColor; ctx.font = '11px system-ui,sans-serif';
-    ctx.fillText((isUp?'↑ +':'↓ ')+Math.abs(changePct).toFixed(1)+'%', lx+44, ly+16);
+    var bx = W - padR + 10, by = padT + 10, bw = 64, bh = 56;
+    ctx.fillStyle = 'rgba(30,41,59,.9)'; ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,8); ctx.fill();
+    ctx.strokeStyle = isUp ? 'rgba(52,211,153,.4)' : 'rgba(248,113,113,.4)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 15px system-ui,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('¥'+lastV.toFixed(2), bx+bw/2, by+20);
+    ctx.fillStyle = isUp ? '#34d399' : '#f87171'; ctx.font = 'bold 12px system-ui,sans-serif';
+    ctx.fillText((isUp?'↑+':'↓')+Math.abs(changePct).toFixed(1)+'%', bx+bw/2, by+40);
     
-    // 底部
-    ctx.fillStyle = '#4b5563'; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('BUFF | '+prices.length+'期 | '+(isUp?'上涨':'下跌')+Math.abs(changePct).toFixed(1)+'%', W-padR, H-padB+14);
+    // 顶部信息行：最低价 | 最高价 | 波动幅度
+    ctx.fillStyle = '#94a3b8'; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'left';
+    var minV = Math.min.apply(null,prices), maxV = Math.max.apply(null,prices);
+    ctx.fillText('低 ¥'+minV.toFixed(2), padL, padT-8);
+    ctx.fillText('高 ¥'+maxV.toFixed(2), padL+pw/3, padT-8);
+    ctx.fillText('波幅 '+(Math.abs(changePct)).toFixed(1)+'%', padL+pw*2/3, padT-8);
+    
+    // 底部信息
+    var dates = Object.keys(data.eco||prices);
+    var startDate = (data.eco||[{t:''}])[0] ? ((data.eco||[{t:''}])[0].t||'').substring(0,10) : '';
+    var endDate = (data.eco||[{t:''}])[prices.length-1] ? ((data.eco||[{t:''}])[prices.length-1].t||'').substring(0,10) : '';
+    ctx.fillStyle = '#526477'; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('BUFF | '+prices.length+'期 | '+(startDate||'')+(endDate?' → '+endDate:''), W-padR, H-padB+14);
   } catch(e) {
     document.getElementById('chartLoading').textContent = '❌ 加载失败';
   }
