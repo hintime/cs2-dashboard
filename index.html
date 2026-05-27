@@ -1263,6 +1263,19 @@ async function loadAll() {
   // 加载 BUFF 历史数据（用于持仓折线图）
   fetch('buff_history.json?v=' + t0).then(function(r){ return r.ok ? r.json() : {}; }).then(function(bh){
     window._buffHistory = bh || {};
+    // 用 buff_history 补充持仓物品的 BUFF/悠悠价格
+    if (H && H.length) {
+      var latest = Object.keys(bh).sort().pop();
+      if (latest && bh[latest]) {
+        H.forEach(function(h){
+          var hn = h.mh || h.n;
+          if (!hn || !bh[latest][hn]) return;
+          var dp = bh[latest][hn];
+          if (dp.buff_sell > 0 && !h.buff_sell) { h.buff_sell = dp.buff_sell; h.buff_sell_num = dp.buff_sell_num || 0; }
+          if (dp.yyyp_sell > 0 && !h.yyyp_sell) { h.yyyp_sell = dp.yyyp_sell; h.yyyp_sell_num = dp.yyyp_sell_num || 0; }
+        });
+      }
+    }
   }).catch(function(){});
   renderNews();
   setTimeout(hideSkeleton, 80);
@@ -2244,8 +2257,8 @@ window.showPriceChart = async function(itemName) {
   overlay.style.cssText = 'opacity:1;pointer-events:auto;display:flex';
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
   var box = document.createElement('div');
-  box.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:600px;width:90%;position:relative';
-  box.innerHTML = '<div style="font-size:16px;font-weight:700;margin-bottom:16px">' + esc(itemName) + ' 价格走势</div><div style="text-align:center;color:var(--text3);padding:40px 0">⏳ 加载数据...</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3)">✕</button>';
+  box.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:620px;width:92%;position:relative;box-shadow:0 16px 48px rgba(0,0,0,.5)';
+  box.innerHTML = '<div style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:8px"><span style="font-size:20px">📈</span>' + esc(cnName(itemName)) + ' 价格走势</div><div style="text-align:center;color:var(--text3);padding:48px 0">⏳ 加载数据...</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.background=\'var(--surface)\'" onmouseout="this.style.background=\'none\'">✕</button>';
   overlay.appendChild(box);
   document.body.appendChild(overlay);
   
@@ -2256,85 +2269,83 @@ window.showPriceChart = async function(itemName) {
     var prices = (data.eco || []).map(function(e){ return e.p; }).filter(function(p){ return p > 0; });
     if (prices.length < 2) { box.querySelector('div:not(button)').textContent = '❌ 数据不足'; return; }
     var canvas = document.createElement('canvas');
-    canvas.width = 560; canvas.height = 240;
-    canvas.style.cssText = 'width:100%;height:auto;border-radius:8px;background:#0d1117';
+    canvas.width = 580; canvas.height = 300;
+    canvas.style.cssText = 'width:100%;height:auto;display:block';
     box.querySelector('div:not(button)').replaceWith(canvas);
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
-    var padT = 28, padB = 38, padL = 52, padR = 24;
+    var padT = 32, padB = 40, padL = 60, padR = 30;
     var pw = W - padL - padR, ph = H - padT - padB;
     var min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
-    var range = max - min;
-    if (range < 0.5) { range = 1; min -= 0.5; }
+    var range = max - min || 1;
+    var padding = range * 0.08;
+    if (range < 0.5) { range = 1; padding = 0.5; }
+    min -= padding; max += padding; range = max - min;
     function px(i) { return padL + i / (prices.length - 1) * pw; }
     function py(v) { return padT + (max - v) / range * ph; }
     
-    // 深色背景
-    ctx.fillStyle = '#0d1117'; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle = 'rgba(96,165,250,.03)'; ctx.fillRect(padL,padT,pw,ph);
+    // 干净背景
+    ctx.fillStyle = '#0d1117'; ctx.beginPath(); ctx.roundRect(0,0,W,H,10); ctx.fill();
     
-    // 网格线 + Y轴标签
+    // 虚线网格
+    ctx.strokeStyle = 'rgba(75,85,99,.2)'; ctx.lineWidth = 0.5;
+    ctx.setLineDash([4,6]);
     for (var g = 0; g <= 3; g++) {
-      var gy = padT + g/3*ph;
-      var val = max - g/3*range;
-      ctx.strokeStyle = 'rgba(55,65,81,.25)'; ctx.lineWidth = 0.5;
+      var gy = padT + g/3*ph, val = max - g/3*range;
       ctx.beginPath(); ctx.moveTo(padL,gy); ctx.lineTo(W-padR,gy); ctx.stroke();
-      ctx.fillStyle = '#64748b'; ctx.font = '10px -apple-system,sans-serif'; ctx.textAlign = 'right';
-      ctx.fillText('¥'+val.toFixed(0), padL-8, gy+4);
+      ctx.fillStyle = '#9ca3af'; ctx.font = '11px system-ui,sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText('¥'+val.toFixed(0), padL-10, gy+4);
     }
+    ctx.setLineDash([]);
     
-    // X轴日期标签（取首尾+中间2个）
-    var xLabels = [0];
-    if (prices.length > 3) { xLabels.push(Math.floor(prices.length/3)); xLabels.push(Math.floor(prices.length*2/3)); }
-    xLabels.push(prices.length-1);
-    xLabels.forEach(function(i){
-      ctx.fillStyle = '#64748b'; ctx.font = '9px -apple-system,sans-serif'; ctx.textAlign = 'center';
-      var ts = (data.eco||prices)[i] ? (data.eco||[{t:''}])[i].t : '';
+    // X轴日期
+    [0, Math.floor(prices.length*0.33), Math.floor(prices.length*0.66), prices.length-1].forEach(function(i){
+      var ts = ((data.eco||[])[i]||{}).t||'';
       var label = ts.length>10 ? ts.substring(5,10) : '#'+(i+1);
-      ctx.fillText(label, px(i), H-padB+16);
+      ctx.fillStyle = '#6b7280'; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(label, px(i), H-padB+18);
     });
     
-    // 渐变区域填充
-    var grad = ctx.createLinearGradient(0, padT, 0, H-padB);
-    grad.addColorStop(0, 'rgba(96,165,250,.20)'); grad.addColorStop(1, 'rgba(96,165,250,.02)');
-    ctx.beginPath();
-    prices.forEach(function(v,i){ i===0 ? ctx.moveTo(px(i),py(v)) : ctx.lineTo(px(i),py(v)); });
+    // 渐变填充
+    var grad = ctx.createLinearGradient(0,padT,0,H-padB);
+    grad.addColorStop(0,'rgba(59,130,246,.18)'); grad.addColorStop(.5,'rgba(59,130,246,.05)'); grad.addColorStop(1,'rgba(59,130,246,0)');
+    ctx.beginPath(); prices.forEach(function(v,i){ i===0?ctx.moveTo(px(i),py(v)):ctx.lineTo(px(i),py(v)); });
     ctx.lineTo(px(prices.length-1),H-padB); ctx.lineTo(padL,H-padB); ctx.closePath();
     ctx.fillStyle = grad; ctx.fill();
     
-    // 发光折线
-    ctx.beginPath();
-    ctx.moveTo(px(0), py(prices[0]));
+    // 折线（平滑贝塞尔）+ 发光
+    ctx.beginPath(); ctx.moveTo(px(0),py(prices[0]));
     for (var i=1; i<prices.length; i++) {
-      var cp1x = px(i-1)+pw/prices.length*0.4, cp1y = py(prices[i-1]);
-      var cp2x = px(i)-pw/prices.length*0.4, cp2y = py(prices[i]);
-      ctx.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,px(i),py(prices[i]));
+      ctx.bezierCurveTo(px(i-1)+pw/prices.length*.35, py(prices[i-1]), px(i)-pw/prices.length*.35, py(prices[i]), px(i), py(prices[i]));
     }
-    ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
-    ctx.shadowColor = 'rgba(96,165,250,.6)'; ctx.shadowBlur = 8; ctx.stroke();
-    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.8; ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(59,130,246,.5)'; ctx.shadowBlur = 10; ctx.stroke(); ctx.shadowBlur = 0;
     
-    // 数据点标记
+    // 数据点
     prices.forEach(function(v,i){
-      ctx.beginPath(); ctx.arc(px(i), py(v), (i===0||i===prices.length-1)?3:2, 0, Math.PI*2);
+      var r = (i===0||i===prices.length-1) ? 3.5 : 1.8;
+      ctx.beginPath(); ctx.arc(px(i),py(v),r,0,Math.PI*2);
       ctx.fillStyle = '#0d1117'; ctx.fill();
-      ctx.strokeStyle = (i===prices.length-1)?'#60a5fa':'rgba(96,165,250,.5)';
-      ctx.lineWidth = (i===prices.length-1)?2.5:1.5; ctx.stroke();
+      ctx.strokeStyle = 'rgba(59,130,246,.7)'; ctx.lineWidth = 2; ctx.stroke();
     });
     
-    // 最新价格高亮标签
-    var lastV = prices[prices.length-1];
-    ctx.fillStyle = '#60a5fa'; ctx.font = 'bold 14px -apple-system,sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('¥'+lastV.toFixed(2), px(prices.length-1)+10, py(lastV)+5);
+    // 最新价标签
+    var last = prices[prices.length-1], first = prices[0];
+    var changePct = ((last-first)/first*100)||0;
+    var isUp = changePct >= 0;
+    var chgColor = isUp ? '#34d399' : '#f87171';
+    var lx = px(prices.length-1), ly = py(last);
+    // Badge
+    ctx.beginPath(); ctx.roundRect(lx+8, ly-26, 72, 48, 6); ctx.fillStyle = 'rgba(59,130,246,.15)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(59,130,246,.3)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#e2e8f0'; ctx.font = 'bold 14px system-ui,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('¥'+last.toFixed(2), lx+44, ly-2);
+    ctx.fillStyle = chgColor; ctx.font = '11px system-ui,sans-serif';
+    ctx.fillText((isUp?'↑ +':'↓ ')+Math.abs(changePct).toFixed(1)+'%', lx+44, ly+16);
     
-    // 涨跌率
-    var change = prices.length>1 ? ((lastV-prices[0])/prices[0]*100) : 0;
-    ctx.fillStyle = change>=0 ? '#4ade80' : '#f87171'; ctx.font = '11px -apple-system,sans-serif';
-    ctx.fillText((change>=0?'↑ +':'↓ ')+change.toFixed(1)+'%', px(prices.length-1)+10, py(lastV)+20);
-    
-    // 底部信息栏
-    ctx.fillStyle = '#526477'; ctx.font = '10px -apple-system,sans-serif'; ctx.textAlign = 'right';
-    ctx.fillText('BUFF实时走势 · '+prices.length+'期', W-padR, H-padB+14);
+    // 底部
+    ctx.fillStyle = '#4b5563'; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('BUFF | '+prices.length+'期 | '+(isUp?'上涨':'下跌')+Math.abs(changePct).toFixed(1)+'%', W-padR, H-padB+14);
   } catch(e) {
     box.querySelector('div:not(button)').textContent = '❌ 加载失败';
   }
