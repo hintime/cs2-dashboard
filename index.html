@@ -1683,10 +1683,15 @@ function render() {
     tr.dataset.idx = realIdx;
     tr.onclick = function(e) {
       if (e.target.closest('button') || e.target.closest('.cost-val')) return;
-      var ar = this.nextElementSibling;
+      var ar = this._analysisRow || this.nextElementSibling;
       if (ar && ar.classList.contains('row-analysis')) {
+        if (!ar._loaded) {
+          ar._loaded = true;
+          ar.firstChild.innerHTML = buildItemAnalysisHTML(this._item);
+        }
         ar.classList.toggle('open');
       }
+    };
     };
     tr.innerHTML =
       '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span></div></td>'+
@@ -1700,11 +1705,13 @@ function render() {
       '<td class="text-r"><button class="sell-btn" data-name="'+esc(h.n)+'" data-wear="'+(h.w||'')+'" title="卖出此饰品">卖出</button></td>'+
       '</tr>';
     frag.appendChild(tr);
-    // 直接在每个饰品行下渲染分析信息
+    // 分析行懒加载（点击时才渲染）
     var analysisRow = document.createElement('tr');
     analysisRow.className = 'row-analysis';
-    analysisRow.innerHTML = '<td colspan="9">' + buildItemAnalysisHTML(h) + '</td>';
+    analysisRow.innerHTML = '<td colspan="9"></td>';
     frag.appendChild(analysisRow);
+    tr._analysisRow = analysisRow;
+    tr._item = h;
   });
   if (DOM.tbody) { DOM.tbody.innerHTML = ''; DOM.tbody.appendChild(frag); }
 
