@@ -74,7 +74,7 @@ export default {
             })
             if (resp.ok) {
               const data = await resp.json()
-              if (data && data.code === 0 && data.data && data.data.success) {
+              if (data && (data.code === 0 || data.code === 200) && data.data && data.data.success) {
                 var result = {};
                 Object.keys(data.data.success).forEach(function(k){
                   var item = data.data.success[k];
