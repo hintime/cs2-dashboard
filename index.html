@@ -1502,6 +1502,7 @@ function renderNewsTab(tab) {
     var s = calcSentiment();
     var upCount = H.filter(function(h){return (h.rate_7||0)>0;}).length;
     var dnCount = H.filter(function(h){return (h.rate_7||0)<0;}).length;
+    var noData = H.length - upCount - dnCount;
     var totalV = H.reduce(function(sum,h){var v=h.p*(h.q||1);return sum+(isNaN(v)?0:v);},0);
     var totalC = H.reduce(function(sum,h){var c=h.c*(h.q||1);return sum+(isNaN(c)?0:c);},0);
     var pnl = totalV - totalC;
@@ -1533,15 +1534,17 @@ function renderNewsTab(tab) {
     '</div>'+
     // 涨跌分布 + 信号
     '<div class="sentiment-card" style="margin-top:12px">'+
-      '<h4>📊 持仓涨跌分布</h4>'+
+      '<h4>📊 持仓涨跌分布 · '+H.length+'件</h4>'+
       '<div style="display:flex;align-items:center;gap:12px;margin-top:10px">'+
         '<span style="color:var(--rise);font-size:12px;font-weight:600;min-width:44px">📈 '+upCount+'只</span>'+
         '<div style="flex:1;height:20px;background:var(--border);border-radius:10px;overflow:hidden;display:flex">'+
           '<div style="height:100%;width:'+(H.length?upCount/H.length*100:0)+'%;background:linear-gradient(90deg,#34d399,#4ade80);border-radius:10px 0 0 10px;transition:width .6s"></div>'+
+          '<div style="height:100%;width:'+(H.length?noData/H.length*100:0)+'%;background:rgba(148,163,184,.3);transition:width .6s"></div>'+
           '<div style="height:100%;width:'+(H.length?dnCount/H.length*100:0)+'%;background:linear-gradient(90deg,#f87171,#ef4444);border-radius:0 10px 10px 0;transition:width .6s"></div>'+
         '</div>'+
         '<span style="color:var(--fall);font-size:12px;font-weight:600;min-width:44px;text-align:right">📉 '+dnCount+'只</span>'+
       '</div>'+
+      (noData>0?'<div style="font-size:10px;color:var(--text3);margin-top:4px;text-align:center">'+noData+'件暂无涨跌数据</div>':'')+
       '<div style="margin-top:12px;font-size:11px;color:var(--text2)">'+
         s.signals.map(function(sig){return '<span style="margin-right:16px">'+sig.emoji+' '+sig.text+'</span>';}).join('')+
       '</div>'+
