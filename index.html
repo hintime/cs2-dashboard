@@ -1584,6 +1584,28 @@ function updateKPI() {
   }
   
   if (costEl) costEl.textContent = '¥' + tc.toLocaleString();
+  // 综合信号灯
+  var pnlPct2 = tc>0?(tp-tc)/tc*100:0;
+  var winRate2 = H.filter(function(h){return h.p>h.c;}).length/Math.max(1,H.length)*100;
+  var avgPnl = H.length?tp/Math.max(1,H.length):0;
+  var iconEl = document.getElementById('signalIcon');
+  var textEl = document.getElementById('signalText');
+  var subEl = document.getElementById('signalSub');
+  if (iconEl && textEl) {
+    if (pnlPct2 > 10 && winRate2 > 60) {
+      iconEl.textContent = '🟢'; textEl.textContent = '强势'; textEl.style.color = '#4ade80';
+      if(subEl) subEl.textContent = '盈利率' + winRate2.toFixed(0) + '%';
+    } else if (pnlPct2 > 0 && winRate2 > 40) {
+      iconEl.textContent = '🟡'; textEl.textContent = '观望'; textEl.style.color = '#fbbf24';
+      if(subEl) subEl.textContent = (pnlPct2>0?'+':'') + pnlPct2.toFixed(1) + '%';
+    } else if (pnlPct2 < -5) {
+      iconEl.textContent = '🔴'; textEl.textContent = '注意'; textEl.style.color = '#f87171';
+      if(subEl) subEl.textContent = (pnlPct2>0?'+':'') + pnlPct2.toFixed(1) + '%';
+    } else {
+      iconEl.textContent = '⚪'; textEl.textContent = '平稳'; textEl.style.color = '#94a3b8';
+      if(subEl) subEl.textContent = H.length + '持仓 · 均¥'+avgPnl.toFixed(0);
+    }
+  }
 }
 
 function buildTabs() {
