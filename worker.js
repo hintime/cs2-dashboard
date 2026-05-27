@@ -22,7 +22,7 @@
 const GH_PAGES = 'https://raw.githubusercontent.com/hintime/cs2-dashboard/main'
 const CSQAQ_BATCH = 'https://api.csqaq.com/api/v1/goods/getPriceByMarketHashName'
 const CSQAQ_ALERTS = 'https://api.csqaq.com/v2/multi/alert'
-const STEAMDT_BATCH = 'https://open.steamdt.com/open/cs2/v1/price/batch'
+const STEAMDT_BATCH = 'https://open.steamdt.com/open/cs2/v1/batch'
 const KV_KEY = 'sold:items'
 
 export default {
