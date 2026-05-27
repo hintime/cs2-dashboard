@@ -117,39 +117,39 @@ def main():
     by_sell = sorted(with_sell, key=lambda x: x.get('SellingTotal', 0), reverse=True)[:10]
     top_sell = [{'n': (it.get('GoodsName') or it.get('HashName', ''))[:30], 's': it.get('SellingTotal', 0), 'p': it.get('Price', 0)} for it in by_sell]
 
-    # 涨跌榜（从 market.json alerts 提取有 rate_7 的）
+    # 涨跌榜（从 price_history.json 计算，不依赖外部 API）
     movers = []
-    market = read_json(os.path.join(DATA_DIR, 'market.json'))
-    def _boring_alert(name):
-        """排除印花/终端机/音乐盒/挂件"""
-        kw = ['Sticker', 'Terminal', 'Music Kit', 'Charm', 'Pin']
-        return any(k in (name or '') for k in kw)
-
-    # 构建 英文→中文 映射（从全量 catalog）
+    # 构建 英文→中文 映射
     name_map = {}
     for it in cat:
         hn = it.get('HashName', '')
         gn = it.get('GoodsName', '')
         if hn and gn:
             name_map[hn] = gn
-
-    def _cn_name(en_name):
-        """英文名转中文名，截断到24字"""
-        cn = name_map.get(en_name, en_name)
-        return cn[:24]
-
-    if market and market.get('alerts'):
-        alerts = market['alerts']
-        def _rate(a): return a.get('rate_7', 0) or a.get('rate_1', 0)
-        # 涨幅榜（排除无聊品类）
-        gainers = sorted([a for a in alerts if _rate(a) > 0 and not _boring_alert(a.get('name',''))],
-                        key=lambda x: _rate(x), reverse=True)[:10]
-        losers = sorted([a for a in alerts if _rate(a) < 0 and not _boring_alert(a.get('name',''))],
-                       key=lambda x: _rate(x))[:10]
-        movers = {
-            'gainers': [{'n': _cn_name(g['name']), 'r7': round(_rate(g),1), 'p': g.get('price',0)} for g in gainers],
-            'losers': [{'n': _cn_name(l['name']), 'r7': round(_rate(l),1), 'p': l.get('price',0)} for l in losers]
-        }
+    
+    ph_file = os.path.join(DATA_DIR, 'price_history.json')
+    try:
+        ph = read_json(ph_file)
+        gains = []
+        for name, h in ph.items():
+            if not isinstance(h, dict): continue
+            # ECO 价格序列 (format: [{t: str, p: float}, ...])
+            raw_eco = h.get('eco') or []
+            eco_prices = [e['p'] for e in raw_eco if isinstance(e, dict) and e.get('p', 0) > 0]
+            if len(eco_prices) < 2: continue
+            first_p, last_p = eco_prices[0], eco_prices[-1]
+            eco_chg = 0
+            if first_p > 0:
+                eco_chg = (last_p - first_p) / first_p * 100
+            if abs(eco_chg) < 0.01: continue
+            cn = name_map.get(name, name)
+            gains.append((cn[:24], round(eco_chg, 1), eco_prices[-1] if eco_prices else 0))
+        gains.sort(key=lambda x: x[1], reverse=True)
+        gainers = [{'n': g[0], 'r7': g[1], 'p': g[2]} for g in gains if g[1] > 0][:10]
+        losers = [{'n': g[0], 'r7': g[1], 'p': g[2]} for g in gains if g[1] < 0][-10:][::-1]
+        movers = {'gainers': gainers, 'losers': losers}
+    except Exception as e:
+        print(f'[SCAN] movers error: {e}')
 
     prices_sorted = sorted(prices)
     n = len(prices_sorted)
