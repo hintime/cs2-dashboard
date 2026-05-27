@@ -2211,7 +2211,9 @@ async function fetchLivePrices(items, holdNames) {
         var hn = h.mh || ''
         if (!hn || !csqaqData[hn]) return
         var dp = csqaqData[hn]
-        if (dp.buff_sell > 0) { h.p = dp.buff_sell; h.pnl = h.p - h.c; h.pnlPct = h.c > 0 ? (h.p-h.c)/h.c*100 : 0; }
+        if (dp.buff_sell > 0) { h.p = dp.buff_sell; h.buff_sell = dp.buff_sell; h.buff_sell_num = dp.buff_sell_num || 0; }
+        if (dp.yyyp_sell > 0) { h.yyyp_sell = dp.yyyp_sell; h.yyyp_sell_num = dp.yyyp_sell_num || 0; }
+        if (h.p > 0) { h.pnl = h.p - h.c; h.pnlPct = h.c > 0 ? (h.p-h.c)/h.c*100 : 0; }
       })
     }
   } catch(e) {}
