@@ -1260,6 +1260,19 @@ async function loadAll() {
   }
 
   initDashboard();
+  // 加载 ECO 基础价格用于持仓（兜底）
+  fetch('eco_tracked.json?v=' + t0).then(function(r){ return r.ok ? r.json() : []; }).then(function(ecoItems){
+    var ecoMap = {};
+    ecoItems.forEach(function(e){ if(e.HashName&&e.Price>0) ecoMap[e.HashName]=e.Price; });
+    window._ecoPrices = ecoMap;
+    if (H && H.length) {
+      H.forEach(function(h){
+        var hn = h.mh || h.n;
+        var ecoP = ecoMap[hn];
+        if (ecoP > 0 && !h.p) { h.p = ecoP; h.pnl = ecoP - h.c; h.pnlPct = h.c>0?(ecoP-h.c)/h.c*100:0; }
+      });
+    }
+  }).catch(function(){});
   // 加载 BUFF 历史数据（用于持仓折线图）
   fetch('buff_history.json?v=' + t0).then(function(r){ return r.ok ? r.json() : {}; }).then(function(bh){
     window._buffHistory = bh || {};
