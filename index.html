@@ -1537,16 +1537,18 @@ function renderNewsTab(tab) {
     // 涨跌分布 + 信号
     '<div class="sentiment-card" style="margin-top:12px">'+
       '<h4>📊 持仓涨跌分布 · '+H.length+'件</h4>'+
-      '<div style="display:flex;align-items:center;gap:12px;margin-top:10px">'+
-        '<span style="color:var(--rise);font-size:12px;font-weight:600;min-width:44px">📈 '+upCount+'只</span>'+
-        '<div style="flex:1;height:20px;background:var(--border);border-radius:10px;overflow:hidden;display:flex">'+
-          '<div style="height:100%;width:'+(H.length?upCount/H.length*100:0)+'%;background:linear-gradient(90deg,#34d399,#4ade80);border-radius:10px 0 0 10px;transition:width .6s"></div>'+
-          '<div style="height:100%;width:'+(H.length?noData/H.length*100:0)+'%;background:rgba(148,163,184,.3);transition:width .6s"></div>'+
-          '<div style="height:100%;width:'+(H.length?dnCount/H.length*100:0)+'%;background:linear-gradient(90deg,#f87171,#ef4444);border-radius:0 10px 10px 0;transition:width .6s"></div>'+
+      '<div style="margin-top:10px">'+
+        '<div style="display:flex;height:20px;background:var(--border);border-radius:10px;overflow:hidden">'+
+          '<div style="height:100%;width:'+(H.length?upCount/H.length*100:0)+'%;background:#4ade80;border-radius:10px 0 0 10px;transition:width .6s;"></div>'+
+          (noData>0?'<div style="height:100%;width:'+(H.length?noData/H.length*100:0)+'%;background:rgba(148,163,184,.4);position:relative;transition:width .6s"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--text3);white-space:nowrap">'+noData+'件无数据</span></div>':'')+
+          '<div style="height:100%;width:'+(H.length?dnCount/H.length*100:0)+'%;background:#ef4444;border-radius:0 10px 10px 0;transition:width .6s"></div>'+
         '</div>'+
-        '<span style="color:var(--fall);font-size:12px;font-weight:600;min-width:44px;text-align:right">📉 '+dnCount+'只</span>'+
+        '<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px;color:var(--text2)">'+
+          '<span style="color:#4ade80">📈 '+upCount+'只涨</span>'+
+          (noData>0?'<span style="color:var(--text3)">'+noData+'件无数据</span>':'')+
+          '<span style="color:#ef4444">📉 '+dnCount+'只跌</span>'+
+        '</div>'+
       '</div>'+
-      (noData>0?'<div style="font-size:10px;color:var(--text3);margin-top:4px;text-align:center">'+noData+'件暂无涨跌数据</div>':'')+
       '<div style="margin-top:12px;font-size:11px;color:var(--text2)">'+
         s.signals.map(function(sig){return '<span style="margin-right:16px">'+sig.emoji+' '+sig.text+'</span>';}).join('')+
       '</div>'+
