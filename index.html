@@ -2258,20 +2258,20 @@ window.showPriceChart = async function(itemName) {
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
   var box = document.createElement('div');
   box.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:620px;width:92%;position:relative;box-shadow:0 16px 48px rgba(0,0,0,.5)';
-  box.innerHTML = '<div style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:8px"><span style="font-size:20px">📈</span>' + esc(cnName(itemName)) + ' 价格走势</div><div style="text-align:center;color:var(--text3);padding:48px 0">⏳ 加载数据...</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.background=\'var(--surface)\'" onmouseout="this.style.background=\'none\'">✕</button>';
+  box.innerHTML = '<div style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--text);display:flex;align-items:center;gap:8px"><span style="font-size:20px">📈</span>' + esc(cnName(itemName)) + ' 价格走势</div><div id="chartLoading" style="text-align:center;color:var(--text3);padding:48px 0">⏳ 加载数据...</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.background=\'var(--surface)\'" onmouseout="this.style.background=\'none\'">✕</button>';
   overlay.appendChild(box);
   document.body.appendChild(overlay);
   
   try {
     var r = await fetch('/api/pricechart?name=' + encodeURIComponent(itemName));
-    if (!r.ok) { box.querySelector('div:not(button)').textContent = '❌ 暂无走势数据'; return; }
+    if (!r.ok) { document.getElementById('chartLoading').textContent = '�� 暂无走势数据'; return; }
     var data = await r.json();
     var prices = (data.eco || []).map(function(e){ return e.p; }).filter(function(p){ return p > 0; });
-    if (prices.length < 2) { box.querySelector('div:not(button)').textContent = '❌ 数据不足'; return; }
+    if (prices.length < 2) { document.getElementById('chartLoading').textContent = '❌ 数据不足'; return; }
     var canvas = document.createElement('canvas');
     canvas.width = 580; canvas.height = 300;
     canvas.style.cssText = 'width:100%;height:auto;display:block';
-    box.querySelector('div:not(button)').replaceWith(canvas);
+    document.getElementById('chartLoading').replaceWith(canvas);
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
     var padT = 32, padB = 40, padL = 60, padR = 30;
@@ -2347,7 +2347,7 @@ window.showPriceChart = async function(itemName) {
     ctx.fillStyle = '#4b5563'; ctx.font = '10px system-ui,sans-serif'; ctx.textAlign = 'right';
     ctx.fillText('BUFF | '+prices.length+'期 | '+(isUp?'上涨':'下跌')+Math.abs(changePct).toFixed(1)+'%', W-padR, H-padB+14);
   } catch(e) {
-    box.querySelector('div:not(button)').textContent = '❌ 加载失败';
+    document.getElementById('chartLoading').textContent = '❌ 加载失败';
   }
 }
 
