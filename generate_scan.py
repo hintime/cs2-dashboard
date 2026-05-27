@@ -140,14 +140,15 @@ def main():
 
     if market and market.get('alerts'):
         alerts = market['alerts']
+        def _rate(a): return a.get('rate_7', 0) or a.get('rate_1', 0)
         # 涨幅榜（排除无聊品类）
-        gainers = sorted([a for a in alerts if a.get('rate_7', 0) > 0 and not _boring_alert(a.get('name',''))],
-                        key=lambda x: x.get('rate_7', 0), reverse=True)[:10]
-        losers = sorted([a for a in alerts if a.get('rate_7', 0) < 0 and not _boring_alert(a.get('name',''))],
-                       key=lambda x: x.get('rate_7', 0))[:10]
+        gainers = sorted([a for a in alerts if _rate(a) > 0 and not _boring_alert(a.get('name',''))],
+                        key=lambda x: _rate(x), reverse=True)[:10]
+        losers = sorted([a for a in alerts if _rate(a) < 0 and not _boring_alert(a.get('name',''))],
+                       key=lambda x: _rate(x))[:10]
         movers = {
-            'gainers': [{'n': _cn_name(g['name']), 'r7': round(g['rate_7'],1), 'p': g.get('price',0)} for g in gainers],
-            'losers': [{'n': _cn_name(l['name']), 'r7': round(l['rate_7'],1), 'p': l.get('price',0)} for l in losers]
+            'gainers': [{'n': _cn_name(g['name']), 'r7': round(_rate(g),1), 'p': g.get('price',0)} for g in gainers],
+            'losers': [{'n': _cn_name(l['name']), 'r7': round(_rate(l),1), 'p': l.get('price',0)} for l in losers]
         }
 
     prices_sorted = sorted(prices)
