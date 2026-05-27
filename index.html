@@ -1275,7 +1275,7 @@ async function loadAll() {
       H.forEach(function(h){
         var hn = h.mh || h.n;
         var ecoP = ecoMap[hn];
-        if (ecoP > 0 && !h.p) { h.p = ecoP; h.pnl = ecoP - h.c; h.pnlPct = h.c>0?(ecoP-h.c)/h.c*100:0; }
+        if (ecoP > 0) { h.eco_price = ecoP; if (!h.p) { h.p = ecoP; h.pnl = ecoP - h.c; h.pnlPct = h.c>0?(ecoP-h.c)/h.c*100:0; } }
       });
     }
   }).catch(function(){});
@@ -1752,7 +1752,7 @@ function render() {
       '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span></div></td>'+
       '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
       '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
-      '<td class="text-r mono">'+(h.p && h.p > 0 ? '¥'+h.p.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
+      '<td class="text-r mono">'+(h.eco_price > 0 ? '¥'+h.eco_price.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
       '<td class="text-r mono">'+(h.buff_sell > 0 ? '¥'+h.buff_sell.toFixed(2)+'<sup style="font-size:8px;color:var(--rise);margin-left:1px">实时</sup>' : '<span class="text-muted">--</span>')+'<br><span style="font-size:10px;color:var(--amber)">'+(h.yyyp_sell > 0 ? '悠悠¥'+h.yyyp_sell.toFixed(2)+'<sup style="font-size:8px;color:var(--rise);margin-left:1px">实时</sup>' : '')+'</span></td>'+
       '<td class="text-r mono" style="font-size:11px">'+(h.rate_1 !== undefined && !isNaN(h.rate_1) ? '<span class="'+(h.rate_1>=0?'clr-rise':'clr-fall')+'">'+(h.rate_1>=0?'+':'')+h.rate_1.toFixed(1)+'%</span>' : '--')+' · '+(h.rate_7 !== undefined && !isNaN(h.rate_7) ? '<span class="'+(h.rate_7>=0?'clr-rise':'clr-fall')+'">'+(h.rate_7>=0?'+':'')+h.rate_7.toFixed(1)+'%</span>' : '--')+'</td>'+
       '<td class="text-r"><span class="'+pnlCls+'" style="font-weight:700">'+(h.pnl>=0?'+':'')+'¥'+(isNaN(h.pnl)?'0.00':h.pnl.toFixed(2))+'</span></td>'+
