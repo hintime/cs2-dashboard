@@ -107,7 +107,7 @@ export default {
                 raw.data.forEach(item => {
                   const hn = item.marketHashName
                   if (!hn || !Array.isArray(item.dataList)) return
-                  let buffInfo = null, uuypInfo = null
+                  let buffInfo, uuypInfo
                   item.dataList.forEach(p => {
                     const plat = (p.platform || '').toUpperCase()
                     if (plat === 'BUFF') buffInfo = p
