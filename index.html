@@ -545,10 +545,6 @@ html { scroll-behavior: smooth; }
   </div>
   <div id="scanContent" style="padding:0 20px 16px">
     <div id="scanKpis" class="scan-kpis"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div id="scanTiers" style="min-width:0"></div>
-      <div id="scanCats" style="min-width:0"></div>
-    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
       <div id="scanGainers"></div>
       <div id="scanLosers"></div>
@@ -3085,8 +3081,6 @@ function renderScan() {
     window._marketScan = scan || {};
     if (!scan) return;
     var kpis = document.getElementById('scanKpis');
-    var tiers = document.getElementById('scanTiers');
-    var cats = document.getElementById('scanCats');
     var gainers = document.getElementById('scanGainers');
     var losers = document.getElementById('scanLosers');
     var topSell = document.getElementById('scanTopSell');
@@ -3102,39 +3096,6 @@ function renderScan() {
         '<div class="scan-kpi"><div class="scan-kpi-num">¥' + (scan.avg_p||0).toFixed(0) + '</div><div class="scan-kpi-label">均价</div><div class="scan-kpi-sub">中位¥' + (scan.median_p||0).toFixed(0) + '</div></div>' +
         '<div class="scan-kpi"><div class="scan-kpi-num">¥' + (scan.max_p||0).toFixed(0) + '</div><div class="scan-kpi-label">最高价</div><div class="scan-kpi-sub">最低¥' + (scan.min_p||0).toFixed(2) + '</div></div>' +
         '<div class="scan-kpi"><div class="scan-kpi-num">' + (scan.categories ? Object.keys(scan.categories).length : 0) + '</div><div class="scan-kpi-label">品类</div><div class="scan-kpi-sub">武器+刀+手套+贴纸等</div></div>';
-    }
-
-    // ═══ 价格分布图 ───
-    if (tiers && scan.tiers) {
-      var t = scan.tiers;
-      var total = Object.values(t).reduce(function(a,b){return a+b;},0);
-      var colors = ['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa'];
-      var labels = ['<¥10','¥10-50','¥50-200','¥200-1k','>¥1k'];
-      var keys = Object.keys(t);
-      var maxTier = Math.max.apply(null, Object.values(t));
-      var html = '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px">📊 价格分布</div>';
-      keys.forEach(function(k, i) {
-        var pct = t[k] / total * 100;
-        var barW = Math.max(4, t[k] / maxTier * 100);
-        html += '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px"><span>' + labels[i] + '</span><span>' + t[k].toLocaleString() + '件 (' + pct.toFixed(1) + '%)</span></div>' +
-          '<div style="height:14px;background:var(--surface2);border-radius:7px;overflow:hidden"><div style="height:100%;width:' + barW + '%;background:' + colors[i] + ';border-radius:7px;opacity:0.85;transition:width 0.8s ease"></div></div></div>';
-      });
-      tiers.innerHTML = html;
-    }
-
-    // ═══ 品类构成 ───
-    if (cats && scan.categories) {
-      var cdata = scan.categories;
-      var ckeys = Object.keys(cdata).sort(function(a,b){return cdata[b].count - cdata[a].count;});
-      var maxCount = Math.max.apply(null, ckeys.map(function(k){return cdata[k].count;}));
-      var html = '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px">🏷️ 品类构成</div>';
-      ckeys.forEach(function(k) {
-        var c = cdata[k];
-        var barW = Math.max(4, c.count / maxCount * 100);
-        html += '<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:2px"><span>' + k + '</span><span>' + c.count.toLocaleString() + '件 · 均¥' + (c.avg_p||0).toFixed(0) + '</span></div>' +
-          '<div style="height:10px;background:var(--surface2);border-radius:5px;overflow:hidden"><div style="height:100%;width:' + barW + '%;background:linear-gradient(90deg,var(--blue),var(--amber));border-radius:5px;opacity:0.7"></div></div></div>';
-      });
-      cats.innerHTML = html;
     }
 
     // ═══ 涨跌榜 ───
