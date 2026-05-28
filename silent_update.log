@@ -452,3 +452,20 @@ fatal: Exiting because of an unresolved conflict.
     obj, end = self.scan_once(s, idx)
                ^^^^^^^^^^^^^^^^^^^^^^
 json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 2 column 1 (char 2)
+2026-05-29 01:09:22 [update.py] .com blocked by hosts file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+[SCAN] Total: 37344, Valid: 8793
+[SCAN] Saved: 8793 items (from 37344), 8462 with prices, 4 categories, movers: True
+[SCAN] market_scan.json regenerated
+[CORR] Loading price_history.json...
+[CORR] 4306 items × 12 days
+[CORR] Computing correlations for 297 items...
+[CORR] Saved 200 pairs (30 pos, 8 neg) in 1.7s
+[REPORT] Saved daily report for 2026-05-29
+[STATUS] Summary generated: 7 fields
+2026-05-29 01:09:22 [update.py ERR] o\WorkBuddy\Claw\cs2-dashboard\update.py", line 901, in git_push_locally
+    'Authorization': f'token {GH_TOKEN}',
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=manager', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push']' returned non-zero exit status 128.
