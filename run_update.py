@@ -15,7 +15,15 @@ if os.path.exists(eco_key_path):
         os.environ.setdefault('ECO_PRIVATE_KEY_B64', f.read().strip())
 
 os.environ.setdefault('STEAMDT_KEY', '6fdc816dc6c2469588f34050cc32a9e4')
-os.environ.setdefault('GH_TOKEN', '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')
+# 从 git_credential.txt 读取 GitHub Token（不提交到 git）
+_token_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.git', '..', 'git_credential.txt')
+if not os.path.exists(_token_path):
+    _token_path = os.path.join(DATA_DIR, 'git_credential.txt')
+if os.path.exists(_token_path):
+    with open(_token_path) as f:
+        GITHUB_TOKEN = f.read().strip()
+else:
+    GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '') or os.environ.get('GH_TOKEN', '')
 os.environ.setdefault('GIT_TERMINAL_PROMPT', '0')
 os.environ.setdefault('GIT_ASKPASS', 'echo')
 
@@ -39,7 +47,11 @@ def run_py(args):
     return result
 
 def run_git(cmd):
-    result = subprocess.run(['git', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false'] + cmd,
+    # 用 token 认证
+    full_cmd = ['git', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
+    if cmd[0] in ('push', 'pull', 'fetch'):
+        full_cmd += ['-c', f'http.extraHeader=Authorization: Bearer {GITHUB_TOKEN}']
+    result = subprocess.run(full_cmd + cmd,
         cwd=DATA_DIR, capture_output=True, text=True,
         creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
     if result.stderr and 'warning' not in result.stderr.lower():
