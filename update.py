@@ -858,6 +858,7 @@ def write_json(path, data):
 # ═══════════════ PUSH (single atomic commit) ═══════════════
 def push_all():
     """Push all dirty files in a single commit — avoids SHA conflicts"""
+    dirty_files.discard('price_history.json')  # never push to GitHub
     if not dirty_files:
         print('[INFO] No files changed, skipping push')
         return
