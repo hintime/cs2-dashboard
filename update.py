@@ -241,6 +241,18 @@ def compute_alerts(steamdt_prices):
     
     Returns: list of alert dicts with name, price, rate_1, rate_7, etc.
     """
+    # Lazy-load price_summary for fallback
+    _ph_summary = None
+    def _get_ph_summary(name):
+        nonlocal _ph_summary
+        if _ph_summary is None:
+            ps_file = os.path.join(DATA_DIR, 'price_summary.json')
+            if os.path.exists(ps_file):
+                _ph_summary = read_json(ps_file) or {}
+            else:
+                _ph_summary = {}
+        return _ph_summary.get(name, {})
+    
     history = load_buff_history()
     if not history:
         print('[ALERTS] No history available, returning empty list')
@@ -295,6 +307,15 @@ def compute_alerts(steamdt_prices):
         
         rate_1 = round((current - prev_price) / prev_price * 100, 2) if prev_price > 0 else 0
         rate_7 = round((current - old_price) / old_price * 100, 2) if old_price > 0 else 0
+        
+        # Fallback: 如果 SteamDT 历史不足，从 price_history.json 的 ECO 数据补
+        if rate_7 == 0 or rate_1 == 0:
+            ph = _get_ph_summary(name)
+            if ph:
+                if rate_7 == 0 and ph.get('change_7d'):
+                    rate_7 = round(ph['change_7d'], 2)
+                if rate_1 == 0 and ph.get('change_1d'):
+                    rate_1 = round(ph['change_1d'], 2)
         
         alerts.append({
             'name': name,
