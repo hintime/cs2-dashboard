@@ -77,59 +77,82 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-// ── 加载 holdings + 渲染回测 ──
+// ── 加载持仓 + 渲染回测（优先用 localStorage，保持一致） ──
 function loadBacktest() {
   var t0 = Date.now();
+  // 先从 localStorage 读取持仓（和主页保持一致）
+  var localH = null;
+  try {
+    var raw = localStorage.getItem('cs2_holdings');
+    if (raw) localH = JSON.parse(raw);
+  } catch(_) {}
+  if (localH && localH.length) {
+    H = [];
+    localH.forEach(function(item) {
+      var q = item.q || item.qty || 1, c = item.c || item.cost || 0;
+      var cp = q > 0 ? c / q : 0;
+      H.push({ n:item.n||item.name, w:item.w||item.wear||'', c:cp, p:item.p||item.price||0,
+        pnl:item.pnl||0, pnlPct:item.pnlPct||0, mh:item.mh||item.market_hash||item.n,
+        price_history:item.price_history||[] });
+    });
+  }
+  // 兜底：从 holdings.json 补充
   Promise.all([
-    fetch('holdings.json?v=' + t0).then(function(r) { return r.ok ? r.json() : null; }),
-    fetch('eco_tracked.json?v=' + t0).then(function(r) { return r.ok ? r.json() : null; }),
-    fetch('buff_history.json?v=' + t0).then(function(r) { return r.ok ? r.json() : {}; })
+    fetch('holdings.json?v=' + t0).then(function(r){return r.ok?r.json():null}).catch(function(){return null}),
+    fetch('eco_tracked.json?v=' + t0).then(function(r){return r.ok?r.json():[]}).catch(function(){return []}),
+    fetch('buff_history.json?v=' + t0).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}})
   ]).then(function(results) {
     var holdingsR = results[0];
     var ecoData = results[1];
     var bh = results[2] || {};
     window._buffHistory = bh;
 
-    if (!holdingsR || !Array.isArray(holdingsR.items)) {
-      document.getElementById('backtestContent').innerHTML = '<div class="empty">暂无持仓数据</div>';
-      document.getElementById('btInfo').textContent = '无数据';
-      return;
-    }
-
-    // 构建 H（精简版，只保留回测需要的字段）
-    H = [];
-    holdingsR.items.forEach(function(item) {
-      var q = item.qty || 1;
-      var costTotal = item.cost;
-      var pricePerUnit = item.price;
-      var costPerUnit = costTotal / q;
-      var wearCode = item.wear || '';
-      for (var i = 0; i < q; i++) {
-        H.push({
-          n: item.name,
-          w: wearCode === 'other' ? '' : wearCode,
-          c: costPerUnit,
-          p: pricePerUnit,
-          pnl: pricePerUnit - costPerUnit,
-          pnlPct: costPerUnit > 0 ? (pricePerUnit - costPerUnit) / costPerUnit * 100 : 0,
-          mh: item.market_hash,
-          price_history: item.price_history || []
-        });
-      }
-    });
-
-    H = H.filter(function(h) {
-      return h.c > 0 && (h.price_history || []).length > 0;
-    });
-
-    document.getElementById('btInfo').textContent = '共 ' + holdingsR.items.length + ' 件持仓，' + H.length + ' 件有价格历史可回测';
-
+    // 如果本地方案已经有 H，跳过 holdings.json 兜底
     if (H.length === 0) {
-      document.getElementById('backtestContent').innerHTML = '<div class="empty">没有含价格历史的持仓数据，请先积累数据</div>';
-      return;
+      if (!holdingsR || !Array.isArray(holdingsR.items)) {
+        document.getElementById('backtestContent').innerHTML = '<div class="empty">暂无持仓数据</div>';
+        document.getElementById('btInfo').textContent = '无数据';
+        return;
+      }
+      holdingsR.items.forEach(function(item) {
+        var q = item.qty || 1;
+        var costTotal = item.cost;
+        var cp = costTotal / q;
+        var wearCode = item.wear || '';
+        for (var i = 0; i < q; i++) {
+          H.push({
+            n: item.name, w: wearCode === 'other' ? '' : wearCode,
+            c: cp, p: item.price, pnl: item.price - cp,
+            pnlPct: cp > 0 ? (item.price - cp) / cp * 100 : 0,
+            mh: item.market_hash, price_history: item.price_history || []
+          });
+        }
+      });
     }
 
-    renderBacktest();
+    // 用 price_summary.json 补充缺失的价格历史
+    return fetch('price_summary.json?v=' + t0)
+      .then(function(r) { return r.ok ? r.json() : {}; })
+      .catch(function() { return {}; })
+      .then(function(ps) {
+        window._priceSummary = ps;
+        // 补全各持仓的价格历史
+        H.forEach(function(h) {
+          var key = h.mh || h.n;
+          if (ps[key] && (!h.price_history || h.price_history.length < 5)) {
+            h.price_history = ps[key];
+          }
+        });
+        var totalHoldings = H.length;
+        H = H.filter(function(h) {
+          return h.c > 0 && (h.price_history || []).length > 0;
+        });
+        document.getElementById('btInfo').textContent = '共 ' + totalHoldings + ' 件持仓，' + H.length + ' 件可回测';
+        if (H.length === 0) {
+          document.getElementById('backtestContent').innerHTML = '<div class="empty">没有含价格历史的持仓数据，请先积累数据</div>';
+          return;
+        }
+        renderBacktest();
   }).catch(function() {
     document.getElementById('backtestContent').innerHTML = '<div class="empty">加载失败，请检查网络</div>';
   });
