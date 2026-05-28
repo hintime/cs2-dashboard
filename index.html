@@ -2641,33 +2641,27 @@ function renderAllRecs() {
 function renderRecCompare(items) {
   var bar = document.getElementById('recCompareBar');
   if (!bar) return;
-  var eco = {count: 0, up: 0, ret: 0}, buff = {count: 0, up: 0, ret: 0};
+  var cnt = 0, up = 0, retSum = 0;
   items.forEach(function(r) {
-    var tag = (r.tag || 'eco') === 'buff' ? buff : eco;
-    tag.count++;
-    var ref = tag === buff ? (r.price || r.buff_sell || 0) : (r.eco_price || r.price || 0);
-    var cur = tag === buff ? (r.buff_sell || r.price || 0) : (r.price || r.eco_price || 0);
-    if (ref > 0 && cur > 0) { var ret = (cur - ref) / ref * 100; tag.ret += ret; if (ret > 0) tag.up++; }
+    cnt++;
+    var cur = r.price || r.buff_sell || r.eco_price || 0;
+    var ref = r.eco_price || r.price || 0; // ECO 价作为基准
+    if (ref > 0 && cur > 0) { var ret = (cur - ref) / ref * 100; retSum += ret; if (ret > 0) up++; }
   });
-  var ecoWR = eco.count ? (eco.up / eco.count * 100).toFixed(0) : 0;
-  var buffWR = buff.count ? (buff.up / buff.count * 100).toFixed(0) : 0;
-  var ecoRet = eco.count ? (eco.ret / eco.count) : 0;
-  var buffRet = buff.count ? (buff.ret / buff.count) : 0;
-  if (!eco.count && !buff.count) { bar.style.display = 'none'; return; }
+  if (!cnt) { bar.style.display = 'none'; return; }
+  var wr = cnt ? (up / cnt * 100).toFixed(0) : 0;
+  var avgRet = cnt ? (retSum / cnt) : 0;
   bar.style.display = 'block';
-  var maxWR = Math.max(ecoWR, buffWR, 1);
   bar.innerHTML =
-    '<div style="display:flex;gap:16px;align-items:stretch">' +
-    '<div style="flex:1;background:var(--surface2);border-radius:8px;padding:10px 14px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">ECO推荐</div><div style="display:flex;gap:12px;align-items:center">' +
-    '<span style="font-size:11px;color:var(--text2)">' + eco.count + '条</span>' +
-    '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + (ecoWR / maxWR * 80) + '%;background:var(--blue);border-radius:3px"></div></div>' +
-    '<span style="font-size:11px;font-weight:600;color:var(--blue);min-width:40px;text-align:right">' + ecoWR + '%</span>' +
-    '<span style="font-size:10px;color:var(--text3)">均' + (ecoRet >= 0 ? '+' : '') + ecoRet.toFixed(1) + '%</span></div></div>' +
-    '<div style="flex:1;background:var(--surface2);border-radius:8px;padding:10px 14px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">BUFF推荐</div><div style="display:flex;gap:12px;align-items:center">' +
-    '<span style="font-size:11px;color:var(--text2)">' + buff.count + '条</span>' +
-    '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + (buffWR / maxWR * 80) + '%;background:var(--amber);border-radius:3px"></div></div>' +
-    '<span style="font-size:11px;font-weight:600;color:var(--amber);min-width:40px;text-align:right">' + buffWR + '%</span>' +
-    '<span style="font-size:10px;color:var(--text3)">均' + (buffRet >= 0 ? '+' : '') + buffRet.toFixed(1) + '%</span></div></div></div>';
+    '<div style="background:var(--surface2);border-radius:8px;padding:12px 16px">' +
+    '<div style="display:flex;align-items:center;gap:16px">' +
+    '<span style="font-size:11px;font-weight:700;color:var(--text)">📊 推荐信号</span>' +
+    '<span style="font-size:11px;color:var(--text2)">' + cnt + '条</span>' +
+    '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + wr + '%;background:var(--blue);border-radius:3px"></div></div>' +
+    '<span style="font-size:12px;font-weight:700;color:' + (wr>=50?'var(--rise)':'var(--fall)') + '" title="胜率">' + wr + '%</span>' +
+    '<span style="font-size:10px;color:var(--text3)">均' + (avgRet >= 0 ? '+' : '') + avgRet.toFixed(1) + '%</span>' +
+    '<span style="font-size:10px;color:var(--text3)">' + up + '涨' + (cnt-up) + '跌</span>' +
+    '</div></div>';
 }
 
 function goRecPage(n) {
