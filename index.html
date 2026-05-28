@@ -1254,6 +1254,26 @@ async function loadAll() {
       DOM.updateTime.textContent = (ut ? '数据 ' + new Date(ut).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}) : '刷新 ' + new Date(t0).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}));
     }
     recData = marketR.recommendations || {};
+    // 自动记录推荐数据到浏览器本地存储
+    try {
+      var allRecs = (recData.all || []).slice(0, 30);
+      var today = new Date().toISOString().slice(0,10);
+      var prev = JSON.parse(localStorage.getItem('cs2_rec_tracks') || '[]');
+      var existing = {}; prev.forEach(function(t){existing[t.name+'_'+t.date] = true;});
+      var added = false;
+      allRecs.forEach(function(r){
+        var key = (r.name||'') + '_' + today;
+        if (!existing[key]) {
+          existing[key] = true;
+          prev.push({name: r.name||'', date: today, recPrice: r.price||r.eco_price||0, channel: r.channel||'eco'});
+          added = true;
+        }
+      });
+      if (added) {
+        if (prev.length > 500) prev = prev.slice(-500);
+        localStorage.setItem('cs2_rec_tracks', JSON.stringify(prev));
+      }
+    } catch(_) {}
     // 推荐板块显示当前加载时间（随刷新按钮更新）
     if (DOM.recUpdateTime) DOM.recUpdateTime.textContent = ut ? new Date(ut).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}) : '';
   } else {
