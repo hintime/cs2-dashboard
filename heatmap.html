@@ -115,22 +115,20 @@ function loadHeatmap() {
   var t0 = Date.now();
   Promise.all([
     fetch('eco_tracked.json?v=' + t0).then(function(r) { return r.ok ? r.json() : null; }),
-    fetch('market.json?v=' + t0).then(function(r) { return r.ok ? r.json() : {}; })
+    fetch('price_summary.json?v=' + t0).then(function(r) { return r.ok ? r.json() : {}; })
   ]).then(function(results) {
     var ecoData = results[0];
-    var marketR = results[1];
+    var ps = results[1];
 
     if (!Array.isArray(ecoData) || ecoData.length === 0) {
       document.getElementById('heatDate').textContent = '暂无追踪数据';
       return;
     }
 
-    // 收集 alerts 中的 rate_7 数据（用英文 HashName 匹配）
+    // 收集 price_summary 中的 change_7d（用英文 HashName 匹配）
     var rateMap = {};
-    if (marketR && marketR.alerts) {
-      marketR.alerts.forEach(function(a) {
-        rateMap[a.name] = a.rate_7;
-      });
+    for (var hn in ps) {
+      if (ps[hn] && ps[hn].change_7d) rateMap[hn] = ps[hn].change_7d;
     }
 
     // 全量分类统计
