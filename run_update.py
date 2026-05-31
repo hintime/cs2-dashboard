@@ -29,6 +29,7 @@ os.environ.setdefault('GIT_ASKPASS', 'echo')
 
 env = os.environ.copy()
 env.pop('GIT_TERMINAL_PROMPT', None)
+env['SCHEDULED_RUN'] = '1'  # 告诉 update.py 这是定时任务，限制 SteamDT 批次数
 
 # 静默日志文件
 LOG_FILE = os.path.join(DATA_DIR, 'silent_update.log')
@@ -38,7 +39,7 @@ def log(msg):
 
 def run_py(args):
     result = subprocess.run([PYTHONW, os.path.join(DATA_DIR, args[0])] + args[1:],
-        cwd=DATA_DIR, capture_output=True, text=True, timeout=600,
+        cwd=DATA_DIR, capture_output=True, text=True, timeout=600, env=env,
         creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0)
     if result.stdout:
         log(f'[update.py] {result.stdout.strip()[-500:]}')

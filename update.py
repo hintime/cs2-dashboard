@@ -726,29 +726,43 @@ def fetch_steamdt_prices(hash_names, verbose=True):
         return prices
 
     # ── 全量追踪：batch API，每分钟1次，每次100件 ──
-    batch = hash_names[:100]  # 一次最多查100件
+    # 循环分批查询所有物品（每批100件，间隔65秒，遵守1次/分钟限制）
     prices = {}
+    total_batches = (len(hash_names) + 99) // 100
+    # 自动模式下每次最多跑 5 批（约5分钟），避免阻塞下次任务
+    # 交互模式下跑满全部
+    import os as _os
+    is_scheduled = _os.environ.get('SCHEDULED_RUN', '').strip() == '1'
+    max_batches = 5 if is_scheduled else total_batches
     try:
+        for batch_idx in range(min(max_batches, total_batches)):
+            start_i = batch_idx * 100
+            batch = hash_names[start_i:start_i + 100]
+            if not batch:
+                break
+            if verbose or batch_idx == 0:
+                print(f'[SteamDT] Batch {batch_idx+1}/{total_batches}: {len(batch)} items...')
+            if batch_idx > 0:
+                time.sleep(65.0)  # 遵守1次/分钟限制（加5秒缓冲）
+            body = _json.dumps({'marketHashNames': batch}).encode('utf-8')
+            resp = http_post_raw(
+                'https://open.steamdt.com/open/cs2/v1/price/batch',
+                body,
+                headers={'Authorization': f'Bearer {STEAM_KEY}', 'Content-Type': 'application/json'},
+                timeout=30,
+            )
+            result = _json.loads(resp)
+            if result.get('success'):
+                for item_data in result.get('data', []):
+                    hn = item_data.get('marketHashName', '')
+                    if hn and item_data.get('dataList'):
+                        data = _parse_buff(hn, {'success': True, 'data': item_data['dataList']})
+                        if data:
+                            prices[hn] = data
+            if verbose:
+                print(f'[SteamDT] Batch {batch_idx+1} got prices for batch')
         if verbose:
-            print(f'[SteamDT] Batch fetching {len(batch)} items...')
-        time.sleep(1.0)  # 遵守限制
-        body = _json.dumps({'marketHashNames': batch}).encode('utf-8')
-        resp = http_post_raw(
-            'https://open.steamdt.com/open/cs2/v1/price/batch',
-            body,
-            headers={'Authorization': f'Bearer {STEAM_KEY}', 'Content-Type': 'application/json'},
-            timeout=30,
-        )
-        result = _json.loads(resp)
-        if result.get('success'):
-            for item_data in result.get('data', []):
-                hn = item_data.get('marketHashName', '')
-                if hn and item_data.get('dataList'):
-                    data = _parse_buff(hn, {'success': True, 'data': item_data['dataList']})
-                    if data:
-                        prices[hn] = data
-        if verbose:
-            print(f'[SteamDT] Batch got {len(prices)}/{len(batch)} prices')
+            print(f'[SteamDT] Total from {len(hash_names)} items: {len(prices)} prices ({len(prices)/max(len(hash_names),1)*100:.1f}% coverage)')
     except Exception as e:
         if verbose:
             print(f'[SteamDT] Batch failed: {e}', file=sys.stderr)
@@ -1542,7 +1556,7 @@ def main():
                         print(f'[SteamDT] Merged {merged}/{len(tracked)} items (full catalog + platforms)')
                         
                         # ── 用全量数据保存 BUFF 历史快照 ──
-                        if buff_prices and len(buff_prices) > 100:
+                        if buff_prices and len(buff_prices) > 0:
                             try:
                                 save_buff_history(buff_prices)
                                 print(f'[HISTORY] Saved {len(buff_prices)} items to buff_history.json')
