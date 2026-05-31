@@ -1010,12 +1010,9 @@ def generate_ai_daily_report():
         total_items = scan.get('total', 0); avg_p = scan.get('avg_p', 0)
         gainers = scan.get('movers', {}).get('gainers', [])[:5]
         losers = scan.get('movers', {}).get('losers', [])[:5]
-        gainer_text = ' | '.join([g.get('n','')[:20] + (' +'+str(g.get('r7','')+ '%') if g.get('r7') else '') for g in gainers])
-        loser_text = ' | '.join([l.get('n','')[:20] + (' '+str(l.get('r7','')+ '%') if l.get('r7') else '') for l in losers])
-        prompt = f'''CS2饰品市场日报。全市场{total_items}件，均价¥{avg_p:.0f}。
-                涨幅TOP5: {gainer_text}
-                跌幅TOP5: {loser_text}
-                请用中文写一段200字的每日市场总结，包括：市场情绪、热点板块、风险提示。'''
+        gainer_text = ' | '.join([g.get('n','')[:20] + (' +' + str(g.get('r7','')) + '%' if g.get('r7') else '') for g in gainers])
+        loser_text = ' | '.join([l.get('n','')[:20] + (' ' + str(l.get('r7','')) + '%' if l.get('r7') else '') for l in losers])
+        prompt = f'CS2饰品市场日报。全市场{total_items}件追踪品，均价¥{avg_p:.0f}。涨幅TOP: {gainer_text}。跌幅TOP: {loser_text}。请用中文写一段150字市场总结。'
         data = json.dumps({
             'model': 'glm-4.7-flash',
             'messages': [
