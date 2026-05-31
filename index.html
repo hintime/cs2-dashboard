@@ -1890,7 +1890,7 @@ function render() {
       }
     };
     tr.innerHTML =
-      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span> <span class="detail-btn" data-mh="'+esc((h.mh||h.n||'').replace(/"/g,'&quot;'))+'" onclick="event.stopPropagation();openItemDetail(this)" title="深度分析">🧠</span></div></td>'+
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span> <span class="detail-btn" data-mh="'+esc(h.mh||h.n||'')+'" onclick="event.stopPropagation();openItemDetail(this)" title="深度分析">🧠</span></div></td>'+
       '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
       '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
       '<td class="text-r mono">'+(h.eco_price > 0 ? '¥'+h.eco_price.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
@@ -4186,13 +4186,16 @@ function openItemDetail(h) {
   if (h && h.nodeType === 1 && h.dataset && h.dataset.mh) {
     var mh = h.dataset.mh;
     var arr = window.H || [];
+    console.log('[openItemDetail] looking up mh:', mh, 'H.length:', arr.length);
     h = null;
     for (var i = 0; i < arr.length; i++) {
-      if ((arr[i].mh || arr[i].n || '') === mh) { h = arr[i]; break; }
+      var candidate = (arr[i].mh || arr[i].n || '');
+      if (candidate === mh) { h = arr[i]; console.log('[openItemDetail] found at index', i); break; }
     }
-    if (!h) return;
+    if (!h) { console.warn('[openItemDetail] NOT FOUND in H:', mh); return; }
   }
-  if (!h || typeof h !== 'object') return;
+  if (!h || typeof h !== 'object') { console.warn('[openItemDetail] invalid h:', h); return; }
+  console.log('[openItemDetail] rendering for:', h.n || h.mh);
   var overlay = document.getElementById('itemDetailOverlay');
   var content = document.getElementById('itemDetailContent');
   if (!overlay || !content) return;
