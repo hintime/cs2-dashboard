@@ -968,7 +968,7 @@ def generate_ai_analysis():
         print(f'[AI] ❌ Batch failed: {e}, falling back to individual...')
         # Fallback: 逐件分析
         results = {}
-        for i, item in enumerate(items[:5]):
+        for i, item in enumerate(items):  # 全部持仓
             name = item.get('name', '')
             cost = item.get('cost', 0); price = item.get('price', 0)
             r7 = item.get('rate_7', 0); r30 = item.get('rate_30', 0)
