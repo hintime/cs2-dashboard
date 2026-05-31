@@ -66,4 +66,5 @@ tbody td{padding:5px 8px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--
 .btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border);padding:8px 20px;border-radius:8px;font-size:12px;cursor:pointer}
 .tab{background:none;border:none;color:var(--text3);font-size:12px;padding:6px 14px;cursor:pointer;border-bottom:2px solid transparent}
 .tab.on{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
+.theme-menu div:hover{background:var(--surface2);color:var(--text)}
 @media(max-width:640px){.container{padding:14px 10px 24px}.kpi-strip{grid-template-columns:repeat(2,1fr);gap:8px}.kpi{padding:14px 12px}.kpi .value{font-size:18px}table{font-size:11px!important}thead th,tbody td{padding:8px 6px!important}.card{padding:14px 16px}.nav-btn{padding:6px 14px;font-size:11px}}
