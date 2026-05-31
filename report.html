@@ -81,6 +81,12 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
     <div id="topSellList"></div>
   </div>
 
+  <!-- ═══ AI 分析 ═══ -->
+  <div class="card" id="aiReportSection">
+    <h2>🧠 AI 持仓分析</h2>
+    <div id="aiReportContent" class="empty">加载中...</div>
+  </div>
+
   <!-- ═══ 本地跟踪数据 ═══ -->
   <div class="card" id="trackingSection">
     <h2>📈 推荐追踪（浏览器本地数据）</h2>
@@ -88,6 +94,7 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
   </div>
 </div>
 
+<script src="ai-badge.js"></script>
 <script>
 async function loadReport() {
   try {
@@ -195,6 +202,29 @@ function esc(s) {
   d.appendChild(document.createTextNode(s));
   return d.innerHTML;
 }
+
+// AI 分析渲染
+function renderAI() {
+  var el = document.getElementById('aiReportContent');
+  if (!el) return;
+  var data = window._aiAnalysis || {};
+  var keys = Object.keys(data);
+  if (!keys.length) { el.innerHTML = '<div class="empty">暂无 AI 分析，等待数据更新后生成</div>'; return; }
+  var html = '';
+  keys.slice(0, 10).forEach(function(name) {
+    var text = data[name] || '';
+    var v = window.aiVerdict(text) || '';
+    var c = window.aiConfidence(text) || 0;
+    var color = v.includes('买入')||v.includes('加仓') ? 'var(--rise)' : v.includes('减仓')||v.includes('卖出') ? 'var(--fall)' : 'var(--amber)';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(55,65,81,.08);font-size:12px">' +
+      '<span style="color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%">' + esc(name) + '</span>' +
+      '<span style="font-weight:600;color:' + color + ';font-size:11px">' + v + ' · ' + c + '%</span></div>';
+  });
+  if (keys.length > 10) html += '<div style="font-size:10px;color:var(--text3);text-align:center;margin-top:6px">还有 ' + (keys.length-10) + ' 件已分析</div>';
+  el.innerHTML = html;
+}
+document.addEventListener('ai-loaded', renderAI);
+if (Object.keys(window._aiAnalysis||{}).length) renderAI();
 
 // Load
 loadReport().then(renderReport).catch(function(e) {

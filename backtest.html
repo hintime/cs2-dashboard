@@ -61,6 +61,7 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
   </div>
 </div>
 
+<script src="ai-badge.js"></script>
 <script>
 var H = [];
 var WORKER_BASE = 'https://cs2wyx.asia';
@@ -235,7 +236,7 @@ function renderBacktest() {
     if (ph.length < 2) return '';
     var prices = ph.map(function(p) { return p.price; }), ip = h.pnl || 0, ipPct = h.pnlPct || 0, ic = ip >= 0 ? 'var(--rise)' : 'var(--fall)';
     var svg = window.sparkline ? window.sparkline(prices, ic, 260, 36) : '';
-    return '<div class="bt-item"><div class="bt-item-header"><span class="bt-item-name" title="' + esc(h.n) + '">' + esc(h.n) + '</span><span class="bt-item-pnl" style="color:' + ic + '">' + (ip >= 0 ? '+' : '') + '¥' + ip.toFixed(0) + '</span></div><div style="display:flex;gap:12px;font-size:10px;color:var(--text3)"><span>成本¥' + (h.c || 0).toFixed(0) + '</span><span>现价¥' + (h.p || 0).toFixed(0) + '</span><span style="color:' + ic + '">' + (ipPct >= 0 ? '+' : '') + ipPct.toFixed(1) + '%</span><span>' + ph.length + '个点</span></div>' + (svg ? '<div class="bt-item-chart">' + svg + '</div>' : '') + '</div>';
+    return '<div class="bt-item"><div class="bt-item-header"><span class="bt-item-name" title="' + esc(h.n) + '">' + esc(h.n) + window.aiBadge(h.n) + '</span><span class="bt-item-pnl" style="color:' + ic + '">' + (ip >= 0 ? '+' : '') + '¥' + ip.toFixed(0) + '</span></div><div style="display:flex;gap:12px;font-size:10px;color:var(--text3)"><span>成本¥' + (h.c || 0).toFixed(0) + '</span><span>现价¥' + (h.p || 0).toFixed(0) + '</span><span style="color:' + ic + '">' + (ipPct >= 0 ? '+' : '') + ipPct.toFixed(1) + '%</span><span>' + ph.length + '个点</span></div>' + (svg ? '<div class="bt-item-chart">' + svg + '</div>' : '') + '</div>';
   }).join('');
 
   container.innerHTML = kpiHtml + '<div class="bt-chart-wrap" style="margin-top:16px">' + chartHtml + '</div>' + (itemHtml ? '<div style="padding:8px 0;font-size:11px;color:var(--text3)">单品详情</div><div class="bt-items">' + itemHtml + '</div>' : '');
