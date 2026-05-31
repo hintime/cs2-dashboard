@@ -1,5 +1,36 @@
-/* ═══════ 共享 AI 分析加载器 ═══════ */
+/* ═══════ 共享：AI 分析 + 主题切换 ═══════ */
 (function() {
+  /* ── 主题切换 ── */
+  var THEMES = ['dark','blue','green','purple'];
+  function applyTheme(name) {
+    document.documentElement.setAttribute('data-theme', name);
+    try { localStorage.setItem('cs2_theme', name); } catch(_){}
+  }
+  window.cycleTheme = function() {
+    var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+    var idx = THEMES.indexOf(cur);
+    var next = THEMES[(idx + 1) % THEMES.length];
+    applyTheme(next);
+  };
+  // 初始化主题
+  var saved = null;
+  try { saved = localStorage.getItem('cs2_theme'); } catch(_){}
+  applyTheme(saved && THEMES.indexOf(saved) >= 0 ? saved : 'dark');
+  // 注入主题按钮（如果页面没有）
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!document.querySelector('.theme-switcher')) {
+      var btn = document.createElement('div');
+      btn.className = 'theme-switcher';
+      btn.title = '切换主题';
+      btn.onclick = window.cycleTheme;
+      btn.style.cssText = 'cursor:pointer;width:24px;height:24px;border-radius:50%;border:2px solid var(--accent);background:var(--accent);opacity:.8;transition:all .3s;flex-shrink:0';
+      // 尝试放到 nav 区域
+      var nav = document.querySelector('.nav,.header,.quick-nav');
+      if (nav) nav.appendChild(btn);
+    }
+  });
+
+  /* ── AI 分析 ── */
   if (window._aiReady) return;
   window._aiReady = true;
   window._aiAnalysis = {};
