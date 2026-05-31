@@ -898,7 +898,7 @@ def generate_ai_analysis():
     if not items:
         print('[AI] No holdings, skip')
         return
-    # 全量持仓分析（glm-4-flash 免费）
+    # 全量持仓分析（glm-4.7-flash 免费，200K上下文，128K输出）
     items = sorted(items, key=lambda x: x.get('cost', 0) * x.get('qty', 1), reverse=True)
     total = len(items)
     print(f'[AI] Analyzing {total} holdings...')
@@ -913,7 +913,7 @@ def generate_ai_analysis():
         prompt = f'{name}，当前价¥{price:.0f}，7日涨{r7:+.1f}%，30日涨{r30:+.1f}%，持仓成本¥{cost:.0f}，盈亏{pnl_pct:+.1f}%。请分析。'
         try:
             data = json.dumps({
-                'model': 'glm-4-flash',
+                'model': 'glm-4.7-flash',
                 'messages': [
                     {'role': 'system', 'content': '你是CS2饰品投资分析师。用中文回复，严格按以下格式：\n🎯 操作建议: [买入/持有/减仓/观望]\n置信度: [0-100]\n📊 核心逻辑: [一句话]\n⚠️ 风险: [一句话]\n🛡️ 入手区间: ¥X-¥Y'},
                     {'role': 'user', 'content': prompt}
