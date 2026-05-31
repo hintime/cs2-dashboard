@@ -67,19 +67,34 @@ function loadTracks() {
           });
         }
 
-        // 也从 eco_tracked 补充价格
+        // 也从 eco_tracked 补充价格（用 HashName + GoodsName 双匹配）
         return fetch('eco_tracked.json?v=' + Date.now())
           .then(function(r) { return r.ok ? r.json() : []; })
           .catch(function() { return []; })
           .then(function(ecoData) {
             if (Array.isArray(ecoData)) {
               ecoData.forEach(function(item) {
-                if (!nowPrices[item.name] && item.eco_price) {
-                  nowPrices[item.name] = item.eco_price;
+                var hn = item.HashName || '';
+                var gn = item.GoodsName || '';
+                var p = item.Price || item.eco_price || 0;
+                if (p > 0) {
+                  if (hn && !nowPrices[hn]) nowPrices[hn] = p;
+                  if (gn && !nowPrices[gn]) nowPrices[gn] = p;
                 }
               });
             }
-            renderTracks(tracks, nowPrices, marketData);
+            // 再加 price_summary 兜底
+            return fetch('price_summary.json?v=' + Date.now())
+              .then(function(r){ return r.ok ? r.json() : {}; })
+              .catch(function(){ return {}; })
+              .then(function(ps){
+                for (var key in ps) {
+                  if (!nowPrices[key] && ps[key] && ps[key].last > 0) {
+                    nowPrices[key] = ps[key].last;
+                  }
+                }
+                renderTracks(tracks, nowPrices, marketData);
+              });
           });
       })
       .catch(function() {
