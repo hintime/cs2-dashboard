@@ -1227,6 +1227,10 @@ async function loadAll() {
   }
   // holdings每次请求最新
   var holdingsR = await fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
+  // 加载价格摘要（7日/30日涨跌，来自 price_history.json 衍生）
+  fetch('price_summary.json?v=' + t0, fetchOpts).then(r => r.json()).then(function(ps) {
+    window._priceSummary = ps || {};
+  }).catch(function() { window._priceSummary = {}; });
   // 未登录不显示任何持仓数据
   if (!getMyKey()) { holdingsR = null; }
   // 如果已登录，合并个人持仓
