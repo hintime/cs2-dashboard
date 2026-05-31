@@ -898,10 +898,12 @@ def generate_ai_analysis():
     if not items:
         print('[AI] No holdings, skip')
         return
-    # 取前5个价值最高的持仓
-    items = sorted(items, key=lambda x: x.get('cost', 0) * x.get('qty', 1), reverse=True)[:5]
+    # 全量持仓分析（glm-4-flash 免费）
+    items = sorted(items, key=lambda x: x.get('cost', 0) * x.get('qty', 1), reverse=True)
+    total = len(items)
+    print(f'[AI] Analyzing {total} holdings...')
     results = {}
-    for item in items:
+    for i, item in enumerate(items):
         name = item.get('name', '')
         cost = item.get('cost', 0)
         price = item.get('price', 0)
@@ -924,7 +926,7 @@ def generate_ai_analysis():
             resp = urllib.request.urlopen(req, timeout=20)
             r = json.loads(resp.read().decode('utf-8'))
             results[name] = r['choices'][0]['message']['content']
-            print(f'[AI] ✅ {name[:30]}')
+            print(f'[AI] {i+1}/{total} ✅ {name[:30]}')
         except Exception as e:
             print(f'[AI] ❌ {name[:30]}: {e}')
     if results:
