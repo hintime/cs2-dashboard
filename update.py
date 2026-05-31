@@ -1083,6 +1083,36 @@ def generate_ai_anomaly():
     except Exception as e:
         print(f'[AI] Anomaly failed: {e}')
 
+def generate_ai_stock_picks():
+    """AI 扫描全市场找低估品"""
+    if not ZHIPU_KEY: return
+    try:
+        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
+        movers = scan.get('movers', {})
+        losers = movers.get('losers', [])[:20]
+        # 取跌幅最大但基本面好的
+        items_text = '\n'.join([f'{l.get("n","")}: 7日{l.get("r7","")}% | 现价¥{l.get("p","")}' for l in losers if l.get('r7') and l['r7'] < -5])
+        if not items_text:
+            print('[AI] No candidates for stock picks')
+            return
+        prompt = f'以下CS2饰品近期跌幅较大，请从中选出3-5个最有反弹潜力的：\n{items_text}\n返回JSON：{{"picks":[{{"name":"","reason":"","target":"+X%","confidence":80}}],"rationale":"一句话"}}'
+        data = json.dumps({
+            'model': 'glm-4.7-flash',
+            'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON。'}, {'role': 'user', 'content': prompt}],
+            'response_format': {'type': 'json_object'},
+            'max_tokens': 1000, 'temperature': 0.5
+        }).encode('utf-8')
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        })
+        resp = urllib.request.urlopen(req, timeout=30)
+        r = json.loads(resp.read().decode('utf-8'))
+        picks = json.loads(r['choices'][0]['message']['content'])
+        write_json(os.path.join(DATA_DIR, 'ai_stock_picks.json'), picks)
+        print(f'[AI] Stock picks: {len(picks.get("picks",[]))} candidates')
+    except Exception as e:
+        print(f'[AI] Stock picks failed: {e}')
+
 # ═══════════════ PUSH (single atomic commit) ═══════════════
 def push_all():
     """Push all dirty files in a single commit — avoids SHA conflicts"""
@@ -1750,6 +1780,7 @@ def main():
     generate_ai_analysis()
     generate_ai_daily_report()
     generate_ai_anomaly()
+    generate_ai_stock_picks()
 
     # ── Push all dirty files at once ──
     push_all()
