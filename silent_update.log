@@ -469,3 +469,25 @@ json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes:
   File "C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Lib\subprocess.py", line 571, in run
     raise CalledProcessError(retcode, process.args,
 subprocess.CalledProcessError: Command '['git', '-c', 'credential.helper=manager', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push']' returned non-zero exit status 128.
+2026-06-01 00:11:23 [update.py]  file (127.0.0.1), skipping
+[MARKET] Skipped (steamcommunity.com blocked by hosts file)
+[SCAN] Total: 37762, Valid: 8793
+[SCAN] Saved: 8793 items (from 37762), 8459 with prices, 4 categories, movers: True
+[SCAN] market_scan.json regenerated
+[CORR] Loading price_history.json...
+[CORR] 4314 items × 13 days
+[CORR] Computing correlations for 297 items...
+[CORR] Saved 200 pairs (30 pos, 9 neg) in 1.5s
+[REPORT] Saved daily report for 2026-06-01
+[STATUS] Summary generated: 7 fields
+[SUMMARY] 6602 items
+2026-06-01 00:11:23 [update.py ERR] urred:
+
+Traceback (most recent call last):
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1606, in <module>
+    main()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 1598, in main
+    generate_ai_analysis()
+  File "C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard\update.py", line 929, in generate_ai_analysis
+    print(f'[AI] \u274c {name[:30]}: {e}')
+UnicodeEncodeError: 'gbk' codec can't encode character '\u274c' in position 5: illegal multibyte sequence
