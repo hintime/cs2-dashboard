@@ -659,7 +659,7 @@ html { scroll-behavior: smooth; }
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <div class="tabs" id="tabBar"></div>
         <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
-          <input id="searchInput" placeholder="🔍 搜索饰品… (/ 或 S 键聚焦)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 12px;font-size:12px;width:160px;outline:none;transition:border-color .2s" />
+          <input id="searchInput" placeholder="🧠 搜索饰品… (/ 或 S 键聚焦)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 12px;font-size:12px;width:160px;outline:none;transition:border-color .2s" />
           <select id="sortOrder" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer">
             <option value="pnlPct">按盈亏%排序</option>
             <option value="pnl">按盈亏额排序</option>
@@ -1871,7 +1871,7 @@ function render() {
       }
     };
     tr.innerHTML =
-      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span> <span class="detail-btn" onclick="event.stopPropagation();openItemDetail(H['+realIdx+'])" title="深度分析">🔍</span></div></td>'+
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span> <span class="detail-btn" onclick="event.stopPropagation();openItemDetail(H['+realIdx+'])" title="深度分析">🧠</span></div></td>'+
       '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
       '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
       '<td class="text-r mono">'+(h.eco_price > 0 ? '¥'+h.eco_price.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
@@ -2266,7 +2266,7 @@ btn.onclick = async function() {
   }
   
   // 阶段2：触发全量扫描（持仓价格 + 异动 + 推荐）
-  btn.textContent = '🔍 扫描全量数据...';
+  btn.textContent = '🧠 扫描全量数据...';
   $('refreshStatus').textContent = '扫描中';
   
   try {
@@ -2550,7 +2550,7 @@ function renderAllRecs() {
   // Use pre-sorted top-30 from backend (already sorted by _score)
   const allItems = (recData.all || []).slice();
   if (!allItems.length) {
-    grid.innerHTML = '<div class="no-data"><div class="icon">🔍</div>暂无推荐<br><span style="font-size:11px">数据更新后自动生成</span></div>';
+    grid.innerHTML = '<div class="no-data"><div class="icon">🧠</div>暂无推荐<br><span style="font-size:11px">数据更新后自动生成</span></div>';
     return;
   }
 
