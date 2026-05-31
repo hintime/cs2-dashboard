@@ -1475,6 +1475,13 @@ def main():
                                 item['yyyp_sell_num'] = bp.get('yyyp_sell_num', 0)
                                 merged += 1
                         print(f'[CSQAQ] Batch merged: {merged} items')
+                        # ── CSQAQ 全量数据 → 保存到 buff_history（秒级完成，无批次限制）──
+                        if batch_prices and len(batch_prices) > 100:
+                            try:
+                                save_buff_history(batch_prices)
+                                print(f'[HISTORY] Saved {len(batch_prices)} items from CSQAQ to buff_history.json')
+                            except Exception as e:
+                                print(f'[HISTORY] CSQAQ save failed: {e}', file=sys.stderr)
 
                 # 自动检测：BUFF/YYYP 覆盖率过低时保留旧数据
                 if merged > 0 and merged < len(tracked) * 0.5:
