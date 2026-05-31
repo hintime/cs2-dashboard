@@ -942,6 +942,7 @@ def generate_ai_analysis():
                 {'role': 'user', 'content': prompt}
             ],
             'response_format': {'type': 'json_object'},
+            'thinking': {'type': 'enabled'},
             'max_tokens': 4096, 'temperature': 0.3
         }).encode('utf-8')
         req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
@@ -980,6 +981,7 @@ def generate_ai_analysis():
                         {'role': 'user', 'content': f'{name}，¥{price:.0f}，7日{r7:+.1f}%，30日{r30:+.1f}%，成本¥{cost:.0f}，盈亏{pnl_pct:+.1f}%'}
                     ],
                     'response_format': {'type': 'json_object'},
+            'thinking': {'type': 'enabled'},
                     'max_tokens': 200, 'temperature': 0.3
                 }).encode('utf-8')
                 req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
@@ -998,6 +1000,88 @@ def generate_ai_analysis():
         if results:
             write_json(os.path.join(DATA_DIR, 'ai_analysis.json'), results)
             print(f'[AI] Saved {len(results)} (fallback mode)')
+
+def generate_ai_daily_report():
+    """AI 自动生成每日市场报告"""
+    if not ZHIPU_KEY: return
+    try:
+        # 收集市场数据作为上下文
+        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
+        total_items = scan.get('total', 0); avg_p = scan.get('avg_p', 0)
+        gainers = scan.get('movers', {}).get('gainers', [])[:5]
+        losers = scan.get('movers', {}).get('losers', [])[:5]
+        gainer_text = ' | '.join([g.get('n','')[:20] + (' +'+str(g.get('r7','')+ '%') if g.get('r7') else '') for g in gainers])
+        loser_text = ' | '.join([l.get('n','')[:20] + (' '+str(l.get('r7','')+ '%') if l.get('r7') else '') for l in losers])
+        prompt = f'''CS2饰品市场日报。全市场{total_items}件，均价¥{avg_p:.0f}。
+                涨幅TOP5: {gainer_text}
+                跌幅TOP5: {loser_text}
+                请用中文写一段200字的每日市场总结，包括：市场情绪、热点板块、风险提示。'''
+        data = json.dumps({
+            'model': 'glm-4.7-flash',
+            'messages': [
+                {'role': 'system', 'content': '你是CS2饰品市场日报编辑。写简洁专业的市场分析。'},
+                {'role': 'user', 'content': prompt}
+            ],
+            'max_tokens': 500, 'temperature': 0.5
+        }).encode('utf-8')
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        })
+        resp = urllib.request.urlopen(req, timeout=30)
+        r = json.loads(resp.read().decode('utf-8'))
+        report = r['choices'][0]['message']['content']
+        write_json(os.path.join(DATA_DIR, 'ai_daily_report.json'), {
+            'date': time.strftime('%Y-%m-%d'),
+            'report': report,
+            'generated': time.strftime('%Y-%m-%d %H:%M:%S')
+        })
+        print(f'[AI] Daily report generated ({len(report)} chars)')
+    except Exception as e:
+        print(f'[AI] Daily report failed: {e}')
+
+def generate_ai_anomaly():
+    """AI 解读异动饰品"""
+    if not ZHIPU_KEY: return
+    try:
+        # 检查 fluctuation 数据
+        bh = read_json(os.path.join(DATA_DIR, 'buff_history.json'))
+        dates = sorted(bh.keys())
+        if len(dates) < 2: return
+        now, prev = dates[-1], dates[-2]
+        changes = []
+        for name, info in bh[now].items():
+            if name not in bh[prev]: continue
+            now_num = info.get('buff_sell_num', 0) or info.get('yyyp_sell_num', 0)
+            prev_num = bh[prev][name].get('buff_sell_num', 0) or bh[prev][name].get('yyyp_sell_num', 0)
+            if prev_num > 0 and now_num > 0:
+                pct = (now_num - prev_num) / prev_num * 100
+                if abs(pct) > 30:
+                    changes.append((name, pct, now_num, prev_num))
+        if not changes:
+            print('[AI] No significant anomalies')
+            return
+        changes.sort(key=lambda x: abs(x[1]), reverse=True)
+        top = changes[:5]
+        items_text = '\n'.join([f'{n}: 在售量 {pr}→{nr} ({pct:+.0f}%)' for n, pct, nr, pr in top])
+        prompt = f'CS2饰品在售量异动检测，以下饰品在售量变化超过30%：\n{items_text}\n请分析这些异动可能的原因和影响，100字以内。'
+        data = json.dumps({
+            'model': 'glm-4-flash',
+            'messages': [
+                {'role': 'system', 'content': '你是CS2饰品市场分析师。简洁分析在售量异动原因。'},
+                {'role': 'user', 'content': prompt}
+            ],
+            'max_tokens': 300, 'temperature': 0.5
+        }).encode('utf-8')
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        })
+        resp = urllib.request.urlopen(req, timeout=20)
+        r = json.loads(resp.read().decode('utf-8'))
+        result = {'anomalies': [{'name': n, 'pct': round(pct, 1)} for n, pct, _, _ in top], 'analysis': r['choices'][0]['message']['content']}
+        write_json(os.path.join(DATA_DIR, 'ai_anomaly.json'), result)
+        print(f'[AI] Anomaly analysis done ({len(top)} items)')
+    except Exception as e:
+        print(f'[AI] Anomaly failed: {e}')
 
 # ═══════════════ PUSH (single atomic commit) ═══════════════
 def push_all():
@@ -1664,6 +1748,8 @@ def main():
     # ── 衍生 price_summary + AI 分析 ──
     generate_price_summary()
     generate_ai_analysis()
+    generate_ai_daily_report()
+    generate_ai_anomaly()
 
     # ── Push all dirty files at once ──
     push_all()
