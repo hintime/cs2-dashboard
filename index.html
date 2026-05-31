@@ -3639,6 +3639,9 @@ initDashboard = function() {
 // ── 暴露接口到全局 ──
 window.H = H;
 window.recData = recData;
+window.WEAR_MAP = WEAR_MAP;
+window.CAT_MAP = CAT_MAP;
+window.CAT_LABELS = CAT_LABELS;
 
 })();
 </script>
@@ -4214,7 +4217,7 @@ function openItemDetail(h) {
   var riskHtml = risks.map(function(r){ return '<div style="font-size:11px;color:var(--rise);margin:3px 0">❌ ' + r + '</div>'; }).join('');
   content.innerHTML =
     '<div style="text-align:center;margin-bottom:20px"><div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px">' + esc(h.n) + '</div>' +
-    (h.w ? '<div style="font-size:11px;color:var(--text3)">' + (WEAR_MAP[h.w]||h.w) + '</div>' : '') + '</div>' +
+    (h.w ? '<div style="font-size:11px;color:var(--text3)">' + (window.WEAR_MAP[h.w]||h.w) + '</div>' : '') + '</div>' +
     '<div style="text-align:center;margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:10px"><div style="font-size:24px;font-weight:800;color:' + vColor + '">' + verdict + '</div>' +
     '<div style="font-size:11px;color:var(--text3);margin-top:4px">置信度 ' + confidence + '/100</div></div>' +
     '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">💰 多平台价格</div>' +
