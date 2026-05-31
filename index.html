@@ -6,13 +6,37 @@
 <link rel="dns-prefetch" href="//hintime.github.io">
 <title>CS2 饰品投资看板 · v2026.04.23c</title>
 <style>
-:root{
+:root,[data-theme="dark"]{
   --bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);
   --border:rgba(55,65,81,.4);--border-hi:rgba(99,115,129,.5);
   --text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;
   --fall:#34d399;--rise:#f87171;--blue:#60a5fa;--amber:#fbbf24;
   --glow-rise:rgba(248,113,113,.12);--glow-fall:rgba(52,211,153,.12);--glow-blue:rgba(96,165,250,.1);
   --accent:#60a5fa;--radius:14px;--radius-sm:10px;--shadow:0 2px 16px rgba(0,0,0,.25);
+}
+[data-theme="blue"]{
+  --bg:#0a1628;--surface:rgba(18,30,48,.88);--surface2:rgba(24,38,56,.72);
+  --border:rgba(59,130,246,.25);--border-hi:rgba(96,165,250,.45);
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --fall:#34d399;--rise:#f87171;--blue:#3b82f6;--amber:#fbbf24;
+  --glow-rise:rgba(248,113,113,.12);--glow-fall:rgba(52,211,153,.12);--glow-blue:rgba(59,130,246,.15);
+  --accent:#3b82f6;--radius:14px;--radius-sm:10px;--shadow:0 2px 16px rgba(0,0,0,.25);
+}
+[data-theme="green"]{
+  --bg:#0a1a10;--surface:rgba(16,36,22,.88);--surface2:rgba(22,48,30,.72);
+  --border:rgba(52,211,153,.25);--border-hi:rgba(52,211,153,.45);
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --fall:#34d399;--rise:#f87171;--blue:#22c55e;--amber:#fbbf24;
+  --glow-rise:rgba(248,113,113,.12);--glow-fall:rgba(52,211,153,.15);--glow-blue:rgba(34,197,94,.15);
+  --accent:#22c55e;--radius:14px;--radius-sm:10px;--shadow:0 2px 16px rgba(0,0,0,.25);
+}
+[data-theme="purple"]{
+  --bg:#0f0a1a;--surface:rgba(24,16,40,.88);--surface2:rgba(32,22,52,.72);
+  --border:rgba(167,139,250,.25);--border-hi:rgba(167,139,250,.45);
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --fall:#34d399;--rise:#f87171;--blue:#a78bfa;--amber:#fbbf24;
+  --glow-rise:rgba(248,113,113,.12);--glow-fall:rgba(52,211,153,.12);--glow-blue:rgba(167,139,250,.15);
+  --accent:#a78bfa;--radius:14px;--radius-sm:10px;--shadow:0 2px 16px rgba(0,0,0,.25);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -495,6 +519,7 @@ html { scroll-behavior: smooth; }
     <a href="report.html" class="nav-btn sub-page" style="text-decoration:none">📋 日报</a>
     <a href="status.html" class="nav-btn sub-page" style="text-decoration:none">📡 状态</a>
     </div>
+    <div class="theme-switcher" title="切换主题" onclick="cycleTheme()" style="cursor:pointer;width:28px;height:28px;border-radius:50%;border:2px solid var(--accent);background:var(--accent);opacity:.8;transition:all .3s;flex-shrink:0"></div>
   </div>
 
 <div id="loginLanding" style="text-align:center;padding:80px 20px 60px;max-width:560px;margin:0 auto">
@@ -766,9 +791,45 @@ html { scroll-behavior: smooth; }
   </div>
 </div>
 
+<!-- ═══ 单品深度分析卡片 ═══ -->
+<div id="itemDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1001;backdrop-filter:blur(4px);align-items:center;justify-content:center" onclick="if(event.target===this)closeItemDetail()">
+  <div id="itemDetailCard" style="background:var(--surface);border:1px solid var(--border-hi);border-radius:var(--radius);padding:28px 24px;max-width:520px;width:92vw;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.4);position:relative">
+    <button onclick="closeItemDetail()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer">&times;</button>
+    <div id="itemDetailContent"></div>
+  </div>
+</div>
+
 <script>
 (function(){
 'use strict';
+
+// ── 主题切换 ──
+var THEMES = ['dark','blue','green','purple'];
+var THEME_LABELS = {'dark':'🌙 暗色','blue':'💧 清新蓝','green':'🌿 自然绿','purple':'💜 薄雾紫'};
+function applyTheme(name) {
+  document.documentElement.setAttribute('data-theme', name);
+  localStorage.setItem('cs2_theme', name);
+}
+function cycleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  var idx = THEMES.indexOf(cur);
+  var next = THEMES[(idx + 1) % THEMES.length];
+  applyTheme(next);
+  showThemeToast(next);
+}
+function showThemeToast(name) {
+  var t = document.getElementById('themeToast');
+  if (!t) { t = document.createElement('div'); t.id='themeToast'; t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface);color:var(--text);padding:8px 20px;border-radius:20px;font-size:12px;z-index:9999;border:1px solid var(--border);box-shadow:var(--shadow);pointer-events:none;transition:opacity .3s'; document.body.appendChild(t); }
+  t.textContent = THEME_LABELS[name] || name;
+  t.style.opacity = '1';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function(){ t.style.opacity = '0'; }, 1500);
+}
+// 初始化主题
+(function(){
+  var saved = localStorage.getItem('cs2_theme');
+  applyTheme(saved && THEMES.indexOf(saved) >= 0 ? saved : 'dark');
+})();
 
 // ═══════════════ 骨架屏 ═══════════════
 // Skeleton as fixed overlay - preserves container DOM structure
@@ -1809,7 +1870,7 @@ function render() {
       }
     };
     tr.innerHTML =
-      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span></div></td>'+
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span> <span class="detail-btn" onclick="event.stopPropagation();openItemDetail(H['+realIdx+'])" title="深度分析">🔍</span></div></td>'+
       '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
       '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
       '<td class="text-r mono">'+(h.eco_price > 0 ? '¥'+h.eco_price.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
@@ -4095,6 +4156,72 @@ async function autoImportFromProfile(){
       }
     } catch(e){}
   }
+
+// ═══════════ 单品深度分析卡片 ═══════════
+function openItemDetail(h) {
+  var overlay = document.getElementById('itemDetailOverlay');
+  var content = document.getElementById('itemDetailContent');
+  if (!overlay || !content) return;
+  var ps = window._priceSummary || {};
+  var key = h.mh || h.n;
+  var pdata = ps[key] || {};
+  var r7 = pdata.change_7d || h.rate_7 || 0;
+  var r30 = pdata.change_30d || h.rate_30 || 0;
+  var curPrice = h.p || h.eco_price || h.buff_sell || 0;
+  var ecoPrice = h.eco_price || 0;
+  var buffPrice = h.buff_sell || 0;
+  var yyypPrice = h.yyyp_sell || 0;
+  var cost = h.c || 0;
+  var pnl = curPrice - cost;
+  var pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
+  var entryLow = Math.round(curPrice * 0.92 * 100) / 100;
+  var entryHigh = Math.round(curPrice * 0.98 * 100) / 100;
+  // 操作建议
+  var verdict, vColor, confidence;
+  if (pnlPct > 15) { verdict = '🔥 建议减仓'; vColor = 'var(--rise)'; confidence = 78; }
+  else if (pnlPct > 5 && r7 > 0) { verdict = '📈 继续持有'; vColor = 'var(--rise)'; confidence = 65; }
+  else if (pnlPct < -15) { verdict = '❄ 观望不动'; vColor = 'var(--fall)'; confidence = 40; }
+  else if (pnlPct < -5 && r7 < 0) { verdict = '📉 谨慎持有'; vColor = 'var(--fall)'; confidence = 45; }
+  else if (r7 > 3) { verdict = '✅ 可加仓'; vColor = 'var(--rise)'; confidence = 62; }
+  else if (r30 < -10) { verdict = '⏳ 等待企稳'; vColor = 'var(--fall)'; confidence = 55; }
+  else { verdict = '👀 持有观望'; vColor = 'var(--amber)'; confidence = 50; }
+  // 风险
+  var risks = [];
+  if (r7 > 10) risks.push('短期拉升过快，警惕回调');
+  if (r30 < -10) risks.push('中期趋势偏弱，下跌尚未反转');
+  if (buffPrice > 0 && ecoPrice > 0 && buffPrice > ecoPrice * 1.05) risks.push('BUFF溢价较高(' + (buffPrice/ecoPrice*100-100).toFixed(1) + '%)，注意平台价差');
+  if (!risks.length) risks.push('暂无显著风险信号');
+  var riskHtml = risks.map(function(r){ return '<div style="font-size:11px;color:var(--rise);margin:3px 0">❌ ' + r + '</div>'; }).join('');
+  content.innerHTML =
+    '<div style="text-align:center;margin-bottom:20px"><div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px">' + esc(h.n) + '</div>' +
+    (h.w ? '<div style="font-size:11px;color:var(--text3)">' + (WEAR_MAP[h.w]||h.w) + '</div>' : '') + '</div>' +
+    '<div style="text-align:center;margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:10px"><div style="font-size:24px;font-weight:800;color:' + vColor + '">' + verdict + '</div>' +
+    '<div style="font-size:11px;color:var(--text3);margin-top:4px">置信度 ' + confidence + '/100</div></div>' +
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">💰 多平台价格</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">ECO</div><div style="font-size:14px;font-weight:700;color:var(--blue)">' + (ecoPrice>0?'¥'+ecoPrice.toFixed(2):'--') + '</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">BUFF</div><div style="font-size:14px;font-weight:700;color:var(--amber)">' + (buffPrice>0?'¥'+buffPrice.toFixed(2):'--') + '</div></div>' +
+    '<div style="background:var(--surface2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">悠悠</div><div style="font-size:14px;font-weight:700;color:var(--text)">' + (yyypPrice>0?'¥'+yyypPrice.toFixed(2):'--') + '</div></div></div>' +
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">📊 多周期趋势</div>' +
+    '<div style="display:flex;gap:12px;margin-bottom:14px">' +
+    '<span style="font-size:12px;color:' + (r7>=0?'var(--rise)':'var(--fall)') + ';font-weight:600">7日 ' + (r7>=0?'+':'') + r7.toFixed(1) + '%</span>' +
+    '<span style="font-size:12px;color:' + (r30>=0?'var(--rise)':'var(--fall)') + ';font-weight:600">30日 ' + (r30>=0?'+':'') + r30.toFixed(1) + '%</span>' +
+    '<span style="font-size:12px;color:' + (pnlPct>=0?'var(--rise)':'var(--fall)') + ';font-weight:600">持仓 ' + (pnlPct>=0?'+':'') + pnlPct.toFixed(1) + '%</span></div>' +
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">⚠️ 风险提示</div>' +
+    '<div style="margin-bottom:14px;padding:8px 12px;background:rgba(248,113,113,.06);border-radius:8px;border-left:3px solid var(--rise)">' + riskHtml + '</div>' +
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">🛡️ 推荐入手区间</div>' +
+    '<div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;font-size:14px;font-weight:700;color:var(--fall)">¥' + entryLow.toFixed(0) + ' — ¥' + entryHigh.toFixed(0) + '</div>' +
+    '<div style="font-size:9px;color:var(--text3);text-align:center;margin-top:12px">基于当前价格-8%~-2%保守区间 · 个人决策，仅供参考</div>';
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeItemDetail() {
+  document.getElementById('itemDetailOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+window.openItemDetail = openItemDetail;
+window.closeItemDetail = closeItemDetail;
+
 })();
 
 // ═══ 页面获得焦点时检测剪贴板（用户从 Steam 切回来）═══
