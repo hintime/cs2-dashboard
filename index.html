@@ -826,6 +826,7 @@ function showThemeToast(name) {
   clearTimeout(t._tid);
   t._tid = setTimeout(function(){ t.style.opacity = '0'; }, 1500);
 }
+window.cycleTheme = cycleTheme;
 // 初始化主题
 (function(){
   var saved = localStorage.getItem('cs2_theme');
