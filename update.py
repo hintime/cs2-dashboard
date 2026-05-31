@@ -889,7 +889,7 @@ def generate_price_summary():
     print(f'[SUMMARY] {len(summary)} items')
 
 def generate_ai_analysis():
-    """用智谱AI分析持仓重点饰品"""
+    """智谱AI全量持仓分析 — JSON结构化 + 批量单次调用 + 联网搜索"""
     if not ZHIPU_KEY or ZHIPU_KEY == 'test_key':
         print('[AI] No Zhipu key, skip')
         return
@@ -898,40 +898,106 @@ def generate_ai_analysis():
     if not items:
         print('[AI] No holdings, skip')
         return
-    # 全量持仓分析（glm-4.7-flash 免费，200K上下文，128K输出）
     items = sorted(items, key=lambda x: x.get('cost', 0) * x.get('qty', 1), reverse=True)
     total = len(items)
-    print(f'[AI] Analyzing {total} holdings...')
-    results = {}
-    for i, item in enumerate(items):
-        name = item.get('name', '')
-        cost = item.get('cost', 0)
-        price = item.get('price', 0)
-        r7 = item.get('rate_7', 0)
-        r30 = item.get('rate_30', 0)
-        pnl_pct = (price - cost) / cost * 100 if cost > 0 else 0
-        prompt = f'{name}，当前价¥{price:.0f}，7日涨{r7:+.1f}%，30日涨{r30:+.1f}%，持仓成本¥{cost:.0f}，盈亏{pnl_pct:+.1f}%。请分析。'
-        try:
-            data = json.dumps({
-                'model': 'glm-4.7-flash',
-                'messages': [
-                    {'role': 'system', 'content': '你是CS2饰品投资分析师。用中文回复，严格按以下格式：\n🎯 操作建议: [买入/持有/减仓/观望]\n置信度: [0-100]\n📊 核心逻辑: [一句话]\n⚠️ 风险: [一句话]\n🛡️ 入手区间: ¥X-¥Y'},
-                    {'role': 'user', 'content': prompt}
-                ],
-                'max_tokens': 200, 'temperature': 0.5
-            }).encode('utf-8')
-            req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-                'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
-            })
-            resp = urllib.request.urlopen(req, timeout=20)
-            r = json.loads(resp.read().decode('utf-8'))
-            results[name] = r['choices'][0]['message']['content']
-            print(f'[AI] {i+1}/{total} ✅ {name[:30]}')
-        except Exception as e:
-            print(f'[AI] ❌ {name[:30]}: {e}')
-    if results:
-        write_json(os.path.join(DATA_DIR, 'ai_analysis.json'), results)
-        print(f'[AI] Saved {len(results)} analyses')
+    
+    # ① 联网搜索 CS2 最新市场新闻
+    news_context = ''
+    try:
+        news_data = json.dumps({
+            'model': 'glm-4.7-flash',
+            'messages': [{'role': 'user', 'content': '搜索2026年6月CS2饰品市场最新动态，包括：CS2大行动更新、箱子新出、饰品价格异动、BUFF市场热点。用中文总结3条最重要的信息。'}],
+            'tools': [{'type': 'web_search', 'web_search': {'search_query': 'CS2 skins market June 2026 latest news'}}],
+            'max_tokens': 500, 'temperature': 0.3
+        }).encode('utf-8')
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=news_data, headers={
+            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        })
+        resp = urllib.request.urlopen(req, timeout=30)
+        nr = json.loads(resp.read().decode('utf-8'))
+        news_context = nr['choices'][0]['message'].get('content', '')
+        print(f'[AI] News: {news_context[:80]}...')
+    except Exception as e:
+        print(f'[AI] News search failed: {e}')
+
+    # ② 构建批量分析 Prompt（所有持仓编入一张表）
+    items_text = '\n'.join([
+        f'{i+1}. {it.get("name","")} | 现价¥{it.get("price",0):.0f} | 成本¥{it.get("cost",0):.0f} | 盈亏{((it.get("price",0)-it.get("cost",0))/it.get("cost",0)*100 if it.get("cost",0)>0 else 0):+.1f}% | 7日{it.get("rate_7",0):+.1f}% | 30日{it.get("rate_30",0):+.1f}%'
+        for i, it in enumerate(items)
+    ])
+    market_context = f'市场新闻: {news_context}' if news_context else ''
+    prompt = f'''分析以下{total}件CS2饰品持仓，每件给出操作建议。
+
+{items_text}
+
+{market_context}
+
+请严格返回JSON对象（不要markdown代码块），格式：{{"items":{{"饰品名":{{"verdict":"买入/持有/减仓/观望","confidence":80,"reason":"一句话","risk":"一句话","entryLow":价格下限,"entryHigh":价格上限}},...}},"summary":"一句话市场总结"}}'''
+    
+    try:
+        data = json.dumps({
+            'model': 'glm-4.7-flash',
+            'messages': [
+                {'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON，不返回任何其他内容。'},
+                {'role': 'user', 'content': prompt}
+            ],
+            'response_format': {'type': 'json_object'},
+            'max_tokens': 4096, 'temperature': 0.3
+        }).encode('utf-8')
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        })
+        resp = urllib.request.urlopen(req, timeout=120)
+        r = json.loads(resp.read().decode('utf-8'))
+        raw = r['choices'][0]['message']['content']
+        
+        # ③ 解析 JSON 响应
+        parsed = json.loads(raw)
+        results = parsed.get('items', {})
+        summary = parsed.get('summary', '')
+        if summary:
+            results['_market_summary'] = summary
+        
+        if results:
+            write_json(os.path.join(DATA_DIR, 'ai_analysis.json'), results)
+            print(f'[AI] ✅ {len(results)} items analyzed (1 API call)')
+            if summary:
+                print(f'[AI] 📊 {summary[:60]}')
+    except Exception as e:
+        print(f'[AI] ❌ Batch failed: {e}, falling back to individual...')
+        # Fallback: 逐件分析
+        results = {}
+        for i, item in enumerate(items[:5]):
+            name = item.get('name', '')
+            cost = item.get('cost', 0); price = item.get('price', 0)
+            r7 = item.get('rate_7', 0); r30 = item.get('rate_30', 0)
+            pnl_pct = (price - cost) / cost * 100 if cost > 0 else 0
+            try:
+                data = json.dumps({
+                    'model': 'glm-4-flash',
+                    'messages': [
+                        {'role': 'system', 'content': '你是CS2饰品分析师。返回JSON：{"verdict":"持有/买入/减仓/观望","confidence":80,"reason":"一句话","risk":"一句话"}'},
+                        {'role': 'user', 'content': f'{name}，¥{price:.0f}，7日{r7:+.1f}%，30日{r30:+.1f}%，成本¥{cost:.0f}，盈亏{pnl_pct:+.1f}%'}
+                    ],
+                    'response_format': {'type': 'json_object'},
+                    'max_tokens': 200, 'temperature': 0.3
+                }).encode('utf-8')
+                req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
+                    'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+                })
+                resp = urllib.request.urlopen(req, timeout=20)
+                rr = json.loads(resp.read().decode('utf-8'))
+                item_result = json.loads(rr['choices'][0]['message']['content'])
+                # 转为文本兼容旧格式
+                v = item_result.get('verdict',''); c = item_result.get('confidence',0)
+                rsn = item_result.get('reason',''); risk = item_result.get('risk','')
+                results[name] = f'🎯 操作建议: {v}\n置信度: {c}\n📊 核心逻辑: {rsn}\n⚠️ 风险: {risk}'
+                print(f'[AI] {i+1}/5 ✅ {name[:30]}')
+            except Exception as e2:
+                print(f'[AI] ❌ {name[:30]}: {e2}')
+        if results:
+            write_json(os.path.join(DATA_DIR, 'ai_analysis.json'), results)
+            print(f'[AI] Saved {len(results)} (fallback mode)')
 
 # ═══════════════ PUSH (single atomic commit) ═══════════════
 def push_all():
