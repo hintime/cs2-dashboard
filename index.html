@@ -2706,9 +2706,9 @@ function renderRecCompare(items) {
   var cnt = 0, up = 0, retSum = 0;
   items.forEach(function(r) {
     cnt++;
-    var cur = r.price || r.buff_sell || r.eco_price || 0;
-    var ref = r.eco_price || r.price || 0; // ECO 价作为基准
-    if (ref > 0 && cur > 0) { var ret = (cur - ref) / ref * 100; retSum += ret; if (ret > 0) up++; }
+    var cur = r.buff_sell || r.price || r.eco_price || 0;
+    var ref = r.eco_price || r.price || 0;
+    if (ref > 0 && cur > 0 && cur !== ref) { var ret = (cur - ref) / ref * 100; retSum += ret; if (ret > 0) up++; }
   });
   if (!cnt) { bar.style.display = 'none'; return; }
   var wr = cnt ? (up / cnt * 100).toFixed(0) : 0;
