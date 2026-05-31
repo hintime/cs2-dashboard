@@ -25,7 +25,6 @@ PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 # CSQAQ removed — alerts now self-computed from BUFF price history
 STEAM_KEY = os.environ.get('STEAMDT_KEY', '')
 GH_TOKEN = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN', '')
-ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz')
 REPO = 'hintime/cs2-dashboard'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, '..') if SCRIPT_DIR.endswith('.github') else SCRIPT_DIR
@@ -856,81 +855,6 @@ def write_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
     dirty_files.add(os.path.basename(path))
 
-def generate_price_summary():
-    """从 price_history.json 衍生 price_summary.json"""
-    ph_file = os.path.join(DATA_DIR, 'price_history.json')
-    if not os.path.exists(ph_file):
-        print('[SUMMARY] price_history.json not found, skip')
-        return
-    ph = read_json(ph_file)
-    summary = {}
-    for name, h in ph.items():
-        if not isinstance(h, dict): continue
-        eco = h.get('eco', [])
-        if not eco: continue
-        daily = {}
-        for pt in eco:
-            day = pt['t'][:10]
-            daily[day] = daily.get(day, []) + [pt['p']]
-        s = {'first': eco[0]['p'], 'last': eco[-1]['p'], 'days': (len(eco)//24) if len(eco)>24 else 1}
-        s['daily_avg'] = {d: round(sum(v)/len(v),2) for d,v in list(daily.items())[-30:]}
-        dates = sorted(daily.keys())
-        s['change_7d'] = 0; s['change_30d'] = 0
-        if dates:
-            avg1 = sum(daily[dates[-1]])/len(daily[dates[-1]])
-            if len(dates) >= 7:
-                avg7 = sum(daily[dates[-7]])/len(daily[dates[-7]])
-                s['change_7d'] = round((avg1 - avg7) / avg7 * 100, 2) if avg7 > 0 else 0
-            if len(dates) >= 30:
-                avg30 = sum(daily[dates[-30]])/len(daily[dates[-30]])
-                s['change_30d'] = round((avg1 - avg30) / avg30 * 100, 2) if avg30 > 0 else 0
-        summary[name] = s
-    write_json(os.path.join(DATA_DIR, 'price_summary.json'), summary)
-    print(f'[SUMMARY] {len(summary)} items')
-
-def generate_ai_analysis():
-    """用智谱AI分析持仓重点饰品"""
-    if not ZHIPU_KEY or ZHIPU_KEY == 'test_key':
-        print('[AI] No Zhipu key, skip')
-        return
-    holdings = read_json(os.path.join(DATA_DIR, 'holdings.json'))
-    items = holdings.get('items', []) if isinstance(holdings, dict) else holdings
-    if not items:
-        print('[AI] No holdings, skip')
-        return
-    # 取前5个价值最高的持仓
-    items = sorted(items, key=lambda x: x.get('cost', 0) * x.get('qty', 1), reverse=True)[:5]
-    results = {}
-    for item in items:
-        name = item.get('name', '')
-        cost = item.get('cost', 0)
-        price = item.get('price', 0)
-        r7 = item.get('rate_7', 0)
-        r30 = item.get('rate_30', 0)
-        pnl_pct = (price - cost) / cost * 100 if cost > 0 else 0
-        prompt = f'{name}，当前价¥{price:.0f}，7日涨{r7:+.1f}%，30日涨{r30:+.1f}%，持仓成本¥{cost:.0f}，盈亏{pnl_pct:+.1f}%。请分析。'
-        try:
-            data = json.dumps({
-                'model': 'glm-4-flash',
-                'messages': [
-                    {'role': 'system', 'content': '你是CS2饰品投资分析师。用中文回复，严格按以下格式：\n🎯 操作建议: [买入/持有/减仓/观望]\n置信度: [0-100]\n📊 核心逻辑: [一句话]\n⚠️ 风险: [一句话]\n🛡️ 入手区间: ¥X-¥Y'},
-                    {'role': 'user', 'content': prompt}
-                ],
-                'max_tokens': 200, 'temperature': 0.5
-            }).encode('utf-8')
-            req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-                'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
-            })
-            resp = urllib.request.urlopen(req, timeout=20)
-            r = json.loads(resp.read().decode('utf-8'))
-            results[name] = r['choices'][0]['message']['content']
-            print(f'[AI] ✅ {name[:30]}')
-        except Exception as e:
-            print(f'[AI] ❌ {name[:30]}: {e}')
-    if results:
-        write_json(os.path.join(DATA_DIR, 'ai_analysis.json'), results)
-        print(f'[AI] Saved {len(results)} analyses')
-
 # ═══════════════ PUSH (single atomic commit) ═══════════════
 def push_all():
     """Push all dirty files in a single commit — avoids SHA conflicts"""
@@ -1592,10 +1516,6 @@ def main():
             m = read_json(market_path)
             if m: m['updated'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()); write_json(market_path, m)
         except: pass
-
-    # ── 衍生 price_summary + AI 分析 ──
-    generate_price_summary()
-    generate_ai_analysis()
 
     # ── Push all dirty files at once ──
     push_all()
