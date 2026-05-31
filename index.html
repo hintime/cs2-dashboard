@@ -1258,6 +1258,7 @@ async function loadAll() {
   // ── Process holdings ──
   if (holdingsR && Array.isArray(holdingsR.items)) {
     H = [];
+    window.H = H;  // 更新全局引用，确保 openItemDetail 能找到数据
     holdingsR.items.forEach(item => {
       const catKey = CAT_MAP[item.category] || 'other';
       const wearCode = item.wear || '';  // FN/MW/FT/WW/BS/other/'' 
@@ -3314,6 +3315,7 @@ function filterHidden() {
   H = H.filter(function(h) {
     return !hidden.some(function(hh) { return hh.n === h.n && hh.w === h.w; });
   });
+  window.H = H;  // filter 创建了新数组，更新全局引用
 }
 
 // Setup add item button
