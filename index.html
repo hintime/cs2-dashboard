@@ -52,8 +52,9 @@ body{
 }
 body::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
-  opacity:.03;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.02;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  will-change:auto;
 }
 .container{max-width:1280px;margin:0 auto;padding:28px 24px 40px}@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
@@ -154,8 +155,8 @@ body::before{
 /* ── Glassmorphism card base ── */
 .glass{
   background:linear-gradient(135deg,var(--surface),var(--surface2));
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
   border:1px solid var(--border);
   border-radius:var(--radius);
   box-shadow:0 4px 24px rgba(0,0,0,.2),0 1px 0 rgba(255,255,255,.02) inset;
@@ -180,7 +181,6 @@ body::before{
 .sentiment-card{
   padding:18px 20px;
   background:linear-gradient(135deg,var(--surface),var(--surface2));
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-radius:12px;border:1px solid var(--border);
   box-shadow:0 2px 16px rgba(0,0,0,.15);
   transition:all .3s ease;
@@ -224,8 +224,8 @@ body::before{
 .kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
 .kpi{
   background:linear-gradient(135deg,var(--surface),var(--surface2));
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
   border:1px solid var(--border);
   border-radius:var(--radius);
   padding:24px 28px;
@@ -244,9 +244,8 @@ body::before{
 /* ══════════ RECOMMENDATION CARDS ══════════ */
 .rec-card{
   display:flex;flex-direction:column;background:linear-gradient(135deg,var(--surface),var(--surface2));
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-radius:var(--radius-sm);padding:20px 22px;cursor:pointer;
-  transition:all .35s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden;
+  transition:all .3s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden;
   border:1px solid var(--border);gap:8px;
   box-shadow:0 2px 12px rgba(0,0,0,.15);
 }
@@ -338,7 +337,7 @@ table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden}
 thead th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1.8px;color:var(--text3);font-weight:600;padding:14px 18px;background:rgba(13,17,23,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);position:sticky;top:0;z-index:2;border-bottom:1.5px solid var(--border);cursor:pointer;user-select:none;transition:all .2s}
 thead th:hover{color:var(--text2);background:rgba(255,255,255,.04)}
 tbody td{padding:13px 18px;border-bottom:1px solid rgba(55,65,81,.1);font-size:13px;transition:all .2s}
-tbody tr{transition:all .25s cubic-bezier(.16,1,.3,1);backdrop-filter:blur(4px)}
+tbody tr{transition:all .15s ease}
 tbody tr:nth-child(even){background:rgba(255,255,255,.01)}
 tbody tr:hover td{background:rgba(96,165,250,.04);transform:translateY(0)}
 .item-name{font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;letter-spacing:.01em}
@@ -406,7 +405,6 @@ tr.hold-row{cursor:pointer}
 /* ── 全市场扫描 Hero KPI ── */
 .scan-list-card{
   background:linear-gradient(135deg,var(--surface),var(--surface2));
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border:1px solid var(--border);border-radius:12px;
   padding:14px 16px;overflow:hidden;
   box-shadow:0 2px 12px rgba(0,0,0,.12);
@@ -1327,10 +1325,9 @@ async function loadAll() {
   }
   // holdings每次请求最新
   var holdingsR = await fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
-  // 加载价格摘要（7日/30日涨跌，来自 price_history.json 衍生）
-  fetch('price_summary.json?v=' + t0, fetchOpts).then(r => r.json()).then(function(ps) {
-    window._priceSummary = ps || {};
-  }).catch(function() { window._priceSummary = {}; });
+  // 价格摘要（2.8MB）懒加载：只在 openItemDetail 需要时加载
+  window._priceSummaryLoading = false;
+  window._priceSummaryLoaded = false;
   // 加载 AI 分析数据
   fetch('ai_analysis.json?v=' + t0, fetchOpts).then(r => r.json()).then(function(ai) {
     window._aiAnalysis = ai || {};
@@ -4387,6 +4384,15 @@ async function autoImportFromProfile(){
 
 // ═══════════ 单品深度分析卡片 ═══════════
 function openItemDetail(h) {
+  // 首次使用时懒加载 price_summary.json（2.8MB）
+  if (!window._priceSummaryLoaded && !window._priceSummaryLoading) {
+    window._priceSummaryLoading = true;
+    window._priceSummary = {};
+    fetch('price_summary.json')
+      .then(function(r) { return r.json(); })
+      .then(function(ps) { window._priceSummary = ps || {}; window._priceSummaryLoaded = true; })
+      .catch(function() { window._priceSummaryLoaded = true; });
+  }
   // 如果传的是 DOM 元素（新版），通过 data-mh 从 window.H 查找物品
   if (h && h.nodeType === 1 && h.dataset && h.dataset.mh) {
     var mh = h.dataset.mh;
