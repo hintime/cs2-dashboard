@@ -1166,6 +1166,59 @@ def generate_ai_market_insight():
     except Exception as e:
         print(f'[AI] Market insight failed: {e}')
 
+def generate_ai_news_impact():
+    """AI 空投监控 — 解读 CS2 最新公告对饰品市场的影响"""
+    if not ZHIPU_KEY: return
+    try:
+        news_path = os.path.join(DATA_DIR, 'news.json')
+        if not os.path.exists(news_path): return
+        news_data = read_json(news_path)
+        news_items = (news_data.get('announcements', []) or news_data.get('news', []) or news_data) if isinstance(news_data, dict) else news_data
+        if isinstance(news_items, list):
+            items = news_items[:5]
+        elif isinstance(news_items, dict):
+            items = list(news_items.values())[:5]
+        else:
+            return
+        if not items: return
+        # 构建新闻摘要
+        headlines = []
+        for n in items:
+            if isinstance(n, dict):
+                title = n.get('title', '') or n.get('headline', '')
+                body = (n.get('contents', '') or n.get('body', '') or '')[:100]
+                headlines.append(f"- {title}: {body}")
+            elif isinstance(n, str):
+                headlines.append(f"- {n[:120]}")
+        if not headlines: return
+        news_text = '\n'.join(headlines[:5])
+        prompt = (
+            f'你是CS2饰品市场分析师。以下是Steam CS2最新公告，请分析对饰品市场的影响：\n'
+            f'{news_text}\n\n'
+            f'用中文给出：1)一句话核心影响 2)利好哪些品类 3)利空哪些品类 4)持仓建议。总计120字以内。'
+            f'若公告与饰品无关，回复"本期公告对饰品市场无直接影响。"'
+        )
+        data = json.dumps({
+            'model': 'glm-4.7-flash',
+            'messages': [{'role': 'user', 'content': prompt}],
+            'max_tokens': 300, 'temperature': 0.5
+        }).encode('utf-8')
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        })
+        resp = urllib.request.urlopen(req, timeout=30)
+        r = json.loads(resp.read().decode('utf-8'))
+        impact = r['choices'][0]['message']['content'].strip()
+        result = {
+            'date': time.strftime('%Y-%m-%d %H:%M'),
+            'impact': impact,
+            'headlines': [h[:80] for h in headlines[:3]]
+        }
+        write_json(os.path.join(DATA_DIR, 'ai_news_impact.json'), result)
+        print(f'[AI] News impact generated ({len(impact)} chars)')
+    except Exception as e:
+        print(f'[AI] News impact failed: {e}')
+
 # ═══════════════ PUSH (single atomic commit) ═══════════════
 def sync_changelog():
     """从 git log 自动生成 changelog.json"""
@@ -1898,6 +1951,8 @@ def main():
     except Exception as e: print(f'[AI] Stock picks failed (non-fatal): {e}', file=sys.stderr)
     try: generate_ai_market_insight()
     except Exception as e: print(f'[AI] Market insight failed (non-fatal): {e}', file=sys.stderr)
+    try: generate_ai_news_impact()
+    except Exception as e: print(f'[AI] News impact failed (non-fatal): {e}', file=sys.stderr)
 
     # ── Push all dirty files at once ──
     push_all()
