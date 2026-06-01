@@ -3776,6 +3776,32 @@ function buildItemAnalysisHTML(item) {
     chartHtml +
     '<div><div class="ra-label">盈亏 · 目标区间</div><div class="ra-val" style="font-size:12px"><span class="' + (pnl >= 0 ? 'clr-rise' : 'clr-fall') + '">' + (pnl >= 0 ? '+' : '') + '¥' + pnl.toFixed(2) + '</span> · ¥' + targetLow + '~¥' + targetHigh + ' <span style="font-size:10px;color:' + confColor + '">' + confidence + '置信</span></div></div>' +
     (sellReason ? '<div class="ra-reason' + (sellSignal === '强势' ? ' buy' : (sellSignal === '谨慎' ? ' sell' : '')) + '">' + sellReason + '</div>' : '') +
+    (function() {
+      // ── AI 智谱分析 ──
+      var ai = window._aiAnalysis || {};
+      var aiText = ai[name] || ai[item.mh || ''] || null;
+      if (!aiText) return '';
+      var v, c, reason, risk;
+      if (typeof aiText === 'object') {
+        v = aiText.verdict || ''; c = aiText.confidence || 0;
+        reason = aiText.reason || ''; risk = aiText.risk || '';
+      } else {
+        v = (aiText.match(/操作建议[:：]\s*(\S+)/)||[])[1]||'';
+        c = parseInt((aiText.match(/置信度[:：]\s*(\d+)/)||[])[1]||'0');
+        reason = (aiText.match(/核心逻辑[:：]\s*(.+)/)||[])[1]||'';
+        risk = (aiText.match(/风险[:：]\s*(.+)/)||[])[1]||'';
+      }
+      var vc = v.includes('减仓')||v.includes('卖出') ? 'var(--rise)' : v.includes('持有')||v.includes('加仓') ? 'var(--fall)' : 'var(--amber)';
+      return '<div class="ra-reason" style="border-left-color:#a78bfa;margin-top:8px;background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(59,130,246,.04))">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+          '<span style="font-size:10px;background:rgba(168,85,247,.2);color:#c084fc;padding:2px 8px;border-radius:10px;font-weight:700">🤖 智谱AI</span>' +
+          '<span style="font-size:13px;font-weight:700;color:' + vc + '">' + (v||'--') + '</span>' +
+          '<span style="font-size:10px;color:var(--text3)">置信 ' + (c||0) + '/100</span>' +
+        '</div>' +
+        (reason ? '<div style="font-size:11px;color:var(--text2);line-height:1.5">' + reason + '</div>' : '') +
+        (risk ? '<div style="font-size:11px;color:var(--rise);line-height:1.5;margin-top:4px">⚠️ ' + risk + '</div>' : '') +
+      '</div>';
+    })() +
     '</div>';
 }
 
