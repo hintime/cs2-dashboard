@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html data-v="20260601" lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>更新日志 · CS2 饰品投资看板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="dark"]{
+  --bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);
+  --border:rgba(55,65,81,.4);--border-hi:rgba(99,115,129,.5);
+  --text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;
+  --fall:#34d399;--rise:#f87171;--blue:#60a5fa;--amber:#fbbf24;
+  --accent:#60a5fa;--radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%,rgba(96,165,250,.08),transparent),
+    radial-gradient(ellipse 40% 40% at 80% 80%,rgba(168,85,247,.04),transparent);
+  background-attachment:fixed;
+}
+.container{max-width:900px;margin:0 auto;padding:40px 24px 60px}
+
+.header{text-align:center;margin-bottom:40px}
+.header h1{
+  font-size:32px;font-weight:900;letter-spacing:-.03em;
+  background:linear-gradient(135deg,#f0f0f0 0%,var(--blue) 50%,#a78bfa 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:8px;
+}
+.header .sub{font-size:13px;color:var(--text3);letter-spacing:.05em}
+.header .back{
+  display:inline-flex;align-items:center;gap:6px;margin-top:16px;
+  padding:8px 20px;background:linear-gradient(135deg,var(--surface),var(--surface2));
+  border:1px solid var(--border);border-radius:24px;color:var(--text2);
+  font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;
+  transition:all .25s;
+}
+.header .back:hover{border-color:var(--blue);color:var(--blue);box-shadow:0 4px 16px rgba(96,165,250,.12)}
+
+.stats-row{display:flex;gap:16px;justify-content:center;margin-bottom:36px;flex-wrap:wrap}
+.stat-pill{
+  padding:8px 18px;background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;font-size:12px;color:var(--text2);font-weight:600;
+  display:flex;align-items:center;gap:6px;
+}
+.stat-pill .num{color:var(--text);font-weight:800}
+
+.timeline{position:relative;padding-left:40px}
+.timeline::before{
+  content:'';position:absolute;left:16px;top:0;bottom:0;
+  width:2px;background:linear-gradient(180deg,var(--accent),rgba(96,165,250,.1),transparent);
+}
+.day-group{margin-bottom:32px}
+.day-label{
+  font-size:14px;font-weight:700;color:var(--text);
+  margin-bottom:16px;display:flex;align-items:center;gap:8px;
+}
+.day-label::before{
+  content:'';width:10px;height:10px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 12px var(--accent);
+  position:absolute;left:12px;margin-top:4px;
+}
+.entry{
+  position:relative;padding:18px 20px;margin-bottom:10px;
+  background:linear-gradient(135deg,var(--surface),var(--surface2));
+  border:1px solid var(--border);border-radius:12px;
+  transition:all .25s;box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+.entry:hover{border-color:var(--border-hi);transform:translateX(4px);box-shadow:0 4px 20px rgba(96,165,250,.08)}
+.entry .e-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.entry .e-tag{
+  font-size:10px;font-weight:700;padding:2px 10px;border-radius:12px;
+  text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;
+}
+.e-tag.fix{background:rgba(248,113,113,.15);color:var(--rise)}
+.e-tag.feat{background:rgba(96,165,250,.15);color:var(--blue)}
+.e-tag.style{background:rgba(168,85,247,.15);color:#c084fc}
+.e-tag.perf{background:rgba(52,211,153,.15);color:var(--fall)}
+.entry .e-title{font-size:14px;font-weight:700;color:var(--text);letter-spacing:.01em}
+.entry .e-desc{font-size:12px;color:var(--text2);line-height:1.7;margin-top:4px}
+.entry .e-time{font-size:10px;color:var(--text3);margin-top:4px}
+
+.footer{text-align:center;margin-top:48px;padding-top:24px;border-top:1px solid var(--border)}
+.footer p{font-size:11px;color:var(--text3)}
+.footer a{color:var(--blue);text-decoration:none}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.entry{animation:fadeUp .4s ease backwards}
+.entry:nth-child(1){animation-delay:0s}
+.entry:nth-child(2){animation-delay:.05s}
+.entry:nth-child(3){animation-delay:.1s}
+.entry:nth-child(4){animation-delay:.15s}
+.entry:nth-child(5){animation-delay:.2s}
+.entry:nth-child(6){animation-delay:.25s}
+.entry:nth-child(7){animation-delay:.3s}
+.entry:nth-child(8){animation-delay:.35s}
+.entry:nth-child(9){animation-delay:.4s}
+.entry:nth-child(10){animation-delay:.45s}
+.entry:nth-child(11){animation-delay:.5s}
+.entry:nth-child(12){animation-delay:.55s}
+.entry:nth-child(13){animation-delay:.6s}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>📋 更新日志</h1>
+    <p class="sub">CS2 Dashboard · 每次修复/优化同步记录</p>
+    <a class="back" href="index.html">← 回到看板</a>
+  </div>
+
+  <div id="stats" class="stats-row"></div>
+  <div id="timeline" class="timeline"></div>
+
+  <div class="footer">
+    <p>数据来源：<a href="https://github.com/hintime/cs2-dashboard">hintime/cs2-dashboard</a> · 自动同步 git 提交记录</p>
+    <p style="margin-top:4px">Powered by <span style="color:var(--accent)">GitHub Actions</span> + <span style="color:#c084fc">Zhipu GLM</span></p>
+  </div>
+</div>
+
+<script>
+fetch('changelog.json?' + Date.now())
+  .then(function(r) { return r.json(); })
+  .then(function(entries) {
+    // Stats
+    var tagCount = {fix:0, feat:0, style:0, perf:0};
+    entries.forEach(function(e) { tagCount[e.tag] = (tagCount[e.tag]||0)+1; });
+    document.getElementById('stats').innerHTML =
+      '<div class="stat-pill">🐛 <span class="num">'+tagCount.fix+'</span> 修复</div>' +
+      '<div class="stat-pill">✨ <span class="num">'+tagCount.feat+'</span> 新功能</div>' +
+      '<div class="stat-pill">🎨 <span class="num">'+tagCount.style+'</span> 样式</div>' +
+      '<div class="stat-pill">⚡ <span class="num">'+tagCount.perf+'</span> 优化</div>' +
+      '<div class="stat-pill">📦 <span class="num">'+entries.length+'</span> 总计</div>';
+
+    // Group by date
+    var groups = {};
+    entries.forEach(function(e) {
+      if (!groups[e.date]) groups[e.date] = [];
+      groups[e.date].push(e);
+    });
+
+    var tagNames = {fix:'修复', feat:'新功能', style:'样式', perf:'优化'};
+    var html = '';
+    Object.keys(groups).sort().reverse().forEach(function(date) {
+      html += '<div class="day-group"><div class="day-label">'+date+'</div>';
+      groups[date].forEach(function(e) {
+        html += '<div class="entry">' +
+          '<div class="e-head">' +
+            '<span class="e-tag '+e.tag+'">'+ (tagNames[e.tag]||e.tag) +'</span>' +
+            '<span class="e-title">'+ e.title +'</span>' +
+          '</div>' +
+          '<div class="e-desc">'+ e.desc +'</div>' +
+        '</div>';
+      });
+      html += '</div>';
+    });
+    document.getElementById('timeline').innerHTML = html;
+  })
+  .catch(function() {
+    document.getElementById('timeline').innerHTML = '<p style="color:var(--text3);text-align:center;padding:40px">加载失败，请刷新重试</p>';
+  });
+</script>
+</body>
+</html>
