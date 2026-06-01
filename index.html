@@ -1856,6 +1856,40 @@ function renderAIPanel(H) {
     }).join('')+'</div>' : '') +
   '</div>';
 }
+// ── AI 市场研判生成 ──
+function generateAIInsight() {
+  var ai = window._aiAnalysis || {};
+  var scan = window._marketScan || {};
+  var bar = document.getElementById('aiInsightBar');
+  var text = document.getElementById('aiInsightText');
+  if (!bar || !text) return;
+  var counts = {sell:0, hold:0, wait:0};
+  var confSum = 0, confN = 0;
+  Object.keys(ai).forEach(function(k) {
+    if (k.startsWith('_')) return;
+    var v = typeof ai[k] === 'object' ? (ai[k].verdict||'') : ((ai[k].match(/操作建议[:：]\s*(\S+)/)||[])[1]||'');
+    var c = typeof ai[k] === 'object' ? (ai[k].confidence||0) : parseInt((ai[k].match(/置信度[:：]\s*(\d+)/)||[])[1]||'0');
+    if (v.includes('减仓')||v.includes('卖出')) counts.sell++;
+    else if (v.includes('持有')||v.includes('加仓')) counts.hold++;
+    else counts.wait++;
+    confSum += c; confN++;
+  });
+  if (!confN) return;
+  var avgConf = Math.round(confSum / confN);
+  var total = scan.total || 0;
+  var tracked = scan.tracked || 0;
+  var sellRatio = (counts.sell / confN * 100).toFixed(0);
+  var insight = '';
+  if (sellRatio > 50) {
+    insight = '持仓中<b style="color:var(--rise)">' + sellRatio + '%</b>建议减仓，整体偏谨慎。市场追踪 ' + tracked.toLocaleString() + ' 件，建议控制仓位。';
+  } else if (counts.hold / confN > 0.4) {
+    insight = '持仓中<b style="color:var(--fall)">' + (counts.hold/confN*100).toFixed(0) + '%</b>建议持有，整体中性偏多。全市场 ' + (total||0).toLocaleString() + ' 件追踪中。';
+  } else {
+    insight = '持仓信号：<b style="color:var(--rise)">' + counts.sell + ' 减仓</b> · <b style="color:var(--fall)">' + counts.hold + ' 持有</b> · <b style="color:var(--amber)">' + counts.wait + ' 观望</b>。平均置信度 ' + avgConf + '/100。';
+  }
+  text.innerHTML = insight;
+  bar.style.display = '';
+}
 // ── 填充表格 AI 徽章 ──
 function populateAIBadges() {
   var badges = document.querySelectorAll('.ai-badge-inline');
