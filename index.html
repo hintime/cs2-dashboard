@@ -1877,14 +1877,15 @@ function generateAIInsight() {
   var avgConf = Math.round(confSum / confN);
   var total = scan.total || 0;
   var tracked = scan.tracked || 0;
-  var sellRatio = (counts.sell / confN * 100).toFixed(0);
+  // 市场层面研判（全市场扫描板块，不提持仓）
   var insight = '';
+  var sellRatio = (counts.sell / confN * 100).toFixed(0);
   if (sellRatio > 50) {
-    insight = '持仓中<b style="color:var(--rise)">' + sellRatio + '%</b>建议减仓，整体偏谨慎。市场追踪 ' + tracked.toLocaleString() + ' 件，建议控制仓位。';
+    insight = 'AI监测<b style="color:var(--rise)">' + sellRatio + '%</b>标的建议减仓，市场情绪偏谨慎。全市场 ' + (total||0).toLocaleString() + ' 件饰品追踪中。';
   } else if (counts.hold / confN > 0.4) {
-    insight = '持仓中<b style="color:var(--fall)">' + (counts.hold/confN*100).toFixed(0) + '%</b>建议持有，整体中性偏多。全市场 ' + (total||0).toLocaleString() + ' 件追踪中。';
+    insight = 'AI研判<b style="color:var(--fall)">' + (counts.hold/confN*100).toFixed(0) + '%</b>标的建议持有，整体中性偏多。' + (tracked?tracked.toLocaleString()+' 件活跃标的。':'') + '';
   } else {
-    insight = '持仓信号：<b style="color:var(--rise)">' + counts.sell + ' 减仓</b> · <b style="color:var(--fall)">' + counts.hold + ' 持有</b> · <b style="color:var(--amber)">' + counts.wait + ' 观望</b>。平均置信度 ' + avgConf + '/100。';
+    insight = '市场信号分布：<b style="color:var(--rise)">' + counts.sell + ' 减仓</b> · <b style="color:var(--fall)">' + counts.hold + ' 持有</b> · <b style="color:var(--amber)">' + counts.wait + ' 观望</b>。平均置信度 ' + avgConf + '/100。';
   }
   text.innerHTML = insight;
   bar.style.display = '';
