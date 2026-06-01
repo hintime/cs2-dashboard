@@ -162,6 +162,22 @@ body{
 .sentiment-card{padding:16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)}
 .sentiment-card h4{font-size:13px;font-weight:600;color:var(--text);margin:0 0 10px}
 .sentiment-card p{font-size:11px;color:var(--text2);line-height:1.6;margin:0}
+/* AI 洞察面板 */
+.ai-card{padding:18px;background:linear-gradient(135deg, rgba(168,85,247,.08), rgba(59,130,246,.06));border:1px solid rgba(168,85,247,.25);border-radius:12px;position:relative;overflow:hidden}
+.ai-card::before{content:'';position:absolute;top:-30px;right:-30px;width:80px;height:80px;background:radial-gradient(circle, rgba(168,85,247,.15), transparent 70%);border-radius:50%;pointer-events:none}
+.ai-card h4{font-size:13px;font-weight:600;color:var(--text);margin:0 0 10px;display:flex;align-items:center;gap:6px}
+.ai-badge-glow{display:inline-block;padding:2px 8px;background:rgba(168,85,247,.2);border-radius:10px;font-size:10px;color:#c084fc;font-weight:600;animation:aiPulse 2s infinite}
+@keyframes aiPulse{0%,100%{opacity:1}50%{opacity:.6}}
+.ai-summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px}
+.ai-stat{text-align:center;padding:8px 4px;background:rgba(0,0,0,.2);border-radius:8px}
+.ai-stat-val{font-size:18px;font-weight:800;line-height:1.2}
+.ai-stat-val.sell{color:var(--rise)}.ai-stat-val.hold{color:var(--blue)}.ai-stat-val.wait{color:var(--amber)}
+.ai-stat-lbl{font-size:9px;color:var(--text3);margin-top:2px}
+.ai-signal{display:flex;align-items:center;gap:6px;padding:6px 10px;margin-top:6px;background:rgba(0,0,0,.15);border-radius:6px;font-size:11px;color:var(--text2)}
+.ai-table-badge{display:inline-block;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;vertical-align:middle;cursor:default}
+.ai-table-badge.sell{background:rgba(248,113,113,.2);color:var(--rise)}
+.ai-table-badge.hold{background:rgba(96,165,250,.2);color:var(--blue)}
+.ai-table-badge.wait{background:rgba(251,191,36,.2);color:var(--amber)}
 .mi-items{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .mi-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;cursor:pointer;transition:all .25s ease}
 .mi-item:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.2);background:rgba(96,165,250,.04)}
@@ -1231,6 +1247,21 @@ async function loadAll() {
   fetch('price_summary.json?v=' + t0, fetchOpts).then(r => r.json()).then(function(ps) {
     window._priceSummary = ps || {};
   }).catch(function() { window._priceSummary = {}; });
+  // 加载 AI 分析数据
+  fetch('ai_analysis.json?v=' + t0, fetchOpts).then(r => r.json()).then(function(ai) {
+    window._aiAnalysis = ai || {};
+    document.dispatchEvent(new CustomEvent('ai-loaded'));
+  }).catch(function() { window._aiAnalysis = {}; });
+  // AI 徽章内联渲染
+  window.aiBadgeHTML = function(name) {
+    var ai = window._aiAnalysis || {};
+    var txt = ai[name] || null;
+    if (!txt) return '';
+    var v = typeof txt === 'object' ? (txt.verdict||'') : ((txt.match(/操作建议[:：]\s*(\S+)/)||[])[1]||'');
+    if (!v) return '';
+    var cls = v.includes('减仓')||v.includes('卖出') ? 'sell' : v.includes('持有')||v.includes('加仓') ? 'hold' : 'wait';
+    return '<span class="ai-table-badge '+cls+'" title="AI分析: '+v+'">🤖 '+v+'</span>';
+  };
   // 未登录不显示任何持仓数据
   if (!getMyKey()) { holdingsR = null; }
   // 如果已登录，合并个人持仓
@@ -1658,12 +1689,78 @@ function renderNewsTab(tab) {
       '<div style="margin-top:12px;font-size:11px;color:var(--text2)">'+
         s.signals.map(function(sig){return '<span style="margin-right:16px">'+sig.emoji+' '+sig.text+'</span>';}).join('')+
       '</div>'+
+    // ── AI 洞察 ──
+    renderAIPanel(H) +
     '</div>';
     grid.innerHTML = html;
     grid.style.cssText = '';
   }
 }
 
+// ── AI 洞察面板 ──
+function renderAIPanel(H) {
+  var ai = window._aiAnalysis || {};
+  if (!Object.keys(ai).length) return '';  // 没有 AI 数据不显示
+  // 统计
+  var counts = { sell: 0, hold: 0, wait: 0, total: 0 };
+  var decisions = [];
+  H.forEach(function(h) {
+    var mk = h.mh || h.n || '';
+    var txt = ai[mk];
+    if (!txt) return;
+    var v = (typeof txt === 'object' ? txt.verdict : (txt.match(/操作建议[:：]\s*(\S+)/)||[])[1]) || '';
+    var c = (typeof txt === 'object' ? txt.confidence : parseInt((txt.match(/置信度[:：]\s*(\d+)/)||[])[1]||'0'));
+    var reason = (typeof txt === 'object' ? txt.reason : (txt.match(/核心逻辑[:：]\s*(.+)/)||[])[1]) || '';
+    if (v.includes('减仓')||v.includes('卖出')) { counts.sell++; }
+    else if (v.includes('持有')||v.includes('加仓')) { counts.hold++; }
+    else { counts.wait++; }
+    counts.total++;
+    decisions.push({ name: h.n||mk, wear: h.w, verdict: v, confidence: c, reason: reason });
+  });
+  if (!counts.total) return '';  // 持仓都不在 AI 分析中
+  // 排序：按置信度
+  decisions.sort(function(a,b){ return (b.confidence||0) - (a.confidence||0); });
+  var top3 = decisions.slice(0, 3);
+  var total = counts.total;
+  return '<div class="ai-card" style="margin-top:14px">'+
+    '<h4>🤖 AI 持仓洞察 <span class="ai-badge-glow">Zhipu GLM</span></h4>'+
+    '<div class="ai-summary-row">'+
+      '<div class="ai-stat"><div class="ai-stat-val sell">'+counts.sell+'</div><div class="ai-stat-lbl">🔥 建议减仓</div></div>'+
+      '<div class="ai-stat"><div class="ai-stat-val hold">'+counts.hold+'</div><div class="ai-stat-lbl">📈 继续持有</div></div>'+
+      '<div class="ai-stat"><div class="ai-stat-val wait">'+counts.wait+'</div><div class="ai-stat-lbl">👀 观望不动</div></div>'+
+    '</div>'+
+    '<div style="font-size:10px;color:var(--text3);margin-top:8px">AI 已分析 <b style="color:var(--text)">'+total+'</b> 件持仓物品</div>'+
+    (top3.length ? '<div style="margin-top:10px"><div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">📋 高置信度建议</div>'+top3.map(function(d){
+      var vc = d.verdict.includes('减仓')||d.verdict.includes('卖出')?'var(--rise)':d.verdict.includes('持有')||d.verdict.includes('加仓')?'var(--rise)':'var(--amber)';
+      return '<div class="ai-signal">'+
+        '<span style="color:'+vc+';font-weight:600;min-width:48px">'+d.verdict+'</span>'+
+        '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(d.name||'').substring(0,28)+'</span>'+
+        '<span style="font-size:10px;color:var(--text3);min-width:40px;text-align:right">置信 '+d.confidence+'</span>'+
+      '</div>';
+    }).join('')+'</div>' : '') +
+  '</div>';
+}
+// ── 填充表格 AI 徽章 ──
+function populateAIBadges() {
+  var badges = document.querySelectorAll('.ai-badge-inline');
+  if (!badges.length) return;
+  var H = window.H || [];
+  badges.forEach(function(el) {
+    var idx = parseInt(el.id.replace('aib-',''));
+    if (isNaN(idx) || !H[idx]) return;
+    var name = H[idx].mh || H[idx].n || '';
+    if (name) el.innerHTML = window.aiBadgeHTML(name);
+  });
+}
+// AI 数据加载完成后刷新徽章和面板
+document.addEventListener('ai-loaded', function() {
+  populateAIBadges();
+  // 触发面板重绘
+  if (window.H && window.H.length) {
+    var grid = document.getElementById('scanGrid');
+    if (grid) { renderScan(); }
+  }
+});
 function setupNewsTabs() {
   var newsTabs = $('newsTabs');
   if (!newsTabs || newsTabs._bound) return;
@@ -1895,7 +1992,7 @@ function render() {
       }
     };
     tr.innerHTML =
-      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+' <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span> <span class="detail-btn" data-mh="'+esc(h.mh||h.n||'')+'" onclick="event.stopPropagation();openItemDetail(this)" title="深度分析">🧠</span></div></td>'+
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+'<span class="ai-badge-inline" id="aib-'+realIdx+'"></span> <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\')" title="查看价格走势">📈</span> <span class="detail-btn" data-mh="'+esc(h.mh||h.n||'')+'" onclick="event.stopPropagation();openItemDetail(this)" title="深度分析">🧠</span></div></td>'+
       '<td>'+(h.w ? '<span class="wear-tag">'+wearCN(h.w)+'</span>' : '--')+'</td>'+
       '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
       '<td class="text-r mono">'+(h.eco_price > 0 ? '¥'+h.eco_price.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
@@ -1915,6 +2012,8 @@ function render() {
     tr._item = h;
   });
   if (DOM.tbody) { DOM.tbody.innerHTML = ''; DOM.tbody.appendChild(frag); }
+  // 填充 AI 徽章
+  if (window._aiAnalysis && Object.keys(window._aiAnalysis).length) populateAIBadges();
 
   if (totalPages <= 1) { if (DOM.pager) DOM.pager.innerHTML = ''; if (DOM.pageJump) DOM.pageJump.style.display = 'none'; return; }
   if (DOM.pager) DOM.pager.innerHTML = '<button class="pgr-btn" id="pgPrev" '+(curPage<=1?'disabled':'')+'>上一页</button><span class="pgr-info">'+curPage+' / '+totalPages+' 页 · '+items.length+' 条</span><button class="pgr-btn" id="pgNext" '+(curPage>=totalPages?'disabled':'')+'>下一页</button>';
