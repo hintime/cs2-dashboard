@@ -1081,7 +1081,7 @@ def generate_ai_anomaly():
                 {'role': 'system', 'content': '你是CS2饰品市场分析师。简洁分析在售量异动原因。'},
                 {'role': 'user', 'content': prompt}
             ],
-            'max_tokens': 300, 'temperature': 0.5
+            'max_tokens': 2000, 'temperature': 0.5
         }).encode('utf-8')
         req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
