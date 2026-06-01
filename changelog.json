@@ -1,5 +1,29 @@
 [
   {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "glm-4.7思考模式吃token→新闻impact改用glm-4-flash",
+    "desc": "glm-4.7思考模式吃token→新闻impact改用glm-4-flash"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "AI空投监控即使无AI结果也显示新闻标题",
+    "desc": "AI空投监控即使无AI结果也显示新闻标题"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "market index 2026-06-01 15:52",
+    "desc": "market index 2026-06-01 15:52"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update ai_anomaly.json, ai_market_insight.json, ai_news_impa",
+    "desc": "t.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 23:43"
+  },
+  {
     "date": "2026-06-01",
     "tag": "feat",
     "title": "AI空投监控 — 解读CS2公告对饰品市场影响",
@@ -94,29 +118,5 @@
     "tag": "fix",
     "title": "AI市场研判改用市场层面表述，不提持仓",
     "desc": "AI市场研判改用市场层面表述，不提持仓"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "style",
-    "title": "涨跌榜移除价格小字，只留名字+涨跌幅+进度条",
-    "desc": "涨跌榜移除价格小字，只留名字+涨跌幅+进度条"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "chore",
-    "title": "update buff_history.json, correlation_data.json, daily_repor",
-    "desc": ".json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 21:13"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "fix",
-    "title": "补上 generateAIInsight 函数（AI市场研判横幅）",
-    "desc": "补上 generateAIInsight 函数（AI市场研判横幅）"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "feat",
-    "title": "AI全面接入 — 市场研判横幅 + 持仓展开AI + 洞察面板 + 徽章",
-    "desc": "AI全面接入 — 市场研判横幅 + 持仓展开AI + 洞察面板 + 徽章"
   }
 ]
