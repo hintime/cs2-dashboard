@@ -30,6 +30,8 @@ os.environ.setdefault('GIT_ASKPASS', 'echo')
 env = os.environ.copy()
 env.pop('GIT_TERMINAL_PROMPT', None)
 env['SCHEDULED_RUN'] = '1'  # 告诉 update.py 这是定时任务，限制 SteamDT 批次数
+env['PYTHONIOENCODING'] = 'utf-8'  # 防止GBK编码错误导致推送跳过
+env['PYTHONLEGACYWINDOWSSTDIO'] = 'utf-8'
 
 # 静默日志文件
 LOG_FILE = os.path.join(DATA_DIR, 'silent_update.log')

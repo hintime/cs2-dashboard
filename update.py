@@ -1181,15 +1181,21 @@ def github_push_file(path, content_str, message):
         return False
 
 def git_push_locally(files, message):
-    """Push via local git in a single commit (no credential popups)"""
+    """Push via local git in a single commit (token-based auth, no popup)"""
     git_env = {**os.environ, 'GCM_INTERACTIVE': 'never', 'GIT_TERMINAL_PROMPT': '0', 'GIT_ASKPASS': 'echo'}
     # Hide git console window on Windows
     cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
     for f in files:
         subprocess.run(['git', 'add', '-f', f], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
     subprocess.run(['git', 'commit', '-m', message], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
-    # Use manager credential (cached in Windows Credential Manager, no popup)
-    subprocess.run(['git', '-c', 'credential.helper=manager', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+    # 用 Token 认证（如果是本地运行），否则 fallback 到 credential manager
+    if GH_TOKEN:
+        push_cmd = ['git', '-c', f'http.extraHeader=Authorization: Bearer {GH_TOKEN}',
+                    '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push', 'origin', 'main']
+    else:
+        push_cmd = ['git', '-c', 'credential.helper=manager',
+                    '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push']
+    subprocess.run(push_cmd, check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
     print(f'[OK] Git pushed: {message}')
 
 # ═══════════════ MAIN ═══════════════
@@ -1795,10 +1801,14 @@ def main():
 
     # ── 衍生 price_summary + AI 分析 ──
     generate_price_summary()
-    generate_ai_analysis()
-    generate_ai_daily_report()
-    generate_ai_anomaly()
-    generate_ai_stock_picks()
+    try: generate_ai_analysis()
+    except Exception as e: print(f'[AI] Analysis failed (non-fatal): {e}', file=sys.stderr)
+    try: generate_ai_daily_report()
+    except Exception as e: print(f'[AI] Daily report failed (non-fatal): {e}', file=sys.stderr)
+    try: generate_ai_anomaly()
+    except Exception as e: print(f'[AI] Anomaly detection failed (non-fatal): {e}', file=sys.stderr)
+    try: generate_ai_stock_picks()
+    except Exception as e: print(f'[AI] Stock picks failed (non-fatal): {e}', file=sys.stderr)
 
     # ── Push all dirty files at once ──
     push_all()
