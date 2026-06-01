@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-06-02",
+    "tag": "fix",
+    "title": "流光效果改用伪元素扫光条（更可靠兼容）",
+    "desc": "流光效果改用伪元素扫光条（更可靠兼容）"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "流光效果修复 — 移除冲突的重复@keyframes + 去掉内联color覆盖",
+    "desc": "流光效果修复 — 移除冲突的重复@keyframes + 去掉内联color覆盖"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "chore",
+    "title": "同步更新日志（流光效果+AI推荐+异动阈值修复）",
+    "desc": "同步更新日志（流光效果+AI推荐+异动阈值修复）"
+  },
+  {
+    "date": "2026-06-02",
     "tag": "style",
     "title": "AlphaTrack标题流光效果（shimmer animation）",
     "desc": "AlphaTrack标题流光效果（shimmer animation）"
@@ -25,9 +43,21 @@
   },
   {
     "date": "2026-06-02",
+    "tag": "chore",
+    "title": "update ai_news_impact.json, buff_history.json, changelog.jso",
+    "desc": ", correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 00:12"
+  },
+  {
+    "date": "2026-06-02",
     "tag": "fix",
     "title": "glm-4.7-flash max_tokens→2000（思考模式需要更多token）",
     "desc": "glm-4.7-flash max_tokens→2000（思考模式需要更多token）"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 00:06"
   },
   {
     "date": "2026-06-02",
@@ -43,56 +73,50 @@
   },
   {
     "date": "2026-06-01",
+    "tag": "chore",
+    "title": "market index 2026-06-01 15:52",
+    "desc": "market index 2026-06-01 15:52"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update ai_anomaly.json, ai_market_insight.json, ai_news_impa",
+    "desc": "t.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 23:43"
+  },
+  {
+    "date": "2026-06-01",
     "tag": "feat",
     "title": "AI空投监控 — 解读CS2公告对饰品市场影响",
     "desc": "AI空投监控 — 解读CS2公告对饰品市场影响"
   },
   {
     "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 23:14"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 23:08"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 22:42"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "placeholder for ai_market_insight.json",
+    "desc": "placeholder for ai_market_insight.json"
+  },
+  {
+    "date": "2026-06-01",
     "tag": "fix",
     "title": "补上 generate_ai_market_insight 函数定义",
     "desc": "补上 generate_ai_market_insight 函数定义"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "feat",
-    "title": "AI全量市场洞察 — 一次API分析8793件摘要",
-    "desc": "AI全量市场洞察 — 一次API分析8793件摘要"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "feat",
-    "title": "推荐卡片加AI标签 + 修复AI管道编码",
-    "desc": "推荐卡片加AI标签 + 修复AI管道编码"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "fix",
-    "title": "changelog 自动同步修复GBK编码 + 手动生成最新日志",
-    "desc": "changelog 自动同步修复GBK编码 + 手动生成最新日志"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "style",
-    "title": "移除「实时」徽章",
-    "desc": "移除「实时」徽章"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "fix",
-    "title": "AI市场研判改用市场层面表述，不提持仓",
-    "desc": "AI市场研判改用市场层面表述，不提持仓"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "style",
-    "title": "涨跌榜移除价格小字，只留名字+涨跌幅+进度条",
-    "desc": "涨跌榜移除价格小字，只留名字+涨跌幅+进度条"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "fix",
-    "title": "补上 generateAIInsight 函数（AI市场研判横幅）",
-    "desc": "补上 generateAIInsight 函数（AI市场研判横幅）"
   }
 ]
