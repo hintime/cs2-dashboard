@@ -2,6 +2,24 @@
   {
     "date": "2026-06-01",
     "tag": "chore",
+    "title": "placeholder for ai_market_insight.json",
+    "desc": "placeholder for ai_market_insight.json"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "fix",
+    "title": "补上 generate_ai_market_insight 函数定义",
+    "desc": "补上 generate_ai_market_insight 函数定义"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 22:14"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
     "title": "update buff_history.json, changelog.json, correlation_data.j",
     "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 22:14"
   },
@@ -100,23 +118,5 @@
     "tag": "style",
     "title": "品牌升级 AlphaTrack — α图标 + Georgia衬线字体",
     "desc": "品牌升级 AlphaTrack — α图标 + Georgia衬线字体"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "feat",
-    "title": "changelog.json 自动从git log同步，每次管道运行自动更新",
-    "desc": "changelog.json 自动从git log同步，每次管道运行自动更新"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "chore",
-    "title": "补全更新日志（最近6条改动）",
-    "desc": "补全更新日志（最近6条改动）"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "refactor",
-    "title": "移除🧠按钮，改用行点击展开分析（保留了📈走势图按钮）",
-    "desc": "移除🧠按钮，改用行点击展开分析（保留了📈走势图按钮）"
   }
 ]
