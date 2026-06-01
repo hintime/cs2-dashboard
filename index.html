@@ -2932,7 +2932,18 @@ function renderAllRecs() {
     var altSvg = sparkline(altHist, 'var(--amber)');
     var chartHtml = (ecoSvg || altSvg) ? '<div class="rc-chart">' + ecoSvg + altSvg + '</div>' : '';
 
-    div.innerHTML = tagHtml + priceHtml + '<div class="rc-name" title="' + esc(displayName) + '">' + esc(displayName) + '</div>' + chartHtml + depthHtml + metaHtml + reasonHtml;
+    // ── AI 分析标签 ──
+    var ai = window._aiAnalysis || {};
+    var aiBadge = '';
+    var aiData = ai[displayName] || ai[item._hash || ''] || null;
+    if (aiData) {
+      var v = typeof aiData === 'object' ? (aiData.verdict||'') : ((aiData.match(/操作建议[:：]\s*(\S+)/)||[])[1]||'');
+      if (v) {
+        var vc = v.includes('减仓')||v.includes('卖出') ? 'var(--rise)' : v.includes('持有')||v.includes('加仓') ? 'var(--fall)' : 'var(--amber)';
+        aiBadge = '<span style="display:inline-block;margin-left:6px;font-size:9px;padding:1px 7px;border-radius:8px;color:'+vc+';background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.2);font-weight:600;vertical-align:middle">🤖 '+v+'</span>';
+      }
+    }
+    div.innerHTML = tagHtml + priceHtml + '<div class="rc-name" title="' + esc(displayName) + '">' + esc(displayName) + aiBadge + '</div>' + chartHtml + depthHtml + metaHtml + reasonHtml;
     frag.appendChild(div);
   });
   grid.innerHTML = '';
