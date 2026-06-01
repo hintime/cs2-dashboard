@@ -1854,6 +1854,8 @@ def main():
     except Exception as e: print(f'[AI] Anomaly detection failed (non-fatal): {e}', file=sys.stderr)
     try: generate_ai_stock_picks()
     except Exception as e: print(f'[AI] Stock picks failed (non-fatal): {e}', file=sys.stderr)
+    try: generate_ai_market_insight()
+    except Exception as e: print(f'[AI] Market insight failed (non-fatal): {e}', file=sys.stderr)
 
     # ── Push all dirty files at once ──
     push_all()
