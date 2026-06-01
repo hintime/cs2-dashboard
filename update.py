@@ -1124,6 +1124,48 @@ def generate_ai_stock_picks():
     except Exception as e:
         print(f'[AI] Stock picks failed: {e}')
 
+def generate_ai_market_insight():
+    """AI 全量市场洞察 — 一次调用，聚合摘要分析全量饰品"""
+    if not ZHIPU_KEY: return
+    try:
+        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
+        if not scan: return
+        total = scan.get('total', 0); avg_p = scan.get('avg_p', 0)
+        median_p = scan.get('median_p', 0); min_p = scan.get('min_p', 0); max_p = scan.get('max_p', 0)
+        categories = scan.get('categories', {}); tiers = scan.get('tiers', {})
+        movers = scan.get('movers', {})
+        gainers = movers.get('gainers', [])[:5]; losers = movers.get('losers', [])[:5]
+        top_sell = scan.get('top_sell', [])[:3]
+        cat_text = ' | '.join([f'{k}:{v}' for k,v in list(categories.items())[:6]])
+        tier_text = ' | '.join([f'{k}:{v}' for k,v in tiers.items()])
+        gain_text = '、'.join([f"{g['n'][:20]}+{g['r7']}%" for g in gainers])
+        lose_text = '、'.join([f"{l['n'][:20]}{l['r7']}%" for l in losers])
+        hot_text = '、'.join([f"{s['n'][:15]}{s['s']}" for s in top_sell])
+        prompt = (
+            f'你是CS2饰品市场AI分析师。根据以下全量数据给出一段150字市场洞察：\n'
+            f'全量{total}件，均价{avg_p:.0f}，中位{median_p:.0f}，最低{min_p:.2f}，最高{max_p:.0f}\n'
+            f'品类：{cat_text}\n价格分布：{tier_text}\n'
+            f'涨幅TOP5：{gain_text}\n跌幅TOP5：{lose_text}\n最热：{hot_text}\n'
+            f'要求：分析市场情绪、资金流向、风险点。简洁专业，100-150字。'
+        )
+        data = json.dumps({
+            'model': 'glm-4.7-flash',
+            'messages': [{'role': 'user', 'content': prompt}],
+            'max_tokens': 400, 'temperature': 0.5
+        }).encode('utf-8')
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        })
+        resp = urllib.request.urlopen(req, timeout=30)
+        r = json.loads(resp.read().decode('utf-8'))
+        insight = r['choices'][0]['message']['content'].strip()
+        result = {'date': time.strftime('%Y-%m-%d %H:%M'), 'insight': insight,
+                   'stats': {'total': total, 'avg_p': avg_p, 'median_p': median_p}}
+        write_json(os.path.join(DATA_DIR, 'ai_market_insight.json'), result)
+        print(f'[AI] Market insight generated ({len(insight)} chars)')
+    except Exception as e:
+        print(f'[AI] Market insight failed: {e}')
+
 # ═══════════════ PUSH (single atomic commit) ═══════════════
 def sync_changelog():
     """从 git log 自动生成 changelog.json"""
