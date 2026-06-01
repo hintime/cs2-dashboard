@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-06-01",
+    "tag": "feat",
+    "title": "AI空投监控 — 解读CS2公告对饰品市场影响",
+    "desc": "AI空投监控 — 解读CS2公告对饰品市场影响"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 23:14"
+  },
+  {
+    "date": "2026-06-01",
     "tag": "chore",
     "title": "update buff_history.json, changelog.json, correlation_data.j",
     "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 23:08"
@@ -106,17 +118,5 @@
     "tag": "feat",
     "title": "AI全面接入 — 市场研判横幅 + 持仓展开AI + 洞察面板 + 徽章",
     "desc": "AI全面接入 — 市场研判横幅 + 持仓展开AI + 洞察面板 + 徽章"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "fix",
-    "title": "AI面板/徽章匹配改用中文名（之前用英文mh导致全部miss）",
-    "desc": "AI面板/徽章匹配改用中文名（之前用英文mh导致全部miss）"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "feat",
-    "title": "持仓展开面板加入智谱AI分析区块（规则评分+AI并存）",
-    "desc": "持仓展开面板加入智谱AI分析区块（规则评分+AI并存）"
   }
 ]
