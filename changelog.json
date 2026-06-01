@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-06-01",
+    "tag": "feat",
+    "title": "推荐卡片加AI标签 + 修复AI管道编码",
+    "desc": "推荐卡片加AI标签 + 修复AI管道编码"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "fix",
+    "title": "changelog 自动同步修复GBK编码 + 手动生成最新日志",
+    "desc": "changelog 自动同步修复GBK编码 + 手动生成最新日志"
+  },
+  {
+    "date": "2026-06-01",
     "tag": "style",
     "title": "移除「实时」徽章",
     "desc": "移除「实时」徽章"
@@ -21,7 +33,7 @@
     "date": "2026-06-01",
     "tag": "chore",
     "title": "update buff_history.json, correlation_data.json, daily_repor",
-    "desc": "update buff_history.json, correlation_data.json, daily_repor"
+    "desc": ".json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 21:13"
   },
   {
     "date": "2026-06-01",
@@ -51,13 +63,19 @@
     "date": "2026-06-01",
     "tag": "chore",
     "title": "update buff_history.json, correlation_data.json, daily_repor",
-    "desc": "update buff_history.json, correlation_data.json, daily_repor"
+    "desc": ".json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 21:06"
   },
   {
     "date": "2026-06-01",
     "tag": "style",
     "title": "品牌升级 AlphaTrack — α图标 + Georgia衬线字体",
     "desc": "品牌升级 AlphaTrack — α图标 + Georgia衬线字体"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "feat",
+    "title": "changelog.json 自动从git log同步，每次管道运行自动更新",
+    "desc": "changelog.json 自动从git log同步，每次管道运行自动更新"
   },
   {
     "date": "2026-06-01",
@@ -100,23 +118,5 @@
     "tag": "fix",
     "title": "push market_scan.json with movers (gainers+losers) data",
     "desc": "push market_scan.json with movers (gainers+losers) data"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "chore",
-    "title": "buff_history 保留从14天→15天",
-    "desc": "buff_history 保留从14天→15天"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "fix",
-    "title": "修复数据推送中断 — GBK编码crash + AI非致命错误不阻止push + token认证",
-    "desc": "修复数据推送中断 — GBK编码crash + AI非致命错误不阻止push + token认证"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "perf",
-    "title": "大幅优化加载性能 — 移除表格行毛玻璃、price_summary懒加载、减少backdrop-filter",
-    "desc": "大幅优化加载性能 — 移除表格行毛玻璃、price_summary懒加载、减少backdrop-filter"
   }
 ]
