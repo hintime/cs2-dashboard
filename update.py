@@ -1131,7 +1131,7 @@ def sync_changelog():
     try:
         cf = _sp.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
         r = _sp.run(['git', 'log', '--oneline', '--date=short', '--format=%h|%ad|%s', '-30'],
-                    capture_output=True, text=True, cwd=DATA_DIR, creationflags=cf)
+                    capture_output=True, text=True, encoding='utf-8', cwd=DATA_DIR, creationflags=cf)
         if r.returncode != 0:
             return
         entries = []

@@ -1,24 +1,122 @@
 [
-  {"date":"2026-06-01","tag":"feat","title":"更新日志子页面","desc":"新增 changelog.html 时间线页面，按日期分组展示所有修复/优化记录，导航栏📋日志入口"},
-  {"date":"2026-06-01","tag":"feat","title":"智谱AI展示强化","desc":"Header 紫色渐变🤖智谱AI徽章显示分析件数 + 呼吸灯动画 + 页脚Powered by 智谱 GLM-4.7-Flash"},
-  {"date":"2026-06-01","tag":"style","title":"标题改为CS圆形Logo","desc":"SVG渐变圆环CS图标替代文字标题"},
-  {"date":"2026-06-01","tag":"fix","title":"修复AI模型名不一致","desc":"统一所有地方为 GLM-4.7-Flash（之前部分写成了GLM-4-Flash）"},
-  {"date":"2026-06-01","tag":"fix","title":"删除在售量TOP 10","desc":"只保留涨幅TOP + 跌幅TOP，移除冗余的在售量列表"},
-  {"date":"2026-06-01","tag":"refactor","title":"🧠按钮移除，改用行点击展开","desc":"点击持仓行即展开BUFF深度+流动性+趋势+信号+目标价全维度分析"},
-  {"date":"2026-06-01","tag":"fix","title":"修复持仓数据9小时未更新","desc":"三个连锁bug：1)GBK编码错误导致AI分析crash跳过push；2)git push用Windows凭据管理器在计划任务中失败；3)AI非致命错误不应阻止数据推送"},
-  {"date":"2026-06-01","tag":"fix","title":"修复涨跌榜不显示","desc":"GitHub上 market_scan.json 的 movers 为旧版空数组，本地有数据但未推送"},
-  {"date":"2026-06-01","tag":"perf","title":"大幅优化加载性能","desc":"移除表格行毛玻璃（最大GPU杀手）、price_summary.json改为懒加载、全局blur降级、噪点纹理减半"},
-  {"date":"2026-06-01","tag":"feat","title":"涨跌榜视觉升级","desc":"涨幅榜/跌幅榜/在售榜三列改为毛玻璃卡片 + 渐变进度条 + 价格标签 + hover高亮行"},
-  {"date":"2026-06-01","tag":"style","title":"网站全局视觉升级","desc":"三层径向渐变背景 + SVG噪点纹理、KPI卡片光泽线、推荐卡片发光边框、标题渐变色、弹性缓动动画"},
-  {"date":"2026-06-01","tag":"feat","title":"AI 洞察面板上线","desc":"持仓表格每行显示🤖AI标签（减仓/持有/观望）、新增醒目的AI洞察卡片（三栏统计+Top3高置信度建议）"},
-  {"date":"2026-06-01","tag":"fix","title":"🧠单品分析获取7日/30日涨跌","desc":"修复price_summary.json未在index.html加载的bug，单品分析卡片现可显示真实的7日和30日涨跌幅"},
-  {"date":"2026-06-01","tag":"fix","title":"🧠图标点击无反应（第三次修复）","desc":"修复window.H数组重新赋值后全局引用未同步更新的问题——H=[]和H.filter()都创建新数组导致window.H指向空数组"},
-  {"date":"2026-06-01","tag":"fix","title":"修复图表日期停滞在5月22日","desc":"CSQAQ全量扫描路径也保存buff_history（秒级，4500+件）、SteamDT batch API改为循环分批、去掉>100保存门槛"},
-  {"date":"2026-06-01","tag":"fix","title":"🧠图标报错Cannot read properties of undefined","desc":"改用market_hash查找替代数组索引查找，解决window.H数据刷新后索引失效"},
-  {"date":"2026-06-01","tag":"fix","title":"🧠图标首次点击无反应","desc":"WEAR_MAP定义在第一个IIFE内部但openItemDetail在第二个script块，修复作用域问题——暴露到window全局"},
-  {"date":"2026-06-01","tag":"feat","title":"AI全量持仓分析上线","desc":"Zhipu GLM-4.7-Flash批量分析87件持仓物品，生成操作建议+置信度+核心逻辑+风险提示"},
-  {"date":"2026-06-01","tag":"style","title":"多主题切换 + 单品深度分析卡片","desc":"4套主题（暗色/蓝/绿/紫）轮换 + 点击🧠弹出单品分析浮层（多平台价格+趋势+风险+入手区间）"},
-  {"date":"2026-05-31","tag":"fix","title":"恢复AI分析代码","desc":"修复被覆盖的AI分析模块，重新接入Zhipu ChatGLM"},
-  {"date":"2026-05-29","tag":"fix","title":"price_history.json永不推送","desc":"116MB大文件仅本地积累，GitHub只推送衍生的price_summary.json（2.8MB）"},
-  {"date":"2026-05-29","tag":"fix","title":"涨跌率回退到price_summary","desc":"当buff_history数据不足时自动回退到price_summary.json的change_7d/change_30d作为参考"}
+  {
+    "date": "2026-06-01",
+    "tag": "style",
+    "title": "移除「实时」徽章",
+    "desc": "移除「实时」徽章"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "fix",
+    "title": "AI市场研判改用市场层面表述，不提持仓",
+    "desc": "AI市场研判改用市场层面表述，不提持仓"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "style",
+    "title": "涨跌榜移除价格小字，只留名字+涨跌幅+进度条",
+    "desc": "涨跌榜移除价格小字，只留名字+涨跌幅+进度条"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update buff_history.json, correlation_data.json, daily_repor",
+    "desc": "update buff_history.json, correlation_data.json, daily_repor"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "fix",
+    "title": "补上 generateAIInsight 函数（AI市场研判横幅）",
+    "desc": "补上 generateAIInsight 函数（AI市场研判横幅）"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "feat",
+    "title": "AI全面接入 — 市场研判横幅 + 持仓展开AI + 洞察面板 + 徽章",
+    "desc": "AI全面接入 — 市场研判横幅 + 持仓展开AI + 洞察面板 + 徽章"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "fix",
+    "title": "AI面板/徽章匹配改用中文名（之前用英文mh导致全部miss）",
+    "desc": "AI面板/徽章匹配改用中文名（之前用英文mh导致全部miss）"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "feat",
+    "title": "持仓展开面板加入智谱AI分析区块（规则评分+AI并存）",
+    "desc": "持仓展开面板加入智谱AI分析区块（规则评分+AI并存）"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update buff_history.json, correlation_data.json, daily_repor",
+    "desc": "update buff_history.json, correlation_data.json, daily_repor"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "style",
+    "title": "品牌升级 AlphaTrack — α图标 + Georgia衬线字体",
+    "desc": "品牌升级 AlphaTrack — α图标 + Georgia衬线字体"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "补全更新日志（最近6条改动）",
+    "desc": "补全更新日志（最近6条改动）"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "refactor",
+    "title": "移除🧠按钮，改用行点击展开分析（保留了📈走势图按钮）",
+    "desc": "移除🧠按钮，改用行点击展开分析（保留了📈走势图按钮）"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "fix",
+    "title": "删除在售量TOP10，只保留涨跌榜（涨幅+跌幅）",
+    "desc": "删除在售量TOP10，只保留涨跌榜（涨幅+跌幅）"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "fix",
+    "title": "AI模型名统一为 GLM-4.7-Flash",
+    "desc": "AI模型名统一为 GLM-4.7-Flash"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "style",
+    "title": "标题改为CS图标 + SVG圆形Logo",
+    "desc": "标题改为CS图标 + SVG圆形Logo"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "feat",
+    "title": "header 智谱AI徽章 + 页脚 Powered by 智谱GLM",
+    "desc": "header 智谱AI徽章 + 页脚 Powered by 智谱GLM"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "fix",
+    "title": "push market_scan.json with movers (gainers+losers) data",
+    "desc": "push market_scan.json with movers (gainers+losers) data"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "buff_history 保留从14天→15天",
+    "desc": "buff_history 保留从14天→15天"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "fix",
+    "title": "修复数据推送中断 — GBK编码crash + AI非致命错误不阻止push + token认证",
+    "desc": "修复数据推送中断 — GBK编码crash + AI非致命错误不阻止push + token认证"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "perf",
+    "title": "大幅优化加载性能 — 移除表格行毛玻璃、price_summary懒加载、减少backdrop-filter",
+    "desc": "大幅优化加载性能 — 移除表格行毛玻璃、price_summary懒加载、减少backdrop-filter"
+  }
 ]
