@@ -404,6 +404,41 @@ tr.hold-row{cursor:pointer}
 .refresh-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--glow-blue)}
 
 /* ── 全市场扫描 Hero KPI ── */
+.scan-list-card{
+  background:linear-gradient(135deg,var(--surface),var(--surface2));
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,.12);
+}
+.scan-card-head{
+  font-size:13px;font-weight:700;padding-bottom:10px;margin-bottom:4px;
+  border-bottom:1px solid rgba(55,65,81,.15);
+  display:flex;align-items:center;gap:6px;
+}
+.scan-card-head.rise{color:var(--rise)}
+.scan-card-head.fall{color:var(--fall)}
+.scan-card-head.sell{color:var(--blue)}
+.scan-row{
+  display:flex;align-items:center;gap:8px;padding:5px 0;
+  font-size:11px;transition:all .2s;
+}
+.scan-row:hover{background:rgba(96,165,250,.04);margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:4px}
+.scan-rank{color:var(--text3);min-width:20px;text-align:center;font-weight:700;font-size:10px}
+.scan-row:nth-child(2) .scan-rank{color:#fbbf24}
+.scan-row:nth-child(3) .scan-rank{color:#9ca3af}
+.scan-row:nth-child(4) .scan-rank{color:#cd853f}
+.scan-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);font-weight:500}
+.scan-price{color:var(--text3);min-width:50px;text-align:right;font-family:'DM Mono','JetBrains Mono',monospace;font-size:10px}
+.scan-pct{min-width:58px;text-align:right;font-weight:700;font-size:12px}
+.scan-pct.rise{color:var(--rise)}
+.scan-pct.fall{color:var(--fall)}
+.scan-pct.sell-num{color:var(--blue);font-size:10px;min-width:70px}
+.scan-bar{width:60px;height:4px;background:rgba(55,65,81,.2);border-radius:2px;overflow:hidden;flex-shrink:0}
+.scan-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.scan-bar-fill.rise{background:linear-gradient(90deg,var(--rise),rgba(248,113,113,.4))}
+.scan-bar-fill.fall{background:linear-gradient(90deg,var(--fall),rgba(52,211,153,.4))}
+.scan-bar-fill.sell{background:linear-gradient(90deg,var(--blue),rgba(96,165,250,.4))}
 .scan-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 0 6px}
 .scan-kpi{background:var(--surface2);border-radius:10px;padding:14px 12px;text-align:center;border:1px solid rgba(55,65,81,.25)}
 .scan-kpi-main{border-color:rgba(96,165,250,.3);background:rgba(96,165,250,.04)}
@@ -648,10 +683,10 @@ html { scroll-behavior: smooth; }
   <div id="scanContent" style="padding:0 20px 16px">
     <div id="scanKpis" class="scan-kpis"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
-      <div id="scanGainers"></div>
-      <div id="scanLosers"></div>
+      <div class="scan-list-card" id="scanGainers"></div>
+      <div class="scan-list-card" id="scanLosers"></div>
     </div>
-    <div id="scanTopSell" style="display:none"></div>
+    <div id="scanTopSell" class="scan-list-card" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -3352,36 +3387,52 @@ function renderScan() {
 
     // ═══ 涨跌榜 ───
     if (gainers && scan.movers && scan.movers.gainers) {
-      var html = '<div style="font-size:11px;font-weight:700;color:var(--rise);margin-bottom:8px">📈 涨幅 TOP</div>';
-      scan.movers.gainers.forEach(function(g) {
-        html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(55,65,81,.06);font-size:11px">' +
-          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--text2)" title="' + esc(g.n) + '">' + esc(g.n) + '</span>' +
-          '<span style="color:var(--rise);font-weight:700;min-width:55px;text-align:right">+' + g.r7.toFixed(1) + '%</span></div>';
+      var maxR = Math.max.apply(null, scan.movers.gainers.map(function(g){return g.r7||0;})) || 1;
+      var html = '<div class="scan-card-head rise">📈 涨幅 TOP ' + scan.movers.gainers.length + '</div>';
+      scan.movers.gainers.forEach(function(g, i) {
+        var barW = Math.max(8, (g.r7 / maxR * 100).toFixed(0));
+        html += '<div class="scan-row">' +
+          '<span class="scan-rank">' + (i+1) + '</span>' +
+          '<span class="scan-name" title="' + esc(g.n) + '">' + esc(g.n) + '</span>' +
+          '<span class="scan-price">¥' + (g.p||0).toFixed(0) + '</span>' +
+          '<span class="scan-pct rise">+' + g.r7.toFixed(1) + '%</span>' +
+          '<span class="scan-bar"><span class="scan-bar-fill rise" style="width:' + barW + '%"></span></span>' +
+        '</div>';
       });
       gainers.innerHTML = html;
     }
     if (losers && scan.movers && scan.movers.losers) {
-      var html = '<div style="font-size:11px;font-weight:700;color:var(--fall);margin-bottom:8px">📉 跌幅 TOP</div>';
-      scan.movers.losers.forEach(function(l) {
-        html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(55,65,81,.06);font-size:11px">' +
-          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:var(--text2)" title="' + esc(l.n) + '">' + esc(l.n) + '</span>' +
-          '<span style="color:var(--fall);font-weight:700;min-width:55px;text-align:right">' + l.r7.toFixed(1) + '%</span></div>';
+      var maxR = Math.abs(Math.min.apply(null, scan.movers.losers.map(function(l){return l.r7||0;}))) || 1;
+      var html = '<div class="scan-card-head fall">📉 跌幅 TOP ' + scan.movers.losers.length + '</div>';
+      scan.movers.losers.forEach(function(l, i) {
+        var barW = Math.max(8, (Math.abs(l.r7) / maxR * 100).toFixed(0));
+        html += '<div class="scan-row">' +
+          '<span class="scan-rank">' + (i+1) + '</span>' +
+          '<span class="scan-name" title="' + esc(l.n) + '">' + esc(l.n) + '</span>' +
+          '<span class="scan-price">¥' + (l.p||0).toFixed(0) + '</span>' +
+          '<span class="scan-pct fall">' + l.r7.toFixed(1) + '%</span>' +
+          '<span class="scan-bar"><span class="scan-bar-fill fall" style="width:' + barW + '%"></span></span>' +
+        '</div>';
       });
       losers.innerHTML = html;
     }
 
     // ═══ 在售量 TOP ───
     if (topSell && scan.top_sell) {
-      var rows = scan.top_sell.map(function(s, i) {
-        var rank = (i+1);
-        var medal = rank<=3 ? ['🥇','🥈','🥉'][rank-1] : rank;
-        return '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(55,65,81,.06);font-size:11px">' +
-          '<span style="color:var(--text3);min-width:20px;text-align:center;font-weight:700">' + medal + '</span>' +
-          '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)">' + esc(s.n) + '</span>' +
-          '<span style="color:var(--text3);font-size:10px">¥' + (s.p||0).toFixed(1) + '</span>' +
-          '<span style="color:var(--blue);font-weight:600;min-width:70px;text-align:right">' + (s.s||0).toLocaleString() + '件</span></div>';
-      }).join('');
-      topSell.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-top:12px;margin-bottom:6px">🛒 在售量 TOP 10</div>' + rows;
+      var maxCnt = (scan.top_sell[0]||{}).s || 1;
+      var html = '<div class="scan-card-head sell">🛒 在售量 TOP ' + scan.top_sell.length + '</div>';
+      scan.top_sell.forEach(function(s, i) {
+        var barW = Math.max(5, (s.s / maxCnt * 100).toFixed(0));
+        html += '<div class="scan-row">' +
+          '<span class="scan-rank">' + (i+1) + '</span>' +
+          '<span class="scan-name" title="' + esc(s.n) + '">' + esc(s.n) + '</span>' +
+          '<span class="scan-price">¥' + (s.p||0).toFixed(1) + '</span>' +
+          '<span class="scan-pct sell-num">' + (s.s||0).toLocaleString() + '件</span>' +
+          '<span class="scan-bar"><span class="scan-bar-fill sell" style="width:' + barW + '%"></span></span>' +
+        '</div>';
+      });
+      topSell.innerHTML = html;
+      topSell.style.display = '';
     }
 
     var ut = document.getElementById('scanUpdateTime');
