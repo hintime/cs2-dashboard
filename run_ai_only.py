@@ -109,7 +109,7 @@ except Exception as e:
     print(f'  ❌ 失败: {e}')
 
 # ── 3. AI 空投监控 ──
-print('[3/3] AI 空投监控...')
+print('[3/4] AI 空投监控...')
 try:
     news_path = os.path.join(DATA_DIR, 'news.json')
     if os.path.exists(news_path):
@@ -140,6 +140,77 @@ try:
             print('  ⚠️ news.json 无有效标题')
     else:
         print('  ⚠️ news.json 不存在')
+except Exception as e:
+    print(f'  ❌ 失败: {e}')
+
+# ── 4. AI 购买推荐分析 ──
+print('[4/4] AI 购买推荐分析...')
+try:
+    market = read_json(os.path.join(DATA_DIR, 'market.json'))
+    recs = market.get('recommendations', {})
+    all_items = recs.get('all', [])
+    if all_items:
+        candidates = all_items[:20]
+        lines = []
+        for i, item in enumerate(candidates):
+            name = item.get('name', '?')
+            price = item.get('price', 0)
+            score = item.get('score', 0)
+            tag = item.get('tag_label', item.get('tag', ''))
+            reason = item.get('_reason', '')[:80]
+            eco_price = item.get('eco_price', 0)
+            buff_sell = item.get('buff_sell', 0)
+            yyyp_sell = item.get('yyyp_sell', 0)
+            eco_sell = item.get('eco_selling', 0)
+            buff_sell_num = item.get('buff_sell_num', 0)
+            buff_buy_num = item.get('buff_buy_num', 0)
+            yyyp_sell_num = item.get('yyyp_sell_num', 0)
+            premium = ''
+            if eco_price > 0 and buff_sell > 0:
+                prem = (buff_sell - eco_price) / eco_price * 100
+                if abs(prem) > 3:
+                    premium += f'BUFF溢价{prem:+.0f}%'
+            if eco_price > 0 and yyyp_sell > 0:
+                yprem = (yyyp_sell - eco_price) / eco_price * 100
+                if abs(yprem) > 3:
+                    premium += f' 悠悠溢价{yprem:+.0f}%'
+            lines.append(
+                f'#{i+1} {name} | ¥{price:.0f} | 评分{score:.1f} | 策略:{tag} | '
+                f'ECO在售{eco_sell}/BUFF在售{buff_sell_num}/悠悠在售{yyyp_sell_num} | '
+                f'BUFF求购{buff_buy_num} | {premium} | {reason}'
+            )
+        candidates_text = '\n'.join(lines)
+        context = ''
+        try:
+            news = read_json(os.path.join(DATA_DIR, 'ai_news_impact.json'))
+            if news.get('impact'):
+                context += f'市场背景(新闻): {news["impact"][:150]}\n'
+        except: pass
+        try:
+            insight = read_json(os.path.join(DATA_DIR, 'ai_market_insight.json'))
+            if insight.get('insight'):
+                context += f'市场背景(洞察): {insight["insight"][:200]}\n'
+        except: pass
+        prompt = (
+            f'你是CS2饰品投资顾问。根据以下推荐候选和市场背景，给出专业的购买建议。\n\n'
+            f'{context}\n'
+            f'【推荐候选 Top20】\n{candidates_text}\n\n'
+            f'请用以下格式输出（严格JSON）：\n'
+            f'{{"picks":[{{"rank":1,"name":"饰品名","reason":"买入理由30字以内","risk":"风险提示20字以内"}},...],'
+            f'"strategy":"一句话投资策略建议30字","summary":"总览分析20字"}}\n'
+            f'要求：picks选最好的3-5个，综合考虑评分、流动性、溢价率、市场背景，不选高风险低流动性品种。'
+        )
+        content = call_glm(prompt, system='你是CS2饰品投资分析师。只返回JSON格式。', max_tokens=2000, temperature=0.3)
+        try:
+            picks = json.loads(content)
+        except:
+            picks = {'picks': [], 'strategy': content[:80], 'summary': 'AI格式异常'}
+        picks['date'] = time.strftime('%Y-%m-%d %H:%M')
+        picks['total_candidates'] = len(candidates)
+        write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), picks)
+        print(f'  ✅ 选出 {len(picks.get("picks",[]))} 件: {picks.get("strategy","")[:60]}...')
+    else:
+        print('  ⚠️ 无推荐数据')
 except Exception as e:
     print(f'  ❌ 失败: {e}')
 

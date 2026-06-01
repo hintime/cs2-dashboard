@@ -1225,6 +1225,88 @@ def generate_ai_news_impact():
     except Exception as e:
         print(f'[AI] News impact failed: {e}')
 
+def generate_ai_recommendations():
+    """AI 购买推荐分析 — 综合评分+多维度数据，给出最优购买建议"""
+    if not ZHIPU_KEY: return
+    try:
+        market = read_json(os.path.join(DATA_DIR, 'market.json'))
+        recs = market.get('recommendations', {})
+        all_items = recs.get('all', [])
+        if not all_items:
+            print('[AI] No recommendations to analyze')
+            return
+        # 取 Top 20 条给 AI 分析
+        candidates = all_items[:20]
+        lines = []
+        for i, item in enumerate(candidates):
+            name = item.get('name', '?')
+            price = item.get('price', 0)
+            score = item.get('score', 0)
+            tag = item.get('tag_label', item.get('tag', ''))
+            reason = item.get('_reason', '')[:80]
+            eco_price = item.get('eco_price', 0)
+            buff_sell = item.get('buff_sell', 0)
+            yyyp_sell = item.get('yyyp_sell', 0)
+            eco_sell = item.get('eco_selling', 0)
+            buff_sell_num = item.get('buff_sell_num', 0)
+            buff_buy_num = item.get('buff_buy_num', 0)
+            yyyp_sell_num = item.get('yyyp_sell_num', 0)
+            # 溢价率
+            premium = ''
+            if eco_price > 0 and buff_sell > 0:
+                prem = (buff_sell - eco_price) / eco_price * 100
+                if abs(prem) > 3:
+                    premium = f'BUFF溢价{prem:+.0f}%'
+            if eco_price > 0 and yyyp_sell > 0:
+                yprem = (yyyp_sell - eco_price) / eco_price * 100
+                if abs(yprem) > 3:
+                    premium += f' 悠悠溢价{yprem:+.0f}%'
+            lines.append(
+                f'#{i+1} {name} | ¥{price:.0f} | 评分{score:.1f} | 策略:{tag} | '
+                f'ECO在售{eco_sell}/BUFF在售{buff_sell_num}/悠悠在售{yyyp_sell_num} | '
+                f'BUFF求购{buff_buy_num} | {premium} | {reason}'
+            )
+        candidates_text = '\n'.join(lines)
+        # 读取新闻影响和市场洞察作为上下文
+        news = read_json(os.path.join(DATA_DIR, 'ai_news_impact.json'))
+        insight = read_json(os.path.join(DATA_DIR, 'ai_market_insight.json'))
+        context = ''
+        if news and news.get('impact'):
+            context += f'市场背景(新闻): {news["impact"][:150]}\n'
+        if insight and insight.get('insight'):
+            context += f'市场背景(洞察): {insight["insight"][:200]}\n'
+        prompt = (
+            f'你是CS2饰品投资顾问。根据以下推荐候选和市场背景，给出专业的购买建议。\n\n'
+            f'{context}\n'
+            f'【推荐候选 Top20】\n{candidates_text}\n\n'
+            f'请用以下格式输出（严格JSON）：\n'
+            f'{{"picks":[{{"rank":1,"name":"饰品名","reason":"买入理由30字以内","risk":"风险提示20字以内"}},...],'
+            f'"strategy":"一句话投资策略建议30字","summary":"总览分析20字"}}\n'
+            f'要求：picks选最好的3-5个，综合考虑评分、流动性、溢价率、市场背景。'
+        )
+        data = json.dumps({
+            'model': 'glm-4.7-flash',
+            'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON格式。'}, {'role': 'user', 'content': prompt}],
+            'response_format': {'type': 'json_object'},
+            'max_tokens': 2000, 'temperature': 0.3
+        }).encode('utf-8')
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        })
+        resp = urllib.request.urlopen(req, timeout=45)
+        r = json.loads(resp.read().decode('utf-8'))
+        content = r['choices'][0]['message']['content'].strip()
+        try:
+            picks = json.loads(content)
+        except:
+            picks = {'picks': [], 'strategy': content[:80], 'summary': 'AI格式异常，已降级显示'}
+        picks['date'] = time.strftime('%Y-%m-%d %H:%M')
+        picks['total_candidates'] = len(candidates)
+        write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), picks)
+        print(f'[AI] Recommendations: {len(picks.get("picks",[]))} picks generated')
+    except Exception as e:
+        print(f'[AI] Recommendations failed: {e}')
+
 # ═══════════════ PUSH (single atomic commit) ═══════════════
 def sync_changelog():
     """从 git log 自动生成 changelog.json"""
@@ -1959,6 +2041,8 @@ def main():
     except Exception as e: print(f'[AI] Market insight failed (non-fatal): {e}', file=sys.stderr)
     try: generate_ai_news_impact()
     except Exception as e: print(f'[AI] News impact failed (non-fatal): {e}', file=sys.stderr)
+    try: generate_ai_recommendations()
+    except Exception as e: print(f'[AI] Recommendations failed (non-fatal): {e}', file=sys.stderr)
 
     # ── Push all dirty files at once ──
     push_all()
