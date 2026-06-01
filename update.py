@@ -1151,7 +1151,7 @@ def generate_ai_market_insight():
         data = json.dumps({
             'model': 'glm-4.7-flash',
             'messages': [{'role': 'user', 'content': prompt}],
-            'max_tokens': 400, 'temperature': 0.5
+            'max_tokens': 2000, 'temperature': 0.5
         }).encode('utf-8')
         req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
@@ -1199,9 +1199,9 @@ def generate_ai_news_impact():
             f'若公告与饰品无关，回复"本期公告对饰品市场无直接影响。"'
         )
         data = json.dumps({
-            'model': 'glm-4-flash',  # 4.7思考模式吃token，impact用4
+            'model': 'glm-4.7-flash',
             'messages': [{'role': 'user', 'content': prompt}],
-            'max_tokens': 300, 'temperature': 0.5
+            'max_tokens': 2000, 'temperature': 0.5
         }).encode('utf-8')
         req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
