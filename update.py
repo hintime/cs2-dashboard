@@ -1058,7 +1058,13 @@ def generate_ai_anomaly():
         bh = read_json(os.path.join(DATA_DIR, 'buff_history.json'))
         dates = sorted(bh.keys())
         if len(dates) < 2: return
-        now, prev = dates[-1], dates[-2]
+        now = dates[-1]
+        # 找 24 小时前的快照，避免同日对比
+        prev = dates[-2]
+        for d in reversed(dates[:-1]):
+            prev = d
+            if d[:10] != now[:10]:
+                break
         changes = []
         for name, info in bh[now].items():
             if name not in bh[prev]: continue
@@ -1066,15 +1072,15 @@ def generate_ai_anomaly():
             prev_num = bh[prev][name].get('buff_sell_num', 0) or bh[prev][name].get('yyyp_sell_num', 0)
             if prev_num > 0 and now_num > 0:
                 pct = (now_num - prev_num) / prev_num * 100
-                if abs(pct) > 30:
+                if abs(pct) > 10:
                     changes.append((name, pct, now_num, prev_num))
         if not changes:
-            print('[AI] No significant anomalies')
+            print('[AI] No significant anomalies (>10%)')
             return
         changes.sort(key=lambda x: abs(x[1]), reverse=True)
         top = changes[:5]
         items_text = '\n'.join([f'{n}: 在售量 {pr}→{nr} ({pct:+.0f}%)' for n, pct, nr, pr in top])
-        prompt = f'CS2饰品在售量异动检测，以下饰品在售量变化超过30%：\n{items_text}\n请分析这些异动可能的原因和影响，100字以内。'
+        prompt = f'CS2饰品在售量异动检测，以下饰品在售量变化超过10%：\n{items_text}\n请分析这些异动可能的原因和影响，100字以内。'
         data = json.dumps({
             'model': 'glm-4.7-flash',
             'messages': [
