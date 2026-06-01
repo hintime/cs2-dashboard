@@ -709,6 +709,9 @@ html { scroll-behavior: smooth; }
   </div>
   <div id="scanContent" style="padding:0 20px 16px">
     <div id="scanKpis" class="scan-kpis"></div>
+    <div id="aiInsightBar" style="display:none;margin:8px 0 12px;padding:10px 16px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(59,130,246,.05));border:1px solid rgba(168,85,247,.2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.6">
+      <span style="color:#c084fc;font-weight:700">🤖 智谱AI</span> · <span id="aiInsightText">分析中...</span>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
       <div class="scan-list-card" id="scanGainers"></div>
       <div class="scan-list-card" id="scanLosers"></div>
@@ -1880,6 +1883,8 @@ document.addEventListener('ai-loaded', function() {
   // 显示页脚
   var af = document.getElementById('aiFooter');
   if (af) af.style.display = '';
+  // AI市场研判
+  generateAIInsight();
   // 触发面板重绘
   if (window.H && window.H.length) {
     var grid = document.getElementById('scanGrid');
@@ -3459,6 +3464,8 @@ function renderScan() {
 
     var ut = document.getElementById('scanUpdateTime');
     if (ut && scan.updated) ut.textContent = '数据 ' + scan.updated.slice(0, 10);
+    // 触发AI研判更新
+    if (window._aiAnalysis && Object.keys(window._aiAnalysis).length) generateAIInsight();
   }).catch(function() {});
 }
 
