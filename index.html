@@ -438,7 +438,6 @@ tr.hold-row{cursor:pointer}
 .scan-row:nth-child(3) .scan-rank{color:#9ca3af}
 .scan-row:nth-child(4) .scan-rank{color:#cd853f}
 .scan-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);font-weight:500}
-.scan-price{color:var(--text3);min-width:50px;text-align:right;font-family:'DM Mono','JetBrains Mono',monospace;font-size:10px}
 .scan-pct{min-width:58px;text-align:right;font-weight:700;font-size:12px}
 .scan-pct.rise{color:var(--rise)}
 .scan-pct.fall{color:var(--fall)}
@@ -3473,7 +3472,6 @@ function renderScan() {
         html += '<div class="scan-row">' +
           '<span class="scan-rank">' + (i+1) + '</span>' +
           '<span class="scan-name" title="' + esc(g.n) + '">' + esc(g.n) + '</span>' +
-          '<span class="scan-price">¥' + (g.p||0).toFixed(0) + '</span>' +
           '<span class="scan-pct rise">+' + g.r7.toFixed(1) + '%</span>' +
           '<span class="scan-bar"><span class="scan-bar-fill rise" style="width:' + barW + '%"></span></span>' +
         '</div>';
@@ -3488,7 +3486,6 @@ function renderScan() {
         html += '<div class="scan-row">' +
           '<span class="scan-rank">' + (i+1) + '</span>' +
           '<span class="scan-name" title="' + esc(l.n) + '">' + esc(l.n) + '</span>' +
-          '<span class="scan-price">¥' + (l.p||0).toFixed(0) + '</span>' +
           '<span class="scan-pct fall">' + l.r7.toFixed(1) + '%</span>' +
           '<span class="scan-bar"><span class="scan-bar-fill fall" style="width:' + barW + '%"></span></span>' +
         '</div>';
