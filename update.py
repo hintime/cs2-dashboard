@@ -194,13 +194,13 @@ def save_buff_history(steamdt_prices):
     
     history = load_buff_history()
     
-    # Keep last 48 hours + 14 days
+    # Keep last 48 hours + 15 days
     dates = sorted(history.keys(), reverse=True)
     keep = []
     for d in dates:
         if len(d) == 16 and len(keep) < 48:  # hourly: YYYY-MM-DDTHH:MM
             keep.append(d)
-        elif len(d) == 10 and len(keep) < 48+14:  # daily: YYYY-MM-DD
+        elif len(d) == 10 and len(keep) < 48+15:  # daily: YYYY-MM-DD
             keep.append(d)
     for old_date in dates:
         if old_date not in keep:
