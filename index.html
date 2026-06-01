@@ -150,6 +150,17 @@ body::before{
 .header .sub{font-size:11px;color:var(--text3);margin-top:3px;letter-spacing:.05em;text-transform:uppercase;font-weight:500}
 .badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--border);padding:5px 16px;border-radius:24px;backdrop-filter:blur(16px);box-shadow:0 2px 12px rgba(0,0,0,.15)}
 .badge .dot{width:6px;height:6px;border-radius:50%;background:var(--fall);box-shadow:0 0 8px var(--fall),0 0 20px var(--fall);animation:blink 2.5s ease-in-out infinite}
+.badge.ai-powered{
+  background:linear-gradient(135deg,rgba(168,85,247,.15),rgba(59,130,246,.1));
+  border-color:rgba(168,85,247,.35);
+  color:#c084fc;
+}
+.badge.ai-powered .ai-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#c084fc;box-shadow:0 0 8px #c084fc,0 0 16px #a78bfa;
+  animation:aiBlink 3s ease-in-out infinite;
+}
+@keyframes aiBlink{0%,100%{opacity:1;box-shadow:0 0 8px #c084fc,0 0 16px #a78bfa}50%{opacity:.4;box-shadow:0 0 3px #c084fc}}
 @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 8px var(--fall),0 0 20px var(--fall)}50%{opacity:.3;box-shadow:0 0 2px var(--fall)}}
 
 /* ── Glassmorphism card base ── */
@@ -586,6 +597,7 @@ html { scroll-behavior: smooth; }
       <button class="refresh-btn" id="refreshBtn" title="刷新数据，同时后台获取最新价格和异动">↻ 刷新</button>
       <button class="gear-btn" id="gearBtn" title="设置 GitHub Token">⚙</button>
       <span class="badge"><span class="dot"></span>实时</span>
+      <span class="badge ai-powered" id="aiBadge" title="智谱GLM-4 AI 持仓分析" style="display:none">🤖 智谱AI</span>
       <span class="badge" id="dataSourceBadge" style="font-size:10px;color:var(--text3)">数据:N/A</span>
       <span class="badge" id="updateTime" title="数据更新时间">--</span>
       <span id="refreshStatus" style="font-size:11px;color:var(--text3);min-width:60px"></span>
@@ -839,6 +851,10 @@ html { scroll-behavior: smooth; }
       <button class="btn-primary" id="tokenSave">保存</button>
     </div>
   </div>
+</div>
+<!-- AI 页脚 -->
+<div id="aiFooter" style="display:none;text-align:center;padding:8px 0 20px;font-size:10px;color:var(--text3);letter-spacing:.5px">
+  🤖 持仓分析由 <span style="color:#c084fc;font-weight:600">智谱 GLM-4-Flash</span> 提供 · 仅供参考，不构成投资建议
 </div>
 </div><!-- end mainContent -->
 
@@ -1837,6 +1853,18 @@ function populateAIBadges() {
 // AI 数据加载完成后刷新徽章和面板
 document.addEventListener('ai-loaded', function() {
   populateAIBadges();
+  // AI 徽章更新
+  var aiBadge = document.getElementById('aiBadge');
+  if (aiBadge) {
+    var ai = window._aiAnalysis || {};
+    var count = Object.keys(ai).filter(function(k){return !k.startsWith('_');}).length;
+    aiBadge.innerHTML = '<span class="ai-dot"></span>智谱AI · ' + count + '件';
+    aiBadge.style.display = '';
+    aiBadge.title = '智谱 GLM-4-Flash · 已分析 ' + count + ' 件持仓物品';
+  }
+  // 显示页脚
+  var af = document.getElementById('aiFooter');
+  if (af) af.style.display = '';
   // 触发面板重绘
   if (window.H && window.H.length) {
     var grid = document.getElementById('scanGrid');
