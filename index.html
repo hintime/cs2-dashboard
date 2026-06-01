@@ -1713,7 +1713,9 @@ async function renderNews() {
   fetch('ai_news_impact.json?' + Date.now()).then(function(r) { return r.ok ? r.json() : null; }).then(function(d) {
     var bar = document.getElementById('aiNewsImpact');
     var txt = document.getElementById('aiNewsImpactText');
-    if (bar && txt && d && d.impact) { txt.textContent = d.impact; bar.style.display = ''; }
+    if (!bar || !txt) return;
+    if (d && d.impact && d.impact.length > 5) { txt.textContent = d.impact; bar.style.display = ''; }
+    else if (d && d.headlines && d.headlines.length) { txt.textContent = '最新公告：' + d.headlines[0].replace('- ','') + '... | AI分析生成中，请稍后刷新'; bar.style.display = ''; }
   }).catch(function() {});
   if (!cs2NewsData) {
     var grid = $('newsGrid');
