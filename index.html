@@ -612,7 +612,7 @@ html { scroll-behavior: smooth; }
       <button class="refresh-btn" id="refreshBtn" title="刷新数据，同时后台获取最新价格和异动">↻ 刷新</button>
       <button class="gear-btn" id="gearBtn" title="设置 GitHub Token">⚙</button>
       <span class="badge"><span class="dot"></span>实时</span>
-      <span class="badge ai-powered" id="aiBadge" title="智谱GLM-4 AI 持仓分析" style="display:none">🤖 智谱AI</span>
+      <span class="badge ai-powered" id="aiBadge" title="智谱GLM-4.7 AI 持仓分析" style="display:none">🤖 智谱AI</span>
       <span class="badge" id="dataSourceBadge" style="font-size:10px;color:var(--text3)">数据:N/A</span>
       <span class="badge" id="updateTime" title="数据更新时间">--</span>
       <span id="refreshStatus" style="font-size:11px;color:var(--text3);min-width:60px"></span>
@@ -869,7 +869,7 @@ html { scroll-behavior: smooth; }
 </div>
 <!-- AI 页脚 -->
 <div id="aiFooter" style="display:none;text-align:center;padding:8px 0 20px;font-size:10px;color:var(--text3);letter-spacing:.5px">
-  🤖 持仓分析由 <span style="color:#c084fc;font-weight:600">智谱 GLM-4-Flash</span> 提供 · 仅供参考，不构成投资建议
+  🤖 持仓分析由 <span style="color:#c084fc;font-weight:600">智谱 GLM-4.7-Flash</span> 提供 · 仅供参考，不构成投资建议
 </div>
 </div><!-- end mainContent -->
 
@@ -1875,7 +1875,7 @@ document.addEventListener('ai-loaded', function() {
     var count = Object.keys(ai).filter(function(k){return !k.startsWith('_');}).length;
     aiBadge.innerHTML = '<span class="ai-dot"></span>智谱AI · ' + count + '件';
     aiBadge.style.display = '';
-    aiBadge.title = '智谱 GLM-4-Flash · 已分析 ' + count + ' 件持仓物品';
+    aiBadge.title = '智谱 GLM-4.7-Flash · 已分析 ' + count + ' 件持仓物品';
   }
   // 显示页脚
   var af = document.getElementById('aiFooter');

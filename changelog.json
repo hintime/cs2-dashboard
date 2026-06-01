@@ -9,7 +9,7 @@
   {"date":"2026-06-01","tag":"fix","title":"修复图表日期停滞在5月22日","desc":"CSQAQ全量扫描路径也保存buff_history（秒级，4500+件）、SteamDT batch API改为循环分批、去掉>100保存门槛"},
   {"date":"2026-06-01","tag":"fix","title":"🧠图标报错Cannot read properties of undefined","desc":"改用market_hash查找替代数组索引查找，解决window.H数据刷新后索引失效"},
   {"date":"2026-06-01","tag":"fix","title":"🧠图标首次点击无反应","desc":"WEAR_MAP定义在第一个IIFE内部但openItemDetail在第二个script块，修复作用域问题——暴露到window全局"},
-  {"date":"2026-06-01","tag":"feat","title":"AI全量持仓分析上线","desc":"Zhipu GLM-4-Flash批量分析87件持仓物品，生成操作建议+置信度+核心逻辑+风险提示"},
+  {"date":"2026-06-01","tag":"feat","title":"AI全量持仓分析上线","desc":"Zhipu GLM-4.7-Flash批量分析87件持仓物品，生成操作建议+置信度+核心逻辑+风险提示"},
   {"date":"2026-06-01","tag":"style","title":"多主题切换 + 单品深度分析卡片","desc":"4套主题（暗色/蓝/绿/紫）轮换 + 点击🧠弹出单品分析浮层（多平台价格+趋势+风险+入手区间）"},
   {"date":"2026-05-31","tag":"fix","title":"恢复AI分析代码","desc":"修复被覆盖的AI分析模块，重新接入Zhipu ChatGLM"},
   {"date":"2026-05-29","tag":"fix","title":"price_history.json永不推送","desc":"116MB大文件仅本地积累，GitHub只推送衍生的price_summary.json（2.8MB）"},

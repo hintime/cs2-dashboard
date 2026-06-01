@@ -989,7 +989,7 @@ def generate_ai_analysis():
             pnl_pct = (price - cost) / cost * 100 if cost > 0 else 0
             try:
                 data = json.dumps({
-                    'model': 'glm-4-flash',
+                    'model': 'glm-4.7-flash',
                     'messages': [
                         {'role': 'system', 'content': '你是CS2饰品分析师。返回JSON：{"verdict":"持有/买入/减仓/观望","confidence":80,"reason":"一句话","risk":"一句话"}'},
                         {'role': 'user', 'content': f'{name}，¥{price:.0f}，7日{r7:+.1f}%，30日{r30:+.1f}%，成本¥{cost:.0f}，盈亏{pnl_pct:+.1f}%'}
@@ -1076,7 +1076,7 @@ def generate_ai_anomaly():
         items_text = '\n'.join([f'{n}: 在售量 {pr}→{nr} ({pct:+.0f}%)' for n, pct, nr, pr in top])
         prompt = f'CS2饰品在售量异动检测，以下饰品在售量变化超过30%：\n{items_text}\n请分析这些异动可能的原因和影响，100字以内。'
         data = json.dumps({
-            'model': 'glm-4-flash',
+            'model': 'glm-4.7-flash',
             'messages': [
                 {'role': 'system', 'content': '你是CS2饰品市场分析师。简洁分析在售量异动原因。'},
                 {'role': 'user', 'content': prompt}
