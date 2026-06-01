@@ -712,7 +712,6 @@ html { scroll-behavior: smooth; }
       <div class="scan-list-card" id="scanGainers"></div>
       <div class="scan-list-card" id="scanLosers"></div>
     </div>
-    <div id="scanTopSell" class="scan-list-card" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -3411,7 +3410,6 @@ function renderScan() {
     var kpis = document.getElementById('scanKpis');
     var gainers = document.getElementById('scanGainers');
     var losers = document.getElementById('scanLosers');
-    var topSell = document.getElementById('scanTopSell');
 
     // ═══ Hero KPI ───
     if (kpis) {
@@ -3456,24 +3454,6 @@ function renderScan() {
         '</div>';
       });
       losers.innerHTML = html;
-    }
-
-    // ═══ 在售量 TOP ───
-    if (topSell && scan.top_sell) {
-      var maxCnt = (scan.top_sell[0]||{}).s || 1;
-      var html = '<div class="scan-card-head sell">🛒 在售量 TOP ' + scan.top_sell.length + '</div>';
-      scan.top_sell.forEach(function(s, i) {
-        var barW = Math.max(5, (s.s / maxCnt * 100).toFixed(0));
-        html += '<div class="scan-row">' +
-          '<span class="scan-rank">' + (i+1) + '</span>' +
-          '<span class="scan-name" title="' + esc(s.n) + '">' + esc(s.n) + '</span>' +
-          '<span class="scan-price">¥' + (s.p||0).toFixed(1) + '</span>' +
-          '<span class="scan-pct sell-num">' + (s.s||0).toLocaleString() + '件</span>' +
-          '<span class="scan-bar"><span class="scan-bar-fill sell" style="width:' + barW + '%"></span></span>' +
-        '</div>';
-      });
-      topSell.innerHTML = html;
-      topSell.style.display = '';
     }
 
     var ut = document.getElementById('scanUpdateTime');
