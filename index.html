@@ -112,26 +112,39 @@ body::before{
   background:#a855f7!important;
   box-shadow:0 0 6px #a855f7!important;
 }
-/* ── AlphaTrack 流光标题 ── */
+/* ── AlphaTrack 金属流光 ── */
 .shimmer-text {
   position: relative;
   display: inline-block;
-  overflow: hidden;
   color: var(--text);
+  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 30%, #ffffff 50%, #e8e8e8 70%, #c0c0c0 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: metalSheen 4s ease-in-out infinite;
+}
+@keyframes metalSheen {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
 }
 .shimmer-text::after {
   content: '';
   position: absolute;
-  top: 0; left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(168,85,247,.5) 40%, rgba(168,85,247,.8) 50%, rgba(168,85,247,.5) 60%, transparent 100%);
-  animation: shimmer 2.5s ease-in-out infinite;
+  top: -2px; left: -30%;
+  width: 80px;
+  height: calc(100% + 4px);
+  background: linear-gradient(105deg, transparent 40%, rgba(192,132,252,.7) 48%, rgba(255,255,255,.9) 50%, rgba(192,132,252,.7) 52%, transparent 60%);
+  transform: skewX(-20deg);
+  animation: lightSweep 3s ease-in-out infinite;
   pointer-events: none;
+  filter: blur(.5px);
 }
-@keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 150%; }
+@keyframes lightSweep {
+  0% { left: -30%; opacity: 0; }
+  15% { opacity: 1; }
+  30% { left: 120%; }
+  30.1%, 100% { left: 120%; opacity: 0; }
 }
 .nav-btn.active::after{
   content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
