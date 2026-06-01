@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-06-01",
+    "tag": "feat",
+    "title": "AI全量市场洞察 — 一次API分析8793件摘要",
+    "desc": "AI全量市场洞察 — 一次API分析8793件摘要"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 22:06"
+  },
+  {
+    "date": "2026-06-01",
     "tag": "chore",
     "title": "update buff_history.json, changelog.json, correlation_data.j",
     "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-01 21:42"
@@ -106,17 +118,5 @@
     "tag": "fix",
     "title": "删除在售量TOP10，只保留涨跌榜（涨幅+跌幅）",
     "desc": "删除在售量TOP10，只保留涨跌榜（涨幅+跌幅）"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "fix",
-    "title": "AI模型名统一为 GLM-4.7-Flash",
-    "desc": "AI模型名统一为 GLM-4.7-Flash"
-  },
-  {
-    "date": "2026-06-01",
-    "tag": "style",
-    "title": "标题改为CS图标 + SVG圆形Logo",
-    "desc": "标题改为CS图标 + SVG圆形Logo"
   }
 ]
