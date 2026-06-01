@@ -1125,9 +1125,54 @@ def generate_ai_stock_picks():
         print(f'[AI] Stock picks failed: {e}')
 
 # ═══════════════ PUSH (single atomic commit) ═══════════════
+def sync_changelog():
+    """从 git log 自动生成 changelog.json"""
+    import subprocess as _sp
+    try:
+        cf = _sp.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+        r = _sp.run(['git', 'log', '--oneline', '--date=short', '--format=%h|%ad|%s', '-30'],
+                    capture_output=True, text=True, cwd=DATA_DIR, creationflags=cf)
+        if r.returncode != 0:
+            return
+        entries = []
+        tag_map = {
+            'fix:':'fix','feat:':'feat','style:':'style','perf:':'perf','refactor:':'refactor',
+            'chore:':'chore','remove:':'fix'
+        }
+        for line in r.stdout.strip().split('\n'):
+            parts = line.split('|', 2)
+            if len(parts) < 3:
+                continue
+            sha, date, subject = parts
+            tag = 'fix'
+            for prefix, t in tag_map.items():
+                if subject.lower().startswith(prefix):
+                    tag = t
+                    subject = subject[len(prefix):].strip()
+                    break
+            # 跳过合并和琐碎提交
+            if 'Merge' in subject or 'update changelog' in subject:
+                continue
+            entries.append({
+                'date': date,
+                'tag': tag,
+                'title': subject[:60].strip(),
+                'desc': subject[61:].strip() if len(subject) > 60 else subject.strip()
+            })
+        if entries:
+            changelog_path = os.path.join(DATA_DIR, 'changelog.json')
+            write_json(changelog_path, entries[:20])  # 最多20条
+            print(f'[CHANGELOG] Auto-generated {len(entries[:20])} entries')
+    except Exception as e:
+        print(f'[CHANGELOG] Failed: {e}', file=sys.stderr)
+
 def push_all():
     """Push all dirty files in a single commit — avoids SHA conflicts"""
     dirty_files.discard('price_history.json')  # never push to GitHub
+    
+    # ── 自动同步 changelog.json（从 git log 提取）──
+    sync_changelog()
+    
     if not dirty_files:
         print('[INFO] No files changed, skipping push')
         return
