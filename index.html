@@ -1818,7 +1818,7 @@ function renderAIPanel(H) {
   var counts = { sell: 0, hold: 0, wait: 0, total: 0 };
   var decisions = [];
   H.forEach(function(h) {
-    var mk = h.mh || h.n || '';
+    var mk = h.n || h.mh || '';  // AI key 用中文名
     var txt = ai[mk];
     if (!txt) return;
     var v = (typeof txt === 'object' ? txt.verdict : (txt.match(/操作建议[:：]\s*(\S+)/)||[])[1]) || '';
@@ -1861,7 +1861,7 @@ function populateAIBadges() {
   badges.forEach(function(el) {
     var idx = parseInt(el.id.replace('aib-',''));
     if (isNaN(idx) || !H[idx]) return;
-    var name = H[idx].mh || H[idx].n || '';
+    var name = H[idx].n || H[idx].mh || '';  // AI key 用中文名
     if (name) el.innerHTML = window.aiBadgeHTML(name);
   });
 }
