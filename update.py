@@ -2103,20 +2103,43 @@ def main():
 
     # ── 衍生 price_summary + AI 分析 ──
     generate_price_summary()
-    try: generate_ai_analysis()
-    except Exception as e: print(f'[AI] Analysis failed (non-fatal): {e}', file=sys.stderr)
-    try: generate_ai_daily_report()
-    except Exception as e: print(f'[AI] Daily report failed (non-fatal): {e}', file=sys.stderr)
-    try: generate_ai_anomaly()
-    except Exception as e: print(f'[AI] Anomaly detection failed (non-fatal): {e}', file=sys.stderr)
-    try: generate_ai_stock_picks()
-    except Exception as e: print(f'[AI] Stock picks failed (non-fatal): {e}', file=sys.stderr)
-    try: generate_ai_market_insight()
-    except Exception as e: print(f'[AI] Market insight failed (non-fatal): {e}', file=sys.stderr)
-    try: generate_ai_news_impact()
-    except Exception as e: print(f'[AI] News impact failed (non-fatal): {e}', file=sys.stderr)
-    try: generate_ai_recommendations()
-    except Exception as e: print(f'[AI] Recommendations failed (non-fatal): {e}', file=sys.stderr)
+    
+    # ═══════════════ AI 分析（限流保护：每次调用间隔≥8秒） ═══════════════
+    _last_ai_call = [0]  # mutable for closure
+    
+    def _ai_call_with_rate_limit(func, name):
+        """AI 调用限流保护：确保两次调用间隔 >= 8 秒，遇到 429 重试 3 次"""
+        elapsed = time.time() - _last_ai_call[0]
+        if elapsed < 8:
+            wait = 8 - elapsed
+            print(f'[AI] Rate limit wait {wait:.0f}s...')
+            time.sleep(wait)
+        for attempt in range(3):
+            try:
+                func()
+                _last_ai_call[0] = time.time()
+                return
+            except urllib.error.HTTPError as e:
+                if e.code == 429:
+                    wait = (attempt + 1) * 10
+                    print(f'[AI] {name} 429 rate limited, waiting {wait}s (attempt {attempt+1}/3)...')
+                    time.sleep(wait)
+                else:
+                    raise
+            except Exception as e:
+                print(f'[AI] {name} failed (non-fatal): {e}', file=sys.stderr)
+                _last_ai_call[0] = time.time()
+                return
+        print(f'[AI] {name} failed after 3 retries (rate limit)', file=sys.stderr)
+        _last_ai_call[0] = time.time()
+    
+    _ai_call_with_rate_limit(generate_ai_analysis, 'Analysis')
+    _ai_call_with_rate_limit(generate_ai_daily_report, 'Daily report')
+    _ai_call_with_rate_limit(generate_ai_anomaly, 'Anomaly')
+    _ai_call_with_rate_limit(generate_ai_stock_picks, 'Stock picks')
+    _ai_call_with_rate_limit(generate_ai_market_insight, 'Market insight')
+    _ai_call_with_rate_limit(generate_ai_news_impact, 'News impact')
+    _ai_call_with_rate_limit(generate_ai_recommendations, 'Recommendations')
 
     # ── Push all dirty files at once ──
     push_all()
