@@ -2,6 +2,48 @@
   {
     "date": "2026-06-03",
     "tag": "fix",
+    "title": "AI分析加载优化 — 未就绪时显示加载中+就绪后自动刷新已展开行",
+    "desc": "AI分析加载优化 — 未就绪时显示加载中+就绪后自动刷新已展开行"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "chore",
+    "title": "market index 2026-06-02 18:06",
+    "desc": "market index 2026-06-02 18:06"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "AI匹配加固—双向子串+去空格+精确匹配三层确保命中",
+    "desc": "AI匹配加固—双向子串+去空格+精确匹配三层确保命中"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "回测板块改用holdings.json真实持仓（优先管线数据，兜底localStorage）",
+    "desc": "回测板块改用holdings.json真实持仓（优先管线数据，兜底localStorage）"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "AI调用全局限流保护 — 8秒间隔+429指数退避重试3次",
+    "desc": "AI调用全局限流保护 — 8秒间隔+429指数退避重试3次"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "持仓AI分析全部用真实AI重跑 — 30件fallback替换为AI生成",
+    "desc": "持仓AI分析全部用真实AI重跑 — 30件fallback替换为AI生成"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-03 01:43"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
     "title": "持仓AI分析补全32件 — 分批调用+超时fallback兜底",
     "desc": "持仓AI分析补全32件 — 分批调用+超时fallback兜底"
   },
@@ -76,47 +118,5 @@
     "tag": "fix",
     "title": "AI市场洞察prompt明确标明24h（上次未生效）",
     "desc": "AI市场洞察prompt明确标明24h（上次未生效）"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "AI市场洞察同步24h涨跌数据 + prompt明确标明24h",
-    "desc": "AI市场洞察同步24h涨跌数据 + prompt明确标明24h"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "涨跌榜改为对比1天前价格 + 标签改为24h",
-    "desc": "涨跌榜改为对比1天前价格 + 标签改为24h"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "涨跌榜7日计算修正 — 从全历史跨度改为真正的7天前价格对比",
-    "desc": "涨跌榜7日计算修正 — 从全历史跨度改为真正的7天前价格对比"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "数据时间读取字段名修正 update_time→updated",
-    "desc": "数据时间读取字段名修正 update_time→updated"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-03 00:44"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "chore",
-    "title": "force GitHub Pages cache purge 00:43",
-    "desc": "force GitHub Pages cache purge 00:43"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "PYTHONIOENCODING=utf-8 — 计划任务GBK环境强制UTF-8输出",
-    "desc": "PYTHONIOENCODING=utf-8 — 计划任务GBK环境强制UTF-8输出"
   }
 ]
