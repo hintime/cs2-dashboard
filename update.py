@@ -12,6 +12,11 @@ CS2 Dashboard 数据更新脚本 (优化版)
 - 批量处理
 """
 import json, time, base64, urllib.request, urllib.error, urllib.parse, subprocess, os, sys, ssl, gzip, socket, shutil
+
+# ── 计划任务 GBK 兼容：强制 UTF-8 ──
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+sys.stdout.reconfigure(encoding='utf-8', errors='replace') if hasattr(sys.stdout, 'reconfigure') else None
+sys.stderr.reconfigure(encoding='utf-8', errors='replace') if hasattr(sys.stderr, 'reconfigure') else None
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
