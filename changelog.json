@@ -2,6 +2,18 @@
   {
     "date": "2026-06-02",
     "tag": "chore",
+    "title": "market index 2026-06-02 03:33",
+    "desc": "market index 2026-06-02 03:33"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 11:13"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "chore",
     "title": "update buff_history.json, changelog.json, correlation_data.j",
     "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 11:07"
   },
@@ -106,17 +118,5 @@
     "tag": "fix",
     "title": "ai_anomaly max_tokens 300→2000 + 重新生成市场洞察和空投监控",
     "desc": "ai_anomaly max_tokens 300→2000 + 重新生成市场洞察和空投监控"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "update ai_news_impact.json, buff_history.json, changelog.jso",
-    "desc": ", correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 00:12"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "fix",
-    "title": "glm-4.7-flash max_tokens→2000（思考模式需要更多token）",
-    "desc": "glm-4.7-flash max_tokens→2000（思考模式需要更多token）"
   }
 ]
