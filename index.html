@@ -146,6 +146,8 @@ body::before{
   30% { left: 120%; }
   30.1%, 100% { left: 120%; opacity: 0; }
 }
+@keyframes ai-spin { to { transform: rotate(360deg); } }
+.ai-spinner { width: 14px; height: 14px; border: 2px solid rgba(168,85,247,.3); border-top-color: #c084fc; border-radius: 50%; animation: ai-spin .8s linear infinite; display: inline-block; }
 .nav-btn.active::after{
   content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
   width:20px;height:2px;background:var(--blue);border-radius:1px;
@@ -3962,11 +3964,21 @@ function buildItemAnalysisHTML(item) {
           }
         }
       }
-      // 如果 AI 数据还没加载，显示加载中
+      // 如果 AI 数据还没加载
       if (!aiText) {
         var aiCount = Object.keys(ai).filter(function(k){ return !k.startsWith('_'); }).length;
+        if (aiCount === 0) {
+          // AI 文件还没下载完
+          return '<div class="ra-reason" style="border-left-color:#a78bfa;margin-top:8px;background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(59,130,246,.04));opacity:.85" id="ai-loading-row">' +
+            '<div style="display:flex;align-items:center;gap:8px">' +
+              '<span class="ai-spinner"></span>' +
+              '<span style="font-size:11px;color:#c084fc;font-weight:600">AI 分析加载中...</span>' +
+              '<button onclick="event.stopPropagation();var p=this.closest(\'.ra-reason\');if(p)p.innerHTML=\'<span style=font-size:11px;color:var(--text3)>AI 未就绪</span>\'" style="margin-left:auto;background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.3);font-size:10px;padding:2px 8px;border-radius:6px;cursor:pointer">跳过</button>' +
+            '</div></div>';
+        }
+        // AI 已加载但没匹配到
         return '<div class="ra-reason" style="border-left-color:#a78bfa;margin-top:8px;background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(59,130,246,.04));opacity:.7">' +
-          '<span style="font-size:11px;color:var(--text3)">🤖 AI 分析加载中...</span></div>';
+          '<span style="font-size:11px;color:var(--text3)">🤖 暂无 AI 分析数据</span></div>';
       }
       var v, c, reason, risk;
       if (typeof aiText === 'object') {
