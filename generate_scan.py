@@ -131,19 +131,33 @@ def main():
     try:
         ph = read_json(ph_file)
         gains = []
+        # 取 7 天前的价格做对比（非整个历史跨度）
+        cutoff = time.time() - 7 * 86400  # 7天前的 Unix timestamp
         for name, h in ph.items():
             if not isinstance(h, dict): continue
-            # ECO 价格序列 (format: [{t: str, p: float}, ...])
             raw_eco = h.get('eco') or []
-            eco_prices = [e['p'] for e in raw_eco if isinstance(e, dict) and e.get('p', 0) > 0]
-            if len(eco_prices) < 2: continue
-            first_p, last_p = eco_prices[0], eco_prices[-1]
-            eco_chg = 0
-            if first_p > 0:
-                eco_chg = (last_p - first_p) / first_p * 100
+            eco_prices = [(e.get('t',''), e.get('p',0)) for e in raw_eco if isinstance(e, dict) and e.get('p', 0) > 0]
+            if len(eco_prices) < 30: continue  # 数据不足，跳过
+            last_p = eco_prices[-1][1]
+            # 找最接近 7 天前的价格
+            prev_p = 0
+            best_diff = None
+            for ts, p in eco_prices[:-1]:
+                try:
+                    t = time.mktime(time.strptime(ts[:16], '%Y-%m-%dT%H:%M')) if 'T' in ts else time.mktime(time.strptime(ts[:16], '%Y-%m-%d %H:%M'))
+                except:
+                    continue
+                diff = abs(t - cutoff)
+                if best_diff is None or diff < best_diff:
+                    best_diff = diff
+                    prev_p = p
+            if prev_p <= 0 or last_p <= 0: continue
+            # 要求 7 天前价格在 ±1.5 天内
+            if best_diff is None or best_diff > 129600: continue  # 1.5 days
+            eco_chg = (last_p - prev_p) / prev_p * 100
             if abs(eco_chg) < 0.01: continue
             cn = name_map.get(name, name)
-            gains.append((cn[:24], round(eco_chg, 1), eco_prices[-1] if eco_prices else 0))
+            gains.append((cn[:24], round(eco_chg, 1), last_p))
         gains.sort(key=lambda x: x[1], reverse=True)
         gainers = [{'n': g[0], 'r7': g[1], 'p': g[2]} for g in gains if g[1] > 0][:10]
         losers = [{'n': g[0], 'r7': g[1], 'p': g[2]} for g in gains if g[1] < 0][-10:][::-1]
