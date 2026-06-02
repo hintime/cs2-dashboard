@@ -65,9 +65,9 @@ try:
     result = {'date': time.strftime('%Y-%m-%d %H:%M'), 'insight': insight,
               'stats': {'total': total, 'avg_p': avg_p, 'median_p': median_p}}
     write_json(os.path.join(DATA_DIR, 'ai_market_insight.json'), result)
-    print(f'  ✅ 生成 {len(insight)} 字: {insight[:80]}...')
+    print(f'  [OK] 生成 {len(insight)} 字: {insight[:80]}...')
 except Exception as e:
-    print(f'  ❌ 失败: {e}')
+    print(f'  [X] 失败: {e}')
 
 # ── 2. AI 异动分析 ──
 print('[2/3] AI 异动分析...')
@@ -100,13 +100,13 @@ try:
             analysis = call_glm(prompt, system='你是CS2饰品市场分析师。简洁分析在售量异动原因。', max_tokens=2000)
             result = {'anomalies': [{'name': n, 'pct': round(pct, 1)} for n, pct, _, _ in top], 'analysis': analysis}
             write_json(os.path.join(DATA_DIR, 'ai_anomaly.json'), result)
-            print(f'  ✅ 分析 {len(top)} 件异动: {analysis[:80]}...')
+            print(f'  [OK] 分析 {len(top)} 件异动: {analysis[:80]}...')
         else:
-            print('  ⚠️ 无显著异动（>10%）')
+            print('  [!]️ 无显著异动（>10%）')
     else:
-        print('  ⚠️ buff_history.json 数据不足')
+        print('  [!]️ buff_history.json 数据不足')
 except Exception as e:
-    print(f'  ❌ 失败: {e}')
+    print(f'  [X] 失败: {e}')
 
 # ── 3. AI 空投监控 ──
 print('[3/4] AI 空投监控...')
@@ -135,13 +135,13 @@ try:
             result = {'date': time.strftime('%Y-%m-%d %H:%M'), 'impact': impact,
                       'headlines': [h[:80] for h in headlines[:3]]}
             write_json(os.path.join(DATA_DIR, 'ai_news_impact.json'), result)
-            print(f'  ✅ 生成 {len(impact)} 字: {impact[:80]}...')
+            print(f'  [OK] 生成 {len(impact)} 字: {impact[:80]}...')
         else:
-            print('  ⚠️ news.json 无有效标题')
+            print('  [!]️ news.json 无有效标题')
     else:
-        print('  ⚠️ news.json 不存在')
+        print('  [!]️ news.json 不存在')
 except Exception as e:
-    print(f'  ❌ 失败: {e}')
+    print(f'  [X] 失败: {e}')
 
 # ── 4. AI 购买推荐分析 ──
 print('[4/4] AI 购买推荐分析...')
@@ -208,11 +208,11 @@ try:
         picks['date'] = time.strftime('%Y-%m-%d %H:%M')
         picks['total_candidates'] = len(candidates)
         write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), picks)
-        print(f'  ✅ 选出 {len(picks.get("picks",[]))} 件: {picks.get("strategy","")[:60]}...')
+        print(f'  [OK] 选出 {len(picks.get("picks",[]))} 件: {picks.get("strategy","")[:60]}...')
     else:
-        print('  ⚠️ 无推荐数据')
+        print('  [!]️ 无推荐数据')
 except Exception as e:
-    print(f'  ❌ 失败: {e}')
+    print(f'  [X] 失败: {e}')
 
 print('='*50)
 print('AI 生成完成！')

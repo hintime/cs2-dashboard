@@ -975,11 +975,11 @@ def generate_ai_analysis():
         
         if results:
             write_json(os.path.join(DATA_DIR, 'ai_analysis.json'), results)
-            print(f'[AI] ✅ {len(results)} items analyzed (1 API call)')
+            print(f'[AI] [OK] {len(results)} items analyzed (1 API call)')
             if summary:
-                print(f'[AI] 📊 {summary[:60]}')
+                print(f'[AI]  {summary[:60]}')
     except Exception as e:
-        print(f'[AI] ❌ Batch failed: {e}, falling back to individual...')
+        print(f'[AI] [X] Batch failed: {e}, falling back to individual...')
         # Fallback: 逐件分析
         results = {}
         for i, item in enumerate(items):  # 全部持仓
@@ -1007,10 +1007,10 @@ def generate_ai_analysis():
                 # 转为文本兼容旧格式
                 v = item_result.get('verdict',''); c = item_result.get('confidence',0)
                 rsn = item_result.get('reason',''); risk = item_result.get('risk','')
-                results[name] = f'🎯 操作建议: {v}\n置信度: {c}\n📊 核心逻辑: {rsn}\n⚠️ 风险: {risk}'
-                print(f'[AI] {i+1}/5 ✅ {name[:30]}')
+                results[name] = f' 操作建议: {v}\n置信度: {c}\n 核心逻辑: {rsn}\n[!]️ 风险: {risk}'
+                print(f'[AI] {i+1}/5 [OK] {name[:30]}')
             except Exception as e2:
-                print(f'[AI] ❌ {name[:30]}: {e2}')
+                print(f'[AI] [X] {name[:30]}: {e2}')
         if results:
             write_json(os.path.join(DATA_DIR, 'ai_analysis.json'), results)
             print(f'[AI] Saved {len(results)} (fallback mode)')
@@ -1411,20 +1411,30 @@ def github_push_file(path, content_str, message):
 def git_push_locally(files, message):
     """Push via local git in a single commit (token-based auth, no popup)"""
     git_env = {**os.environ, 'GCM_INTERACTIVE': 'never', 'GIT_TERMINAL_PROMPT': '0', 'GIT_ASKPASS': 'echo'}
-    # Hide git console window on Windows
     cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
     for f in files:
         subprocess.run(['git', 'add', '-f', f], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
     subprocess.run(['git', 'commit', '-m', message], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
-    # 用 Token 认证（如果是本地运行），否则 fallback 到 credential manager
+    # Push: 优先 Token，fallback 到空 credential helper
     if GH_TOKEN:
         push_cmd = ['git', '-c', f'http.extraHeader=Authorization: Bearer {GH_TOKEN}',
                     '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push', 'origin', 'main']
     else:
-        push_cmd = ['git', '-c', 'credential.helper=manager',
-                    '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push']
-    subprocess.run(push_cmd, check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
-    print(f'[OK] Git pushed: {message}')
+        push_cmd = ['git', '-c', 'credential.helper=', '-c', 'http.sslBackend=openssl',
+                    '-c', 'http.sslVerify=false', 'push', 'origin', 'main']
+    result = subprocess.run(push_cmd, capture_output=True, text=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+    if result.returncode == 0:
+        print(f'[OK] Git pushed: {message}')
+    else:
+        # Fallback: try without any credential helper
+        print(f'[WARN] Git push failed (rc={result.returncode}), retrying with empty cred...', file=sys.stderr)
+        push_cmd2 = ['git', '-c', 'credential.helper=', '-c', 'http.sslBackend=openssl',
+                     '-c', 'http.sslVerify=false', 'push', 'origin', 'main']
+        result2 = subprocess.run(push_cmd2, capture_output=True, text=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+        if result2.returncode == 0:
+            print(f'[OK] Git pushed (fallback): {message}')
+        else:
+            print(f'[ERROR] Git push failed: {result2.stderr.strip()[:200]}', file=sys.stderr)
 
 # ═══════════════ MAIN ═══════════════
 def main():
@@ -1435,7 +1445,9 @@ def main():
     cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
     try:
         subprocess.run(['git', 'stash'], check=False, cwd=DATA_DIR, env=git_env, creationflags=cf, capture_output=True)
-        subprocess.run(['git', '-c', 'credential.helper=', 'pull', '--rebase', 'origin', 'main'], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf, capture_output=True)
+        subprocess.run(['git', '-c', 'credential.helper=', '-c', 'http.sslBackend=openssl',
+                       '-c', 'http.sslVerify=false', 'pull', '--rebase', 'origin', 'main'],
+                       check=True, cwd=DATA_DIR, env=git_env, creationflags=cf, capture_output=True)
     except Exception as e:
         print(f'[WARN] Git sync failed: {e}', file=sys.stderr)
 
@@ -1719,7 +1731,7 @@ def main():
 
                 # 自动检测：BUFF/YYYP 覆盖率过低时保留旧数据
                 if merged > 0 and merged < len(tracked) * 0.5:
-                    print(f'[CSQAQ] ⚠️ 覆盖率仅 {merged/len(tracked)*100:.0f}%（<50%），尝试恢复备份！')
+                    print(f'[CSQAQ] [!]️ 覆盖率仅 {merged/len(tracked)*100:.0f}%（<50%），尝试恢复备份！')
                     # 尝试从备份恢复（.bak 是build前备份的带BUFF数据的老文件）
                     bak_path = tracked_path + '.bak'
                     if os.path.exists(bak_path):
