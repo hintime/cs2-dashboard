@@ -1438,7 +1438,6 @@ async function loadAll() {
     if (confidence) tip += ' (置信度' + confidence + ')';
     if (reason) tip += '\n理由: ' + reason;
     if (risk) tip += '\n风险: ' + risk;
-    if (entryLow > 0 && entryHigh > 0) tip += '\n建议入场: ' + entryLow + ' ~ ' + entryHigh;
     return '<span class="ai-table-badge '+cls+'" title="' + esc(tip) + '">🤖 ' + v + (confidence ? ' ' + confidence + '%' : '') + '</span>';
   };
   // 未登录不显示任何持仓数据
