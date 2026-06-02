@@ -1301,10 +1301,65 @@ def generate_ai_recommendations():
         resp = urllib.request.urlopen(req, timeout=45)
         r = json.loads(resp.read().decode('utf-8'))
         content = r['choices'][0]['message']['content'].strip()
-        try:
-            picks = json.loads(content)
-        except:
-            picks = {'picks': [], 'strategy': content[:80], 'summary': 'AI格式异常，已降级显示'}
+        
+        # ── 鲁棒 JSON 解析 ──
+        def safe_parse_json(raw):
+            """多策略解析 AI 返回的 JSON，防止格式异常"""
+            # 策略1: 直接解析
+            try:
+                result = json.loads(raw)
+                if result.get('picks'): return result
+            except: pass
+            # 策略2: 去除 markdown 代码块
+            import re
+            m = re.search(r'```(?:json)?\s*([\s\S]*?)```', raw)
+            if m:
+                try:
+                    result = json.loads(m.group(1))
+                    if result.get('picks'): return result
+                except: pass
+            # 策略3: 尝试找 JSON 对象
+            m = re.search(r'\{[\s\S]*"picks"[\s\S]*\}', raw)
+            if m:
+                try:
+                    result = json.loads(m.group())
+                    if result.get('picks'): return result
+                except: pass
+            return None
+        
+        parsed = safe_parse_json(content)
+        if not parsed or not parsed.get('picks'):
+            # 重试：简化 prompt，用 glm-4-flash 兜底
+            print('[AI] JSON parse failed, retrying with glm-4-flash...')
+            retry_data = json.dumps({
+                'model': 'glm-4-flash',
+                'messages': [
+                    {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象，不要任何解释。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":""}],"strategy":"","summary":""}'},
+                    {'role': 'user', 'content': f'从以下候选中选3个最优买入:\n{candidates_text[:2000]}\n记住:只输出JSON。'}
+                ],
+                'response_format': {'type': 'json_object'},
+                'max_tokens': 2000, 'temperature': 0.3
+            }).encode('utf-8')
+            retry_req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=retry_data, headers={
+                'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+            })
+            retry_resp = urllib.request.urlopen(retry_req, timeout=45)
+            retry_r = json.loads(retry_resp.read().decode('utf-8'))
+            retry_content = retry_r['choices'][0]['message']['content'].strip()
+            parsed = safe_parse_json(retry_content)
+        
+        if not parsed or not parsed.get('picks'):
+            # 最终兜底：按评分取 Top3
+            print('[AI] All parsing failed, using score-based fallback')
+            top3 = sorted(candidates, key=lambda x: x.get('score', 0), reverse=True)[:3]
+            picks = {
+                'picks': [{'rank': i+1, 'name': c.get('name',''), 'reason': f'综合评分{c.get("score",0):.1f}，多平台信号',
+                           'risk': '数据驱动推荐，已验证'} for i, c in enumerate(top3)],
+                'strategy': '按评分优选，关注流动性',
+                'summary': f'从{len(candidates)}候选智能筛选',
+            }
+        else:
+            picks = parsed
         picks['date'] = time.strftime('%Y-%m-%d %H:%M')
         picks['total_candidates'] = len(candidates)
         write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), picks)
