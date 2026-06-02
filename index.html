@@ -3961,15 +3961,32 @@ function buildItemAnalysisHTML(item) {
         reason = (aiText.match(/核心逻辑[:：]\s*(.+)/)||[])[1]||'';
         risk = (aiText.match(/风险[:：]\s*(.+)/)||[])[1]||'';
       }
-      var vc = v.includes('减仓')||v.includes('卖出') ? 'var(--rise)' : v.includes('持有')||v.includes('加仓') ? 'var(--fall)' : 'var(--amber)';
-      return '<div class="ra-reason" style="border-left-color:#a78bfa;margin-top:8px;background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(59,130,246,.04))">' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
-          '<span style="font-size:10px;background:rgba(168,85,247,.2);color:#c084fc;padding:2px 8px;border-radius:10px;font-weight:700">🤖 智谱AI</span>' +
-          '<span style="font-size:13px;font-weight:700;color:' + vc + '">' + (v||'--') + '</span>' +
-          '<span style="font-size:10px;color:var(--text3)">置信 ' + (c||0) + '/100</span>' +
+      var vc = v.includes('减仓')||v.includes('卖出') ? '#ff6b6b' : v.includes('持有')||v.includes('加仓') ? '#4ade80' : '#fbbf24';
+      var vb = v.includes('减仓')||v.includes('卖出') ? 'rgba(255,107,107,.15)' : v.includes('持有')||v.includes('加仓') ? 'rgba(74,222,128,.15)' : 'rgba(251,191,36,.15)';
+      return '<div style="margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid rgba(168,85,247,.3);box-shadow:0 0 20px rgba(168,85,247,.08)">' +
+        // 头部：AI 标识
+        '<div style="background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(99,102,241,.15));padding:10px 14px;display:flex;align-items:center;gap:10px">' +
+          '<span style="font-size:12px;background:linear-gradient(135deg,#c084fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800">🤖 AI 持仓分析</span>' +
+          '<span style="flex:1"></span>' +
+          '<span style="font-size:14px;font-weight:800;color:' + vc + ';background:' + vb + ';padding:3px 12px;border-radius:6px">' + (v||'--') + '</span>' +
+          '<span style="font-size:10px;color:var(--text3)">置信度 ' + (c||0) + '%</span>' +
         '</div>' +
-        (reason ? '<div style="font-size:11px;color:var(--text2);line-height:1.5">' + reason + '</div>' : '') +
-        (risk ? '<div style="font-size:11px;color:var(--rise);line-height:1.5;margin-top:4px">⚠️ ' + risk + '</div>' : '') +
+        // 内容区
+        '<div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">' +
+          // 理由
+          (reason ? '<div style="display:flex;gap:8px;align-items:flex-start">' +
+            '<span style="font-size:14px;flex-shrink:0;margin-top:1px">💡</span>' +
+            '<div style="flex:1"><div style="font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">分析理由</div>' +
+            '<div style="font-size:12px;color:var(--text);line-height:1.6">' + reason + '</div></div>' +
+          '</div>' : '') +
+          // 风险
+          (risk ? '<div style="display:flex;gap:8px;align-items:flex-start">' +
+            '<span style="font-size:14px;flex-shrink:0;margin-top:1px">⚠️</span>' +
+            '<div style="flex:1"><div style="font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">风险提示</div>' +
+            '<div style="font-size:12px;color:#ff6b6b;line-height:1.6">' + risk + '</div></div>' +
+          '</div>' : '') +
+        '</div>' +
+      '</div>';
       '</div>';
     })() +
     '</div>';
