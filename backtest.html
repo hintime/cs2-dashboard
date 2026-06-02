@@ -82,23 +82,8 @@ function esc(s) {
 // ── 加载持仓 + 渲染回测（优先用 localStorage，保持一致） ──
 function loadBacktest() {
   var t0 = Date.now();
-  // 先从 localStorage 读取持仓（和主页保持一致）
-  var localH = null;
-  try {
-    var raw = localStorage.getItem('cs2_holdings');
-    if (raw) localH = JSON.parse(raw);
-  } catch(_) {}
-  if (localH && localH.length) {
-    H = [];
-    localH.forEach(function(item) {
-      var q = item.q || item.qty || 1, c = item.c || item.cost || 0;
-      var cp = q > 0 ? c / q : 0;
-      H.push({ n:item.n||item.name, w:item.w||item.wear||'', c:cp, p:item.p||item.price||0,
-        pnl:item.pnl||0, pnlPct:item.pnlPct||0, mh:item.mh||item.market_hash||item.n,
-        price_history:item.price_history||[] });
-    });
-  }
-  // 兜底：从 holdings.json 补充
+  H = [];
+  // 直接从 holdings.json 读取真实持仓
   Promise.all([
     fetch('holdings.json?v=' + t0).then(function(r){return r.ok?r.json():null}).catch(function(){return null}),
     fetch('eco_tracked.json?v=' + t0).then(function(r){return r.ok?r.json():[]}).catch(function(){return []}),
@@ -109,13 +94,7 @@ function loadBacktest() {
     var bh = results[2] || {};
     window._buffHistory = bh;
 
-    // 如果本地方案已经有 H，跳过 holdings.json 兜底
-    if (H.length === 0) {
-      if (!holdingsR || !Array.isArray(holdingsR.items)) {
-        document.getElementById('backtestContent').innerHTML = '<div class="empty">暂无持仓数据</div>';
-        document.getElementById('btInfo').textContent = '无数据';
-        return;
-      }
+    if (holdingsR && Array.isArray(holdingsR.items)) {
       holdingsR.items.forEach(function(item) {
         var q = item.qty || 1;
         var costTotal = item.cost;
@@ -130,6 +109,28 @@ function loadBacktest() {
           });
         }
       });
+    } else {
+      // 兜底：holdings.json 无数据，降级到 localStorage
+      try {
+        var raw = localStorage.getItem('cs2_holdings');
+        if (raw) {
+          var localH = JSON.parse(raw);
+          if (localH && localH.length) {
+            localH.forEach(function(item) {
+              var q = item.q || item.qty || 1, c = item.c || item.cost || 0;
+              var cp = q > 0 ? c / q : 0;
+              H.push({ n:item.n||item.name, w:item.w||item.wear||'', c:cp, p:item.p||item.price||0,
+                pnl:item.pnl||0, pnlPct:item.pnlPct||0, mh:item.mh||item.market_hash||item.n,
+                price_history:item.price_history||[] });
+            });
+          }
+        }
+      } catch(_) {}
+    }
+    if (H.length === 0) {
+      document.getElementById('backtestContent').innerHTML = '<div class="empty">暂无持仓数据</div>';
+      document.getElementById('btInfo').textContent = '无数据';
+      return;
     }
 
     // 用 price_summary.json 补充缺失的价格历史
