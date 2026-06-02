@@ -1410,6 +1410,15 @@ async function loadAll() {
   // 加载 AI 分析数据
   fetch('ai_analysis.json?v=' + t0, fetchOpts).then(r => r.json()).then(function(ai) {
     window._aiAnalysis = ai || {};
+    // 刷新已展开的分析行
+    var openRows = document.querySelectorAll('.row-analysis.open');
+    for (var ri = 0; ri < openRows.length; ri++) {
+      var td = openRows[ri].firstChild;
+      var tr = openRows[ri].previousElementSibling;
+      if (tr && tr._item && td) {
+        td.innerHTML = buildItemAnalysisHTML(tr._item);
+      }
+    }
     document.dispatchEvent(new CustomEvent('ai-loaded'));
   }).catch(function() { window._aiAnalysis = {}; });
   // AI 徽章内联渲染
@@ -3953,7 +3962,12 @@ function buildItemAnalysisHTML(item) {
           }
         }
       }
-      if (!aiText) return '';
+      // 如果 AI 数据还没加载，显示加载中
+      if (!aiText) {
+        var aiCount = Object.keys(ai).filter(function(k){ return !k.startsWith('_'); }).length;
+        return '<div class="ra-reason" style="border-left-color:#a78bfa;margin-top:8px;background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(59,130,246,.04));opacity:.7">' +
+          '<span style="font-size:11px;color:var(--text3)">🤖 AI 分析加载中...</span></div>';
+      }
       var v, c, reason, risk;
       if (typeof aiText === 'object') {
         v = aiText.verdict || ''; c = aiText.confidence || 0;
