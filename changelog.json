@@ -2,6 +2,42 @@
   {
     "date": "2026-06-03",
     "tag": "fix",
+    "title": "AI推荐分析prompt加强 — 要求50-60字理由+30-40字风险+引用具体数据",
+    "desc": "AI推荐分析prompt加强 — 要求50-60字理由+30-40字风险+引用具体数据"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "AI推荐JSON解析三重加固 — 去markdown+重试glm-4-flash+评分兜底",
+    "desc": "AI推荐JSON解析三重加固 — 去markdown+重试glm-4-flash+评分兜底"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "持仓AI tooltip去掉入场价位（已持有，入场无意义）",
+    "desc": "持仓AI tooltip去掉入场价位（已持有，入场无意义）"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "AI推荐分析重新生成 — 上轮管线JSON解析失败导致空数据",
+    "desc": "AI推荐分析重新生成 — 上轮管线JSON解析失败导致空数据"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "feat",
+    "title": "持仓AI徽章显示置信度+理由+风险+入场价位（hover tooltip）",
+    "desc": "持仓AI徽章显示置信度+理由+风险+入场价位（hover tooltip）"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-03 01:07"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
     "title": "AI市场洞察prompt明确标明24h（上次未生效）",
     "desc": "AI市场洞察prompt明确标明24h（上次未生效）"
   },
@@ -82,41 +118,5 @@
     "tag": "chore",
     "title": "update buff_history.json, changelog.json, correlation_data.j",
     "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 22:08"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "market index 2026-06-02 13:58",
-    "desc": "market index 2026-06-02 13:58"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "update buff_history.json, changelog.json, correlation_data.j",
-    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 21:44"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 21:17"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "update buff_history.json, changelog.json, correlation_data.j",
-    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 21:10"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 20:44"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "update buff_history.json, changelog.json, correlation_data.j",
-    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 20:13"
   }
 ]
