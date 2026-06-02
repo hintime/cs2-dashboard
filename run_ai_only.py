@@ -196,9 +196,9 @@ try:
             f'{context}\n'
             f'【推荐候选 Top20】\n{candidates_text}\n\n'
             f'请用以下格式输出（严格JSON）：\n'
-            f'{{"picks":[{{"rank":1,"name":"饰品名","reason":"买入理由30字以内","risk":"风险提示20字以内"}},...],'
-            f'"strategy":"一句话投资策略建议30字","summary":"总览分析20字"}}\n'
-            f'要求：picks选最好的3-5个，综合考虑评分、流动性、溢价率、市场背景，不选高风险低流动性品种。'
+            f'{{"picks":[{{"rank":1,"name":"饰品名","reason":"买入理由50-60字，引用具体数据","risk":"风险30-40字，针对该饰品"}},...],'
+            f'"strategy":"投资策略","summary":"总览"}}\n'
+            f'要求：picks选最好的3-5个。reason具体引用评分和溢价数据，risk针对性写，不要模板化。'
         )
         content = call_glm(prompt, system='你是CS2饰品投资分析师。只返回JSON格式。', max_tokens=2000, temperature=0.3)
         try:

@@ -1285,9 +1285,9 @@ def generate_ai_recommendations():
             f'{context}\n'
             f'【推荐候选 Top20】\n{candidates_text}\n\n'
             f'请用以下格式输出（严格JSON）：\n'
-            f'{{"picks":[{{"rank":1,"name":"饰品名","reason":"买入理由30字以内","risk":"风险提示20字以内"}},...],'
-            f'"strategy":"一句话投资策略建议30字","summary":"总览分析20字"}}\n'
-            f'要求：picks选最好的3-5个，综合考虑评分、流动性、溢价率、市场背景。'
+            f'{{"picks":[{{"rank":1,"name":"饰品名","reason":"买入理由50-60字，需具体：评分多少、哪个平台溢价、流动性如何、什么策略","risk":"风险30-40字，需具体：什么情况会跌、回调概率、流动性风险"}},...],'
+            f'"strategy":"20-30字投资策略","summary":"15-20字市场总览"}}\n'
+            f'要求：picks选最好的3-5个。reason引用具体数据（评分、溢价率、在售量），不要模板化。risk要针对该饰品写，不要通用话术。'
         )
         data = json.dumps({
             'model': 'glm-4.7-flash',
