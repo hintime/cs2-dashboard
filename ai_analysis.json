@@ -1,26 +1,258 @@
 {
   "法玛斯 | 纪念碑 (崭新出厂)": {
-    "verdict": "减仓",
-    "confidence": 85,
-    "reason": "深度亏损且近期反弹，建议趁势止损减仓。",
-    "risk": "反弹可能结束，继续面临下跌风险。",
-    "entryLow": 300,
-    "entryHigh": 411
+    "verdict": "持有",
+    "confidence": 65,
+    "reason": "近期反弹强劲，深套状态下建议等待进一步回升。",
+    "risk": "长期下跌趋势未完全扭转，可能再次探底。",
+    "entryLow": 380,
+    "entryHigh": 450
   },
   "“蓝莓” 铅弹 | 海军水面战中心海豹部队": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "探员类饰品流动性一般，利用短期反弹割肉止损。",
-    "risk": "需求较低，可能难以快速成交。",
+    "verdict": "观望",
+    "confidence": 70,
+    "reason": "亏损严重且反弹力度一般，不宜盲目补仓。",
+    "risk": "流动性较差，解套周期可能非常漫长。",
     "entryLow": 100,
-    "entryHigh": 115
+    "entryHigh": 130
   },
   "沙哈马特教授 | 精锐分子": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "亏损严重且探员市场冷清，逢高减仓为佳。",
-    "risk": "长期可能阴跌，流动性差。",
+    "verdict": "观望",
+    "confidence": 75,
+    "reason": "跌幅巨大，短期反弹微弱，缺乏上涨动能。",
+    "risk": "冷门角色饰品，市场关注度低，难以大幅回升。",
     "entryLow": 45,
-    "entryHigh": 53
+    "entryHigh": 60
+  },
+  "M4A1消音版 | 苔藓石英 (崭新出厂)": {
+    "verdict": "持有",
+    "confidence": 70,
+    "reason": "近期反弹明显，亏损相对可控，有继续修复趋势。",
+    "risk": "大盘若走弱可能跟随下调。",
+    "entryLow": 900,
+    "entryHigh": 1000
+  },
+  "UMP-45 | 炽烈之炎 (崭新出厂)": {
+    "verdict": "减仓",
+    "confidence": 75,
+    "reason": "近7日仍在下跌且深套，建议止损部分以释放资金。",
+    "risk": "下跌趋势未见底，持续阴跌风险大。",
+    "entryLow": 160,
+    "entryHigh": 190
+  },
+  "印花 | FaZe Clan（全息）| 2024年上海锦标赛": {
+    "verdict": "观望",
+    "confidence": 80,
+    "reason": "印花市场波动剧烈，深套状态下建议卧倒不动。",
+    "risk": "赛事过后印花价值通常会逐渐流失。",
+    "entryLow": 30,
+    "entryHigh": 40
+  },
+  "P2000 | 火灵 (崭新出厂)": {
+    "verdict": "持有",
+    "confidence": 75,
+    "reason": "短期反弹势头强劲，可期待收复更多失地。",
+    "risk": "30日跌幅仍较大，反弹可能遇到阻力。",
+    "entryLow": 850,
+    "entryHigh": 950
+  },
+  "海军上尉里克索尔 | 海军水面战中心海豹部队": {
+    "verdict": "持有",
+    "confidence": 65,
+    "reason": "7日反弹超30%，短期有资金关注，暂持。",
+    "risk": "整体跌幅深，反弹可能难以持续。",
+    "entryLow": 150,
+    "entryHigh": 190
+  },
+  "M4A4 | 多边形编辑 (略有磨损)": {
+    "verdict": "观望",
+    "confidence": 70,
+    "reason": "反弹极弱，市场活跃度低，缺乏操作空间。",
+    "risk": "冷门皮肤难以快速解套。",
+    "entryLow": 100,
+    "entryHigh": 120
+  },
+  "印花 | Natus Vincere（全息）| 2024年上海锦标赛": {
+    "verdict": "观望",
+    "confidence": 80,
+    "reason": "亏损极大，印花类资产需等待周期轮动。",
+    "risk": "新印花供应量大，价格承压。",
+    "entryLow": 25,
+    "entryHigh": 35
+  },
+  "印花 | HEROIC（全息）| 2024年上海锦标赛": {
+    "verdict": "观望",
+    "confidence": 80,
+    "reason": "深套状态，短期反弹不足以改变整体弱势。",
+    "risk": "战队表现及市场需求直接影响价格，不确定性高。",
+    "entryLow": 30,
+    "entryHigh": 42
+  },
+  "M4A4 | 炼狱之火 (略有磨损)": {
+    "verdict": "观望",
+    "confidence": 65,
+    "reason": "反弹力度一般，建议观察后续走势再做决定。",
+    "risk": "30日跌幅较大，可能继续震荡筑底。",
+    "entryLow": 360,
+    "entryHigh": 410
+  },
+  "M4A4 | 都市 DDPAT (崭新出厂)": {
+    "verdict": "持有",
+    "confidence": 75,
+    "reason": "亏损较小且近期强势反弹，有望率先解套。",
+    "risk": "前期跌幅带来的抛压可能显现。",
+    "entryLow": 300,
+    "entryHigh": 350
+  },
+  "摩托手套（★） | 第三特种兵连 (久经沙场)": {
+    "verdict": "观望",
+    "confidence": 70,
+    "reason": "手套流动性较差，近期微跌，建议耐心等待。",
+    "risk": "变现难度较高，急用资金可能需折价出售。",
+    "entryLow": 280,
+    "entryHigh": 320
+  },
+  "加利尔 AR | 破坏者 (崭新出厂)": {
+    "verdict": "观望",
+    "confidence": 65,
+    "reason": "30日暴跌超35%，短期反弹难以扭转颓势。",
+    "risk": "波动极大，容易再次回落。",
+    "entryLow": 150,
+    "entryHigh": 180
+  },
+  "印花 | Evil Geniuses （全息） | 2021年斯德哥尔摩锦标赛": {
+    "verdict": "观望",
+    "confidence": 75,
+    "reason": "老印花深套，短期反弹微弱，适合长线死扛。",
+    "risk": "战队已过巅峰期，印花升值潜力有限。",
+    "entryLow": 35,
+    "entryHigh": 45
+  },
+  "印花 | GamerLegion（全息）| 2025年布达佩斯锦标赛": {
+    "verdict": "观望",
+    "confidence": 70,
+    "reason": "新印花波动极大，7日反弹超50%但依然深套。",
+    "risk": "炒作资金撤退后可能再次暴跌。",
+    "entryLow": 15,
+    "entryHigh": 25
+  },
+  "M4A4 | 龙王 (略有磨损)": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "亏损不到10%，且价格相对稳定，风险较低。",
+    "risk": "大盘整体偏弱可能带来小幅回撤。",
+    "entryLow": 155,
+    "entryHigh": 175
+  },
+  "印花 | Natus Vincere （全息） | 2021年斯德哥尔摩锦标赛": {
+    "verdict": "观望",
+    "confidence": 75,
+    "reason": "经典战队印花，深套中可等待周期回暖。",
+    "risk": "解套周期可能较长。",
+    "entryLow": 24,
+    "entryHigh": 30
+  },
+  "准备就绪的列赞 | 军刀": {
+    "verdict": "观望",
+    "confidence": 65,
+    "reason": "近期反弹较好但整体跌幅深，建议观望。",
+    "risk": "刀剑类饰品受大盘影响明显。",
+    "entryLow": 55,
+    "entryHigh": 68
+  },
+  "黑狼 | 军刀": {
+    "verdict": "观望",
+    "confidence": 65,
+    "reason": "反弹力度一般，市场关注度不够。",
+    "risk": "流动性一般，难以快速拉升。",
+    "entryLow": 52,
+    "entryHigh": 65
+  },
+  "M4A4 | 彼岸花 (略有磨损)": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "亏损极小且近期强势反弹，形态良好。",
+    "risk": "短期获利盘可能抛售导致回调。",
+    "entryLow": 105,
+    "entryHigh": 120
+  },
+  "印花 | Fnatic（全息）| 2025年布达佩斯锦标赛": {
+    "verdict": "观望",
+    "confidence": 70,
+    "reason": "短期暴涨但依然亏损大，不宜追高。",
+    "risk": "新印花价格极不稳定。",
+    "entryLow": 15,
+    "entryHigh": 22
+  },
+  "印花 | paiN Gaming （全息） | 2021年斯德哥尔摩锦标赛": {
+    "verdict": "观望",
+    "confidence": 75,
+    "reason": "冷门战队印花，反弹微弱，适合长线囤积。",
+    "risk": "缺乏炒作题材，价格难有起色。",
+    "entryLow": 35,
+    "entryHigh": 43
+  },
+  "双持贝瑞塔 | 街头抢匪 (崭新出厂)": {
+    "verdict": "观望",
+    "confidence": 70,
+    "reason": "价格停滞，反弹无力，暂无操作价值。",
+    "risk": "冷门武器皮肤，难以吸引资金。",
+    "entryLow": 40,
+    "entryHigh": 48
+  },
+  "印花 | Complexity Gaming（全息）| 2022年安特卫普锦标赛": {
+    "verdict": "减仓",
+    "confidence": 85,
+    "reason": "唯一盈利且近期暴涨53%，建议逢高减仓锁定利润。",
+    "risk": "暴涨后极易出现大幅回调。",
+    "entryLow": 45,
+    "entryHigh": 55
+  },
+  "印花 | Ninjas in Pyjamas （全息） | 2021年斯德哥尔摩锦标赛": {
+    "verdict": "观望",
+    "confidence": 70,
+    "reason": "老牌强队印花，深套中等待市场回暖。",
+    "risk": "整体市场低迷可能延长解套时间。",
+    "entryLow": 22,
+    "entryHigh": 28
+  },
+  "印花 | RED Canids（全息）| 2025年布达佩斯锦标赛": {
+    "verdict": "减仓",
+    "confidence": 75,
+    "reason": "7日暴涨63.5%，可借势减仓降低持仓成本。",
+    "risk": "新赛事印花热度消退快。",
+    "entryLow": 25,
+    "entryHigh": 35
+  },
+  "印花 | MIBR（全息）| 2025年布达佩斯锦标赛": {
+    "verdict": "减仓",
+    "confidence": 75,
+    "reason": "短期暴涨73.5%，反弹猛烈，适合高抛。",
+    "risk": "资金炒作结束后可能迅速回落。",
+    "entryLow": 20,
+    "entryHigh": 28
+  },
+  "音乐盒 | DRYDEN - 触摸能量": {
+    "verdict": "观望",
+    "confidence": 70,
+    "reason": "价格极低且走势平稳，亏损不大可持有。",
+    "risk": "升值空间非常有限。",
+    "entryLow": 8,
+    "entryHigh": 10
+  },
+  "M4A4 | 蚀刻领主 (略有磨损)": {
+    "verdict": "观望",
+    "confidence": 70,
+    "reason": "低价饰品波动小，反弹不明显。",
+    "risk": "缺乏上涨驱动力。",
+    "entryLow": 5,
+    "entryHigh": 7
+  },
+  "印花 | iM | 2024年上海锦标赛": {
+    "verdict": "观望",
+    "confidence": 50,
+    "reason": "价格归零或数据异常，无实际操作意义。",
+    "risk": "数据异常可能导致无法交易。",
+    "entryLow": 0,
+    "entryHigh": ""
   }
 }
