@@ -1153,11 +1153,11 @@ def generate_ai_market_insight():
         lose_text = '、'.join([f"{l['n'][:20]}{l['r7']}%" for l in losers])
         hot_text = '、'.join([f"{s['n'][:15]}{s['s']}" for s in top_sell])
         prompt = (
-            f'你是CS2饰品市场AI分析师。根据以下全量数据给出一段150字市场洞察：\n'
+            f'你是CS2饰品市场AI分析师。根据以下全量24h数据给出一段150字市场洞察：\n'
             f'全量{total}件，均价{avg_p:.0f}，中位{median_p:.0f}，最低{min_p:.2f}，最高{max_p:.0f}\n'
             f'品类：{cat_text}\n价格分布：{tier_text}\n'
-            f'涨幅TOP5：{gain_text}\n跌幅TOP5：{lose_text}\n最热：{hot_text}\n'
-            f'要求：分析市场情绪、资金流向、风险点。简洁专业，100-150字。'
+            f'24h涨幅TOP5：{gain_text}\n24h跌幅TOP5：{lose_text}\n最热在售：{hot_text}\n'
+            f'要求：分析短期市场情绪、资金流向、风险点。简洁专业，100-150字。'
         )
         data = json.dumps({
             'model': 'glm-4.7-flash',
