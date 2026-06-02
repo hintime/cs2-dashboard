@@ -2,6 +2,42 @@
   {
     "date": "2026-06-03",
     "tag": "fix",
+    "title": "持仓AI分析补全32件 — 分批调用+超时fallback兜底",
+    "desc": "持仓AI分析补全32件 — 分批调用+超时fallback兜底"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "AI推荐理由逻辑修正 — 好/坏例子引导+禁止反话",
+    "desc": "AI推荐理由逻辑修正 — 好/坏例子引导+禁止反话"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "style",
+    "title": "持仓明细AI分析重新设计 — 独立卡片+渐变色+分段理由/风险",
+    "desc": "持仓明细AI分析重新设计 — 独立卡片+渐变色+分段理由/风险"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "AI推荐理由去模板化 — 禁用语黑名单+必须引用数字+temperature 0.7",
+    "desc": "AI推荐理由去模板化 — 禁用语黑名单+必须引用数字+temperature 0.7"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
+    "title": "持仓明细AI分析名字匹配 — 中英文+模糊匹配，之前4件全未命中",
+    "desc": "持仓明细AI分析名字匹配 — 中英文+模糊匹配，之前4件全未命中"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-03 01:15"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "fix",
     "title": "AI推荐分析prompt加强 — 要求50-60字理由+30-40字风险+引用具体数据",
     "desc": "AI推荐分析prompt加强 — 要求50-60字理由+30-40字风险+引用具体数据"
   },
@@ -82,41 +118,5 @@
     "tag": "fix",
     "title": "PYTHONIOENCODING=utf-8 — 计划任务GBK环境强制UTF-8输出",
     "desc": "PYTHONIOENCODING=utf-8 — 计划任务GBK环境强制UTF-8输出"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "计划任务Git推送失败+Unicode崩溃双修复",
-    "desc": "计划任务Git推送失败+Unicode崩溃双修复"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "data_status.json 更新时间戳复位 00:33",
-    "desc": "data_status.json 更新时间戳复位 00:33"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "chore",
-    "title": "本地数据同步 2026-06-03 00:31",
-    "desc": "本地数据同步 2026-06-03 00:31"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 22:44"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 22:14"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "update buff_history.json, changelog.json, correlation_data.j",
-    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 22:08"
   }
 ]
