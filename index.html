@@ -1417,10 +1417,29 @@ async function loadAll() {
     var ai = window._aiAnalysis || {};
     var txt = ai[name] || null;
     if (!txt) return '';
-    var v = typeof txt === 'object' ? (txt.verdict||'') : ((txt.match(/操作建议[:：]\s*(\S+)/)||[])[1]||'');
+    var v, confidence, reason, risk, entryLow, entryHigh;
+    if (typeof txt === 'object') {
+      v = txt.verdict || '';
+      confidence = txt.confidence || 0;
+      reason = txt.reason || '';
+      risk = txt.risk || '';
+      entryLow = txt.entryLow || 0;
+      entryHigh = txt.entryHigh || 0;
+    } else {
+      var m = txt.match(/操作建议[:：]\s*(\S+)/);
+      v = (m||[])[1]||'';
+      confidence = 0;
+      reason = txt.replace(/.*核心逻辑[:：]\s*/s,'').replace(/\s*⚠.*/s,'').trim();
+      risk = (txt.match(/风险[:：]\s*(.+)/)||[])[1]||'';
+    }
     if (!v) return '';
     var cls = v.includes('减仓')||v.includes('卖出') ? 'sell' : v.includes('持有')||v.includes('加仓') ? 'hold' : 'wait';
-    return '<span class="ai-table-badge '+cls+'" title="AI分析: '+v+'">🤖 '+v+'</span>';
+    var tip = 'AI分析: ' + v;
+    if (confidence) tip += ' (置信度' + confidence + ')';
+    if (reason) tip += '\n理由: ' + reason;
+    if (risk) tip += '\n风险: ' + risk;
+    if (entryLow > 0 && entryHigh > 0) tip += '\n建议入场: ' + entryLow + ' ~ ' + entryHigh;
+    return '<span class="ai-table-badge '+cls+'" title="' + esc(tip) + '">🤖 ' + v + (confidence ? ' ' + confidence + '%' : '') + '</span>';
   };
   // 未登录不显示任何持仓数据
   if (!getMyKey()) { holdingsR = null; }
