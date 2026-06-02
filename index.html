@@ -3937,16 +3937,19 @@ function buildItemAnalysisHTML(item) {
       // ── AI 智谱分析 ──
       var ai = window._aiAnalysis || {};
       var aiText = ai[name] || ai[item.mh || ''] || ai[item.market_hash_name || ''] || null;
-      // 模糊匹配：遍历 AI key 找包含关系
-      if (!aiText) {
+      // 全量模糊匹配：去掉空格后查子串
+      if (!aiText && name) {
         var aiKeys = Object.keys(ai).filter(function(k){ return !k.startsWith('_'); });
+        var nameCompact = name.replace(/\s+/g,'');
         for (var ki = 0; ki < aiKeys.length; ki++) {
           var ak = aiKeys[ki];
-          if (name && ak && (ak.includes(name.replace(/\s+/g,'').substring(0,6)) || name.includes(ak.replace(/\s+/g,'').substring(0,6)))) {
-            aiText = ai[ak]; break;
-          }
-          if (item.mh && ak && item.mh.toLowerCase().includes(ak.substring(0,10).toLowerCase())) {
-            aiText = ai[ak]; break;
+          var akCompact = ak.replace(/\s+/g,'');
+          // 双向包含：AK包含name或name包含AK
+          if ((nameCompact.length >= 4 && akCompact.includes(nameCompact.substring(0,8))) ||
+              (akCompact.length >= 4 && nameCompact.includes(akCompact.substring(0,8))) ||
+              ak === name) {
+            aiText = ai[ak];
+            break;
           }
         }
       }
