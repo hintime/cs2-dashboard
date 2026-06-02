@@ -3567,7 +3567,7 @@ function renderScan() {
     // ═══ 涨跌榜 ───
     if (gainers && scan.movers && scan.movers.gainers) {
       var maxR = Math.max.apply(null, scan.movers.gainers.map(function(g){return g.r7||0;})) || 1;
-      var html = '<div class="scan-card-head rise">📈 涨幅 TOP ' + scan.movers.gainers.length + '</div>';
+      var html = '<div class="scan-card-head rise">📈 24h涨幅 TOP ' + scan.movers.gainers.length + '</div>';
       scan.movers.gainers.forEach(function(g, i) {
         var barW = Math.max(8, (g.r7 / maxR * 100).toFixed(0));
         html += '<div class="scan-row">' +
@@ -3581,7 +3581,7 @@ function renderScan() {
     }
     if (losers && scan.movers && scan.movers.losers) {
       var maxR = Math.abs(Math.min.apply(null, scan.movers.losers.map(function(l){return l.r7||0;}))) || 1;
-      var html = '<div class="scan-card-head fall">📉 跌幅 TOP ' + scan.movers.losers.length + '</div>';
+      var html = '<div class="scan-card-head fall">📉 24h跌幅 TOP ' + scan.movers.losers.length + '</div>';
       scan.movers.losers.forEach(function(l, i) {
         var barW = Math.max(8, (Math.abs(l.r7) / maxR * 100).toFixed(0));
         html += '<div class="scan-row">' +

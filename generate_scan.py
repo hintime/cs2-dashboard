@@ -131,15 +131,15 @@ def main():
     try:
         ph = read_json(ph_file)
         gains = []
-        # 取 7 天前的价格做对比（非整个历史跨度）
-        cutoff = time.time() - 7 * 86400  # 7天前的 Unix timestamp
+        # 取 1 天前的价格做日涨跌对比
+        cutoff = time.time() - 86400  # 1天前
         for name, h in ph.items():
             if not isinstance(h, dict): continue
             raw_eco = h.get('eco') or []
             eco_prices = [(e.get('t',''), e.get('p',0)) for e in raw_eco if isinstance(e, dict) and e.get('p', 0) > 0]
-            if len(eco_prices) < 30: continue  # 数据不足，跳过
+            if len(eco_prices) < 30: continue
             last_p = eco_prices[-1][1]
-            # 找最接近 7 天前的价格
+            # 找最接近 1 天前的价格
             prev_p = 0
             best_diff = None
             for ts, p in eco_prices[:-1]:
@@ -152,8 +152,7 @@ def main():
                     best_diff = diff
                     prev_p = p
             if prev_p <= 0 or last_p <= 0: continue
-            # 要求 7 天前价格在 ±1.5 天内
-            if best_diff is None or best_diff > 129600: continue  # 1.5 days
+            if best_diff is None or best_diff > 7200: continue  # ±2h 容差
             eco_chg = (last_p - prev_p) / prev_p * 100
             if abs(eco_chg) < 0.01: continue
             cn = name_map.get(name, name)
