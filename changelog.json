@@ -2,7 +2,121 @@
   {
     "date": "2026-06-01",
     "tag": "chore",
+    "title": "data update 2026-06-01 23:45",
+    "desc": "data update 2026-06-01 23:45"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
     "title": "market index 2026-06-01 23:24",
     "desc": "market index 2026-06-01 23:24"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "data update 2026-06-01 21:49",
+    "desc": "data update 2026-06-01 21:49"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "market index 2026-06-01 20:13",
+    "desc": "market index 2026-06-01 20:13"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "data update 2026-06-01 17:53",
+    "desc": "data update 2026-06-01 17:53"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "style",
+    "title": "AlphaTrack 金属质感流光 — 细光刃扫过+银灰渐变底色",
+    "desc": "AlphaTrack 金属质感流光 — 细光刃扫过+银灰渐变底色"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 00:45"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "流光效果改用伪元素扫光条（更可靠兼容）",
+    "desc": "流光效果改用伪元素扫光条（更可靠兼容）"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "流光效果修复 — 移除冲突的重复@keyframes + 去掉内联color覆盖",
+    "desc": "流光效果修复 — 移除冲突的重复@keyframes + 去掉内联color覆盖"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "chore",
+    "title": "同步更新日志（流光效果+AI推荐+异动阈值修复）",
+    "desc": "同步更新日志（流光效果+AI推荐+异动阈值修复）"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "style",
+    "title": "AlphaTrack标题流光效果（shimmer animation）",
+    "desc": "AlphaTrack标题流光效果（shimmer animation）"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "feat",
+    "title": "AI购买推荐分析 — 综合评分+多维度数据智能选品",
+    "desc": "AI购买推荐分析 — 综合评分+多维度数据智能选品"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "异动阈值 30%→10% + 对比逻辑改为跨日（避免同日快照无变化）",
+    "desc": "异动阈值 30%→10% + 对比逻辑改为跨日（避免同日快照无变化）"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "ai_anomaly max_tokens 300→2000 + 重新生成市场洞察和空投监控",
+    "desc": "ai_anomaly max_tokens 300→2000 + 重新生成市场洞察和空投监控"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "chore",
+    "title": "update ai_news_impact.json, buff_history.json, changelog.jso",
+    "desc": ", correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 00:12"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "glm-4.7-flash max_tokens→2000（思考模式需要更多token）",
+    "desc": "glm-4.7-flash max_tokens→2000（思考模式需要更多token）"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-02 00:06"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "glm-4.7思考模式吃token→新闻impact改用glm-4-flash",
+    "desc": "glm-4.7思考模式吃token→新闻impact改用glm-4-flash"
+  },
+  {
+    "date": "2026-06-02",
+    "tag": "fix",
+    "title": "AI空投监控即使无AI结果也显示新闻标题",
+    "desc": "AI空投监控即使无AI结果也显示新闻标题"
+  },
+  {
+    "date": "2026-06-01",
+    "tag": "chore",
+    "title": "market index 2026-06-01 15:52",
+    "desc": "market index 2026-06-01 15:52"
   }
 ]
