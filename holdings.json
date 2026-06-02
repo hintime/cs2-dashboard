@@ -1,14 +1,14 @@
 {
-  "update_time": "2026-06-02 14:06:09",
+  "update_time": "2026-06-02 14:36:06",
   "total_cost": 20309.35,
-  "total_market": 6956.1,
+  "total_market": 6947.96,
   "items": [
     {
       "name": "M4A1消音版 | 苔藓石英 (崭新出厂)",
       "wear": "FN",
       "wear_value": null,
       "cost": 1610.0,
-      "price": 986.59,
+      "price": 987.0,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A1-S | Moss Quartz (Factory New)",
@@ -139,16 +139,16 @@
         },
         {
           "date": "2026-06-02",
-          "price": 986.59
+          "price": 987.0
         }
       ],
-      "rate_1": 7.12,
-      "rate_7": 24.57,
-      "rate_30": -14.62,
+      "rate_1": 0.04,
+      "rate_7": 24.62,
+      "rate_30": -14.6,
       "buff_sell": 960.0,
       "buff_buy": 881.0,
-      "buff_sell_num": 99,
-      "buff_buy_num": 11
+      "buff_sell_num": 100,
+      "buff_buy_num": 12
     },
     {
       "name": "法玛斯 | 纪念碑 (崭新出厂)",
@@ -293,8 +293,8 @@
       "rate_7": 33.98,
       "rate_30": -19.51,
       "buff_sell": 421.8,
-      "buff_buy": 388.0,
-      "buff_sell_num": 175,
+      "buff_buy": 390.0,
+      "buff_sell_num": 176,
       "buff_buy_num": 29
     },
     {
@@ -733,17 +733,17 @@
       "rate_1": 0.0,
       "rate_7": 8.22,
       "rate_30": -22.45,
-      "buff_sell": 394.9,
-      "buff_buy": 382.0,
+      "buff_sell": 388.88,
+      "buff_buy": 381.0,
       "buff_sell_num": 320,
-      "buff_buy_num": 31
+      "buff_buy_num": 29
     },
     {
       "name": "海军上尉里克索尔 | 海军水面战中心海豹部队",
       "wear": "other",
       "wear_value": null,
       "cost": 667.0,
-      "price": 175.0,
+      "price": 172.0,
       "category": "其他",
       "qty": 2,
       "market_hash": "Lt. Commander Ricksaw | NSWC SEAL",
@@ -874,16 +874,16 @@
         },
         {
           "date": "2026-06-02",
-          "price": 175.0
+          "price": 172.0
         }
       ],
-      "rate_1": 0.57,
-      "rate_7": 34.63,
-      "rate_30": -15.15,
+      "rate_1": -1.71,
+      "rate_7": 32.32,
+      "rate_30": -16.06,
       "buff_sell": 170.0,
-      "buff_buy": 166.0,
-      "buff_sell_num": 708,
-      "buff_buy_num": 140
+      "buff_buy": 164.0,
+      "buff_sell_num": 707,
+      "buff_buy_num": 134
     },
     {
       "name": "“蓝莓” 铅弹 | 海军水面战中心海豹部队",
@@ -1028,16 +1028,16 @@
       "rate_7": 16.78,
       "rate_30": -15.5,
       "buff_sell": 117.5,
-      "buff_buy": 105.0,
+      "buff_buy": 106.0,
       "buff_sell_num": 122,
-      "buff_buy_num": 70
+      "buff_buy_num": 68
     },
     {
       "name": "M4A4 | 都市 DDPAT (崭新出厂)",
       "wear": "FN",
       "wear_value": null,
       "cost": 410.0,
-      "price": 309.0,
+      "price": 310.0,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | Urban DDPAT (Factory New)",
@@ -1168,16 +1168,16 @@
         },
         {
           "date": "2026-06-02",
-          "price": 309.0
+          "price": 310.0
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": 35.65,
-      "rate_30": -9.98,
+      "rate_1": 0.32,
+      "rate_7": 36.08,
+      "rate_30": -9.79,
       "buff_sell": 318.88,
-      "buff_buy": 285.0,
-      "buff_sell_num": 102,
-      "buff_buy_num": 17
+      "buff_buy": 287.0,
+      "buff_sell_num": 103,
+      "buff_buy_num": 18
     },
     {
       "name": "M4A4 | 多边形编辑 (略有磨损)",
@@ -1318,12 +1318,12 @@
           "price": 121.0
         }
       ],
-      "rate_1": 0.97,
+      "rate_1": 0.0,
       "rate_7": 7.08,
       "rate_30": -12.44,
       "buff_sell": 116.99,
       "buff_buy": 111.0,
-      "buff_sell_num": 193,
+      "buff_sell_num": 191,
       "buff_buy_num": 15
     },
     {
@@ -1468,9 +1468,9 @@
       "rate_1": 0.0,
       "rate_7": -3.5,
       "rate_30": -10.15,
-      "buff_sell": 305.0,
+      "buff_sell": 301.0,
       "buff_buy": 279.0,
-      "buff_sell_num": 198,
+      "buff_sell_num": 199,
       "buff_buy_num": 31
     },
     {
@@ -1612,20 +1612,20 @@
           "price": 181.99
         }
       ],
-      "rate_1": 2.24,
+      "rate_1": 0.0,
       "rate_7": 24.65,
       "rate_30": -32.53,
       "buff_sell": 176.22,
-      "buff_buy": 150.0,
+      "buff_buy": 152.0,
       "buff_sell_num": 33,
-      "buff_buy_num": 9
+      "buff_buy_num": 10
     },
     {
       "name": "沙哈马特教授 | 精锐分子",
       "wear": "other",
       "wear_value": null,
       "cost": 349.8,
-      "price": 56.19,
+      "price": 55.88,
       "category": "其他",
       "qty": 5,
       "market_hash": "Prof. Shahmat | Elite Crew",
@@ -1756,15 +1756,15 @@
         },
         {
           "date": "2026-06-02",
-          "price": 56.19
+          "price": 55.88
         }
       ],
-      "rate_1": -0.02,
-      "rate_7": 12.42,
-      "rate_30": -12.49,
-      "buff_sell": 52.39,
+      "rate_1": -0.55,
+      "rate_7": 11.8,
+      "rate_30": -12.8,
+      "buff_sell": 52.4,
       "buff_buy": 51.0,
-      "buff_sell_num": 807,
+      "buff_sell_num": 806,
       "buff_buy_num": 248
     },
     {
@@ -2066,7 +2066,7 @@
       "wear": "MW",
       "wear_value": null,
       "cost": 184.0,
-      "price": 176.0,
+      "price": 171.0,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | 龍王 (Dragon King) (Minimal Wear)",
@@ -2197,15 +2197,15 @@
         },
         {
           "date": "2026-06-02",
-          "price": 176.0
+          "price": 171.0
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": 2.93,
-      "rate_30": -5.02,
+      "rate_1": -2.84,
+      "rate_7": 0.01,
+      "rate_30": -6.82,
       "buff_sell": 172.49,
       "buff_buy": 164.0,
-      "buff_sell_num": 478,
+      "buff_sell_num": 477,
       "buff_buy_num": 40
     },
     {
@@ -2644,9 +2644,9 @@
       "rate_1": 0.0,
       "rate_7": 16.59,
       "rate_30": -10.04,
-      "buff_sell": 41.0,
+      "buff_sell": 40.8,
       "buff_buy": 37.8,
-      "buff_sell_num": 763,
+      "buff_sell_num": 777,
       "buff_buy_num": 3177
     },
     {
@@ -2801,7 +2801,7 @@
       "wear": "MW",
       "wear_value": null,
       "cost": 127.0,
-      "price": 107.0,
+      "price": 112.0,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | Spider Lily (Minimal Wear)",
@@ -2932,15 +2932,15 @@
         },
         {
           "date": "2026-06-02",
-          "price": 107.0
+          "price": 112.0
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": 27.4,
-      "rate_30": -12.06,
+      "rate_1": 4.67,
+      "rate_7": 33.35,
+      "rate_30": -9.44,
       "buff_sell": 108.0,
       "buff_buy": 102.0,
-      "buff_sell_num": 610,
+      "buff_sell_num": 608,
       "buff_buy_num": 50
     },
     {
@@ -3379,9 +3379,9 @@
       "rate_1": 0.0,
       "rate_7": 20.46,
       "rate_30": -14.89,
-      "buff_sell": 26.9,
+      "buff_sell": 26.8,
       "buff_buy": 24.3,
-      "buff_sell_num": 455,
+      "buff_sell_num": 457,
       "buff_buy_num": 56
     },
     {
@@ -3389,7 +3389,7 @@
       "wear": "other",
       "wear_value": null,
       "cost": 56.8,
-      "price": 19.0,
+      "price": 18.0,
       "category": "印花",
       "qty": 2,
       "market_hash": "Sticker | fnatic (Holo) | Budapest 2025",
@@ -3520,12 +3520,12 @@
         },
         {
           "date": "2026-06-02",
-          "price": 19.0
+          "price": 18.0
         }
       ],
-      "rate_1": 0.05,
-      "rate_7": 48.79,
-      "rate_30": -18.32,
+      "rate_1": -5.26,
+      "rate_7": 40.96,
+      "rate_30": -20.94,
       "buff_sell": 20.29,
       "buff_buy": 16.9,
       "buff_sell_num": 113,
@@ -3670,13 +3670,13 @@
           "price": 41.59
         }
       ],
-      "rate_1": 4.52,
+      "rate_1": 0.0,
       "rate_7": -3.41,
       "rate_30": -30.82,
-      "buff_sell": 42.25,
-      "buff_buy": 36.3,
-      "buff_sell_num": 207,
-      "buff_buy_num": 19
+      "buff_sell": 42.24,
+      "buff_buy": 36.5,
+      "buff_sell_num": 206,
+      "buff_buy_num": 20
     },
     {
       "name": "印花 | Complexity Gaming（全息）| 2022年安特卫普锦标赛",
@@ -3967,9 +3967,9 @@
       "rate_1": 0.0,
       "rate_7": 9.59,
       "rate_30": -27.37,
-      "buff_sell": 26.32,
+      "buff_sell": 26.22,
       "buff_buy": 23.9,
-      "buff_sell_num": 544,
+      "buff_sell_num": 548,
       "buff_buy_num": 178
     },
     {
@@ -4408,7 +4408,7 @@
       "rate_1": 0.0,
       "rate_7": 2.94,
       "rate_30": -12.49,
-      "buff_sell": 9.6,
+      "buff_sell": 9.74,
       "buff_buy": 8.8,
       "buff_sell_num": 889,
       "buff_buy_num": 78
@@ -4555,9 +4555,9 @@
       "rate_1": 0.0,
       "rate_7": 6.74,
       "rate_30": -16.35,
-      "buff_sell": 5.9,
+      "buff_sell": 5.93,
       "buff_buy": 5.5,
-      "buff_sell_num": 691,
+      "buff_sell_num": 670,
       "buff_buy_num": 31
     },
     {
