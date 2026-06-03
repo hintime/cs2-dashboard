@@ -1431,8 +1431,26 @@ def push_all():
             print(f'  [DIRTY] {filename}')
         return
     else:
-        # Local: single git commit + push
-        git_push_locally(sorted(dirty_files), message)
+        # Local: single git commit + push（带重试）
+        for attempt in range(3):
+            try:
+                git_push_locally(sorted(dirty_files), message)
+                break
+            except Exception as e:
+                print(f'[PUSH] Attempt {attempt+1} failed: {e}', file=sys.stderr)
+                if attempt < 2:
+                    time.sleep(3)
+                    # 拉取远程并 rebase
+                    try:
+                        subprocess.run(['git', 'stash'], check=False, cwd=DATA_DIR, capture_output=True)
+                        subprocess.run(['git', '-c', 'credential.helper=', '-c', 'http.sslBackend=openssl',
+                                       '-c', 'http.sslVerify=false', 'pull', '--rebase', 'origin', 'main'],
+                                      check=False, cwd=DATA_DIR, capture_output=True)
+                        subprocess.run(['git', 'stash', 'pop'], check=False, cwd=DATA_DIR, capture_output=True)
+                    except:
+                        pass
+                else:
+                    print(f'[PUSH] All 3 attempts failed, data not pushed!', file=sys.stderr)
 
 def github_push_file(path, content_str, message):
     """Push a single file via GitHub Contents API"""
@@ -1502,16 +1520,47 @@ def git_push_locally(files, message):
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else 'all'
 
-    # ── 静默同步 Git（无窗口弹窗）──
+    # ── 静默同步 Git（自动解决冲突）──
     git_env = {**os.environ, 'GCM_INTERACTIVE': 'never', 'GIT_TERMINAL_PROMPT': '0', 'GIT_ASKPASS': 'echo'}
     cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+    GIT_BASE = ['-c', 'credential.helper=', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
     try:
-        subprocess.run(['git', 'stash'], check=False, cwd=DATA_DIR, env=git_env, creationflags=cf, capture_output=True)
-        subprocess.run(['git', '-c', 'credential.helper=', '-c', 'http.sslBackend=openssl',
-                       '-c', 'http.sslVerify=false', 'pull', '--rebase', 'origin', 'main'],
-                       check=True, cwd=DATA_DIR, env=git_env, creationflags=cf, capture_output=True)
+        # 保存本地改动
+        subprocess.run(['git', 'stash', '--include-untracked'], check=False, cwd=DATA_DIR, env=git_env,
+                       creationflags=cf, capture_output=True)
+        # 拉取远程
+        result = subprocess.run(['git'] + GIT_BASE + ['pull', '--rebase', 'origin', 'main'],
+                                capture_output=True, text=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+        if result.returncode != 0:
+            # 检查是否有冲突
+            if 'CONFLICT' in result.stdout + result.stderr:
+                print('[GIT] Conflict detected, auto-resolving data files...')
+                # 数据文件接受远程版本（CI 数据是最新的）
+                result2 = subprocess.run(['git', 'diff', '--name-only', '--diff-filter=U'],
+                                        capture_output=True, text=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
+                conflicts = result2.stdout.strip().split('\n') if result2.stdout.strip() else []
+                for f in conflicts:
+                    f = f.strip()
+                    if f and any(f.endswith(ext) for ext in ('.json', '.log', '.csv')):
+                        subprocess.run(['git', 'checkout', '--theirs', f],
+                                      check=False, cwd=DATA_DIR, env=git_env, creationflags=cf)
+                        subprocess.run(['git', 'add', f],
+                                      check=False, cwd=DATA_DIR, env=git_env, creationflags=cf)
+                        print(f'[GIT] Auto-resolved: {f}')
+                # 继续 rebase
+                subprocess.run(['git', 'rebase', '--continue'], check=False, cwd=DATA_DIR, env=git_env,
+                               creationflags=cf, capture_output=True)
+            else:
+                print(f'[GIT] Pull failed: {result.stderr[:200]}', file=sys.stderr)
+                subprocess.run(['git', 'rebase', '--abort'], check=False, cwd=DATA_DIR, env=git_env,
+                               creationflags=cf, capture_output=True)
+                subprocess.run(['git'] + GIT_BASE + ['pull', 'origin', 'main'],
+                              check=False, cwd=DATA_DIR, env=git_env, creationflags=cf, capture_output=True)
+        # 恢复本地改动
+        subprocess.run(['git', 'stash', 'pop'], check=False, cwd=DATA_DIR, env=git_env,
+                       creationflags=cf, capture_output=True)
     except Exception as e:
-        print(f'[WARN] Git sync failed: {e}', file=sys.stderr)
+        print(f'[GIT] Sync failed: {e}', file=sys.stderr)
 
     print(f'=== CS2 Dashboard Update ({mode}) ===')
 
