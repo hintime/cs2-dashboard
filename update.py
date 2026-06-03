@@ -1524,6 +1524,12 @@ def main():
     git_env = {**os.environ, 'GCM_INTERACTIVE': 'never', 'GIT_TERMINAL_PROMPT': '0', 'GIT_ASKPASS': 'echo'}
     cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
     GIT_BASE = ['-c', 'credential.helper=', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
+    # 清理可能的锁文件
+    lock_path = os.path.join(DATA_DIR, '.git', 'index.lock')
+    if os.path.exists(lock_path):
+        try: os.remove(lock_path)
+        except: pass
+        print('[GIT] Removed stale index.lock')
     try:
         # 保存本地改动
         subprocess.run(['git', 'stash', '--include-untracked'], check=False, cwd=DATA_DIR, env=git_env,
