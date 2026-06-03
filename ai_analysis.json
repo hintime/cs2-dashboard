@@ -1,218 +1,66 @@
 {
   "法玛斯 | 纪念碑 (崭新出厂)": {
-    "verdict": "观望",
-    "confidence": 65,
-    "reason": "近期反弹力度较大，但长线仍处于深跌状态，需观察反弹能否持续。",
-    "risk": "反弹可能只是死猫跳，存在继续阴跌的风险。",
-    "entryLow": 380,
+    "verdict": "减仓",
+    "confidence": 75,
+    "reason": "冷门武器且深度亏损，近期反弹是减仓良机。",
+    "risk": "反弹可能结束，30日趋势依然向下。",
+    "entryLow": 400,
     "entryHigh": 450
   },
   "“蓝莓” 铅弹 | 海军水面战中心海豹部队": {
     "verdict": "减仓",
-    "confidence": 75,
-    "reason": "亏损严重且长期趋势向下，借近期反弹止损出局较为稳妥。",
-    "risk": "饰品流动性一般，反弹可能随时结束。",
+    "confidence": 70,
+    "reason": "亏损严重且流动性差，建议止损。",
+    "risk": "后续可能继续阴跌，难以回本。",
     "entryLow": 100,
-    "entryHigh": 130
+    "entryHigh": 120
   },
   "沙哈马特教授 | 精锐分子": {
     "verdict": "减仓",
-    "confidence": 70,
-    "reason": "亏损高达84%，反弹力度有限，建议及时止损。",
-    "risk": "冷门角色饰品，难以回到成本价。",
-    "entryLow": 50,
-    "entryHigh": 65
+    "confidence": 80,
+    "reason": "亏损高达84%，市场偏好极低，反弹乏力。",
+    "risk": "长期占用资金，机会成本高。",
+    "entryLow": 40,
+    "entryHigh": 50
   },
   "M4A1消音版 | 苔藓石英 (崭新出厂)": {
     "verdict": "持有",
-    "confidence": 70,
-    "reason": "跌幅相对较小且近期反弹明显，M4A1主流武器皮肤有一定保值属性。",
-    "risk": "大盘若继续走弱，可能跟随下跌。",
+    "confidence": 65,
+    "reason": "主流武器皮肤，近期反弹强劲，有回暖希望。",
+    "risk": "大盘若继续下行，可能再次探底。",
     "entryLow": 900,
     "entryHigh": 1000
   },
   "UMP-45 | 炽烈之炎 (崭新出厂)": {
     "verdict": "减仓",
-    "confidence": 80,
-    "reason": "近期无反弹甚至微跌，且亏损巨大，趋势极度恶劣。",
-    "risk": "继续持有可能扩大亏损。",
-    "entryLow": 170,
-    "entryHigh": 200
+    "confidence": 75,
+    "reason": "30日跌幅近36%，短期反弹难以扭转趋势。",
+    "risk": "冷门冲锋枪皮肤，套牢盘重。",
+    "entryLow": 150,
+    "entryHigh": 180
   },
   "印花 | FaZe Clan（全息）| 2024年上海锦标赛": {
     "verdict": "减仓",
     "confidence": 85,
-    "reason": "赛事印花热度消退快，亏损86%基本难以回本，建议割肉。",
-    "risk": "印花市场供大于求，价格易跌难涨。",
-    "entryLow": 30,
-    "entryHigh": 40
-  },
-  "P2000 | 火灵 (崭新出厂)": {
-    "verdict": "持有",
-    "confidence": 75,
-    "reason": "近期反弹强劲，亏损幅度可控，可等待进一步回升。",
-    "risk": "反弹遇阻后可能再次回落。",
-    "entryLow": 850,
-    "entryHigh": 950
-  },
-  "海军上尉里克索尔 | 海军水面战中心海豹部队": {
-    "verdict": "减仓",
-    "confidence": 70,
-    "reason": "深套状态下迎来大涨，是绝佳的止损减仓窗口。",
-    "risk": "反弹往往短暂，错失窗口可能继续套牢。",
-    "entryLow": 160,
-    "entryHigh": 190
-  },
-  "M4A4 | 多边形编辑 (略有磨损)": {
-    "verdict": "减仓",
-    "confidence": 65,
-    "reason": "亏损严重且近期几乎无反弹，弱势明显。",
-    "risk": "冷门皮肤流动性差，难以卖出好价。",
-    "entryLow": 100,
-    "entryHigh": 120
-  },
-  "印花 | Natus Vincere（全息）| 2024年上海锦标赛": {
-    "verdict": "减仓",
-    "confidence": 85,
-    "reason": "近期印花反弹提供流动性，巨亏状态下应优先保住剩余资金。",
-    "risk": "赛事过后印花价值通常呈长期下降趋势。",
-    "entryLow": 25,
-    "entryHigh": 35
-  },
-  "印花 | HEROIC（全息）| 2024年上海锦标赛": {
-    "verdict": "减仓",
-    "confidence": 85,
-    "reason": "亏损巨大，借反弹减仓是明智之举。",
-    "risk": "队伍表现若不佳，印花价格将更低。",
-    "entryLow": 30,
-    "entryHigh": 40
-  },
-  "M4A4 | 炼狱之火 (略有磨损)": {
-    "verdict": "持有",
-    "confidence": 70,
-    "reason": "主流武器皮肤，近期有反弹趋势，亏损在可接受范围内。",
-    "risk": "整体市场环境低迷可能压制涨幅。",
-    "entryLow": 400,
-    "entryHigh": 450
-  },
-  "M4A4 | 都市 DDPAT (崭新出厂)": {
-    "verdict": "持有",
-    "confidence": 75,
-    "reason": "近期反弹猛烈，亏损较小，有希望率先解套。",
-    "risk": "短期涨幅过大，存在获利盘抛压。",
-    "entryLow": 300,
-    "entryHigh": 350
-  },
-  "摩托手套（★） | 第三特种兵连 (久经沙场)": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "手套类饰品保值率较高，亏损较小，可耐心持有。",
-    "risk": "饰品整体大盘下跌的系统性风险。",
-    "entryLow": 280,
-    "entryHigh": 320
-  },
-  "加利尔 AR | 破坏者 (崭新出厂)": {
-    "verdict": "减仓",
-    "confidence": 70,
-    "reason": "亏损过半，虽然近期反弹但长期趋势依然偏弱。",
-    "risk": "反弹可能无法持续。",
-    "entryLow": 160,
-    "entryHigh": 190
-  },
-  "印花 | Evil Geniuses （全息） | 2021年斯德哥尔摩锦标赛": {
-    "verdict": "减仓",
-    "confidence": 75,
-    "reason": "老赛事印花套牢深，反弹微弱，建议止损。",
-    "risk": "时间成本极高，资金利用率低。",
-    "entryLow": 35,
-    "entryHigh": 45
-  },
-  "印花 | GamerLegion（全息）| 2025年布达佩斯锦标赛": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "近期暴涨提供离场机会，新赛事印花波动大，落袋为安。",
-    "risk": "热度消退后价格可能再创新低。",
-    "entryLow": 15,
-    "entryHigh": 25
-  },
-  "M4A4 | 龙王 (略有磨损)": {
-    "verdict": "持有",
-    "confidence": 85,
-    "reason": "亏损极小，成本控制优秀，可继续持有等待上涨。",
-    "risk": "短期上涨动力不足，可能横盘。",
-    "entryLow": 160,
-    "entryHigh": 180
-  },
-  "印花 | Natus Vincere （全息） | 2021年斯德哥尔摩锦标赛": {
-    "verdict": "减仓",
-    "confidence": 75,
-    "reason": "亏损严重，借近期反弹减仓以释放资金。",
-    "risk": "老印花流动性逐渐枯竭。",
+    "reason": "近期赛事印花供应量大，深度亏损建议割肉。",
+    "risk": "短期内缺乏消耗渠道，价格难涨。",
     "entryLow": 25,
     "entryHigh": 30
   },
-  "准备就绪的列赞 | 军刀": {
-    "verdict": "减仓",
-    "confidence": 65,
-    "reason": "亏损较大，近期反弹是减少损失的良机。",
-    "risk": "刀类饰品中低端款式升值潜力有限。",
-    "entryLow": 55,
-    "entryHigh": 70
-  },
-  "黑狼 | 军刀": {
-    "verdict": "减仓",
-    "confidence": 65,
-    "reason": "与列赞类似，深套反弹应考虑降低仓位。",
-    "risk": "反弹力度较弱，可能随时熄火。",
-    "entryLow": 50,
-    "entryHigh": 65
-  },
-  "M4A4 | 彼岸花 (略有磨损)": {
+  "P2000 | 火灵 (崭新出厂)": {
     "verdict": "持有",
-    "confidence": 80,
-    "reason": "亏损仅13%，近期反弹强劲，有解套希望。",
-    "risk": "若大盘走弱可能再次跌破成本。",
-    "entryLow": 100,
-    "entryHigh": 120
-  },
-  "印花 | Fnatic（全息）| 2025年布达佩斯锦标赛": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "新印花波动极大，趁着暴涨果断减仓。",
-    "risk": "炒作资金撤退后一地鸡毛。",
-    "entryLow": 15,
-    "entryHigh": 20
-  },
-  "印花 | paiN Gaming （全息） | 2021年斯德哥尔摩锦标赛": {
-    "verdict": "减仓",
     "confidence": 70,
-    "reason": "冷门队伍老印花，反弹无力，建议止损。",
-    "risk": "极难回本，占用资金。",
-    "entryLow": 35,
-    "entryHigh": 45
+    "reason": "亏损相对较小，7日反弹超50%，有企稳迹象。",
+    "risk": "P2000热门度略逊于USP，上涨空间受限。",
+    "entryLow": 900,
+    "entryHigh": 950
   },
-  "双持贝瑞塔 | 街头抢匪 (崭新出厂)": {
+  "海军上尉里克索尔 | 海军水面战中心海豹部队": {
     "verdict": "持有",
     "confidence": 60,
-    "reason": "亏损不大但近期走势疲软，可观望。",
-    "risk": "冷门武器皮肤难以吸引买盘。",
-    "entryLow": 38,
-    "entryHigh": 45
-  },
-  "印花 | Complexity Gaming（全息）| 2022年安特卫普锦标赛": {
-    "verdict": "减仓",
-    "confidence": 90,
-    "reason": "唯一盈利且近期暴涨，必须获利了结。",
-    "risk": "暴涨后必有回调，勿贪心。",
-    "entryLow": 45,
-    "entryHigh": 55
-  },
-  "印花 | Ninjas in Pyjamas （全息） | 2021年斯德哥尔摩锦标赛": {
-    "verdict": "减仓",
-    "confidence": 70,
-    "reason": "亏损近半，反弹力度一般，建议割肉换股。",
-    "risk": "老印花缺乏炒作题材。",
-    "entryLow": 20,
-    "entryHigh": 28
+    "reason": "30日趋势转正，7日大涨，有资金介入迹象。",
+    "risk": "冷门印花系列，流动性风险较高。",
+    "entryLow": 180,
+    "entryHigh": 200
   }
 }
