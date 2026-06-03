@@ -137,7 +137,7 @@ def main():
             if not isinstance(h, dict): continue
             raw_eco = h.get('eco') or []
             eco_prices = [(e.get('t',''), e.get('p',0)) for e in raw_eco if isinstance(e, dict) and e.get('p', 0) > 0]
-            if len(eco_prices) < 30: continue
+            if len(eco_prices) < 10: continue  # 至少10个数据点
             last_p = eco_prices[-1][1]
             # 找最接近 1 天前的价格
             prev_p = 0
@@ -152,7 +152,7 @@ def main():
                     best_diff = diff
                     prev_p = p
             if prev_p <= 0 or last_p <= 0: continue
-            if best_diff is None or best_diff > 7200: continue  # ±2h 容差
+            if best_diff is None or best_diff > 21600: continue  # ±6h 容差
             eco_chg = (last_p - prev_p) / prev_p * 100
             if abs(eco_chg) < 0.01: continue
             cn = name_map.get(name, name)
