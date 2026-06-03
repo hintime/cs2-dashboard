@@ -152,7 +152,6 @@ def main():
                     best_diff = diff
                     prev_p = p
             if prev_p <= 0 or last_p <= 0: continue
-            if best_diff is None or best_diff > 21600: continue  # ±6h 容差
             eco_chg = (last_p - prev_p) / prev_p * 100
             if abs(eco_chg) < 0.01: continue
             cn = name_map.get(name, name)
