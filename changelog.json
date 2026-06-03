@@ -1,5 +1,83 @@
 [
   {
+    "date": "2026-06-04",
+    "tag": "fix",
+    "title": "AI持仓分析全量重建—31件稳跑5秒间隔",
+    "desc": "AI持仓分析全量重建—31件稳跑5秒间隔"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "fix",
+    "title": "涨跌榜去除时间容差—取最近24h数据点即可",
+    "desc": "涨跌榜去除时间容差—取最近24h数据点即可"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "fix",
+    "title": "涨跌榜过滤放宽 — 10点+6h容差，修复空榜",
+    "desc": "涨跌榜过滤放宽 — 10点+6h容差，修复空榜"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "chore",
+    "title": "refresh data_status timestamps",
+    "desc": "refresh data_status timestamps"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "chore",
+    "title": "regenerate market_scan 00:37",
+    "desc": "regenerate market_scan 00:37"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "chore",
+    "title": "full data sync 2026-06-04 00:36",
+    "desc": "full data sync 2026-06-04 00:36"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "fix",
+    "title": "启动前自动清理.git/index.lock + 防冲突+防限流+防推送失败四合一",
+    "desc": "启动前自动清理.git/index.lock + 防冲突+防限流+防推送失败四合一"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "chore",
+    "title": "time sync 06-04 00:20",
+    "desc": "time sync 06-04 00:20"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "fix",
+    "title": "Git冲突自动修复+push三重试 — 从此不再卡数据推送",
+    "desc": "Git冲突自动修复+push三重试 — 从此不再卡数据推送"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "fix",
+    "title": "merge remote",
+    "desc": "merge remote"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "chore",
+    "title": "fix conflicts and sync data 2026-06-03 16:04",
+    "desc": "fix conflicts and sync data 2026-06-03 16:04"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-03 15:44"
+  },
+  {
+    "date": "2026-06-03",
+    "tag": "chore",
+    "title": "data update",
+    "desc": "data update"
+  },
+  {
     "date": "2026-06-03",
     "tag": "chore",
     "title": "data update 2026-06-03 04:25",
@@ -40,83 +118,5 @@
     "tag": "chore",
     "title": "update ai_daily_report.json, ai_market_insight.json, ai_news",
     "desc": "impact.json, ai_recommendations.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-03 02:11"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "AI分析加载优化 — 未就绪时显示加载中+就绪后自动刷新已展开行",
-    "desc": "AI分析加载优化 — 未就绪时显示加载中+就绪后自动刷新已展开行"
-  },
-  {
-    "date": "2026-06-02",
-    "tag": "chore",
-    "title": "market index 2026-06-02 18:06",
-    "desc": "market index 2026-06-02 18:06"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "AI匹配加固—双向子串+去空格+精确匹配三层确保命中",
-    "desc": "AI匹配加固—双向子串+去空格+精确匹配三层确保命中"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "回测板块改用holdings.json真实持仓（优先管线数据，兜底localStorage）",
-    "desc": "回测板块改用holdings.json真实持仓（优先管线数据，兜底localStorage）"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "AI调用全局限流保护 — 8秒间隔+429指数退避重试3次",
-    "desc": "AI调用全局限流保护 — 8秒间隔+429指数退避重试3次"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "持仓AI分析全部用真实AI重跑 — 30件fallback替换为AI生成",
-    "desc": "持仓AI分析全部用真实AI重跑 — 30件fallback替换为AI生成"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "chore",
-    "title": "update buff_history.json, changelog.json, correlation_data.j",
-    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-03 01:43"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "持仓AI分析补全32件 — 分批调用+超时fallback兜底",
-    "desc": "持仓AI分析补全32件 — 分批调用+超时fallback兜底"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "AI推荐理由逻辑修正 — 好/坏例子引导+禁止反话",
-    "desc": "AI推荐理由逻辑修正 — 好/坏例子引导+禁止反话"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "style",
-    "title": "持仓明细AI分析重新设计 — 独立卡片+渐变色+分段理由/风险",
-    "desc": "持仓明细AI分析重新设计 — 独立卡片+渐变色+分段理由/风险"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "AI推荐理由去模板化 — 禁用语黑名单+必须引用数字+temperature 0.7",
-    "desc": "AI推荐理由去模板化 — 禁用语黑名单+必须引用数字+temperature 0.7"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "fix",
-    "title": "持仓明细AI分析名字匹配 — 中英文+模糊匹配，之前4件全未命中",
-    "desc": "持仓明细AI分析名字匹配 — 中英文+模糊匹配，之前4件全未命中"
-  },
-  {
-    "date": "2026-06-03",
-    "tag": "chore",
-    "title": "update buff_history.json, changelog.json, correlation_data.j",
-    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-03 01:15"
   }
 ]

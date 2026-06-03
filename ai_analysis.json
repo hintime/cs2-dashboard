@@ -1,188 +1,162 @@
 {
-  "M4A1消音版 | 苔藓石英 (崭新出厂)": {
-    "verdict": "持有/减仓/观望",
-    "confidence": 80,
-    "reason": "价格尚可",
-    "risk": "市场波动大"
-  },
   "法玛斯 | 纪念碑 (崭新出厂)": {
-    "verdict": "持有/减仓/观望",
-    "confidence": 50,
-    "reason": "价格过低",
-    "risk": "可能降价"
-  },
-  "P2000 | 火灵 (崭新出厂)": {
-    "verdict": "持有/减仓/观望",
-    "confidence": 50,
-    "reason": "价格过低",
-    "risk": "可能降价"
-  },
-  "UMP-45 | 炽烈之炎 (崭新出厂)": {
-    "verdict": "持有/减仓/观望",
-    "confidence": 50,
-    "reason": "价格过低",
-    "risk": "可能降价"
-  },
-  "M4A4 | 炼狱之火 (略有磨损)": {
-    "verdict": "持有/减仓/观望",
-    "confidence": 70,
-    "reason": "价格稳定",
-    "risk": "磨损影响"
-  },
-  "海军上尉里克索尔 | 海军水面战中心海豹部队": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "盈利空间较大",
-    "risk": "波动风险低"
+    "verdict": "减仓",
+    "confidence": 75,
+    "reason": "深套且长期趋势向下，利用短期反弹止损部分仓位。",
+    "risk": "反弹可能结束，后续仍有阴跌风险。",
+    "entryLow": 400,
+    "entryHigh": 445
   },
   "“蓝莓” 铅弹 | 海军水面战中心海豹部队": {
     "verdict": "减仓",
     "confidence": 80,
-    "reason": "亏损较大",
-    "risk": "市场风险高"
-  },
-  "M4A4 | 都市 DDPAT (崭新出厂)": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "成本较低",
-    "risk": "市场风险低"
-  },
-  "M4A4 | 多边形编辑 (略有磨损)": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "亏损较多",
-    "risk": "市场风险中"
-  },
-  "摩托手套（★） | 第三特种兵连 (久经沙场)": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "盈利空间稳定",
-    "risk": "波动风险低"
-  },
-  "加利尔 AR | 破坏者 (崭新出厂": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "盈利空间大",
-    "risk": "市场波动风险"
+    "reason": "亏损严重且冷门饰品流动性差，建议及时止损。",
+    "risk": "市场需求极低，难以成交。",
+    "entryLow": 110,
+    "entryHigh": 127
   },
   "沙哈马特教授 | 精锐分子": {
     "verdict": "减仓",
-    "confidence": 80,
-    "reason": "亏损严重",
-    "risk": "价格波动风险"
+    "confidence": 85,
+    "reason": "亏损超过80%，基本回本无望，割肉换流动性。",
+    "risk": "价格可能长期低迷。",
+    "entryLow": 50,
+    "entryHigh": 56
+  },
+  "M4A1消音版 | 苔藓石英 (崭新出厂)": {
+    "verdict": "持有",
+    "confidence": 70,
+    "reason": "近期反弹力度较大，且亏损相对较小，有希望回本。",
+    "risk": "大盘若转弱可能再次回落。",
+    "entryLow": 1000,
+    "entryHigh": 1136
+  },
+  "UMP-45 | 炽烈之炎 (崭新出厂)": {
+    "verdict": "减仓",
+    "confidence": 75,
+    "reason": "30日跌幅巨大，短期反弹微弱，趋势依然恶劣。",
+    "risk": "冲高回落风险大。",
+    "entryLow": 180,
+    "entryHigh": 198
   },
   "印花 | FaZe Clan（全息）| 2024年上海锦标赛": {
     "verdict": "减仓",
-    "confidence": 80,
-    "reason": "亏损严重",
-    "risk": "市场波动风险"
+    "confidence": 90,
+    "reason": "近期赛事印花供应量大且仍在暴跌，坚决止损。",
+    "risk": "赛事过后需求锐减，价格难以修复。",
+    "entryLow": 25,
+    "entryHigh": 31
+  },
+  "P2000 | 火灵 (崭新出厂)": {
+    "verdict": "持有",
+    "confidence": 65,
+    "reason": "短期反弹明显，亏损可控，可耐心等待解套。",
+    "risk": "上方套牢盘较多，上涨阻力大。",
+    "entryLow": 850,
+    "entryHigh": 955
+  },
+  "海军上尉里克索尔 | 海军水面战中心海豹部队": {
+    "verdict": "持有",
+    "confidence": 70,
+    "reason": "7日和30日均表现抗跌或上涨，走势独立。",
+    "risk": "冷门饰品随时可能补跌。",
+    "entryLow": 180,
+    "entryHigh": 200
+  },
+  "M4A4 | 多边形编辑 (略有磨损)": {
+    "verdict": "持有",
+    "confidence": 85,
+    "reason": "7日暴涨超50%，短期资金关注度高，顺势持有。",
+    "risk": "短期涨幅过大，获利盘抛压重。",
+    "entryLow": 120,
+    "entryHigh": 142
   },
   "印花 | Natus Vincere（全息）| 2024年上海锦标赛": {
     "verdict": "减仓",
+    "confidence": 85,
+    "reason": "新赛事印花价值缩水严重，不宜久留。",
+    "risk": "价格波动剧烈且整体向下。",
+    "entryLow": 25,
+    "entryHigh": 29
+  },
+  "印花 | HEROIC（全息）| 2024年上海锦标赛": {
+    "verdict": "减仓",
+    "confidence": 85,
+    "reason": "连续下跌且无止跌迹象，果断止损。",
+    "risk": "流动性逐渐枯竭。",
+    "entryLow": 28,
+    "entryHigh": 33
+  },
+  "M4A4 | 炼狱之火 (略有磨损)": {
+    "verdict": "减仓",
+    "confidence": 70,
+    "reason": "近期连续下跌，短期无反弹迹象，规避风险。",
+    "risk": "下跌通道完整，难言底部。",
+    "entryLow": 380,
+    "entryHigh": 425
+  },
+  "M4A4 | 都市 DDPAT (崭新出厂)": {
+    "verdict": "持有",
+    "confidence": 90,
+    "reason": "强势反弹且30日已转正，接近成本价，有望盈利。",
+    "risk": "注意前高压力位。",
+    "entryLow": 320,
+    "entryHigh": 359
+  },
+  "摩托手套（★） | 第三特种兵连 (久经沙场)": {
+    "verdict": "观望",
+    "confidence": 60,
+    "reason": "手套流动性一般，小幅亏损可暂时观望。",
+    "risk": "大盘下跌时手套往往跟跌。",
+    "entryLow": 280,
+    "entryHigh": 303
+  },
+  "加利尔 AR | 破坏者 (崭新出厂)": {
+    "verdict": "减仓",
     "confidence": 80,
-    "reason": "亏损严重",
-    "risk": "市场波动风险"
+    "reason": "30日近乎腰斩，短期弱反弹无法改变颓势。",
+    "risk": "反弹结束后继续探底。",
+    "entryLow": 160,
+    "entryHigh": 181
+  },
+  "印花 | Evil Geniuses （全息） | 2021年斯德哥尔摩锦标赛": {
+    "verdict": "观望",
+    "confidence": 55,
+    "reason": "老印花存量固定，深套下割肉意义不大。",
+    "risk": "缺乏炒作资金，难有大涨。",
+    "entryLow": 38,
+    "entryHigh": 43
+  },
+  "印花 | GamerLegion（全息）| 2025年布达佩斯锦标赛": {
+    "verdict": "减仓",
+    "confidence": 85,
+    "reason": "最新赛事印花贬值极快，止损为上。",
+    "risk": "后续将面临长期无人问津的局面。",
+    "entryLow": 15,
+    "entryHigh": 19
   },
   "M4A4 | 龙王 (略有磨损)": {
-    "verdict": "观望",
-    "confidence": 80,
-    "reason": "小幅度亏损",
-    "risk": "市场波动风险"
-  },
-  "印花 | HEROIC（全息）": {
     "verdict": "持有",
-    "confidence": 80,
-    "reason": "盈利空间较大",
-    "risk": "市场波动风险"
+    "confidence": 75,
+    "reason": "亏损极小，且近期走势平稳，持有待涨。",
+    "risk": "缺乏上涨催化剂。",
+    "entryLow": 150,
+    "entryHigh": 170
+  },
+  "印花 | Natus Vincere （全息） | 2021年斯德哥尔摩锦标赛": {
+    "verdict": "观望",
+    "confidence": 60,
+    "reason": "经典老印花，深套可继续持有等待周期回暖。",
+    "risk": "回本周期可能非常漫长。",
+    "entryLow": 23,
+    "entryHigh": 26
   },
   "准备就绪的列赞 | 军刀": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "成本较低",
-    "risk": "成本下降风险"
-  },
-  "印花 | Evil Geniuses （全息）": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "历史表现良好",
-    "risk": "市场波动风险"
-  },
-  "黑狼 | 军刀": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "成本较低",
-    "risk": "成本下降风险"
-  },
-  "M4A4 | 彼岸花 (略有磨损)": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "价格稳定",
-    "risk": "市场波动风险"
-  },
-  "印花 | paiN Gaming （全息）": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "成本高，现价低",
-    "risk": "市场波动风险"
-  },
-  "印花 | GamerLegion（全息）": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "成本高，现价低",
-    "risk": "市场波动风险"
-  },
-  "印花 | Natus Vincere （全息）": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "成本高，现价低",
-    "risk": "市场波动风险"
-  },
-  "印花 | Fnatic（全息）": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "成本高，现价低",
-    "risk": "市场波动风险"
-  },
-  "双持贝瑞塔 | 街头抢匪 (崭新出厂)": {
-    "verdict": "观望",
-    "confidence": 80,
-    "reason": "成本与现价持平",
-    "risk": "无盈亏风险"
-  },
-  "Complexity Gaming（全息）": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "成本高，现价合理",
-    "risk": "市场波动风险"
-  },
-  "Ninjas in Pyjamas （全息）": {
     "verdict": "减仓",
-    "confidence": 80,
-    "reason": "亏损较大，需控制风险",
-    "risk": "市场波动风险"
-  },
-  "RED Canids（全息）": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "成本高，现价合理",
-    "risk": "市场波动风险"
-  },
-  "MIBR（全息）": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "亏损较大，需控制风险",
-    "risk": "市场波动风险"
-  },
-  "DRYDEN - 触摸能量": {
-    "verdict": "观望",
-    "confidence": 80,
-    "reason": "亏损较多，需观察市场动态",
-    "risk": "市场波动风险"
-  },
-  "M4A4 | 蚀刻领主 (略有磨损)": {
-    "verdict": "持有",
-    "confidence": 80,
-    "reason": "现价低于成本，略有磨损但盈利",
-    "risk": "市场波动风险"
+    "confidence": 70,
+    "reason": "普通刀皮需求有限，半价亏损建议减仓。",
+    "risk": "市场偏好转移，难有起色。",
+    "entryLow": 58,
+    "entryHigh": 65
   }
 }
