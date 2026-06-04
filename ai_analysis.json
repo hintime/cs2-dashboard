@@ -1,38 +1,188 @@
 {
-  "法玛斯 | 纪念碑 (崭新出厂)": {
-    "verdict": "减仓",
-    "confidence": 75,
-    "reason": "利用7日反弹机会止损，长期下跌趋势未变。",
-    "risk": "短期反弹可能延续，但大概率是死猫反弹。",
-    "entryLow": 400,
-    "entryHigh": 450
-  },
-  "“蓝莓” 铅弹 | 海军水面战中心海豹部队": {
-    "verdict": "减仓",
-    "confidence": 70,
-    "reason": "亏损严重且反弹微弱，流动性较差，建议尽早脱手。",
-    "risk": "冷门饰品可能难以快速成交。",
-    "entryLow": 100,
-    "entryHigh": 120
-  },
-  "沙哈马特教授 | 精锐分子": {
-    "verdict": "减仓",
-    "confidence": 72,
-    "reason": "亏损超80%，趁当前微弱反弹割肉换仓。",
-    "risk": "价格可能继续阴跌。",
-    "entryLow": 50,
-    "entryHigh": 58
-  },
-  "M4A1消音版 | 苔藓石英 (崭新出厂)": {
+  "M4A1消音版": {
     "verdict": "持有",
     "confidence": 80,
-    "reason": "短期反弹强劲，亏损可控，有继续修复趋势的潜力。",
-    "risk": "若无法突破前期阻力位可能再次回落。",
-    "entryLow": 1000,
-    "entryHigh": 1150
+    "reason": "成本较高，但市场稳定",
+    "risk": "市场波动风险"
   },
-  "UMP-45 | 炽烈之炎 (崭新出厂)": {
+  "苔藓石英": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较高，但市场稳定",
+    "risk": "市场波动风险"
+  },
+  "法玛斯": {
     "verdict": "减仓",
-    "confidence": 78
+    "confidence": 80,
+    "reason": "成本远高于市场价",
+    "risk": "长期持有风险"
+  },
+  "纪念碑": {
+    "verdict": "减仓",
+    "confidence": 80,
+    "reason": "成本远高于市场价",
+    "risk": "长期持有风险"
+  },
+  "P2000": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较高，但市场稳定",
+    "risk": "市场波动风险"
+  },
+  "火灵": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较高，但市场稳定",
+    "risk": "市场波动风险"
+  },
+  "UMP-45": {
+    "verdict": "减仓",
+    "confidence": 80,
+    "reason": "成本远高于市场价",
+    "risk": "长期持有风险"
+  },
+  "炽烈之炎": {
+    "verdict": "减仓",
+    "confidence": 80,
+    "reason": "成本远高于市场价",
+    "risk": "长期持有风险"
+  },
+  "M4A4": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较高，但市场稳定",
+    "risk": "市场波动风险"
+  },
+  "炼狱之火": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较高，但市场稳定",
+    "risk": "市场波动风险"
+  },
+  "海军上尉里克索尔": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本相对较低",
+    "risk": "盈亏较大"
+  },
+  "“蓝莓” 铅弹": {
+    "verdict": "减仓",
+    "confidence": 80,
+    "reason": "盈亏过高",
+    "risk": "风险较大"
+  },
+  "M4A4 | 都市 DDPAT (崭新出厂)": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较低",
+    "risk": "盈亏一般"
+  },
+  "M4A4 | 多边形编辑 (略有磨损)": {
+    "verdict": "减仓",
+    "confidence": 80,
+    "reason": "盈亏过高",
+    "risk": "风险较大"
+  },
+  "摩托手套（★）": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本适中",
+    "risk": "盈亏一般"
+  },
+  "印花 | HEROIC（全息）": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "上海锦标赛热门",
+    "risk": "盈亏较大"
+  },
+  "准备就绪的列赞 | 军刀": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较低",
+    "risk": "盈亏适中"
+  },
+  "印花 | Evil Geniuses （全息）": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "斯德哥尔摩锦标赛热门",
+    "risk": "盈亏较大"
+  },
+  "黑狼 | 军刀": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较低",
+    "risk": "盈亏适中"
+  },
+  "M4A4 | 彼岸花 (略有磨损)": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本适中",
+    "risk": "盈亏较小"
+  },
+  "印花 | paiN Gaming （全息）": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较高，盈利空间大",
+    "risk": "市场波动风险"
+  },
+  "印花 | GamerLegion（全息）": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较低，仍有盈利空间",
+    "risk": "市场波动风险"
+  },
+  "印花 | Natus Vincere （全息）": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较高，盈利空间大",
+    "risk": "市场波动风险"
+  },
+  "印花 | Fnatic（全息）": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本较低，仍有盈利空间",
+    "risk": "市场波动风险"
+  },
+  "双持贝瑞塔 | 街头抢匪 (崭新出厂)": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本适中，盈利稳定",
+    "risk": "市场波动风险"
+  },
+  "印花 | Complexity Gaming（全息）": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本合理",
+    "risk": "波动较大"
+  },
+  "印花 | Ninjas in Pyjamas （全息）": {
+    "verdict": "减仓",
+    "confidence": 80,
+    "reason": "盈亏过大",
+    "risk": "市场风险高"
+  },
+  "印花 | RED Canids（全息）": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本合理",
+    "risk": "波动较大"
+  },
+  "印花 | MIBR（全息）": {
+    "verdict": "减仓",
+    "confidence": 80,
+    "reason": "盈亏过大",
+    "risk": "市场风险高"
+  },
+  "音乐盒 | DRYDEN - 触摸能量": {
+    "verdict": "持有",
+    "confidence": 80,
+    "reason": "成本合理",
+    "risk": "波动较大"
+  },
+  "M4A4 | 蚀刻领主 (略有磨损)": {
+    "verdict": "持有/减仓/观望",
+    "confidence": 80,
+    "reason": "成本8，盈亏-22%",
+    "risk": "略有磨损，需关注市场变化"
   }
 }
