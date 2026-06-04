@@ -3,6 +3,12 @@
     "date": "2026-06-04",
     "tag": "chore",
     "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-04 14:10"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
     "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-04 13:15"
   },
   {
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "涨跌榜过滤放宽 — 10点+6h容差，修复空榜",
     "desc": "涨跌榜过滤放宽 — 10点+6h容差，修复空榜"
-  },
-  {
-    "date": "2026-06-04",
-    "tag": "chore",
-    "title": "refresh data_status timestamps",
-    "desc": "refresh data_status timestamps"
   }
 ]
