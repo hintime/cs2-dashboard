@@ -2,6 +2,12 @@
   {
     "date": "2026-06-04",
     "tag": "chore",
+    "title": "update buff_history.json, changelog.json, correlation_data.j",
+    "desc": "on, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-04 14:42"
+  },
+  {
+    "date": "2026-06-04",
+    "tag": "chore",
     "title": "update ai_analysis.json, ai_daily_report.json, ai_market_ins",
     "desc": "ght.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-04 14:15"
   },
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "AI持仓分析全量重建—31件稳跑5秒间隔",
     "desc": "AI持仓分析全量重建—31件稳跑5秒间隔"
-  },
-  {
-    "date": "2026-06-04",
-    "tag": "fix",
-    "title": "涨跌榜去除时间容差—取最近24h数据点即可",
-    "desc": "涨跌榜去除时间容差—取最近24h数据点即可"
   }
 ]
