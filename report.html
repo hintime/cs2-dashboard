@@ -73,24 +73,10 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
     <div id="recBarChart"></div>
   </div>
 
-  <!-- ═══ 市场概览 ═══ -->
-  <div class="card" id="marketSection">
-    <h2>🌐 市场概览</h2>
-    <div class="kpis" id="marketKpis"></div>
-    <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-weight:600">在售量 TOP 5</div>
-    <div id="topSellList"></div>
-  </div>
-
   <!-- ═══ AI 分析 ═══ -->
   <div class="card" id="aiReportSection">
     <h2>🧠 AI 持仓分析</h2>
     <div id="aiReportContent" class="empty">加载中...</div>
-  </div>
-
-  <!-- ═══ 本地跟踪数据 ═══ -->
-  <div class="card" id="trackingSection">
-    <h2>📈 推荐追踪（浏览器本地数据）</h2>
-    <div id="trackingContent" class="empty">加载本地数据...</div>
   </div>
 </div>
 
@@ -154,47 +140,6 @@ function renderReport(report) {
     }
   }
 
-  // ── 市场概览 ──
-  var m = report.market;
-  if (m) {
-    document.getElementById('marketKpis').innerHTML =
-      '<div class="kpi"><div class="kpi-l">全量饰品</div><div class="kpi-v blue">' + (m.total || 0).toLocaleString() + '</div></div>' +
-      '<div class="kpi"><div class="kpi-l">均价</div><div class="kpi-v">¥' + (m.avg_p || 0).toFixed(0) + '</div></div>';
-
-    var tsl = document.getElementById('topSellList');
-    if (tsl && m.top_sell) {
-      tsl.innerHTML = m.top_sell.map(function(s) {
-        return '<div class="row"><span class="n">' + esc(s.n) + '</span><span class="v" style="color:var(--text3)">' + s.s.toLocaleString() + '件</span></div>';
-      }).join('');
-    }
-  }
-
-  // ── 本地追踪数据 ──
-  var tc = document.getElementById('trackingContent');
-  if (tc) {
-    try {
-      var tracks = JSON.parse(localStorage.getItem('cs2_rec_tracks')) || [];
-      if (tracks.length === 0) { tc.innerHTML = '<div class="empty">还没有记录，访问主页面后自动记录推荐数据</div>'; }
-      else {
-        var cur = {};
-        try {
-          fetch('market.json?_t=' + Date.now()).then(function(r) { return r.json(); }).then(function(data) {
-            var recs = (data.recommendations && data.recommendations.all) || data.steam_market_recs || [];
-            recs.forEach(function(r) { cur[r.name] = r; });
-          }).catch(function() {});
-        } catch(e) {}
-        var rows = tracks.slice().reverse().slice(0, 50).map(function(t) {
-          var c = cur[t.name];
-          var cp = c ? (c.price || c.eco_price || 0) : 0;
-          var ret = t.recPrice > 0 && cp > 0 ? ((cp - t.recPrice) / t.recPrice * 100) : 0;
-          var cl = ret > 2 ? 'rise' : ret < -2 ? 'fall' : 'text3';
-          return '<div class="row"><span class="n">' + esc(t.name) + '</span><span style="font-size:10px;color:var(--text3);min-width:80px">' + t.date + '</span><span class="v" style="color:var(' + cl + ')">' + (ret >= 0 ? '+' : '') + ret.toFixed(1) + '%</span></div>';
-        }).join('');
-        tc.innerHTML = '<div style="font-size:10px;color:var(--text3);margin-bottom:4px">共 ' + tracks.length + ' 条记录</div>' + rows;
-      }
-    } catch(e) { tc.innerHTML = '<div class="empty">读取本地数据失败</div>'; }
-  }
-}
 
 function esc(s) {
   if (!s) return '';
