@@ -1160,9 +1160,9 @@ def generate_ai_market_insight():
             f'要求：分析短期市场情绪、资金流向、风险点。简洁专业，100-150字。'
         )
         data = json.dumps({
-            'model': 'glm-4.7-flash',
-            'messages': [{'role': 'user', 'content': prompt}],
-            'max_tokens': 2000, 'temperature': 0.5
+            'model': 'glm-4-flash',
+            'messages': [{'role': 'system', 'content': '你是CS2市场分析师，回答一段150字分析。'}, {'role': 'user', 'content': prompt}],
+            'max_tokens': 500, 'temperature': 0.5
         }).encode('utf-8')
         req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
@@ -1170,6 +1170,7 @@ def generate_ai_market_insight():
         resp = urllib.request.urlopen(req, timeout=30)
         r = json.loads(resp.read().decode('utf-8'))
         insight = r['choices'][0]['message']['content'].strip()
+        # 如果返回的是 JSON 包装的，提取文本
         result = {'date': time.strftime('%Y-%m-%d %H:%M'), 'insight': insight,
                    'stats': {'total': total, 'avg_p': avg_p, 'median_p': median_p}}
         write_json(os.path.join(DATA_DIR, 'ai_market_insight.json'), result)
