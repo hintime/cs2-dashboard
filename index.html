@@ -744,7 +744,7 @@ html { scroll-behavior: smooth; }
   <div id="scanContent" style="padding:0 20px 16px">
     <div id="scanKpis" class="scan-kpis"></div>
     <div id="aiInsightBar" style="display:none;margin:8px 0 12px;padding:10px 16px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(59,130,246,.05));border:1px solid rgba(168,85,247,.2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.6">
-      <span style="color:#c084fc;font-weight:700">🤖 智谱AI</span> · <span id="aiInsightText">分析中...</span>
+      <span style="color:#c084fc;font-weight:700">🤖 智谱AI</span> · <span id="aiInsightText">分析中...</span> <span id="aiInsightTime" style="font-size:10px;color:var(--text3)"></span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
       <div class="scan-list-card" id="scanGainers"></div>
@@ -1949,6 +1949,8 @@ function generateAIInsight() {
     if (data && data.insight) {
       text.innerHTML = data.insight;
       bar.style.display = '';
+      var t = document.getElementById('aiInsightTime');
+      if (t && data.date) t.textContent = '更新于' + data.date.slice(5);
       return;
     }
     // 回退：用持仓 AI 数据生成简易研判
