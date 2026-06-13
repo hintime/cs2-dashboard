@@ -1,3 +1,23 @@
-[
-  "picks"
-]
+{
+  "picks": [
+    {
+      "name": "MP9（纪念品）",
+      "reason": "跌幅较大，现价较低，市场关注度可能回升",
+      "target": "+30%",
+      "confidence": 80
+    },
+    {
+      "name": "SSG 08",
+      "reason": "跌幅适中，现价合理，丛林虚线版本通常受欢迎",
+      "target": "+25%",
+      "confidence": 80
+    },
+    {
+      "name": "新星",
+      "reason": "跌幅较小，现价较高，致幻时刻版本有收藏价值",
+      "target": "+20%",
+      "confidence": 70
+    }
+  ],
+  "rationale": "根据跌幅、现价和市场关注度综合评估"
+}
