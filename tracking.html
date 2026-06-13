@@ -46,6 +46,10 @@ td{padding:5px 8px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)
     <h2>📋 推荐记录 (按当前价格实时计算)</h2>
     <table><thead><tr><th style="width:42%">饰品</th><th>推荐日</th><th>推荐价</th><th>当前价</th><th style="text-align:right">收益</th></tr></thead><tbody id="trackList"></tbody></table>
   </div>
+  <div class="card" id="aiTrackCard" style="display:none">
+    <h2>🧠 AI 追踪分析</h2>
+    <div id="aiTrackContent" class="empty">分析中...</div>
+  </div>
 </div>
 <script src="ai-badge.js"></script>
 <script>
@@ -182,6 +186,26 @@ function renderTracks(tracks, nowPrices, marketData) {
 
 loadTracks();
 (function(){var _l=Date.now();setInterval(function(){fetch('market.json?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.update_time||d.alerts_updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadTracks();}}).catch(function(){})},60000)})();
+  // ── AI 追踪分析 ──
+  function runAITrackAnalysis() {
+    var card = document.getElementById('aiTrackCard');
+    var el = document.getElementById('aiTrackContent');
+    if (!el || total < 3) return;
+    card.style.display = '';
+    
+    var summary = '累计推荐'+total+'件，'+uniqueDays+'天，盈利率'+(total>0?(profited/total*100).toFixed(0):0)+'%，平均收益'+(avgRet>=0?'+':'')+avgRet.toFixed(1)+'%';
+    if (bestName) summary += '，最佳'+bestName.slice(0,15)+'+'+bestRet.toFixed(1)+'%';
+    if (worstName) summary += '，最差'+worstName.slice(0,15)+worstRet.toFixed(1)+'%';
+    
+    fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+      method:'POST', headers:{'Authorization':'Bearer 981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz','Content-Type':'application/json'},
+      body:JSON.stringify({model:'glm-4-flash',messages:[{role:'system',content:'你是CS2投资追踪分析师。50-80字评价和建议。'},{role:'user',content:'我的CS2饰品推荐追踪：'+summary}],max_tokens:300,temperature:0.5})
+    }).then(function(r){return r.json()}).then(function(data){
+      var text = (data.choices && data.choices[0] && data.choices[0].message.content) || '';
+      el.innerHTML = '<div style=\"font-size:12px;line-height:1.7;color:var(--text2)\">'+text+'</div>';
+    }).catch(function(){ el.innerHTML = '<span style=\"color:var(--text3)\">AI 暂不可用</span>'; });
+  }
+  runAITrackAnalysis();
 </script>
 </body>
 </html>
