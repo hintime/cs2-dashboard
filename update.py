@@ -1293,7 +1293,7 @@ def generate_ai_recommendations():
             f'必须引用候选列表里的数字（评分、价格、在售量、溢价%），每件理由至少引用2个数字。'
         )
         data = json.dumps({
-            'model': 'glm-4-flash',
+            'model': 'glm-4.7-flash',
             'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON格式。'}, {'role': 'user', 'content': prompt}],
             'response_format': {'type': 'json_object'},
             'max_tokens': 2000, 'temperature': 0.3
