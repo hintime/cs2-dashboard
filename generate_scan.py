@@ -155,6 +155,9 @@ def main():
             eco_chg = (last_p - prev_p) / prev_p * 100
             if abs(eco_chg) < 0.01: continue
             cn = name_map.get(name, name)
+            # 过滤破损不堪/战痕累累/涂鸦/印花
+            if any(w in cn for w in ('破损不堪', '战痕累累', 'Battle-Scarred', 'Well-Worn', 'Souvenir', '涂鸦', 'Graffiti', '印花', 'Sticker')):
+                continue
             gains.append((cn[:24], round(eco_chg, 1), last_p))
         gains.sort(key=lambda x: x[1], reverse=True)
         gainers = [{'n': g[0], 'r7': g[1], 'p': g[2]} for g in gains if g[1] > 0][:10]
