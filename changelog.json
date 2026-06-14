@@ -1,6 +1,12 @@
 [
   {
     "date": "2026-06-14",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_stock_picks.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-14 19:53"
+  },
+  {
+    "date": "2026-06-14",
     "tag": "fix",
     "title": "设计升级: OLED暗黑主题+Fira字体+无emoji+微光阴影",
     "desc": "设计升级: OLED暗黑主题+Fira字体+无emoji+微光阴影"
@@ -112,11 +118,5 @@
     "tag": "chore",
     "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
     "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-14 01:14"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "fix",
-    "title": "优化: GLM-4标注修正+hero精简+AI推荐刷新+缓存版本号",
-    "desc": "优化: GLM-4标注修正+hero精简+AI推荐刷新+缓存版本号"
   }
 ]
