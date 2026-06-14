@@ -231,53 +231,65 @@ def trim_old_data(max_days=90):
 # ═══════════════ 前端摘要生成 ═══════════════
 
 def generate_price_summary(output_path='price_summary.json'):
-    """从 SQLite 生成 price_summary.json（前端图表用）"""
+    """从 SQLite 生成 price_summary.json（前端图表用）
+    优先级：BUFF > YY > ECO（按物品覆盖率选最优通道）
+    """
     conn = get_db()
     try:
-        # 获取所有物品
-        items = [r[0] for r in conn.execute(
-            'SELECT DISTINCT item_name FROM prices WHERE channel="eco"'
+        # 获取所有物品（跨所有通道）
+        all_items = [r[0] for r in conn.execute(
+            'SELECT DISTINCT item_name FROM prices'
         ).fetchall()]
 
         summary = {}
-        now_ts = time.time()
 
-        for item_name in items:
-            # 最近 30 天的日平均价
-            daily = conn.execute(
-                'SELECT date(ts) as day, ROUND(AVG(price), 2) '
-                'FROM prices WHERE item_name=? AND channel="eco" '
-                'AND ts >= date("now", "-30 days") '
-                'GROUP BY day ORDER BY day',
-                (item_name,)
-            ).fetchall()
+        for item_name in all_items:
+            # 按优先级尝试各通道：BUFF(最全) → YY → ECO
+            best_channel = None
+            best_daily = []
 
-            if not daily:
+            for ch in ('buff', 'yy', 'eco'):
+                daily = conn.execute(
+                    'SELECT date(ts) as day, ROUND(AVG(price), 2) '
+                    'FROM prices WHERE item_name=? AND channel=? '
+                    'AND ts >= date("now", "-30 days") '
+                    'GROUP BY day ORDER BY day',
+                    (item_name, ch)
+                ).fetchall()
+
+                if daily and len(daily) >= 2:  # 至少 2 天数据才有意义
+                    best_channel = ch
+                    best_daily = daily
+                    break
+                elif daily and not best_daily:
+                    # 作为兜底（哪怕只有1天）
+                    best_channel = ch
+                    best_daily = daily
+
+            if not best_daily:
                 continue
 
-            days_list = [d[0] for d in daily]
-            prices_list = [d[1] for d in daily]
+            days_list = [d[0] for d in best_daily]
+            prices_list = [d[1] for d in best_daily]
 
             if len(prices_list) >= 2:
-                # 7日涨跌
                 mid = max(0, len(prices_list) - 8)
                 old_7 = prices_list[mid]
                 new_7 = prices_list[-1]
                 chg_7 = round((new_7 - old_7) / old_7 * 100, 1) if old_7 > 0 else 0
 
-                # 30日涨跌
                 old_30 = prices_list[0]
                 new_30 = prices_list[-1]
                 chg_30 = round((new_30 - old_30) / old_30 * 100, 1) if old_30 > 0 else 0
             else:
                 chg_7 = chg_30 = 0
 
-            # 只保留日期和均价（精简）
             summary[item_name] = {
                 'days': days_list[-30:],
                 'prices': prices_list[-30:],
                 'change_7d': chg_7,
                 'change_30d': chg_30,
+                'channel': best_channel,  # 标记数据来源
             }
 
         with open(output_path, 'w', encoding='utf-8') as f:
