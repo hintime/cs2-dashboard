@@ -42,6 +42,53 @@ ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
+# ═══════════════ JSON 完整性自动修复 ═══════════════
+def _fix_corrupted_jsons():
+    """扫描所有 JSON 文件，自动修复 git 冲突标记"""
+    import shutil
+    fixed = 0
+    for filename in os.listdir(DATA_DIR):
+        if not filename.endswith('.json'): continue
+        path = os.path.join(DATA_DIR, filename)
+        if os.path.getsize(path) < 5: continue
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            # 检测冲突标记
+            if '<<<<<<<' in content and '=======' in content and '>>>>>>>' in content:
+                try:
+                    # 1. 先尝试从 git HEAD 恢复
+                    result = subprocess.run(
+                        ['git', 'checkout', 'HEAD', '--', filename],
+                        capture_output=True, text=True, cwd=DATA_DIR, creationflags=subprocess.CREATE_NO_WINDOW
+                    )
+                    if result.returncode == 0:
+                        print(f'[FIX] {filename}: restored from git')
+                        fixed += 1
+                        continue
+                except: pass
+                # 2. git 恢复失败，手动取 HEAD 版本内容
+                try:
+                    head = content.split('>>>>>>>')[0].split('=======')[0].replace('<<<<<<< HEAD', '')
+                    with open(path, 'w', encoding='utf-8') as f:
+                        f.write(head.strip())
+                    json.loads(head.strip())  # 验证
+                    print(f'[FIX] {filename}: resolved conflict (HEAD)')
+                    fixed += 1
+                except Exception as e:
+                    print(f'[FIX] {filename}: FAILED: {e}', file=sys.stderr)
+            else:
+                # 无冲突标记但 JSON 损坏？验证一下
+                try:
+                    json.loads(content)
+                except:
+                    # 静默失败 — 可能是大文件还没写完
+                    pass
+        except Exception:
+            pass
+    if fixed:
+        print(f'[FIX] Auto-repaired {fixed} corrupted JSONs')
+    return fixed
 # Track which files were modified
 dirty_files = set()
 
@@ -1421,6 +1468,9 @@ def push_all():
     """Push all dirty files in a single commit — avoids SHA conflicts"""
     dirty_files.discard('price_history.json')  # never push to GitHub
     
+    # ── 推送前修复所有损坏的 JSON ──
+    _fix_corrupted_jsons()
+    
     # ── 自动同步 changelog.json（从 git log 提取）──
     sync_changelog()
     
@@ -1573,6 +1623,9 @@ def main():
                        creationflags=cf, capture_output=True)
     except Exception as e:
         print(f'[GIT] Sync failed: {e}', file=sys.stderr)
+    
+    # 兜底扫描：修复 git sync 残留的冲突标记
+    _fix_corrupted_jsons()
 
     print(f'=== CS2 Dashboard Update ({mode}) ===')
 
