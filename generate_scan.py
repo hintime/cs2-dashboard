@@ -13,7 +13,30 @@ def read_json(path):
     if '<<<<<<<' in content and '>>>>>>>' in content:
         content = content.split('>>>>>>>')[0].split('=======')[0].replace('<<<<<<< HEAD', '')
         content = content.strip()
-    return json.loads(content)
+    # 尝试解析，失败则自动修复截断
+    try:
+        return json.loads(content)
+    except json.JSONDecodeError as e:
+        # 检查是否是截断（文件末尾不完整）
+        if e.pos >= len(content.rstrip()) - 50:
+            # 截断修复：计算未闭合的括号数并补全
+            before = content[:e.pos]
+            open_b = before.count('{') - before.count('}')
+            open_a = before.count('[') - before.count(']')
+            content = content.rstrip()
+            if content.endswith(','):
+                content = content[:-1].rstrip()
+            content += '\n' + '  ' * (open_a) + ']' * open_a + '}' * open_b
+            try:
+                fixed = json.loads(content)
+                # 写回修复后的文件
+                with open(path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                print(f'[AUTO-FIX] {os.path.basename(path)} 截断已修复 (补充 {open_a}个] {open_b}个}})')
+                return fixed
+            except:
+                pass
+        raise e
 
 def write_json(path, data):
     with open(path, 'w', encoding='utf-8') as f:

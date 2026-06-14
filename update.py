@@ -78,12 +78,33 @@ def _fix_corrupted_jsons():
                 except Exception as e:
                     print(f'[FIX] {filename}: FAILED: {e}', file=sys.stderr)
             else:
-                # 无冲突标记但 JSON 损坏？验证一下
+                # 无冲突标记但 JSON 损坏？验证并尝试修复截断
                 try:
                     json.loads(content)
-                except:
-                    # 静默失败 — 可能是大文件还没写完
-                    pass
+                except json.JSONDecodeError as e:
+                    # 检查是否截断（错误位置在文件末尾附近）
+                    stripped = content.rstrip()
+                    if e.pos >= len(stripped) - 200:
+                        try:
+                            before = content[:e.pos]
+                            open_b = before.count('{') - before.count('}')
+                            open_a = before.count('[') - before.count(']')
+                            repaired = stripped
+                            if repaired.endswith(','):
+                                repaired = repaired[:-1].rstrip()
+                            repaired += '\n' + '  ' * open_a + ']' * open_a + '}' * open_b
+                            json.loads(repaired)  # 验证
+                            # 备份原文件
+                            backup = path + '.broken'
+                            shutil.copy2(path, backup)
+                            with open(path, 'w', encoding='utf-8') as f:
+                                f.write(repaired)
+                            print(f'[FIX] {filename}: truncated JSON repaired (+{open_a}]+{open_b}}})')
+                            fixed += 1
+                        except Exception as e2:
+                            print(f'[WARN] {filename}: JSON corrupt but not truncation: {e2}', file=sys.stderr)
+                    else:
+                        print(f'[WARN] {filename}: JSON parse error at pos {e.pos}/{len(stripped)}: {e.msg}', file=sys.stderr)
         except Exception:
             pass
     if fixed:
@@ -918,8 +939,21 @@ def read_json(path):
         return json.load(f)
 
 def write_json(path, data):
-    with open(path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    """原子写入 JSON：先写临时文件，再 rename，防止截断"""
+    import tempfile
+    dirname = os.path.dirname(path) or '.'
+    fd, tmp = tempfile.mkstemp(suffix='.json', dir=dirname)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        if os.name == 'nt':
+            os.replace(tmp, path)  # Windows 上原子替换
+        else:
+            os.rename(tmp, path)
+    except:
+        # 回退到直接写入
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
     dirty_files.add(os.path.basename(path))
 
 def generate_price_summary():
