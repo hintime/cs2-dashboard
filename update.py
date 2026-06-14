@@ -800,15 +800,13 @@ def fetch_steamdt_prices(hash_names, verbose=True):
 
     # ── 全量追踪：batch API，每分钟1次，每次100件 ──
     # 循环分批查询所有物品（每批100件，间隔65秒，遵守1次/分钟限制）
+    # 每批完成立即合并到 eco_tracked.json，网络抖动不丢已查数据
     prices = {}
     total_batches = (len(hash_names) + 99) // 100
-    # 自动模式下每次最多跑 5 批（约5分钟），避免阻塞下次任务
-    # 交互模式下跑满全部
-    import os as _os
-    is_scheduled = _os.environ.get('SCHEDULED_RUN', '').strip() == '1'
-    max_batches = 5 if is_scheduled else total_batches
+    # 自动模式下每批完成都写回 eco_tracked.json，不限批数
+    eco_path = os.path.join(DATA_DIR, 'eco_tracked.json')
     try:
-        for batch_idx in range(min(max_batches, total_batches)):
+        for batch_idx in range(total_batches):
             start_i = batch_idx * 100
             batch = hash_names[start_i:start_i + 100]
             if not batch:
@@ -818,22 +816,47 @@ def fetch_steamdt_prices(hash_names, verbose=True):
             if batch_idx > 0:
                 time.sleep(65.0)  # 遵守1次/分钟限制（加5秒缓冲）
             body = _json.dumps({'marketHashNames': batch}).encode('utf-8')
-            resp = http_post_raw(
-                'https://open.steamdt.com/open/cs2/v1/price/batch',
-                body,
-                headers={'Authorization': f'Bearer {STEAM_KEY}', 'Content-Type': 'application/json'},
-                timeout=30,
-            )
-            result = _json.loads(resp)
-            if result.get('success'):
-                for item_data in result.get('data', []):
-                    hn = item_data.get('marketHashName', '')
-                    if hn and item_data.get('dataList'):
-                        data = _parse_buff(hn, {'success': True, 'data': item_data['dataList']})
-                        if data:
-                            prices[hn] = data
-            if verbose:
-                print(f'[SteamDT] Batch {batch_idx+1} got prices for batch')
+            try:
+                resp = http_post_raw(
+                    'https://open.steamdt.com/open/cs2/v1/price/batch',
+                    body,
+                    headers={'Authorization': f'Bearer {STEAM_KEY}', 'Content-Type': 'application/json'},
+                    timeout=30,
+                )
+                result = _json.loads(resp)
+                batch_saved = 0
+                if result.get('success'):
+                    for item_data in result.get('data', []):
+                        hn = item_data.get('marketHashName', '')
+                        if hn and item_data.get('dataList'):
+                            data = _parse_buff(hn, {'success': True, 'data': item_data['dataList']})
+                            if data:
+                                prices[hn] = data
+                                batch_saved += 1
+                # 每批完成后立即保存到 eco_tracked.json（防网络中断丢数据）
+                if batch_saved > 0 and os.path.exists(eco_path):
+                    try:
+                        eco_items = read_json(eco_path)
+                        if isinstance(eco_items, list):
+                            for item in eco_items:
+                                hn = item.get('HashName', '')
+                                if hn in prices:
+                                    bp = prices[hn]
+                                    item['buff_sell'] = bp.get('buff_sell', 0)
+                                    item['buff_buy'] = bp.get('buff_buy', 0)
+                                    item['buff_sell_num'] = bp.get('buff_sell_num', 0)
+                                    item['buff_buy_num'] = bp.get('buff_buy_num', 0)
+                                    item['buff_source'] = bp.get('buff_source', '')
+                                    item['platforms'] = bp.get('platforms', {})
+                            write_json(eco_path, eco_items)
+                    except Exception as e2:
+                        if verbose:
+                            print(f'[SteamDT] eco_tracked save failed: {e2}', file=sys.stderr)
+                if verbose:
+                    print(f'[SteamDT] Batch {batch_idx+1}/{total_batches}: saved {batch_saved} prices, total accumulated {len(prices)}')
+            except Exception as e:
+                if verbose:
+                    print(f'[SteamDT] Batch {batch_idx+1} failed (network): {e}', file=sys.stderr)
         if verbose:
             print(f'[SteamDT] Total from {len(hash_names)} items: {len(prices)} prices ({len(prices)/max(len(hash_names),1)*100:.1f}% coverage)')
     except Exception as e:
@@ -2068,7 +2091,7 @@ def main():
                 tracked_path = os.path.join(DATA_DIR, 'eco_tracked.json')
                 if os.path.exists(tracked_path):
                     tracked = read_json(tracked_path)
-                    now = time.strftime('%Y-%m-%dT%H:%M', time.gmtime())
+                    now = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
                     records = []
                     recorded = 0
                     for it in tracked:
