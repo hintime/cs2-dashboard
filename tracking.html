@@ -67,20 +67,24 @@ function loadTracks() {
         var nowPrices = {};
         if (marketData && marketData.recommendations && marketData.recommendations.all) {
           marketData.recommendations.all.forEach(function(rec) {
-            nowPrices[rec.name] = rec.price || rec.eco_price || 0;
+            var p = rec.price || rec.eco_price || 0;
+            if (rec.name) nowPrices[rec.name] = p;
+            if (rec.hash_name) nowPrices[rec.hash_name] = p;
           });
         }
 
-        // 也从 eco_tracked 补充价格（用 HashName + GoodsName 双匹配）
+        // 也从 eco_tracked 补充价格和中文名映射（用 HashName + GoodsName 双匹配）
         return fetch('eco_tracked.json?v=' + Date.now())
           .then(function(r) { return r.ok ? r.json() : []; })
           .catch(function() { return []; })
           .then(function(ecoData) {
+            var nameMap = {};
             if (Array.isArray(ecoData)) {
               ecoData.forEach(function(item) {
                 var hn = item.HashName || '';
                 var gn = item.GoodsName || '';
                 var p = item.Price || item.eco_price || 0;
+                if (hn && gn) nameMap[hn] = gn;
                 if (p > 0) {
                   if (hn && !nowPrices[hn]) nowPrices[hn] = p;
                   if (gn && !nowPrices[gn]) nowPrices[gn] = p;
@@ -97,19 +101,19 @@ function loadTracks() {
                     nowPrices[key] = ps[key].last;
                   }
                 }
-                renderTracks(tracks, nowPrices, marketData);
+                renderTracks(tracks, nowPrices, marketData, nameMap);
               });
           });
       })
       .catch(function() {
-        renderTracks(tracks, {}, null);
+        renderTracks(tracks, {}, null, {});
       });
   } catch(e) {
     document.getElementById('trackKpis').innerHTML = '<div class="kpi"><div class="kpi-l">错误</div><div class="kpi-v" style="font-size:12px">读取本地数据失败</div></div>';
   }
 }
 
-function renderTracks(tracks, nowPrices, marketData) {
+function renderTracks(tracks, nowPrices, marketData, nameMap) {
   var timeStr = marketData && marketData.update_time
     ? '数据更新: ' + new Date(marketData.update_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})
     : '共 ' + tracks.length + ' 条记录';
