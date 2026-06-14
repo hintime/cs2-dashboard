@@ -1994,17 +1994,39 @@ function renderAIRecommendations() {
     var rankIcons = ['🥇','🥈','🥉','4️⃣','5️⃣'];
     picksEl.innerHTML = picks.map(function(p, i) {
       var rc = rankColors[i] || 'var(--text3)';
-      var r = esc(p.reason || ''); var k = esc(p.risk || '');
-      return '<div style="position:relative;padding:12px 14px;background:rgba(255,255,255,.04);border-radius:10px;border:1px solid rgba(255,255,255,.08);transition:all .2s">' +
-        '<div style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,' + rc + ',transparent);border-radius:3px 0 0 3px"></div>' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
-          '<span style="font-size:18px">' + rankIcons[i] + '</span>' +
-          '<span style="font-size:13px;font-weight:700;color:var(--text)">' + esc(p.name || '') + '</span>' +
+      var r = p.reason || '';
+      var k = p.risk || '';
+      // 解析五维分析（❶❷❸❹❺）
+      var points = [];
+      var dimMatch = r.match(/[❶❷❸❹❺][^❶❷❸❹❺]*/g);
+      if (dimMatch) {
+        points = dimMatch.map(function(d) { return d.trim(); });
+      } else {
+        points = [r];
+      }
+      return '<div style="position:relative;padding:16px 18px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(255,255,255,.06);transition:all .2s;margin-bottom:10px">' +
+        // Rank + Name header
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
+          '<span style="font-size:13px;font-weight:700;color:var(--text)">#' + (i+1) + '</span>' +
+          '<span style="font-size:14px;font-weight:600;color:var(--text)">' + esc(p.name || '') + '</span>' +
         '</div>' +
-        '<div style="margin-left:28px">' +
-          '<div style="font-size:11px;color:var(--fall);line-height:1.6;margin-bottom:6px">📈 ' + r + '</div>' +
-          (k ? '<div style="font-size:10px;color:#ff6b6b;line-height:1.4;padding:4px 8px;background:rgba(255,107,107,.08);border-radius:6px">⚠ ' + k + '</div>' : '') +
+        // 关键信号 - 从 points 提取
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">' +
+          points.map(function(pt, idx) {
+            var label = pt.replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'');
+            var isPos = /买入|看好|优良|供<求|溢/.test(label);
+            var isNeg = /风险|暂无|供>求|折价/.test(label);
+            var icon = isNeg ? '<span style="color:#ef4444;font-weight:700">✗</span>' : '<span style="color:#22c55e;font-weight:700">✓</span>';
+            if (isPos) icon = '<span style="font-size:11px;font-weight:700;color:#22c55e">●</span>';
+            if (isNeg) icon = '<span style="font-size:11px;font-weight:700;color:#ef4444">●</span>';
+            return '<div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;line-height:1.6;color:var(--text2);padding:4px 0">' +
+              icon + '<span>' + esc(label) + '</span>' +
+            '</div>';
+          }).join('') +
         '</div>' +
+        // 风险提示
+        (k ? '<div style="font-size:10px;color:#ef4444;line-height:1.5;padding:6px 10px;background:rgba(239,68,68,.06);border-radius:6px;border-left:2px solid rgba(239,68,68,.3);margin-top:6px">' +
+          '<span style="opacity:.7">⚠</span> ' + esc(k) + '</div>' : '') +
       '</div>';
     }).join('');
     // 策略和总览
