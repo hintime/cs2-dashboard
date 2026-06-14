@@ -1,15 +1,17 @@
 """
-Generate correlation_data.json — pre-computed top correlations from price_history.json.
+Generate correlation_data.json — pre-computed top correlations from SQLite price_history.
 Avoids loading 75MB JSON in browser.
 """
-import json, os, time
+import json, os, time, sys
 
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, DATA_DIR)
 
 def main():
     t0 = time.time()
-    print('[CORR] Loading price_history.json...')
-    ph = json.load(open(os.path.join(DATA_DIR, 'price_history.json'), encoding='utf-8'))
+    print('[CORR] Loading from price_history.db...')
+    import price_db
+    ph = price_db.get_raw_history()
 
     # Extract daily average prices per item (filter excluded)
     exclude_kw = ['Well-Worn', 'Battle-Scarred', '破损不堪', '战痕累累', 'Souvenir',

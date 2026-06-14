@@ -382,7 +382,7 @@ def compute_alerts(steamdt_prices):
         rate_1 = round((current - prev_price) / prev_price * 100, 2) if prev_price > 0 else 0
         rate_7 = round((current - old_price) / old_price * 100, 2) if old_price > 0 else 0
         
-        # Fallback: 如果 SteamDT 历史不足，从 price_history.json 的 ECO 数据补
+        # Fallback: 如果 SteamDT 历史不足，从 price_summary.json 补
         if rate_7 == 0 or rate_1 == 0:
             ph = _get_ph_summary(name)
             if ph:

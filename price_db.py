@@ -323,6 +323,26 @@ def get_movers_data():
     finally:
         conn.close()
 
+def get_raw_history():
+    """返回旧 price_history.json 格式的全量数据
+    {item_name: {eco: [{t, p}, ...], buff: [...], yy: [...]}}
+    供 generate_correlation.py 等下游使用
+    """
+    conn = get_db()
+    try:
+        from collections import defaultdict
+        result = defaultdict(lambda: {'eco': [], 'buff': [], 'yy': []})
+        rows = conn.execute(
+            'SELECT item_name, channel, ts, price FROM prices ORDER BY ts'
+        ).fetchall()
+        for name, ch, ts, price in rows:
+            if ch not in ('eco', 'buff', 'yy'):
+                continue
+            result[name][ch].append({'t': ts, 'p': price})
+        return dict(result)
+    finally:
+        conn.close()
+
 
 # ═══════════════ CLI ═══════════════
 
