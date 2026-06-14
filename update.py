@@ -964,6 +964,48 @@ def generate_price_summary():
     except Exception as e:
         print(f'[SUMMARY] generate_price_summary failed: {e}', file=sys.stderr)
 
+def merge_buff_history_to_tracked():
+    """从 buff_history.json 提取最新 BUFF/YY 价格回填 eco_tracked.json
+    作为 CSQAQ API 限流时的兜底方案
+    """
+    bh_file = os.path.join(DATA_DIR, 'buff_history.json')
+    trk_file = os.path.join(DATA_DIR, 'eco_tracked.json')
+    if not os.path.exists(bh_file) or not os.path.exists(trk_file):
+        return
+    try:
+        bh = read_json(bh_file)
+        if not isinstance(bh, dict) or not bh:
+            return
+        tracked = read_json(trk_file)
+        if not isinstance(tracked, list) or not tracked:
+            return
+        # 取最近一天的 buff_history 数据
+        dates = sorted(bh.keys())
+        latest_date = dates[-1]
+        latest_data = bh.get(latest_date, {})
+        if not isinstance(latest_data, dict):
+            return
+        merged = 0
+        for item in tracked:
+            hn = item.get('HashName', '')
+            if hn and hn in latest_data:
+                info = latest_data[hn]
+                if isinstance(info, dict):
+                    bs = float(info.get('buff_sell', 0) or 0)
+                    ys = float(info.get('yyyp_sell', 0) or 0)
+                    if bs > 0:
+                        item['buff_sell'] = bs
+                        merged += 1
+                    if ys > 0:
+                        item['yyyp_sell'] = ys
+                elif isinstance(info, (int, float)):
+                    item['buff_sell'] = float(info)
+                    merged += 1
+        write_json(trk_file, tracked)
+        print(f'[BUFF-BACKFILL] Merged latest ({latest_date}) BUFF/YY into {merged}/{len(tracked)} items')
+    except Exception as e:
+        print(f'[BUFF-BACKFILL] Failed: {e}', file=sys.stderr)
+
 def generate_ai_analysis():
     """智谱AI全量持仓分析 — JSON结构化 + 批量单次调用 + 联网搜索"""
     if not ZHIPU_KEY or ZHIPU_KEY == 'test_key':
@@ -1939,6 +1981,11 @@ def main():
                 bak_path = tracked_path + '.bak'
                 if os.path.exists(bak_path):
                     os.remove(bak_path)
+
+                # ── 兜底：从 buff_history.json 回填 BUFF/YY 价格 ──
+                if merged < len(tracked) * 0.5:
+                    print(f'[CSQAQ] 覆盖率低 ({merged}/{len(tracked)})，启动 buff_history 回填...')
+                    merge_buff_history_to_tracked()
 
             # 3. SteamDT 补充（持仓32件 + 部分全量）
             if STEAM_KEY:

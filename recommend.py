@@ -10,7 +10,7 @@ CS2 饰品购买推荐引擎
 3. 📉 超跌反弹 — 7日跌幅>8% 但有求购盘承接
 4. ⚡ 供不应求 — 求购/在售比高，卖盘稀缺
 """
-import json, time, base64, urllib.request, ssl, os, sys
+import json, time, base64, urllib.request, urllib.error, ssl, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from eco_sign import get_eco_key, sign_eco
@@ -28,16 +28,30 @@ def http_post_raw(url, body, headers=None, timeout=15):
     hdrs = {'Content-Type': 'application/json'}
     if headers: hdrs.update(headers)
     req = urllib.request.Request(url, data=data, headers=hdrs, method='POST')
-    for attempt in range(3):
+    for attempt in range(5):
         try:
             with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
                 raw = r.read()
+                # 检查 HTTP 429
+                if hasattr(r, 'status') and r.status == 429:
+                    wait = min(2 ** attempt, 60)
+                    print(f'  [HTTP] 429 rate limited, retry in {wait}s (attempt {attempt+1}/5)')
+                    time.sleep(wait)
+                    continue
                 for enc in ('utf-8', 'gbk', 'latin-1'):
                     try: return json.loads(raw.decode(enc))
                     except: continue
                 return {}
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                wait = min(2 ** attempt, 60)
+                print(f'  [HTTP] 429 rate limited, retry in {wait}s (attempt {attempt+1}/5)')
+                time.sleep(wait)
+                continue
+            if attempt == 4: raise
+            time.sleep(2)
         except Exception as e:
-            if attempt == 2: raise
+            if attempt == 4: raise
             time.sleep(2)
 
 # ═══════════════ FETCH CSQAQ ═══════════════
@@ -154,6 +168,7 @@ def fetch_csqaq_batch_prices(hash_names):
     result = {}
     batch_size = 50
     batches = [hash_names[i:i+batch_size] for i in range(0, len(hash_names), batch_size)]
+    total_batches = len(batches)
     for bi, batch in enumerate(batches):
         try:
             _parse_response(
@@ -162,8 +177,11 @@ def fetch_csqaq_batch_prices(hash_names):
                               headers={'ApiToken': CSQ_KEY}, timeout=30),
                 result)
         except Exception as e:
-            print(f'  [CSQAQ] Batch {bi+1}/{len(batches)} error: {e}', file=sys.stderr)
-    print(f'[CSQAQ] Batches: {len(result)}/{len(hash_names)} items')
+            print(f'  [CSQAQ] Batch {bi+1}/{total_batches} error: {e}', file=sys.stderr)
+        # 批次间延迟，避免触发限流
+        if bi < total_batches - 1:
+            time.sleep(0.5)
+    print(f'[CSQAQ] Batches: {len(result)}/{len(hash_names)} items ({total_batches} batches)')
     return result
 
 # ═══════════════ FETCH ECO FULL LIST ═══════════════
