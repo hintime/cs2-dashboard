@@ -178,7 +178,8 @@ function renderTracks(tracks, nowPrices, marketData) {
   var rows = enriched.map(function(e) {
     var retStr = e.ret !== null ? (e.ret >= 0 ? '+' : '') + e.ret.toFixed(1) + '%' : '--';
     var cls = e.ret !== null ? (e.ret > 0 ? 'rise' : 'fall') : '';
-    return '<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(e.name) + '">' + esc(e.name) + '</td><td>' + e.date + '</td><td>¥' + e.recPrice.toFixed(1) + '</td><td style="color:var(--text3)">' + (e.nowPrice > 0 ? '¥' + e.nowPrice.toFixed(1) : '--') + '</td><td style="text-align:right;font-weight:600;color:var(--' + cls + ');color:' + (e.ret !== null ? (e.ret >= 0 ? 'var(--rise)' : 'var(--fall)') : 'var(--text3)') + '">' + retStr + '</td></tr>';
+    var displayName = (nameMap && nameMap[e.name]) ? nameMap[e.name] : e.name;
+    return '<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(displayName) + '">' + esc(displayName) + '</td><td>' + e.date + '</td><td>¥' + e.recPrice.toFixed(1) + '</td><td style="color:var(--text3)">' + (e.nowPrice > 0 ? '¥' + e.nowPrice.toFixed(1) : '--') + '</td><td style="text-align:right;font-weight:600;color:var(--' + cls + ');color:' + (e.ret !== null ? (e.ret >= 0 ? 'var(--rise)' : 'var(--fall)') : 'var(--text3)') + '">' + retStr + '</td></tr>';
   }).join('');
 
   document.getElementById('trackList').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">暂无记录</td></tr>';
