@@ -1404,23 +1404,24 @@ def generate_ai_recommendations():
         if insight and insight.get('insight'):
             context += f'市场背景(洞察): {insight["insight"][:200]}\n'
         prompt = (
-            f'你是一位严谨的CS2饰品投资分析顾问。从候选推荐中选出最优3-5个买入目标。\n\n'
+            f'你是一位CS2饰品投资分析师。从{len(candidates)}个候选推荐中选出最优3-5个买入目标。\n\n'
             f'{context}\n'
-            f'【候选 Top20】\n{candidates_text}\n\n'
-            f'JSON格式:\n{{"picks":[{{"rank":1,"name":"饰品名","reason":"","risk":""}}],"strategy":"","summary":""}}\n\n'
-            f'=== 理由规范(60-90字，必须引用数据) ===\n'
-            f'1.评分位次: "全表第X位，评分XX"\n'
-            f'2.溢价分析: "BUFF溢价X%→市场看好" 或 "悠悠溢价-X%→套利空间"\n'
-            f'3.供需判断: "在售X件而求购Y件，供不应求/供应充裕"\n'
-            f'4.结论: "放量即涨/低估修复/流动性溢价可期"\n\n'
-            f'=== 风险规范(30-45字，必须引用数据) ===\n'
-            f'如"YY在售293件，集中出货压价5-10%"\n'
-            f'或"求购仅5件流动性差，变现超7天"\n'
-            f'或"BUFF低于ECO8%，买入即浮亏"\n\n'
-            f'严禁: 价格波动/关注市场/科隆/多平台热度/溢价合理/适合新生/性能/稳定/新手/玩家/高手'
+            f'【候选数据】\n{candidates_text}\n\n'
+            f'【输出JSON】\n{{"picks":[{{"rank":1,"name":"饰品名","reason":"","risk":""}}],"strategy":"","summary":""}}\n\n'
+            f'【reason字段必须包含5点，逐点写实，每点20-30字，总计110-150字】\n'
+            f'❶ 评分位次: 「全表第X位·评分XX·策略XX」\n'
+            f'❷ 供需格局: 「在售XX件/求购XX件·供<求→卖方市场」或「供给充裕·买方议价」\n'
+            f'❸ 平台溢价: 有BUFF价→「BUFF¥XX溢价X%·平台看好」无则写「暂无平台数据」\n'
+            f'❹ 流动性评估: 「在售规模XX件·流动性优良/一般·变现约X天」\n'
+            f'❺ 操作建议: 「建议买入·目标收益+XX%·关注X风险」\n\n'
+            f'【risk字段必须包含2个风险点，总计60-80字】\n'
+            f'⚠ 风险1: 引用在售量/求购量/价格数据\n'
+            f'⚠ 风险2: 引用不同维度数据\n'
+            f'参考: 「在售XX件集中出货·压价风险5-10%」「求购仅X件·流动性枯竭·变现超7天」\n\n'
+            f'禁区: 价格波动/关注市场/科隆/溢价合理/性能/稳定/新手/玩家/高手/适合新生/稀缺求'
         )
         data = json.dumps({
-            'model': 'glm-4.7-flash',
+            'model': 'glm-4-flash',
             'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON格式。'}, {'role': 'user', 'content': prompt}],
             'response_format': {'type': 'json_object'},
             'max_tokens': 2000, 'temperature': 0.3
@@ -1428,7 +1429,7 @@ def generate_ai_recommendations():
         req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
         })
-        resp = urllib.request.urlopen(req, timeout=45)
+        resp = urllib.request.urlopen(req, timeout=90)
         r = json.loads(resp.read().decode('utf-8'))
         content = r['choices'][0]['message']['content'].strip()
         
