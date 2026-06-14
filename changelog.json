@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-06-14",
+    "tag": "fix",
+    "title": "根治JSON损坏—自动修复冲突标记+管线/推送双保险",
+    "desc": "根治JSON损坏—自动修复冲突标记+管线/推送双保险"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "fix",
+    "title": "涨跌榜regen",
+    "desc": "涨跌榜regen"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "chore",
+    "title": "data update",
+    "desc": "data update"
+  },
+  {
+    "date": "2026-06-14",
     "tag": "chore",
     "title": "market index 2026-06-14 08:11",
     "desc": "market index 2026-06-14 08:11"
@@ -100,23 +118,5 @@
     "tag": "feat",
     "title": "推荐追踪页面接入glm-4-flash AI分析",
     "desc": "推荐追踪页面接入glm-4-flash AI分析"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "fix",
-    "title": "每日报告删除市场概览+推荐追踪板块",
-    "desc": "每日报告删除市场概览+推荐追踪板块"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "fix",
-    "title": "购买推荐用4.7-flash高质分析",
-    "desc": "购买推荐用4.7-flash高质分析"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "fix",
-    "title": "全部AI函数统一用glm-4-flash，避免4.7限流",
-    "desc": "全部AI函数统一用glm-4-flash，避免4.7限流"
   }
 ]
