@@ -162,9 +162,8 @@ def main():
         # 取 1 天前的价格做日涨跌对比
         cutoff = time.time() - 86400  # 1天前
         for name, h in ph.items():
-            if not isinstance(h, dict): continue
-            raw_eco = h.get('eco') or []
-            eco_prices = [(e.get('t',''), e.get('p',0)) for e in raw_eco if isinstance(e, dict) and e.get('p', 0) > 0]
+            if not isinstance(h, list): continue
+            eco_prices = [(e.get('t',''), e.get('p',0)) for e in h if isinstance(e, dict) and e.get('p', 0) > 0]
             if len(eco_prices) < 10: continue  # 至少10个数据点
             last_p = eco_prices[-1][1]
             # 找最接近 1 天前的价格
