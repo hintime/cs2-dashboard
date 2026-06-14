@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-06-14",
+    "tag": "chore",
+    "title": "market index 2026-06-14 11:54",
+    "desc": "market index 2026-06-14 11:54"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "fix",
+    "title": "设计升级: OLED暗黑主题+Fira字体+无emoji+微光阴影",
+    "desc": "设计升级: OLED暗黑主题+Fira字体+无emoji+微光阴影"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_stock_picks.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-14 19:14"
+  },
+  {
+    "date": "2026-06-14",
     "tag": "fix",
     "title": "根治JSON损坏—自动修复冲突标记+管线/推送双保险",
     "desc": "根治JSON损坏—自动修复冲突标记+管线/推送双保险"
@@ -100,23 +118,5 @@
     "tag": "chore",
     "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
     "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-14 01:14"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "fix",
-    "title": "优化: GLM-4标注修正+hero精简+AI推荐刷新+缓存版本号",
-    "desc": "优化: GLM-4标注修正+hero精简+AI推荐刷新+缓存版本号"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_stock_picks.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, price_summary.json 2026-06-14 01:09"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "feat",
-    "title": "推荐追踪页面接入glm-4-flash AI分析",
-    "desc": "推荐追踪页面接入glm-4-flash AI分析"
   }
 ]
