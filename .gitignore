@@ -8,6 +8,7 @@ _*.log
 # Python cache
 __pycache__/
 *.pyc
+*.bak
 
 # Private keys (NEVER commit)
 eco_private_key.txt
@@ -17,4 +18,7 @@ run_update.cmd
 
 # Large data files (uploaded via CI, not git)
 price_history.json
+*.db
+*.db-wal
+*.db-shm
 git_credential.txt

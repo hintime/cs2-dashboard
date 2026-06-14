@@ -957,36 +957,12 @@ def write_json(path, data):
     dirty_files.add(os.path.basename(path))
 
 def generate_price_summary():
-    """从 price_history.json 衍生 price_summary.json"""
-    ph_file = os.path.join(DATA_DIR, 'price_history.json')
-    if not os.path.exists(ph_file):
-        print('[SUMMARY] price_history.json not found, skip')
-        return
-    ph = read_json(ph_file)
-    summary = {}
-    for name, h in ph.items():
-        if not isinstance(h, dict): continue
-        eco = h.get('eco', [])
-        if not eco: continue
-        daily = {}
-        for pt in eco:
-            day = pt['t'][:10]
-            daily[day] = daily.get(day, []) + [pt['p']]
-        s = {'first': eco[0]['p'], 'last': eco[-1]['p'], 'days': (len(eco)//24) if len(eco)>24 else 1}
-        s['daily_avg'] = {d: round(sum(v)/len(v),2) for d,v in list(daily.items())[-30:]}
-        dates = sorted(daily.keys())
-        s['change_7d'] = 0; s['change_30d'] = 0
-        if dates:
-            avg1 = sum(daily[dates[-1]])/len(daily[dates[-1]])
-            if len(dates) >= 7:
-                avg7 = sum(daily[dates[-7]])/len(daily[dates[-7]])
-                s['change_7d'] = round((avg1 - avg7) / avg7 * 100, 2) if avg7 > 0 else 0
-            if len(dates) >= 30:
-                avg30 = sum(daily[dates[-30]])/len(daily[dates[-30]])
-                s['change_30d'] = round((avg1 - avg30) / avg30 * 100, 2) if avg30 > 0 else 0
-        summary[name] = s
-    write_json(os.path.join(DATA_DIR, 'price_summary.json'), summary)
-    print(f'[SUMMARY] {len(summary)} items')
+    """从 SQLite DB 衍生 price_summary.json（前端图表用）"""
+    try:
+        import price_db
+        price_db.generate_price_summary(os.path.join(DATA_DIR, 'price_summary.json'))
+    except Exception as e:
+        print(f'[SUMMARY] generate_price_summary failed: {e}', file=sys.stderr)
 
 def generate_ai_analysis():
     """智谱AI全量持仓分析 — JSON结构化 + 批量单次调用 + 联网搜索"""
@@ -2039,57 +2015,50 @@ def main():
             market['recommendations'] = recs
             write_json(market_path, market)
 
-            # ── Record price history for ALL tracked items ──
+            # ── Record price history for ALL tracked items (SQLite) ──
             try:
+                import price_db
                 tracked_path = os.path.join(DATA_DIR, 'eco_tracked.json')
                 if os.path.exists(tracked_path):
                     tracked = read_json(tracked_path)
-                    hist_path = os.path.join(DATA_DIR, 'price_history.json')
-                    try:
-                        price_hist = read_json(hist_path)
-                    except (FileNotFoundError, json.JSONDecodeError):
-                        price_hist = {}
                     now = time.strftime('%Y-%m-%dT%H:%M', time.gmtime())
+                    records = []
                     recorded = 0
                     for it in tracked:
                         hn = it.get('HashName', '')
                         if not hn:
                             continue
-                        # 跳过没有平台数据的物品（只有ECO底价不进history）
-                        multi_p = float(it.get('buff_sell', 0) or 0)
-                        yyyp_p = float(it.get('yyyp_sell', 0) or 0)
-                        if multi_p <= 0 and yyyp_p <= 0:
-                            continue
-                        if hn not in price_hist:
-                            price_hist[hn] = {'eco': [], 'multi': [], 'yyyp': []}
-                        else:
-                            # 迁移旧条目（可能缺少某些通道）
-                            for ch in ('eco', 'multi', 'yyyp'):
-                                if ch not in price_hist[hn]:
-                                    price_hist[hn][ch] = []
                         eco_p = float(it.get('Price', 0) or 0)
                         if eco_p > 0:
-                            price_hist[hn]['eco'].append({'t': now, 'p': eco_p})
+                            records.append((hn, 'eco', now, eco_p))
                             recorded += 1
+                        multi_p = float(it.get('buff_sell', 0) or 0)
                         if multi_p > 0:
-                            price_hist[hn]['multi'].append({'t': now, 'p': multi_p})
+                            records.append((hn, 'buff', now, multi_p))
+                        yyyp_p = float(it.get('yyyp_sell', 0) or 0)
                         if yyyp_p > 0:
-                            price_hist[hn]['yyyp'].append({'t': now, 'p': yyyp_p})
-                    # 修剪历史数据（每个通道最多保留500点，约3.5天）
-                    MAX_HIST = 500
-                    for hn in price_hist:
-                        for ch in ('eco', 'multi', 'yyyp'):
-                            pts = price_hist[hn].get(ch, [])
-                            if len(pts) > MAX_HIST:
-                                price_hist[hn][ch] = pts[-MAX_HIST:]
-                    write_json(hist_path, price_hist)
-                    # Inject price history into rec items
+                            records.append((hn, 'yy', now, yyyp_p))
+                    # 批量写入 SQLite
+                    written = price_db.record_batch(records)
+                    print(f'[PRICE_HIST] SQLite: {written} records for {recorded}/{len(tracked)} items')
+                    # 定期修剪旧数据（保留90天）
+                    price_db.trim_old_data(90)
+                    # Inject price history from SQLite into rec items
                     for r in recs.get('all', []):
                         hn = r.get('hash_name', '')
-                        if hn in price_hist:
-                            r['eco_history'] = [e['p'] for e in price_hist[hn].get('eco', [])]
-                            r['multi_history'] = [e['p'] for e in price_hist[hn].get('multi', [])]
-                            r['yyyp_history'] = [e['p'] for e in price_hist[hn].get('yyyp', [])]
+                        if not hn: continue
+                        try:
+                            history = price_db.get_history(hn, channel='eco')
+                            if history:
+                                r['eco_history'] = [h['price'] for h in history[-60:]]
+                            history = price_db.get_history(hn, channel='buff')
+                            if history:
+                                r['multi_history'] = [h['price'] for h in history[-60:]]
+                            history = price_db.get_history(hn, channel='yy')
+                            if history:
+                                r['yyyp_history'] = [h['price'] for h in history[-60:]]
+                        except:
+                            pass
                     # Re-write market.json with history injected
                     market['recommendations'] = recs
                     # Include tracked item names for frontend autocomplete
@@ -2206,18 +2175,19 @@ def main():
     try:
         import json
         status_summary = {'updated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
-        # price_history dates
-        ph_path = os.path.join(DATA_DIR, 'price_history.json')
-        if os.path.exists(ph_path):
-            ph = json.load(open(ph_path, encoding='utf-8'))
-            all_d = set()
-            for item, sources in ph.items():
-                if isinstance(sources, dict):
-                    for dp in sources.get('eco', [])[:5]:
-                        d = dp.get('t', '')[:10]
-                        if d: all_d.add(d)
-                if len(all_d) >= 3: break
-            status_summary['price_dates'] = sorted(all_d)[:50]
+        # price_history (SQLite) dates
+        try:
+            import price_db
+            stats = price_db.get_stats()
+            status_summary['price_db'] = {
+                'records': stats['total_records'],
+                'items': stats['total_items'],
+                'first': stats['first_ts'],
+                'last': stats['last_ts'],
+                'size_mb': stats['db_size_mb']
+            }
+        except:
+            pass
         # buff_history dates
         bh_path = os.path.join(DATA_DIR, 'buff_history.json')
         if os.path.exists(bh_path):
@@ -2229,7 +2199,7 @@ def main():
                 'last': b_dates[-1] if b_dates else '',
             }
         # file sizes/timestamps
-        for fn in ['eco_tracked.json','holdings.json','market.json','price_history.json']:
+        for fn in ['eco_tracked.json','holdings.json','market.json','price_summary.json']:
             fp = os.path.join(DATA_DIR, fn)
             if os.path.exists(fp):
                 st = os.stat(fp)

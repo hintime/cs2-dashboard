@@ -145,7 +145,7 @@ def main():
     by_sell = sorted(with_sell, key=lambda x: x.get('SellingTotal', 0), reverse=True)[:10]
     top_sell = [{'n': (it.get('GoodsName') or it.get('HashName', ''))[:30], 's': it.get('SellingTotal', 0), 'p': it.get('Price', 0)} for it in by_sell]
 
-    # 涨跌榜（从 price_history.json 计算，不依赖外部 API）
+    # 涨跌榜（从 SQLite 计算，不依赖外部 API）
     movers = []
     # 构建 英文→中文 映射
     name_map = {}
@@ -155,9 +155,9 @@ def main():
         if hn and gn:
             name_map[hn] = gn
     
-    ph_file = os.path.join(DATA_DIR, 'price_history.json')
     try:
-        ph = read_json(ph_file)
+        import price_db
+        ph = price_db.get_movers_data()
         gains = []
         # 取 1 天前的价格做日涨跌对比
         cutoff = time.time() - 86400  # 1天前
