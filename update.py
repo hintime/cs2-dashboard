@@ -47,12 +47,12 @@ def _ai_key():
 
 def _ai_endpoint():
     """返回当前 provider 的 API endpoint"""
-    return 'https://api.deepseek.com/v1/chat/completions' if AI_PROVIDER == 'deepseek' \
+    return 'https://open.bigmodel.cn/api/paas/v4/chat/completions' if AI_PROVIDER == 'deepseek' \
         else 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 
 def _ai_model():
     """返回当前 provider 的模型名"""
-    return 'deepseek-chat' if AI_PROVIDER == 'deepseek' else 'glm-4-flash'
+    return 'glm-4-flash' if AI_PROVIDER == 'deepseek' else 'glm-4-flash'
 
 def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False, tools=None, timeout=90):
     """统一 AI 调用 — 自动切换 DeepSeek/Zhipu"""
@@ -1143,14 +1143,14 @@ def generate_ai_analysis():
     
     try:
         data = json.dumps({
-            'model': 'deepseek-chat',
+            'model': 'glm-4-flash',
             'messages': [
                 {'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON，不返回任何其他内容。'},
                 {'role': 'user', 'content': prompt}
             ],
             'response_format': {'type': 'json_object'},            'max_tokens': 4096, 'temperature': 0.3
         }).encode('utf-8')
-        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=120)
@@ -1180,14 +1180,14 @@ def generate_ai_analysis():
             pnl_pct = (price - cost) / cost * 100 if cost > 0 else 0
             try:
                 data = json.dumps({
-                    'model': 'deepseek-chat',
+                    'model': 'glm-4-flash',
                     'messages': [
                         {'role': 'system', 'content': '你是CS2饰品分析师。返回JSON：{"verdict":"持有/买入/减仓/观望","confidence":80,"reason":"一句话","risk":"一句话"}'},
                         {'role': 'user', 'content': f'{name}，¥{price:.0f}，7日{r7:+.1f}%，30日{r30:+.1f}%，成本¥{cost:.0f}，盈亏{pnl_pct:+.1f}%'}
                     ],
                     'response_format': {'type': 'json_object'},                    'max_tokens': 200, 'temperature': 0.3
                 }).encode('utf-8')
-                req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+                req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
                     'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
                 })
                 resp = urllib.request.urlopen(req, timeout=20)
@@ -1217,14 +1217,14 @@ def generate_ai_daily_report():
         loser_text = ' | '.join([l.get('n','')[:20] + (' ' + str(l.get('r7','')) + '%' if l.get('r7') else '') for l in losers])
         prompt = f'CS2饰品市场日报。全市场{total_items}件追踪品，均价¥{avg_p:.0f}。涨幅TOP: {gainer_text}。跌幅TOP: {loser_text}。请用中文写一段150字市场总结。'
         data = json.dumps({
-            'model': 'deepseek-chat',
+            'model': 'glm-4-flash',
             'messages': [
                 {'role': 'system', 'content': '你是CS2饰品市场日报编辑。写简洁专业的市场分析。'},
                 {'role': 'user', 'content': prompt}
             ],
             'max_tokens': 500, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=30)
@@ -1271,14 +1271,14 @@ def generate_ai_anomaly():
         items_text = '\n'.join([f'{n}: 在售量 {pr}→{nr} ({pct:+.0f}%)' for n, pct, nr, pr in top])
         prompt = f'CS2饰品在售量异动检测，以下饰品在售量变化超过10%：\n{items_text}\n请分析这些异动可能的原因和影响，100字以内。'
         data = json.dumps({
-            'model': 'deepseek-chat',
+            'model': 'glm-4-flash',
             'messages': [
                 {'role': 'system', 'content': '你是CS2饰品市场分析师。简洁分析在售量异动原因。'},
                 {'role': 'user', 'content': prompt}
             ],
             'max_tokens': 2000, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=20)
@@ -1303,12 +1303,12 @@ def generate_ai_stock_picks():
             return
         prompt = f'以下CS2饰品近期跌幅较大，请从中选出3-5个最有反弹潜力的：\n{items_text}\n返回JSON：{{"picks":[{{"name":"","reason":"","target":"+X%","confidence":80}}],"rationale":"一句话"}}'
         data = json.dumps({
-            'model': 'deepseek-chat',
+            'model': 'glm-4-flash',
             'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON。'}, {'role': 'user', 'content': prompt}],
             'response_format': {'type': 'json_object'},
             'max_tokens': 1000, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=30)
@@ -1344,11 +1344,11 @@ def generate_ai_market_insight():
             f'要求：分析短期市场情绪、资金流向、风险点。简洁专业，100-150字。'
         )
         data = json.dumps({
-            'model': 'deepseek-chat',
+            'model': 'glm-4-flash',
             'messages': [{'role': 'system', 'content': '你是CS2市场分析师，回答一段150字分析。'}, {'role': 'user', 'content': prompt}],
             'max_tokens': 500, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=30)
@@ -1395,11 +1395,11 @@ def generate_ai_news_impact():
             f'若公告与饰品无关，回复"本期公告对饰品市场无直接影响。"'
         )
         data = json.dumps({
-            'model': 'deepseek-chat',
+            'model': 'glm-4-flash',
             'messages': [{'role': 'user', 'content': prompt}],
             'max_tokens': 2000, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
             'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=30)

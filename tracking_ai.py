@@ -17,17 +17,10 @@ import urllib.error
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = SCRIPT_DIR
 DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', 'sk-3a9f8fed7ff94e7398e3a9164807cb24')
-ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz')
-AI_PROVIDER = os.environ.get('AI_PROVIDER', 'deepseek')  # 'deepseek' or 'zhipu'
-
-def _ai_key():
-    return DEEPSEEK_KEY if AI_PROVIDER == 'deepseek' else ZHIPU_KEY
-
-def _ai_endpoint():
-    return 'https://api.deepseek.com/v1/chat/completions' if AI_PROVIDER == 'deepseek' \
-        else 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
-
-MODEL = 'deepseek-chat' if AI_PROVIDER == 'deepseek' else 'glm-4-flash'
+# 追踪分析固定用 DeepSeek
+AI_KEY = DEEPSEEK_KEY
+AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions'
+MODEL = 'deepseek-chat'
 
 # ── 数据读写 ──
 
@@ -97,8 +90,8 @@ def load_all_tracks():
 
 def _call_ai(messages, max_tokens=2048, temperature=0.5, json_mode=False):
     """统一 AI 调用 — 自动切换 DeepSeek/Zhipu（含重试）"""
-    key = _ai_key()
-    endpoint = _ai_endpoint()
+    key = AI_KEY
+    endpoint = AI_ENDPOINT
     
     for attempt in range(3):
         try:
