@@ -3,6 +3,12 @@
     "date": "2026-06-15",
     "tag": "chore",
     "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json 2026-06-15 16:40"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
     "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json 2026-06-15 15:39"
   },
   {
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "秒级精度+SteamDT分批写入—网络中断不丢已查数据",
     "desc": "秒级精度+SteamDT分批写入—网络中断不丢已查数据"
-  },
-  {
-    "date": "2026-06-15",
-    "tag": "refactor",
-    "title": "generate_correlation切SQLite — price_history.json全链路退役",
-    "desc": "generate_correlation切SQLite — price_history.json全链路退役"
   }
 ]
