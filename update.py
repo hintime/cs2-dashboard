@@ -663,6 +663,26 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
         # ── Build rich actionable reason ──
         combined_reason = ' | '.join(primary_reasons[:3]) if primary_reasons else ''
         
+        # ── 注入追踪教训信号（反哺推荐理由）──
+        lesson_signal = ''
+        if tag == 'eco':
+            # 教训: ECO信号溢价低/负→容易失败，需标注风险
+            if buff_score < 5 or (bs > 0 and price > 0 and (bs - price) / price * 100 < 3):
+                lesson_signal = ' ⚠溢价不足·待观察'
+            elif eco_score > 30:
+                lesson_signal = ' 供需位高·但需关注溢价'
+        elif tag == 'buff':
+            # 教训: 多平台信号+高溢价→成功率更高
+            if bs > 0 and price > 0:
+                premium = (bs - price) / price * 100
+                if premium > 15:
+                    lesson_signal = ' ✓溢价强劲·AI优选'
+                elif premium > 5:
+                    lesson_signal = ' 溢价适中·可考虑'
+        
+        # Apply lesson signals to tag
+        display_tag = tag_label + lesson_signal
+        
         # Build operation advice
         if tag == 'eco':
             # ECO signal: suggest buying at bid price
@@ -682,6 +702,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                     buy_advice_parts.append('综合评估价¥{:.0f}明显高于现价，性价比较高'.format(compre))
             if not buy_advice_parts:
                 buy_advice_parts.append('建议分仓操作，单品种不超过10%仓位')
+            # 教训反哺：ECO信号若无溢价支撑，标注风险
+            if tag == 'eco' and buff_score < 5:
+                buy_advice_parts.append('⚠ 纯ECO信号·缺乏多平台溢价验证')
             buy_advice = ' | '.join(buy_advice_parts[:2])
         else:
             # BUFF/multi-platform signal (T+7 market, no arbitrage possible)
@@ -700,8 +723,8 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                 buy_advice_parts.append('建议结合ECO供需数据综合判断')
             buy_advice = ' | '.join(buy_advice_parts[:2])
 
-        reason = '{} | ECO分{:.0f}/BUFF分{:.0f}→综合{:.0f} | {} | 💡 {} | 建议分仓操作,单品<10%'.format(
-            signal_desc, eco_score, buff_score, final_score, combined_reason, buy_advice)
+        reason = '{} | ECO分{:.0f}/BUFF分{:.0f}→综合{:.0f} | {} | 💡 {} | 建议分仓操作,单品<10%{}'.format(
+            display_tag, eco_score, buff_score, final_score, combined_reason, buy_advice, lesson_signal.replace(' ✓', ''))
 
         all_recs.append({
             'name': gn,
@@ -711,7 +734,7 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'buff_score': round(buff_score, 1),
             'score': round(final_score, 1),
             'tag': tag,
-            'tag_label': tag_label,
+            'tag_label': display_tag,
             'eco_price': price,
             'eco_compre': compre,
             'eco_selling': selling,
