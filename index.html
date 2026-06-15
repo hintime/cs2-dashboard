@@ -510,9 +510,15 @@ tr.hold-row{cursor:pointer}
 body.logged-in #loginLanding{display:none!important}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .25s}
-.loading-overlay{position:fixed;inset:0;z-index:998;opacity:0;pointer-events:none;transition:opacity .3s;background:rgba(13,17,23,.5);display:flex;align-items:center;justify-content:center}
+.loading-overlay{position:fixed;inset:0;z-index:998;opacity:0;pointer-events:none;transition:opacity .3s;background:rgba(13,17,23,.6);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 .loading-overlay.show{opacity:1;pointer-events:auto}
-.loading-overlay::after{content:"正在加载数据...";color:var(--text2);font-size:14px}
+.loading-overlay .ld-text{color:var(--text2);font-size:13px;animation:ldPulse 1.5s infinite}
+.loading-overlay .ld-dots{display:flex;gap:6px}
+.loading-overlay .ld-dots span{width:5px;height:5px;border-radius:50%;background:var(--blue);animation:ldDot 1.2s infinite}
+.loading-overlay .ld-dots span:nth-child(2){animation-delay:.2s;background:#c084fc}
+.loading-overlay .ld-dots span:nth-child(3){animation-delay:.4s;background:var(--rise)}
+@keyframes ldPulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes ldDot{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1.2);opacity:1}}
 .modal-overlay.show{opacity:1;pointer-events:auto}
 .modal{background:rgba(22,27,34,.95);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:16px;padding:28px;width:420px;max-width:90vw;box-shadow:0 16px 48px rgba(0,0,0,.4)}
 .modal h3{margin:0 0 8px;font-size:16px;font-weight:700}
@@ -1035,41 +1041,67 @@ document.addEventListener('click', function(e) {
 })();
 
 // ═══════════════ 骨架屏 ═══════════════
-// Skeleton as fixed overlay - preserves container DOM structure
 function showSkeleton() {
   var skel = document.createElement('div');
   skel.id = 'skeletonWrap';
-  skel.style.cssText = 'position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;overflow-y:auto';
-  skel.innerHTML = '<div style="width:100%;max-width:1280px;padding:0 24px 40px">'+
-    '<div class="sk-line" style="width:60%;height:14px"></div>'+
-    '<div class="sk-line" style="height:32px;margin-bottom:32px"></div>'+
-    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">'+
-      '<div class="sk-line" style="height:100px;border-radius:14px"></div>'+
-      '<div class="sk-line" style="height:100px;border-radius:14px"></div>'+
-      '<div class="sk-line" style="height:100px;border-radius:14px"></div>'+
-    '</div>'+
-    '<div class="sk-line" style="height:14px;margin-bottom:8px"></div>'+
-    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:20px">'+
-      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
-      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
-      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
-      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
-      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
-      '<div class="sk-line" style="height:120px;border-radius:14px"></div>'+
-    '</div></div>';
+  skel.style.cssText = 'position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;overflow-y:auto';
+  // 顶部进度条
+  skel.innerHTML = '<div id="skProgress" style="position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--blue),#c084fc,var(--rise));width:0%;transition:width .6s ease;z-index:101;border-radius:0 2px 2px 0"></div>' +
+    '<div style="width:100%;max-width:1280px;padding:56px 24px 40px;margin:0 auto">' +
+      // 标题区
+      '<div class="sk-box" style="width:50%;height:22px;margin-bottom:8px"></div>' +
+      '<div class="sk-box" style="width:30%;height:13px;margin-bottom:36px;opacity:.6"></div>' +
+      // 五列 KPI
+      '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:32px">' +
+        Array(5).fill('<div class="sk-box" style="height:70px;border-radius:12px"></div>').join('') +
+      '</div>' +
+      // 两列布局
+      '<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:20px">' +
+        '<div class="sk-box" style="height:200px;border-radius:14px"></div>' +
+        '<div class="sk-box" style="height:200px;border-radius:14px"></div>' +
+      '</div>' +
+      // 卡片行
+      '<div class="sk-box" style="width:35%;height:14px;margin-bottom:14px"></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:28px">' +
+        Array(6).fill('<div class="sk-box" style="height:110px;border-radius:12px"></div>').join('') +
+      '</div>' +
+      // 列表区
+      '<div class="sk-box" style="width:30%;height:14px;margin-bottom:14px"></div>' +
+      '<div class="sk-box" style="height:260px;border-radius:14px;margin-bottom:20px"></div>' +
+      '<div class="sk-box" style="width:25%;height:14px;margin-bottom:14px"></div>' +
+      '<div class="sk-box" style="height:260px;border-radius:14px"></div>' +
+    '</div>';
   var st = document.createElement('style');
-  st.textContent = '.sk-line{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:skShimmer 1.5s infinite;border-radius:8px;margin-bottom:12px}@keyframes skShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}';
+  st.textContent = '.sk-box{background:linear-gradient(110deg,var(--surface) 30%,rgba(255,255,255,.03) 50%,var(--surface) 70%);background-size:200% 100%;animation:skShimmer 1.8s infinite ease-in-out;border-radius:8px}.sk-box:nth-child(odd){animation-delay:.2s}.sk-box:nth-child(3n){animation-delay:.4s}@keyframes skShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}';
   document.head.appendChild(st);
   document.body.appendChild(skel);
+  // 渐进进度条
+  window._skProgress = 0;
+  setTimeout(function() { updateProgress(15); }, 100);
+  setTimeout(function() { updateProgress(40); }, 400);
+  setTimeout(function() { updateProgress(70); }, 900);
+}
+function updateProgress(pct) {
+  var bar = document.getElementById('skProgress');
+  if (bar && pct > (window._skProgress || 0)) {
+    window._skProgress = pct;
+    bar.style.width = pct + '%';
+  }
 }
 showSkeleton();
 
 function hideSkeleton() {
+  updateProgress(100);
   var el = document.getElementById('skeletonWrap');
+  var bar = document.getElementById('skProgress');
   if (el) {
-    el.style.transition = 'opacity 0.35s ease';
+    el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
     el.style.opacity = '0';
-    setTimeout(function() { if (el && el.parentNode) el.remove(); }, 350);
+    el.style.transform = 'translateY(-8px)';
+    setTimeout(function() {
+      if (el && el.parentNode) el.remove();
+      if (bar && bar.parentNode) bar.remove();
+    }, 400);
   }
   document.body.classList.remove('body-fadein');
 }
@@ -1398,35 +1430,38 @@ function setCachedMarket(market) {
 }
 
 async function loadAll() {
-  const t0 = Date.now(); // mark refresh time
+  const t0 = Date.now();
+  const fetchOpts = { cache: 'no-store' };
+  updateProgress(20);
+  
   await loadOverrides();
 
-  // 优先从缓存读取market数据
-  let marketR = getCachedMarket();
-  const fetchOpts = { cache: 'no-store' };
-  if (!marketR) {
-    marketR = await fetch('market.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
-    if (marketR) setCachedMarket(marketR);
-  }
-  // holdings每次请求最新
-  var holdingsR = await fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
-  // 价格摘要（2.8MB）懒加载：只在 openItemDetail 需要时加载
-  window._priceSummaryLoading = false;
-  window._priceSummaryLoaded = false;
-  // 加载 AI 分析数据
-  fetch('ai_analysis.json?v=' + t0, fetchOpts).then(r => r.json()).then(function(ai) {
+  // 并行加载 market + holdings
+  const cachedMarket = getCachedMarket();
+  const marketP = cachedMarket
+    ? Promise.resolve(cachedMarket)
+    : fetch('market.json?v=' + t0, fetchOpts).then(r => r.json()).then(function(m) {
+        if (m) setCachedMarket(m); return m;
+      }).catch(() => null);
+  
+  const holdingsP = fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
+  
+  // 尽快渲染主内容
+  const [marketR, holdingsR] = await Promise.all([marketP, holdingsP]);
+  updateProgress(60);
+
+  // AI 分析异步预热
+  var aiP = fetch('ai_analysis.json?v=' + t0, fetchOpts).then(r => r.json()).then(function(ai) {
     window._aiAnalysis = ai || {};
-    // 刷新已展开的分析行
     var openRows = document.querySelectorAll('.row-analysis.open');
     for (var ri = 0; ri < openRows.length; ri++) {
       var td = openRows[ri].firstChild;
       var tr = openRows[ri].previousElementSibling;
-      if (tr && tr._item && td) {
-        td.innerHTML = buildItemAnalysisHTML(tr._item);
-      }
+      if (tr && tr._item && td) td.innerHTML = buildItemAnalysisHTML(tr._item);
     }
     document.dispatchEvent(new CustomEvent('ai-loaded'));
-  }).catch(function() { window._aiAnalysis = {}; });
+    return ai;
+  }).catch(function() { window._aiAnalysis = {}; return {}; });
   // AI 徽章内联渲染
   window.aiBadgeHTML = function(name) {
     var ai = window._aiAnalysis || {};
