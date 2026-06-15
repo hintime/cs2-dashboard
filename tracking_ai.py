@@ -161,7 +161,7 @@ def analyze_performance(tracks, price_context=None):
     
     # 构建分析文本
     items_text = []
-    for t in tracks[:20]:  # 最多20件（省钱）
+    for t in tracks[:40]:  # 40件样本
         p = t.get('price', 0)
         s = t.get('score', 0)
         bs = t.get('buff_sell', 0)
@@ -223,7 +223,7 @@ ECO推荐{len(eco_items)}件，BUFF推荐{len(buff_items)}件
     result = _call_ai([
         {'role': 'system', 'content': '你是CS2饰品投资策略师。根据追踪数据反推推荐策略得失。只返回JSON。'},
         {'role': 'user', 'content': prompt}
-    ], max_tokens=1200, temperature=0.4, json_mode=True)
+    ], max_tokens=2000, temperature=0.4, json_mode=True)
     
     if not result:
         print('[TRACK-AI] AI analysis failed')
@@ -467,11 +467,10 @@ def generate_recommendation_feedback(tracks):
 
 def main(tracks=None):
     """
-    CI管线入口 — 精打细算：只在数据有意义变化时才调用 DeepSeek
+    CI管线入口 — 预算充裕（月15元），允许更频繁分析
     规则：
-      - 每日最多分析 1 次（同一天内跳过）
-      - track 数量增长 <20% 时跳过（数据没大变）
-      - 距离上次分析 <8 小时跳过（避免短时间重复）
+      - 每天最多 4 次（每6小时）
+      - track 增长 <10% 且 <6h 时跳过
     """
     if tracks is None:
         tracks = load_all_tracks()
@@ -480,33 +479,31 @@ def main(tracks=None):
         print(f'[TRACK-AI] Insufficient tracks ({len(tracks) if tracks else 0}), skip')
         return None
     
-    # ── 成本控制：检查是否需要分析 ──
-    today = time.strftime('%Y-%m-%d')
+    # ── 频率控制 ──
     lessons_db = _load_json(LESSONS_PATH) or {}
     last_analysis_ts = lessons_db.get('last_updated', '')
     last_analysis_count = lessons_db.get('last_track_count', 0)
+    today = time.strftime('%Y-%m-%d')
     
-    # 今天已分析过 → 跳过
-    if last_analysis_ts.startswith(today):
-        print(f'[TRACK-AI] Already analyzed today ({today}), skip (save API cost)')
-        return None
-    
-    # 距离上次分析 <8 小时 → 跳过
+    # 距离上次 <4 小时 → 跳过
     if last_analysis_ts:
         try:
             last_dt = time.strptime(last_analysis_ts[:19], '%Y-%m-%dT%H:%M:%S')
             hours_ago = (time.time() - time.mktime(last_dt)) / 3600
-            if hours_ago < 8:
-                print(f'[TRACK-AI] Last analysis {hours_ago:.1f}h ago (<8h), skip')
-                return None
+            if hours_ago < 4:
+                # 但如果 track 增长 >30%，破例分析
+                growth = (len(tracks) - last_analysis_count) / max(last_analysis_count, 1) * 100
+                if growth < 30:
+                    print(f'[TRACK-AI] Last analysis {hours_ago:.1f}h ago (<4h) + growth {growth:.0f}%, skip')
+                    return None
         except:
             pass
     
-    # track 数量增长 <20% → 跳过（数据没大变）
-    if last_analysis_count > 0:
+    # track 增长 <10% 且今天已分析过 → 跳过
+    if last_analysis_ts.startswith(today) and last_analysis_count > 0:
         growth = (len(tracks) - last_analysis_count) / last_analysis_count * 100
-        if growth < 20:
-            print(f'[TRACK-AI] Track growth only {growth:.0f}% (<20%), skip analysis')
+        if growth < 10:
+            print(f'[TRACK-AI] Today done + growth {growth:.0f}% (<10%), skip')
             return None
     
     print(f'[TRACK-AI] Starting analysis of {len(tracks)} tracks...')
