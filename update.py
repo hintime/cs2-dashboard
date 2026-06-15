@@ -640,8 +640,10 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                     if scarce > 5:
                         buff_reasons.append('悠悠在售仅{}件'.format(yyyp_sell_num))
 
-        # ══════════ Combined ══════════
-        final_score = max(eco_score, buff_score)
+    # ══════════ Combined ══════════
+    # 应用AI追踪教训的评分权重调整
+    eco_mult, buff_mult = _get_scoring_weights_from_lessons()
+    final_score = max(eco_score * eco_mult, buff_score * buff_mult)
 
         if final_score < 25:
             continue
@@ -1422,6 +1424,47 @@ def _get_tracking_feedback():
         return tracking_ai.get_lessons_for_prompt()
     except:
         return ''
+
+def _get_scoring_weights_from_lessons():
+    """从追踪教训中提取评分权重调整（反哺推荐引擎）
+    返回 (eco_multiplier, buff_multiplier)，默认 (1.0, 1.0)
+    """
+    try:
+        import json, os
+        lessons_path = os.path.join(DATA_DIR, 'tracking_lessons.json')
+        if not os.path.exists(lessons_path):
+            return 1.0, 1.0
+        with open(lessons_path, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+        ah = db.get('analysis_history', [])
+        if not ah:
+            return 1.0, 1.0
+        latest = ah[-1].get('scoring_feedback', {})
+        eco_advice = latest.get('eco_weight_advice', '').strip()
+        buff_advice = latest.get('buff_weight_advice', '').strip()
+        
+        def parse_pct(s):
+            """从 '+10%', '-20%', '不变' 中提取数字乘数"""
+            if not s or '不变' in s:
+                return 1.0
+            try:
+                # 提取数字
+                import re
+                m = re.search(r'([+-]?\d+)', s)
+                if m:
+                    pct = int(m.group(1)) / 100.0
+                    return 1.0 + pct
+            except:
+                pass
+            return 1.0
+        
+        eco_m = parse_pct(eco_advice)
+        buff_m = parse_pct(buff_advice)
+        if eco_m != 1.0 or buff_m != 1.0:
+            print(f'[REC] AI反馈: ECO×{eco_m:.2f} BUFF×{buff_m:.2f} (from tracking lessons)')
+        return eco_m, buff_m
+    except:
+        return 1.0, 1.0
 
 def generate_ai_recommendations():
     """AI 购买推荐分析 — 综合评分+多维度数据，给出最优购买建议"""

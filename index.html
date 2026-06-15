@@ -2023,6 +2023,8 @@ function renderAIRecommendations() {
       banner.style.display = 'none';
       return;
     }
+    // 保存到全局供 renderAllRecs 使用
+    window._aiRecommendations = data;
     var picks = data.picks.slice(0, 5);
     dateEl.textContent = data.date || '';
     banner.style.display = '';
@@ -3026,6 +3028,12 @@ function renderAllRecs() {
     return;
   }
 
+  // ── 构建AI推荐理由查找表（优先用DeepSeek生成的理由）──
+  var aiReasonMap = {};
+  (window._aiRecommendations || {}).picks && (window._aiRecommendations.picks || []).forEach(function(p) {
+    if (p.name) aiReasonMap[p.name] = { reason: p.reason || '', risk: p.risk || '' };
+  });
+
   // ── 推荐策略对比（ECO vs BUFF）──
   renderRecCompare(allItems);
   _recAllItems = allItems;
@@ -3064,11 +3072,27 @@ function renderAllRecs() {
     });
     var metaHtml = rates.length || buyNumHtml ? '<div class="rc-meta">' + rates.join('') + buyNumHtml + '</div>' : '';
 
-    // Reason - cleaned
-    const rawReason = item._reason || '';
-    const parts = rawReason.indexOf('| ');
-    const cleanReason = parts >= 0 ? rawReason.substring(parts + 2) : rawReason;
-    const reasonHtml = cleanReason ? '<div class="rc-reason">' + cleanReason + '</div>' : '';
+    // Reason - 优先用 DeepSeek AI 生成的5维度理由
+    var aiMatch = aiReasonMap[item.name] || aiReasonMap[item.hash_name || ''] || {};
+    var rawReason = aiMatch.reason || item._reason || '';
+    var aiRisk = aiMatch.risk || '';
+    var parts = rawReason.indexOf('| ');
+    var cleanReason = parts >= 0 ? rawReason.substring(parts + 2) : rawReason;
+    // 解析5维度为简洁版（取前3点）
+    var dimPoints = rawReason.match(/[❶❷❸❹❺][^❶❷❸❹❺]*/g);
+    var compactReason = '';
+    if (dimPoints && dimPoints.length >= 3) {
+      compactReason = dimPoints.slice(0, 3).map(function(d) {
+        return d.trim().replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'').slice(0, 40);
+      }).join(' · ');
+    } else {
+      compactReason = cleanReason;
+    }
+    var reasonHtml = compactReason ? '<div class="rc-reason">' + esc(compactReason) + '</div>' : '';
+    // AI风险提示（简略版）
+    if (aiRisk && compactReason) {
+      reasonHtml += '<div style="font-size:9px;color:#ef4444;opacity:.8;margin-top:2px">⚠ ' + esc(aiRisk.slice(0, 60)) + '</div>';
+    }
 
     // BUFF buy order count
     var buyNum = item.buff_buy_num || 0;
