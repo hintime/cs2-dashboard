@@ -2079,6 +2079,14 @@ function renderAIRecommendations() {
     var parts = [];
     if (data.summary) parts.push('<span style="color:#c084fc;font-weight:600">📋 ' + esc(data.summary) + '</span>');
     if (data.strategy) parts.push('<span style="color:var(--text2)">💡 ' + esc(data.strategy) + '</span>');
+    // 推理过程
+    if (data.reasoning) {
+      parts.push('<details style="font-size:10px;color:var(--text3);cursor:pointer"><summary style="color:#60a5fa">🧠 推理过程</summary><div style="margin-top:4px;padding:6px 8px;background:rgba(96,165,250,.04);border-radius:6px;line-height:1.6">' + esc(data.reasoning) + '</div></details>');
+    }
+    // 自我批判
+    if (data.self_critique) {
+      parts.push('<div style="font-size:10px;color:#fbbf24;margin-top:4px;padding:4px 8px;background:rgba(251,191,36,.06);border-radius:4px">⚠️ 自检: ' + esc(data.self_critique) + '</div>');
+    }
     strategyEl.innerHTML = parts.join(' · ');
     
     // ④ 显示追踪教训反哺的评分权重调整

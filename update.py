@@ -1564,34 +1564,54 @@ def generate_ai_recommendations():
                 f'BUFF求购{buff_buy_num} | {premium} | {reason}'
             )
         candidates_text = '\n'.join(lines)
-        # 读取新闻影响和市场洞察作为上下文
+        # 读取多维市场上下文
+        context_parts = []
+        # 新闻+洞察
         news = read_json(os.path.join(DATA_DIR, 'ai_news_impact.json'))
         insight = read_json(os.path.join(DATA_DIR, 'ai_market_insight.json'))
-        context = ''
         if news and news.get('impact'):
-            context += f'市场背景(新闻): {news["impact"][:150]}\n'
+            context_parts.append(f'市场新闻: {news["impact"][:150]}')
         if insight and insight.get('insight'):
-            context += f'市场背景(洞察): {insight["insight"][:200]}\n'
+            context_parts.append(f'市场洞察: {insight["insight"][:200]}')
+        # 全市场扫描数据
+        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
+        if scan:
+            context_parts.append(f'全市场概况: {scan.get("total","?")}件标的·均价¥{scan.get("avg_p",0):.0f}·追踪{scan.get("tracked","?")}件')
+            movers = scan.get('movers', {})
+            gainers = movers.get('gainers', [])[:3]
+            losers = movers.get('losers', [])[:3]
+            if gainers:
+                context_parts.append(f'领涨: {", ".join(g.get("n","?")[:12]+"+"+str(g.get("r7",0))+"%" for g in gainers[:3])}')
+            if losers:
+                context_parts.append(f'领跌: {", ".join(l.get("n","?")[:12]+str(l.get("r7",0))+"%" for l in losers[:3])}')
+        # 价格分布区间
+        prices = [it.get('price', 0) for it in all_items[:50] if it.get('price', 0) > 0]
+        if prices:
+            context_parts.append(f'候选价格区间: ¥{min(prices):.0f}~¥{max(prices):.0f}·中位¥{sorted(prices)[len(prices)//2]:.0f}')
+        
+        context = '\n'.join(f'【{p}】' if i == 0 else p for i, p in enumerate(context_parts)) + '\n' if context_parts else ''
+        
         prompt = (
-            f'你是一位CS2饰品投资分析师。从{len(candidates)}个候选推荐中选出最优3-5个买入目标。\n\n'
-            f'{context}\n'
-            f'【候选数据】\n{candidates_text}\n'
+            f'你是CS2饰品投资分析师，拥有深度推理能力。请按以下步骤系统分析：\n\n'
+            f'第一步：解读市场环境。{context}\n'
+            f'第二步：逐件评估候选。共{len(candidates)}件：\n{candidates_text}\n'
             f'{_get_tracking_feedback()}\n'
-            f'【输出JSON】\n{{"picks":[{{"rank":1,"name":"饰品名","reason":"","risk":"","operation":""}}],"strategy":"","summary":""}}\n\n'
-            f'【reason字段必须包含5点，逐点详写，每点30-50字，总计180-250字】\n'
-            f'❶ 评分位次: 「全表第X位·综合评分XX·ECO分XX/BUFF分XX·策略标签XX」\n'
-            f'❷ 供需格局: 引用具体数字→「在售XX件/求购XX件·供<求供>求·买方/卖方市场·囤货/出货建议」\n'
-            f'❸ 平台溢价: 有BUFF价→「BUFF¥XX溢价X%·悠悠¥XX溢价X%·价差空间XX元·套利/持有判断」无则→「暂无平台数据·仅凭ECO信号·风险较高」\n'
-            f'❹ 流动性评估: 「在售规模XX件·日均成交约X件·流动性评级(优良/一般/较差)·预估变现X天」\n'
-            f'❺ 操作建议: 「建议买入/观望·目标价¥XX(+XX%)·止损¥XX(-XX%)·建议仓位X%·持有周期X天」\n\n'
-            f'【risk字段必须包含2-3个风险点，总计80-120字，引用具体数字】\n'
-            f'⚠ 风险1: 市场面→引用在售量/求购量/价格区间数据\n'
-            f'⚠ 风险2: 流动性→引用成交规模/变现周期数据\n'
-            f'⚠ 风险3(可选): 政策面→CS2更新/大行动/箱子等外部因素\n'
-            f'参考: 「在售XX件集中出货·压价风险5-10%」「求购仅X件·流动性枯竭·变现超7天」「大行动将至·饰品普跌风险15-20%」\n\n'
-            f'【operation字段建议，约80-120字】\n'
-            f'买入计划: 挂单价/分批数/仓位% | 止盈策略: 目标价+触发条件 | 止损策略: 止损价+触发条件 | 退出时机: 持有周期+信号\n'
-            f'参考: 「挂单价¥XX×3批(50%/30%/20%)·仓位<5%·止盈¥XX(+15%)触发自动卖·止损¥XX(-8%)破位清仓·持有7-14天·溢价归零立即退出」\n\n'
+            f'第三步：交叉比对，选出最优3-5个买入目标。\n\n'
+            f'要求: 每选一个都要说明【为什么选它而不是排名相邻的】。\n'
+            f'对选中的每个，指出它的最大优势和最大隐患。\n\n'
+            f'【输出JSON】\n{{'
+            f'"reasoning":"你的推理过程(100-150字,说明分析步骤+选择逻辑)",'
+            f'"picks":[{{"rank":1,"name":"饰品名","reason":"","risk":"","operation":""}}],'
+            f'"strategy":"","summary":"","self_critique":"自我批判(50字,指出可能的风险盲区)"'
+            f'}}\n\n'
+            f'【reason字段5点,每点30-50字,总计180-250字】\n'
+            f'❶ 评分位次: 「全表第X位·综合评分XX·ECO分XX/BUFF分XX·策略标签XX·相比邻位优势」\n'
+            f'❷ 供需格局: 「在售XX件/求购XX件·供<求/供>求·买方/卖方市场·囤货/出货建议」\n'
+            f'❸ 平台溢价: BUFF价→「BUFF¥XX溢价X%·悠悠¥XX溢价X%·价差空间XX元·跨平台套利判断」\n'
+            f'❹ 流动性评估: 「在售规模XX件·日均成交约X件·评级优良/一般/较差·预估变现X天」\n'
+            f'❺ 操作建议: 「买入/观望·目标¥XX(+XX%)·止损¥XX(-XX%)·仓位X%·持有周期X天·退出条件」\n\n'
+            f'【risk字段2-3点,80-120字,必须引用具体数字】\n'
+            f'【operation字段80-120字: 挂单价·分批·仓位·止盈·止损·退出时机】\n\n'
             f'禁区: 价格波动/关注市场/科隆/溢价合理/性能/稳定/新手/玩家/高手/适合新生/稀缺求'
         )
         data = json.dumps({
