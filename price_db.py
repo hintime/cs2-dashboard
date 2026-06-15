@@ -308,7 +308,7 @@ def get_movers_data():
             SELECT item_name, ts, price FROM prices
             WHERE channel='eco' AND item_name IN (
                 SELECT DISTINCT item_name FROM prices WHERE channel='eco'
-                GROUP BY item_name HAVING COUNT(*) >= 10
+                GROUP BY item_name HAVING COUNT(*) >= 3
             )
             ORDER BY item_name, ts
         ''').fetchall()

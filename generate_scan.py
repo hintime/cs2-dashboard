@@ -164,7 +164,7 @@ def main():
         for name, h in ph.items():
             if not isinstance(h, list): continue
             eco_prices = [(e.get('t',''), e.get('p',0)) for e in h if isinstance(e, dict) and e.get('p', 0) > 0]
-            if len(eco_prices) < 10: continue  # 至少10个数据点
+            if len(eco_prices) < 3: continue  # 至少3个数据点
             last_p = eco_prices[-1][1]
             # 找最接近 1 天前的价格
             prev_p = 0
