@@ -2,6 +2,12 @@
   {
     "date": "2026-06-15",
     "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json 2026-06-15 13:36"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
     "title": "data update 2026-06-15 05:27",
     "desc": "data update 2026-06-15 05:27"
   },
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "BUFF/YY价格恢复 — CSQAQ限流修复+buff_history回填兜底",
     "desc": "BUFF/YY价格恢复 — CSQAQ限流修复+buff_history回填兜底"
-  },
-  {
-    "date": "2026-06-15",
-    "tag": "refactor",
-    "title": "SQLite全量价格存储 — price_history.db替代price_history.json",
-    "desc": "SQLite全量价格存储 — price_history.db替代price_history.json"
   }
 ]
