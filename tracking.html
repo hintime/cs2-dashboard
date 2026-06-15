@@ -47,8 +47,12 @@ td{padding:5px 8px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)
     <table><thead><tr><th style="width:42%">饰品</th><th>推荐日</th><th>推荐价</th><th>当前价</th><th style="text-align:right">收益</th></tr></thead><tbody id="trackList"></tbody></table>
   </div>
   <div class="card" id="aiTrackCard" style="display:none">
-    <h2>🧠 AI 追踪分析</h2>
-    <div id="aiTrackContent" class="empty">分析中...</div>
+    <h2>🧠 AI 追踪分析 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px" id="aiMeta"></span></h2>
+    <div id="aiTrackContent"></div>
+  </div>
+  <div class="card" id="lessonsCard" style="display:none">
+    <h2>📖 经验教训 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px">AI持续进化</span></h2>
+    <div id="lessonsContent"></div>
   </div>
 </div>
 <script src="ai-badge.js"></script>
@@ -191,24 +195,94 @@ function renderTracks(tracks, nowPrices, marketData, nameMap) {
 
 loadTracks();
 (function(){var _l=Date.now();setInterval(function(){fetch('market.json?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.update_time||d.alerts_updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadTracks();}}).catch(function(){})},60000)})();
-  // ── AI 追踪分析 ──
+  // ── AI 追踪分析（双源：CI端全量分析 + 本地简要总结）──
   function runAITrackAnalysis() {
     var card = document.getElementById('aiTrackCard');
     var el = document.getElementById('aiTrackContent');
     if (!el || total < 3) return;
     card.style.display = '';
-    
-    var summary = '累计推荐'+total+'件，'+uniqueDays+'天，盈利率'+(total>0?(profited/total*100).toFixed(0):0)+'%，平均收益'+(avgRet>=0?'+':'')+avgRet.toFixed(1)+'%';
-    if (bestName) summary += '，最佳'+bestName.slice(0,15)+'+'+bestRet.toFixed(1)+'%';
-    if (worstName) summary += '，最差'+worstName.slice(0,15)+worstRet.toFixed(1)+'%';
-    
-    fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
-      method:'POST', headers:{'Authorization':'Bearer 981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz','Content-Type':'application/json'},
-      body:JSON.stringify({model:'glm-4-flash',messages:[{role:'system',content:'你是CS2投资追踪分析师。50-80字评价和建议。'},{role:'user',content:'我的CS2饰品推荐追踪：'+summary}],max_tokens:300,temperature:0.5})
-    }).then(function(r){return r.json()}).then(function(data){
-      var text = (data.choices && data.choices[0] && data.choices[0].message.content) || '';
-      el.innerHTML = '<div style=\"font-size:12px;line-height:1.7;color:var(--text2)\">'+text+'</div>';
-    }).catch(function(){ el.innerHTML = '<span style=\"color:var(--text3)\">AI 暂不可用</span>'; });
+
+    // ① 优先加载 CI 端全量分析（tracking_analysis.json）
+    fetch('tracking_analysis.json?v=' + Date.now())
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .catch(function() { return null; })
+      .then(function(analysis) {
+        if (analysis && analysis.overview) {
+          var ov = analysis.overview;
+          var meta = analysis.meta || {};
+          var metaEl = document.getElementById('aiMeta');
+          if (metaEl) metaEl.textContent = '(分析于' + (meta.date_range || '') + ')';
+
+          var html = '';
+          // 总评
+          html += '<div style="background:var(--surface2);border-radius:10px;padding:14px 16px;margin-bottom:12px">';
+          html += '<div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text)">📊 ' + esc(ov.verdict || '') + '</div>';
+          html += '<div style="font-size:11px;color:var(--text2);line-height:1.6">';
+          html += '<div>✅ 成功模式: ' + esc(ov.success_pattern || '...') + '</div>';
+          html += '<div>❌ 失败模式: ' + esc(ov.failure_pattern || '...') + '</div>';
+          html += '<div style="margin-top:4px">📈 趋势: ' + esc(ov.confidence_trend || '?') + ' | 🏷 信号: ' + esc(ov.market_signal || '?') + '</div>';
+          html += '</div></div>';
+
+          // 评分反馈
+          if (analysis.scoring_feedback) {
+            var sf = analysis.scoring_feedback;
+            html += '<div style="font-size:10px;color:var(--text3);line-height:1.6;margin-bottom:12px">';
+            html += '<span style="color:var(--text2)">评分建议:</span> ';
+            html += 'ECO' + esc(sf.eco_weight_advice || '?') + ' · ';
+            html += 'BUFF' + esc(sf.buff_weight_advice || '?') + ' · ';
+            html += '溢价' + esc(sf.premium_threshold_advice || '?');
+            html += '</div>';
+          }
+
+          // 推荐Prompt优化建议
+          if (analysis.recommendation_prompt_tweak) {
+            html += '<div style="font-size:11px;color:var(--blue);line-height:1.5;padding:8px 12px;background:rgba(96,165,250,.08);border-radius:8px">';
+            html += '💡 ' + esc(analysis.recommendation_prompt_tweak);
+            html += '</div>';
+          }
+
+          el.innerHTML = html;
+
+          // ② 教训面板
+          fetch('tracking_lessons.json?v=' + Date.now())
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .catch(function() { return null; })
+            .then(function(lessons) {
+              if (lessons && lessons.lessons && lessons.lessons.length) {
+                var lCard = document.getElementById('lessonsCard');
+                var lEl = document.getElementById('lessonsContent');
+                lCard.style.display = '';
+                var lhtml = '<div style="font-size:10px;color:var(--text3);margin-bottom:8px">累计' + (lessons.total_analyses||0) + '次分析 · ' + lessons.lessons.length + '条活跃教训</div>';
+                lessons.lessons.slice(0, 8).forEach(function(l, i) {
+                  var cat = {timing:'⏰时机', market:'📈市场', source:'📡数据源', scoring:'📊评分'}[l.category] || '📌' + l.category;
+                  var impactColor = l.impact === '高' ? 'var(--rise)' : l.impact === '中' ? 'var(--amber)' : 'var(--text3)';
+                  var confStars = '⭐'.repeat(Math.min(l.confirmed||1, 3));
+                  lhtml += '<div class="row" style="align-items:flex-start;padding:8px 0">';
+                  lhtml += '<span style="color:var(--text2);min-width:80px;font-size:10px">' + cat + ' ' + confStars + '</span>';
+                  lhtml += '<span style="flex:1;font-size:10px;color:var(--text);line-height:1.5">' + esc(l.lesson) + '<br><span style="color:var(--text3)">→ ' + esc(l.action || '') + '</span></span>';
+                  lhtml += '<span style="font-size:9px;color:' + impactColor + ';min-width:20px;text-align:right">' + (l.impact||'?') + '</span>';
+                  lhtml += '</div>';
+                });
+                lEl.innerHTML = lhtml;
+              }
+            });
+        } else {
+          // ③ 本地 fallback（无 CI 分析时的简要AI总结）
+          var summary = '累计推荐'+total+'件，'+uniqueDays+'天，盈利率'+(total>0?(profited/total*100).toFixed(0):0)+'%，平均收益'+(avgRet>=0?'+':'')+avgRet.toFixed(1)+'%';
+          if (bestName) summary += '，最佳'+bestName.slice(0,15)+'+'+bestRet.toFixed(1)+'%';
+          if (worstName) summary += '，最差'+worstName.slice(0,15)+worstRet.toFixed(1)+'%';
+
+          el.innerHTML = '<div style="font-size:11px;color:var(--text3);margin-bottom:6px">CI分析数据暂未生成，显示本地简析</div>';
+          
+          fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+            method:'POST', headers:{'Authorization':'Bearer 981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz','Content-Type':'application/json'},
+            body:JSON.stringify({model:'glm-4-flash',messages:[{role:'system',content:'你是CS2投资追踪分析师。50-80字评价和建议。'},{role:'user',content:'我的CS2饰品推荐追踪：'+summary}],max_tokens:300,temperature:0.5})
+          }).then(function(r){return r.json()}).then(function(data){
+            var text = (data.choices && data.choices[0] && data.choices[0].message.content) || '';
+            el.innerHTML += '<div style="font-size:12px;line-height:1.7;color:var(--text2);padding:8px 0">'+text+'</div>';
+          }).catch(function(){ el.innerHTML += '<span style="color:var(--text3)">AI 暂不可用</span>'; });
+        }
+      });
   }
   runAITrackAnalysis();
 </script>

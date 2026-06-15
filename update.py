@@ -1370,6 +1370,14 @@ def generate_ai_news_impact():
     except Exception as e:
         print(f'[AI] News impact failed: {e}')
 
+def _get_tracking_feedback():
+    """从追踪数据分析中获取教训，注入推荐Prompt"""
+    try:
+        import tracking_ai
+        return tracking_ai.get_lessons_for_prompt()
+    except:
+        return ''
+
 def generate_ai_recommendations():
     """AI 购买推荐分析 — 综合评分+多维度数据，给出最优购买建议"""
     if not ZHIPU_KEY: return
@@ -1423,7 +1431,8 @@ def generate_ai_recommendations():
         prompt = (
             f'你是一位CS2饰品投资分析师。从{len(candidates)}个候选推荐中选出最优3-5个买入目标。\n\n'
             f'{context}\n'
-            f'【候选数据】\n{candidates_text}\n\n'
+            f'【候选数据】\n{candidates_text}\n'
+            f'{_get_tracking_feedback()}\n'
             f'【输出JSON】\n{{"picks":[{{"rank":1,"name":"饰品名","reason":"","risk":""}}],"strategy":"","summary":""}}\n\n'
             f'【reason字段必须包含5点，逐点写实，每点20-30字，总计110-150字】\n'
             f'❶ 评分位次: 「全表第X位·评分XX·策略XX」\n'
@@ -2103,6 +2112,15 @@ def main():
             market['recommendations'] = recs
             write_json(market_path, market)
 
+            # ── 保存每日推荐到追踪数据（累积历史，供AI分析涨跌根因）──
+            try:
+                import tracking_ai
+                n = tracking_ai.save_daily_tracks(recs.get('all', []))
+                if n > 0:
+                    dirty_files.add('rec_tracks.json')
+            except Exception as e:
+                print(f'[TRACK-AI] Save failed (non-fatal): {e}', file=sys.stderr)
+
             # ── Record price history for ALL tracked items (SQLite) ──
             try:
                 import price_db
@@ -2356,6 +2374,17 @@ def main():
     _ai_call_with_rate_limit(generate_ai_market_insight, 'Market insight')
     _ai_call_with_rate_limit(generate_ai_news_impact, 'News impact')
     _ai_call_with_rate_limit(generate_ai_recommendations, 'Recommendations')
+
+    # ── 追踪AI分析：深度分析推荐涨跌根因 + 提炼教训（数据量>=3条时）──
+    try:
+        import tracking_ai
+        analysis = tracking_ai.main()  # 从 rec_tracks.json 加载全量追踪
+        if analysis:
+            dirty_files.add('tracking_analysis.json')
+            dirty_files.add('tracking_lessons.json')
+            print('[TRACK-AI] ✨ 分析完成，教训已积累')
+    except Exception as e:
+        print(f'[TRACK-AI] Failed (non-fatal): {e}', file=sys.stderr)
 
     # ── Push all dirty files at once ──
     push_all()

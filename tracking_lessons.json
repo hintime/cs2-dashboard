@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "accumulated_since": "2026-06-16",
+  "total_analyses": 1,
+  "lessons": [
+    {
+      "id": "L01",
+      "category": "timing/market/source/scoring",
+      "lesson": "市场信号解读不足，导致供需失衡",
+      "impact": "高",
+      "action": "加强市场趋势分析，调整推荐时机",
+      "added_at": "2026-06-16",
+      "confirmed": 1
+    },
+    {
+      "id": "L02",
+      "category": "timing/market/source/scoring",
+      "lesson": "溢价过高导致推荐失败",
+      "impact": "高",
+      "action": "设定合理溢价阈值，避免盲目跟风",
+      "added_at": "2026-06-16",
+      "confirmed": 1
+    },
+    {
+      "id": "L03",
+      "category": "scoring",
+      "lesson": "ECO评分权重过高，导致部分推荐失误",
+      "impact": "中",
+      "action": "调整ECO和BUFF评分权重，平衡推荐结果",
+      "added_at": "2026-06-16",
+      "confirmed": 1
+    },
+    {
+      "id": "L04",
+      "category": "source",
+      "lesson": "信息来源单一，缺乏全面性",
+      "impact": "中",
+      "action": "拓宽信息来源，增加数据维度",
+      "added_at": "2026-06-16",
+      "confirmed": 1
+    }
+  ],
+  "history": [],
+  "last_updated": "2026-06-15T16:22:57Z"
+}
