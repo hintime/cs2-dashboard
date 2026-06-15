@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-06-15",
+    "tag": "perf",
+    "title": "骨架屏重设计+并行加载+进度条动画",
+    "desc": "骨架屏重设计+并行加载+进度条动画"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "涨跌榜阈值10→3—CI新DB数据点不足导致全空",
+    "desc": "涨跌榜阈值10→3—CI新DB数据点不足导致全空"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json 2026-06-15 22:36"
+  },
+  {
+    "date": "2026-06-15",
     "tag": "chore",
     "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
     "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json 2026-06-15 21:47"
@@ -100,23 +118,5 @@
     "tag": "chore",
     "title": "data update 2026-06-14 20:39",
     "desc": "data update 2026-06-14 20:39"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "chore",
-    "title": "market index 2026-06-14 19:19",
-    "desc": "market index 2026-06-14 19:19"
-  },
-  {
-    "date": "2026-06-15",
-    "tag": "feat",
-    "title": "AI推荐卡片重设计—信号指示器+五维关键因素网格",
-    "desc": "AI推荐卡片重设计—信号指示器+五维关键因素网格"
-  },
-  {
-    "date": "2026-06-15",
-    "tag": "feat",
-    "title": "AI推荐五维分析—评分/供需/溢价/流动性/操作建议逐点展开",
-    "desc": "AI推荐五维分析—评分/供需/溢价/流动性/操作建议逐点展开"
   }
 ]
