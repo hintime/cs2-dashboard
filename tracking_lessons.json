@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 1,
+  "total_analyses": 2,
   "lessons": [
     {
       "id": "L01",
@@ -10,7 +10,7 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 5,
+      "confirmed": 6,
       "last_seen": "2026-06-16"
     },
     {
@@ -20,7 +20,7 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 5,
+      "confirmed": 6,
       "last_seen": "2026-06-16"
     },
     {
@@ -30,7 +30,7 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 5,
+      "confirmed": 6,
       "last_seen": "2026-06-16"
     },
     {
@@ -40,12 +40,12 @@
       "impact": "中",
       "action": "拓宽信息来源，增加数据维度",
       "added_at": "2026-06-16",
-      "confirmed": 3,
+      "confirmed": 4,
       "last_seen": "2026-06-16"
     }
   ],
   "history": [],
-  "last_updated": "2026-06-15T17:20:08Z",
+  "last_updated": "2026-06-15T17:37:10Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -64,6 +64,30 @@
         "liquidity_advice": "增加求购比权重至20%"
       },
       "prompt_tweak": "减少ECO高分信号依赖，增加多平台价差和求购比考量",
+      "stats": {
+        "total": 30,
+        "priced": 30,
+        "profitable": 20,
+        "rate": 66.7
+      }
+    },
+    {
+      "seq": 2,
+      "ts": "2026-06-15T17:37:10Z",
+      "overview": {
+        "verdict": "短期信号偏保守，流动性优先",
+        "success_pattern": "高求售比、低溢价的ECO供需失衡推荐",
+        "failure_pattern": "高溢价但求售比低的BUFF信号推荐",
+        "confidence_trend": "持平",
+        "market_signal": "供需失衡主导，求购活跃但溢价空间有限"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "+10%",
+        "buff_weight_advice": "-10%",
+        "premium_threshold_advice": "降低溢阈值至5%以下，避免追高",
+        "liquidity_advice": "提高流动性权重，侧重求售比>500%"
+      },
+      "prompt_tweak": "增加求售比和实际溢价率对比，减少单纯多平台热度描述",
       "stats": {
         "total": 30,
         "priced": 30,

@@ -1,45 +1,52 @@
 {
   "overview": {
-    "verdict": "中价品稳健，高溢价风险大",
-    "success_pattern": "多平台信号+中低价+溢价<30%",
-    "failure_pattern": "单一ECO信号+溢价过高或流动性差",
+    "verdict": "短期信号偏保守，流动性优先",
+    "success_pattern": "高求售比、低溢价的ECO供需失衡推荐",
+    "failure_pattern": "高溢价但求售比低的BUFF信号推荐",
     "confidence_trend": "持平",
-    "market_signal": "供需失衡主导，求购活跃支撑"
+    "market_signal": "供需失衡主导，求购活跃但溢价空间有限"
   },
   "lessons": [
     {
       "id": "L01",
-      "category": "source",
-      "lesson": "多平台信号优于单一ECO信号，但需警惕溢价泡沫",
+      "category": "scoring",
+      "lesson": "ECO评分权重应提升，因其更反映流动性",
       "impact": "高",
-      "action": "对多平台信号增加溢价率上限过滤"
+      "action": "将ECO评分权重上调10%"
     },
     {
       "id": "L02",
-      "category": "scoring",
-      "lesson": "ECO评分偏高但实际收益率有限",
-      "impact": "中",
-      "action": "降低ECO评分权重，增加流动性考量"
+      "category": "source",
+      "lesson": "BUFF高溢价需结合求售比验证",
+      "impact": "高",
+      "action": "仅采纳求售比>500%的高溢价推荐"
     },
     {
       "id": "L03",
-      "category": "market",
-      "lesson": "求购比高但价格上行动力不足",
+      "category": "timing",
+      "lesson": "1天观察期过短，不宜频繁操作",
       "impact": "中",
-      "action": "结合近期涨跌幅动态调整入场信号"
+      "action": "延长追踪周期至3-7天"
+    },
+    {
+      "id": "L04",
+      "category": "market",
+      "lesson": "求售比>1000%时溢价负值更安全",
+      "impact": "中",
+      "action": "设定溢价>-5%的阈值"
     }
   ],
   "scoring_feedback": {
-    "eco_weight_advice": "-10%",
-    "buff_weight_advice": "+10%",
-    "premium_threshold_advice": "多平台溢价阈值降至20%",
-    "liquidity_advice": "增加求购比权重至20%"
+    "eco_weight_advice": "+10%",
+    "buff_weight_advice": "-10%",
+    "premium_threshold_advice": "降低溢阈值至5%以下，避免追高",
+    "liquidity_advice": "提高流动性权重，侧重求售比>500%"
   },
-  "recommendation_prompt_tweak": "减少ECO高分信号依赖，增加多平台价差和求购比考量",
+  "recommendation_prompt_tweak": "增加求售比和实际溢价率对比，减少单纯多平台热度描述",
   "meta": {
     "total_tracks": 30,
     "date_range": "2026-06-16~2026-06-16",
-    "analyzed_at": "2026-06-15T17:20:08Z",
+    "analyzed_at": "2026-06-15T17:37:10Z",
     "model": "deepseek-v4-flash"
   }
 }
