@@ -50,8 +50,12 @@ td{padding:5px 8px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)
     <h2>🧠 AI 追踪分析 <span style="font-size:9px;background:rgba(96,165,250,.15);color:#60a5fa;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px">DeepSeek V4</span><span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px" id="aiMeta"></span></h2>
     <div id="aiTrackContent"></div>
   </div>
+  <div class="card" id="evolutionCard" style="display:none">
+    <h2>📈 进化轨迹 <span style="font-size:9px;background:rgba(96,165,250,.15);color:#60a5fa;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px">评分权重演变</span></h2>
+    <div id="evolutionContent"></div>
+  </div>
   <div class="card" id="lessonsCard" style="display:none">
-    <h2>📖 经验教训 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px">AI持续进化</span></h2>
+    <h2>📖 经验教训 <span style="font-size:9px;background:rgba(251,191,36,.15);color:#fbbf24;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px" id="lessonCount"></span></h2>
     <div id="lessonsContent"></div>
   </div>
 </div>
@@ -243,23 +247,101 @@ loadTracks();
 
           el.innerHTML = html;
 
-          // ② 教训面板
+          // ② 教训面板 + 进化轨迹
           fetch('tracking_lessons.json?v=' + Date.now())
             .then(function(r) { return r.ok ? r.json() : null; })
             .catch(function() { return null; })
             .then(function(lessons) {
-              if (lessons && lessons.lessons && lessons.lessons.length) {
+              if (!lessons) return;
+              
+              // ── 进化轨迹（评分权重演变）──
+              var ah = lessons.analysis_history || [];
+              if (ah.length > 0) {
+                var evCard = document.getElementById('evolutionCard');
+                var evEl = document.getElementById('evolutionContent');
+                evCard.style.display = '';
+                var evhtml = '<div style="font-size:10px;color:var(--text3);margin-bottom:10px">共' + (lessons.total_analyses||0) + '次分析，以下为推荐逻辑进化轨迹</div>';
+                
+                // 最新一次的建议
+                var latest = ah[ah.length-1];
+                var sf = latest.scoring_feedback || {};
+                evhtml += '<div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:8px">';
+                evhtml += '<div style="font-size:11px;font-weight:700;margin-bottom:6px;color:var(--text)">🎯 当前推荐策略';
+                if (ah.length >= 2) {
+                  var prev = ah[ah.length-2].scoring_feedback || {};
+                  var ecoChange = sf.eco_weight_advice !== prev.eco_weight_advice;
+                  var buffChange = sf.buff_weight_advice !== prev.buff_weight_advice;
+                  if (ecoChange || buffChange) evhtml += ' <span style="font-size:9px;color:#fbbf24">← 已调整</span>';
+                }
+                evhtml += '</div>';
+                
+                // 权重条
+                var ecoW = parseFloat(sf.eco_weight_advice) || 0;
+                var buffW = parseFloat(sf.buff_weight_advice) || 0;
+                evhtml += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">';
+                evhtml += '<span style="font-size:9px;color:var(--text3);min-width:36px">ECO</span>';
+                evhtml += '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">';
+                evhtml += '<div style="height:100%;width:'+Math.abs(ecoW)*4+'%;background:'+(ecoW>0?'var(--rise)':'var(--fall)')+';border-radius:3px"></div></div>';
+                evhtml += '<span style="font-size:9px;color:'+(ecoW>0?'var(--rise)':'var(--fall)')+';min-width:36px;text-align:right">'+(ecoW>0?'+':'')+ecoW+'%</span></div>';
+                
+                evhtml += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">';
+                evhtml += '<span style="font-size:9px;color:var(--text3);min-width:36px">BUFF</span>';
+                evhtml += '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">';
+                evhtml += '<div style="height:100%;width:'+Math.abs(buffW)*4+'%;background:'+(buffW>0?'var(--fall)':'var(--rise)')+';border-radius:3px"></div></div>';
+                evhtml += '<span style="font-size:9px;color:'+(buffW>0?'var(--fall)':'var(--rise)')+';min-width:36px;text-align:right">'+(buffW>0?'+':'')+buffW+'%</span></div>';
+                
+                evhtml += '<div style="font-size:9px;color:var(--text2);margin-top:4px">溢价阈值: ' + esc(sf.premium_threshold_advice||'?') + ' · 流动性: ' + esc(sf.liquidity_advice||'?') + '</div>';
+                evhtml += '</div>';
+                
+                // 历史趋势
+                if (ah.length >= 2) {
+                  evhtml += '<div style="font-size:9px;color:var(--text3);margin-bottom:4px">📈 评分权重演变</div>';
+                  evhtml += '<div style="background:var(--surface2);border-radius:8px;padding:10px">';
+                  ah.forEach(function(a, i) {
+                    var s = a.scoring_feedback || {};
+                    var ts = (a.ts||'').slice(5,16).replace('T',' ');
+                    evhtml += '<div style="display:flex;align-items:center;gap:6px;font-size:9px;margin-bottom:3px">';
+                    evhtml += '<span style="color:var(--text3);min-width:70px">#' + a.seq + ' ' + ts + '</span>';
+                    evhtml += '<span style="color:'+(parseFloat(s.eco_weight_advice)>0?'var(--fall)':'var(--rise)')+'">ECO' + esc(s.eco_weight_advice||'?') + '</span>';
+                    evhtml += '<span style="color:var(--text3)">·</span>';
+                    evhtml += '<span style="color:'+(parseFloat(s.buff_weight_advice)>0?'var(--rise)':'var(--fall)')+'">BUFF' + esc(s.buff_weight_advice||'?') + '</span>';
+                    if (i > 0) {
+                      var prevS = ah[i-1].scoring_feedback || {};
+                      if (s.eco_weight_advice !== prevS.eco_weight_advice) evhtml += ' <span style="color:#fbbf24">↻</span>';
+                    }
+                    evhtml += '</div>';
+                  });
+                  evhtml += '</div>';
+                }
+                
+                // Prompt 优化方向
+                if (latest.prompt_tweak) {
+                  evhtml += '<div style="font-size:10px;color:var(--blue);margin-top:8px;padding:6px 10px;background:rgba(96,165,250,.06);border-radius:6px">';
+                  evhtml += '💡 ' + esc(latest.prompt_tweak);
+                  evhtml += '</div>';
+                }
+                
+                evEl.innerHTML = evhtml;
+              }
+              
+              // ── 教训面板 ──
+              if (lessons.lessons && lessons.lessons.length) {
                 var lCard = document.getElementById('lessonsCard');
                 var lEl = document.getElementById('lessonsContent');
+                var lCount = document.getElementById('lessonCount');
                 lCard.style.display = '';
-                var lhtml = '<div style="font-size:10px;color:var(--text3);margin-bottom:8px">累计' + (lessons.total_analyses||0) + '次分析 · ' + lessons.lessons.length + '条活跃教训</div>';
+                if (lCount) lCount.textContent = lessons.lessons.length + '条教训 · ' + (lessons.total_analyses||0) + '次分析';
+                var lhtml = '<div style="font-size:10px;color:var(--text3);margin-bottom:8px">AI从追踪数据中提炼的涨跌规律</div>';
                 lessons.lessons.slice(0, 8).forEach(function(l, i) {
                   var cat = {timing:'⏰时机', market:'📈市场', source:'📡数据源', scoring:'📊评分'}[l.category] || '📌' + l.category;
                   var impactColor = l.impact === '高' ? 'var(--rise)' : l.impact === '中' ? 'var(--amber)' : 'var(--text3)';
-                  var confStars = '⭐'.repeat(Math.min(l.confirmed||1, 3));
+                  var conf = l.confirmed || 1;
+                  var confStars = '⭐'.repeat(Math.min(conf, 5));
+                  var isNew = conf <= 1 ? ' <span style=\"font-size:8px;color:#fbbf24\">NEW</span>' : '';
+                  var confNote = conf >= 3 ? ' <span style=\"font-size:8px;color:var(--fall)\">已验证×'+conf+'</span>' : '';
                   lhtml += '<div class="row" style="align-items:flex-start;padding:8px 0">';
-                  lhtml += '<span style="color:var(--text2);min-width:80px;font-size:10px">' + cat + ' ' + confStars + '</span>';
-                  lhtml += '<span style="flex:1;font-size:10px;color:var(--text);line-height:1.5">' + esc(l.lesson) + '<br><span style="color:var(--text3)">→ ' + esc(l.action || '') + '</span></span>';
+                  lhtml += '<span style="color:var(--text2);min-width:80px;font-size:10px">' + cat + ' ' + confStars + isNew + '</span>';
+                  lhtml += '<span style="flex:1;font-size:10px;color:var(--text);line-height:1.5">' + esc(l.lesson) + '<br><span style="color:var(--text3)">→ ' + esc(l.action || '') + confNote + '</span></span>';
                   lhtml += '<span style="font-size:9px;color:' + impactColor + ';min-width:20px;text-align:right">' + (l.impact||'?') + '</span>';
                   lhtml += '</div>';
                 });

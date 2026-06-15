@@ -300,12 +300,28 @@ def extract_lessons(analysis):
         'version': 1,
         'accumulated_since': time.strftime('%Y-%m-%d'),
         'total_analyses': 0,
-        'lessons': [],       # 当前活跃教训
-        'history': []         # 历史教训归档
+        'lessons': [],
+        'history': [],
+        'analysis_history': []  # 每次分析的 overview + scoring_feedback（进化轨迹）
     }
     
     lessons_db['total_analyses'] += 1
     lessons_db['last_updated'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    
+    # 记录本次分析的 overview 和 scoring_feedback（进化轨迹）
+    analysis_snapshot = {
+        'seq': lessons_db['total_analyses'],
+        'ts': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'overview': analysis.get('overview', {}),
+        'scoring_feedback': analysis.get('scoring_feedback', {}),
+        'prompt_tweak': analysis.get('recommendation_prompt_tweak', '')
+    }
+    analysis_history = lessons_db.get('analysis_history', [])
+    analysis_history.append(analysis_snapshot)
+    # 保留最近 20 次
+    if len(analysis_history) > 20:
+        analysis_history = analysis_history[-20:]
+    lessons_db['analysis_history'] = analysis_history
     
     # 合并新教训（去重 + 按 impact 排序）
     new_lessons = analysis.get('lessons', [])
