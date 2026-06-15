@@ -1577,17 +1577,21 @@ def generate_ai_recommendations():
             f'{context}\n'
             f'【候选数据】\n{candidates_text}\n'
             f'{_get_tracking_feedback()}\n'
-            f'【输出JSON】\n{{"picks":[{{"rank":1,"name":"饰品名","reason":"","risk":""}}],"strategy":"","summary":""}}\n\n'
-            f'【reason字段必须包含5点，逐点写实，每点20-30字，总计110-150字】\n'
-            f'❶ 评分位次: 「全表第X位·评分XX·策略XX」\n'
-            f'❷ 供需格局: 「在售XX件/求购XX件·供<求→卖方市场」或「供给充裕·买方议价」\n'
-            f'❸ 平台溢价: 有BUFF价→「BUFF¥XX溢价X%·平台看好」无则写「暂无平台数据」\n'
-            f'❹ 流动性评估: 「在售规模XX件·流动性优良/一般·变现约X天」\n'
-            f'❺ 操作建议: 「建议买入·目标收益+XX%·关注X风险」\n\n'
-            f'【risk字段必须包含2个风险点，总计60-80字】\n'
-            f'⚠ 风险1: 引用在售量/求购量/价格数据\n'
-            f'⚠ 风险2: 引用不同维度数据\n'
-            f'参考: 「在售XX件集中出货·压价风险5-10%」「求购仅X件·流动性枯竭·变现超7天」\n\n'
+            f'【输出JSON】\n{{"picks":[{{"rank":1,"name":"饰品名","reason":"","risk":"","operation":""}}],"strategy":"","summary":""}}\n\n'
+            f'【reason字段必须包含5点，逐点详写，每点30-50字，总计180-250字】\n'
+            f'❶ 评分位次: 「全表第X位·综合评分XX·ECO分XX/BUFF分XX·策略标签XX」\n'
+            f'❷ 供需格局: 引用具体数字→「在售XX件/求购XX件·供<求供>求·买方/卖方市场·囤货/出货建议」\n'
+            f'❸ 平台溢价: 有BUFF价→「BUFF¥XX溢价X%·悠悠¥XX溢价X%·价差空间XX元·套利/持有判断」无则→「暂无平台数据·仅凭ECO信号·风险较高」\n'
+            f'❹ 流动性评估: 「在售规模XX件·日均成交约X件·流动性评级(优良/一般/较差)·预估变现X天」\n'
+            f'❺ 操作建议: 「建议买入/观望·目标价¥XX(+XX%)·止损¥XX(-XX%)·建议仓位X%·持有周期X天」\n\n'
+            f'【risk字段必须包含2-3个风险点，总计80-120字，引用具体数字】\n'
+            f'⚠ 风险1: 市场面→引用在售量/求购量/价格区间数据\n'
+            f'⚠ 风险2: 流动性→引用成交规模/变现周期数据\n'
+            f'⚠ 风险3(可选): 政策面→CS2更新/大行动/箱子等外部因素\n'
+            f'参考: 「在售XX件集中出货·压价风险5-10%」「求购仅X件·流动性枯竭·变现超7天」「大行动将至·饰品普跌风险15-20%」\n\n'
+            f'【operation字段建议，约80-120字】\n'
+            f'买入计划: 挂单价/分批数/仓位% | 止盈策略: 目标价+触发条件 | 止损策略: 止损价+触发条件 | 退出时机: 持有周期+信号\n'
+            f'参考: 「挂单价¥XX×3批(50%/30%/20%)·仓位<5%·止盈¥XX(+15%)触发自动卖·止损¥XX(-8%)破位清仓·持有7-14天·溢价归零立即退出」\n\n'
             f'禁区: 价格波动/关注市场/科隆/溢价合理/性能/稳定/新手/玩家/高手/适合新生/稀缺求'
         )
         data = json.dumps({
@@ -1595,7 +1599,7 @@ def generate_ai_recommendations():
             'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON格式。'}, {'role': 'user', 'content': prompt}],
             'response_format': {'type': 'json_object'},
             'thinking': {'type': 'enabled'},
-            'max_tokens': 2000, 'temperature': 0.3
+            'max_tokens': 3000, 'temperature': 0.3
         }).encode('utf-8')
         req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
             'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
@@ -1636,11 +1640,11 @@ def generate_ai_recommendations():
             retry_data = json.dumps({
                 'model': 'deepseek-v4-flash',
                 'messages': [
-                    {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象，不要任何解释。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":""}],"strategy":"","summary":""}'},
+                    {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象，不要任何解释。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":"","operation":""}],"strategy":"","summary":""}'},
                     {'role': 'user', 'content': f'从以下候选中选3个最优买入:\n{candidates_text[:2000]}\n记住:只输出JSON。'}
                 ],
                 'response_format': {'type': 'json_object'},
-                'max_tokens': 2000, 'temperature': 0.3
+                'max_tokens': 3000, 'temperature': 0.3
             }).encode('utf-8')
             retry_req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=retry_data, headers={
                 'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'

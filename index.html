@@ -2066,6 +2066,13 @@ function renderAIRecommendations() {
         // 风险提示
         (k ? '<div style="font-size:10px;color:#ef4444;line-height:1.5;padding:6px 10px;background:rgba(239,68,68,.06);border-radius:6px;border-left:2px solid rgba(239,68,68,.3);margin-top:6px">' +
           '<span style="opacity:.7">⚠</span> ' + esc(k) + '</div>' : '') +
+        // 操作计划
+        (p.operation ? '<div style="font-size:10px;color:#60a5fa;line-height:1.6;padding:8px 10px;background:rgba(96,165,250,.06);border-radius:6px;border-left:2px solid rgba(96,165,250,.3);margin-top:6px">' +
+          '<span style="font-weight:700">📋 操作计划</span> ' + esc(p.operation) + '</div>' : '') +
+        (p.entry_low || p.entry_high ? '<div style="font-size:9px;color:var(--text3);margin-top:3px;display:flex;gap:10px">' +
+          (p.entry_low ? '<span>📥 挂单: ¥' + esc(p.entry_low) + '</span>' : '') +
+          (p.entry_high ? '<span>📈 止盈: ¥' + esc(p.entry_high) + '</span>' : '') +
+        '</div>' : '') +
       '</div>';
     }).join('');
     // 策略和总览
@@ -3086,7 +3093,7 @@ function renderAllRecs() {
   // ── 构建AI推荐理由查找表（优先用DeepSeek生成的理由）──
   var aiReasonMap = {};
   (window._aiRecommendations || {}).picks && (window._aiRecommendations.picks || []).forEach(function(p) {
-    if (p.name) aiReasonMap[p.name] = { reason: p.reason || '', risk: p.risk || '' };
+    if (p.name) aiReasonMap[p.name] = { reason: p.reason || '', risk: p.risk || '', operation: p.operation || '' };
   });
 
   // ── 推荐策略对比（ECO vs BUFF）──
