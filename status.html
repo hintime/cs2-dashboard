@@ -91,7 +91,7 @@ function loadStatus() {
       var badge = '<span class="badge badge-old">缺失</span>';
 
       if (d) {
-        var ut = d.update_time || d.updated || d.date || '';
+        var ut = d.update_time || d.alerts_updated || d.market_updated || d.updated || d.date || '';
         if (Array.isArray(d) && d.length > 0) {
           // eco_tracked is array - use first item's timestamp or just show count
           var first = d[0];
@@ -180,7 +180,7 @@ loadStatus();
   var _last = Date.now();
   setInterval(function(){
     fetch('market.json?v=' + Date.now(), {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
-      var ut = d.update_time || d.alerts_updated || '';
+      var ut = d.update_time || d.alerts_updated || d.market_updated || d.updated || '';
       if (ut && new Date(ut).getTime() > _last) { _last = new Date(ut).getTime(); loadStatus(); }
     }).catch(function(){});
   }, 60000);
