@@ -1495,6 +1495,7 @@ def generate_ai_recommendations():
             'model': 'deepseek-v4-flash',
             'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON格式。'}, {'role': 'user', 'content': prompt}],
             'response_format': {'type': 'json_object'},
+            'thinking': {'type': 'enabled'},
             'max_tokens': 2000, 'temperature': 0.3
         }).encode('utf-8')
         req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={

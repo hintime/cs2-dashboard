@@ -99,7 +99,8 @@ def _call_ai(messages, max_tokens=2048, temperature=0.5, json_mode=False):
                 'model': MODEL,
                 'messages': messages,
                 'max_tokens': max_tokens,
-                'temperature': temperature
+                'temperature': temperature,
+                'thinking': {'type': 'enabled'}
             }
             if json_mode:
                 body['response_format'] = {'type': 'json_object'}
