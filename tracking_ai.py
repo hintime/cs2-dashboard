@@ -17,7 +17,17 @@ import urllib.error
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = SCRIPT_DIR
 DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', 'sk-3a9f8fed7ff94e7398e3a9164807cb24')
-MODEL = 'deepseek-chat'
+ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz')
+AI_PROVIDER = os.environ.get('AI_PROVIDER', 'deepseek')  # 'deepseek' or 'zhipu'
+
+def _ai_key():
+    return DEEPSEEK_KEY if AI_PROVIDER == 'deepseek' else ZHIPU_KEY
+
+def _ai_endpoint():
+    return 'https://api.deepseek.com/v1/chat/completions' if AI_PROVIDER == 'deepseek' \
+        else 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+
+MODEL = 'deepseek-chat' if AI_PROVIDER == 'deepseek' else 'glm-4-flash'
 
 # ── 数据读写 ──
 
@@ -85,8 +95,11 @@ def load_all_tracks():
 
 # ── AI 调用 ──
 
-def _call_zhipu(messages, max_tokens=2048, temperature=0.5, json_mode=False):
-    """DeepSeek API 调用（含重试）"""
+def _call_ai(messages, max_tokens=2048, temperature=0.5, json_mode=False):
+    """统一 AI 调用 — 自动切换 DeepSeek/Zhipu（含重试）"""
+    key = _ai_key()
+    endpoint = _ai_endpoint()
+    
     for attempt in range(3):
         try:
             body = {
@@ -100,10 +113,10 @@ def _call_zhipu(messages, max_tokens=2048, temperature=0.5, json_mode=False):
             
             data = json.dumps(body).encode('utf-8')
             req = urllib.request.Request(
-                'https://api.deepseek.com/v1/chat/completions',
+                endpoint,
                 data=data,
                 headers={
-                    'Authorization': f'Bearer {DEEPSEEK_KEY}',
+                    'Authorization': f'Bearer {key}',
                     'Content-Type': 'application/json'
                 }
             )
@@ -213,7 +226,7 @@ ECO推荐{len(eco_items)}件，BUFF推荐{len(buff_items)}件
 }}"""
 
     print(f'[TRACK-AI] Analyzing {total} tracks ({len(items_text)} items)...')
-    result = _call_zhipu([
+    result = _call_ai([
         {'role': 'system', 'content': '你是CS2饰品投资策略师。根据追踪数据反推推荐策略得失。只返回JSON。'},
         {'role': 'user', 'content': prompt}
     ], max_tokens=2048, temperature=0.4, json_mode=True)
@@ -380,7 +393,7 @@ def analyze_single_mover(item_name, rec_price, current_price, tag, price_history
 
 {direction}幅{abs(change):.1f}%，用一句话(40字内)分析可能原因和市场含义。纯文本，不要JSON。"""
 
-    result = _call_zhipu([
+    result = _call_ai([
         {'role': 'system', 'content': '你是CS2饰品市场分析师。简洁精准。'},
         {'role': 'user', 'content': prompt}
     ], max_tokens=200, temperature=0.3)

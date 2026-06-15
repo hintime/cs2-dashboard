@@ -31,12 +31,70 @@ PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 STEAM_KEY = os.environ.get('STEAMDT_KEY', '')
 GH_TOKEN = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN', '')
 DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', 'sk-3a9f8fed7ff94e7398e3a9164807cb24')
+ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz')
+AI_PROVIDER = os.environ.get('AI_PROVIDER', 'deepseek')  # 'deepseek' or 'zhipu'
 REPO = 'hintime/cs2-dashboard'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, '..') if SCRIPT_DIR.endswith('.github') else SCRIPT_DIR
 
 MAX_RETRIES = 3
 RETRY_DELAY = 2
+
+# ═══════════════ AI Provider 统一调度 ═══════════════
+def _ai_key():
+    """返回当前 provider 的 API key"""
+    return DEEPSEEK_KEY if AI_PROVIDER == 'deepseek' else ZHIPU_KEY
+
+def _ai_endpoint():
+    """返回当前 provider 的 API endpoint"""
+    return 'https://api.deepseek.com/v1/chat/completions' if AI_PROVIDER == 'deepseek' \
+        else 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+
+def _ai_model():
+    """返回当前 provider 的模型名"""
+    return 'deepseek-chat' if AI_PROVIDER == 'deepseek' else 'glm-4-flash'
+
+def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False, tools=None, timeout=90):
+    """统一 AI 调用 — 自动切换 DeepSeek/Zhipu"""
+    key = _ai_key()
+    if not key:
+        print(f'[AI] No key for {AI_PROVIDER}, skip')
+        return None
+    
+    body = {
+        'model': _ai_model(),
+        'messages': messages,
+        'max_tokens': max_tokens,
+        'temperature': temperature
+    }
+    if json_mode:
+        body['response_format'] = {'type': 'json_object'}
+    if tools:
+        body['tools'] = tools
+    
+    for attempt in range(3):
+        try:
+            data = json.dumps(body).encode('utf-8')
+            req = urllib.request.Request(_ai_endpoint(), data=data, headers={
+                'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'
+            })
+            resp = urllib.request.urlopen(req, timeout=timeout)
+            result = json.loads(resp.read().decode('utf-8'))
+            return result['choices'][0]['message'].get('content', '')
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                wait = (attempt + 1) * 10
+                print(f'[AI] {AI_PROVIDER} 429 rate limited, waiting {wait}s...')
+                time.sleep(wait)
+            else:
+                print(f'[AI] {AI_PROVIDER} HTTP {e.code}: {e}', file=sys.stderr)
+                if attempt == 2: return None
+                time.sleep(3)
+        except Exception as e:
+            print(f'[AI] {AI_PROVIDER} failed (attempt {attempt+1}): {e}', file=sys.stderr)
+            if attempt == 2: return None
+            time.sleep(3)
+    return None
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
