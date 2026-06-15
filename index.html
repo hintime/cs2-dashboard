@@ -259,6 +259,27 @@ body::before{
 .ai-table-badge.sell{background:rgba(248,113,113,.2);color:var(--rise)}
 .ai-table-badge.hold{background:rgba(96,165,250,.2);color:var(--blue)}
 .ai-table-badge.wait{background:rgba(251,191,36,.2);color:var(--amber)}
+/* AI 推荐展开卡片 */
+.ai-pick-card{cursor:pointer;padding:14px 16px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.06);transition:all .2s;position:relative}
+.ai-pick-card:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.ai-pick-card.open{border-color:rgba(96,165,250,.3);background:rgba(96,165,250,.04)}
+.ai-pick-head{display:flex;align-items:center;gap:8px;min-height:24px}
+.ai-pick-rank{font-size:12px;font-weight:700;color:var(--text2);min-width:24px}
+.ai-pick-name{font-size:13px;font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-pick-brief{font-size:10px;color:var(--text3);white-space:nowrap}
+.ai-pick-arrow{font-size:12px;color:var(--text3);transition:transform .2s;min-width:16px;text-align:center}
+.ai-pick-card.open .ai-pick-arrow{transform:rotate(180deg)}
+.ai-pick-body{display:none;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);animation:fadeIn .2s}
+.ai-pick-card.open .ai-pick-body{display:block}
+.ai-pick-section{margin-bottom:10px}
+.ai-pick-section-title{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.ai-factor-list{display:flex;flex-direction:column;gap:3px}
+.ai-factor{font-size:10px;line-height:1.6;display:flex;align-items:flex-start;gap:5px}
+.ai-factor.positive{color:var(--fall)}.ai-factor.negative{color:var(--rise)}.ai-factor.neutral{color:var(--text2)}
+.ai-factor-icon{min-width:14px;text-align:center;font-size:9px}
+.ai-pick-op{font-size:10px;color:#60a5fa;line-height:1.6;padding:8px 10px;background:rgba(96,165,250,.06);border-radius:6px;border-left:2px solid rgba(96,165,250,.3)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.ai-table-badge.wait{background:rgba(251,191,36,.2);color:var(--amber)}
 .mi-items{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .mi-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;cursor:pointer;transition:all .25s ease}
 .mi-item:hover{border-color:var(--border-hi);transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.2);background:rgba(96,165,250,.04)}
@@ -2032,47 +2053,74 @@ function renderAIRecommendations() {
     var rankColors = ['#fbbf24','#c0c0c0','#cd853f','var(--text3)','var(--text3)'];
     var rankIcons = ['🥇','🥈','🥉','4️⃣','5️⃣'];
     picksEl.innerHTML = picks.map(function(p, i) {
-      var rc = rankColors[i] || 'var(--text3)';
       var r = p.reason || '';
       var k = p.risk || '';
-      // 解析五维分析（❶❷❸❹❺）
+      var op = p.operation || '';
+      var id = 'aiPick' + i;
+      
+      // 解析五维分析（❶❷❸❹❺）提取为关键因素
       var points = [];
       var dimMatch = r.match(/[❶❷❸❹❺][^❶❷❸❹❺]*/g);
       if (dimMatch) {
         points = dimMatch.map(function(d) { return d.trim(); });
-      } else {
-        points = [r];
       }
-      return '<div style="position:relative;padding:16px 18px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(255,255,255,.06);transition:all .2s;margin-bottom:10px">' +
-        // Rank + Name header
-        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
-          '<span style="font-size:13px;font-weight:700;color:var(--text)">#' + (i+1) + '</span>' +
-          '<span style="font-size:14px;font-weight:600;color:var(--text)">' + esc(p.name || '') + '</span>' +
+      
+      // 从 reason 提取第一个维度作为简要描述
+      var brief = '';
+      if (points.length) {
+        var p1 = points[0].replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'').slice(0,35);
+        if (points.length >= 3) var p3 = points[2].replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'').slice(0,25);
+        brief = p1 + (p3 ? ' · ' + p3 : '');
+      } else {
+        brief = r.slice(0,60);
+      }
+      
+      // 构建展开面板HTML
+      var bodyHtml = '';
+      // 关键因素列表
+      if (points.length) {
+        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">关键因素</div><div class="ai-factor-list">';
+        points.forEach(function(pt) {
+          var dimName = pt.slice(0,3);
+          var label = pt.replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'');
+          var cls = 'neutral';
+          if (/买入|看好|优良|供<求|卖方|强劲|活跃/.test(label)) cls = 'positive';
+          if (/风险|暂无|供>求|折价|较差|枯竭|买方|竞争大/.test(label)) cls = 'negative';
+          var icon = cls === 'positive' ? '✓' : cls === 'negative' ? '✗' : '—';
+          bodyHtml += '<div class="ai-factor ' + cls + '"><span class="ai-factor-icon">' + icon + '</span><span>' + esc(label) + '</span></div>';
+        });
+        bodyHtml += '</div></div>';
+      }
+      
+      // 风险提示
+      if (k) {
+        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">风险提示</div>';
+        bodyHtml += '<div style="font-size:10px;color:#ef4444;line-height:1.6;padding:6px 10px;background:rgba(239,68,68,.06);border-radius:6px;border-left:2px solid rgba(239,68,68,.3)">' + esc(k) + '</div></div>';
+      }
+      
+      // 操作计划
+      if (op) {
+        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">操作计划</div>';
+        bodyHtml += '<div class="ai-pick-op">' + esc(op) + '</div></div>';
+      }
+      
+      // 挂单+止盈
+      if (p.entry_low || p.entry_high) {
+        bodyHtml += '<div style="font-size:9px;color:var(--text3);display:flex;gap:12px">';
+        if (p.entry_low) bodyHtml += '<span>📥 挂单: ¥' + esc(p.entry_low) + '</span>';
+        if (p.entry_high) bodyHtml += '<span>📈 止盈: ¥' + esc(p.entry_high) + '</span>';
+        bodyHtml += '</div>';
+      }
+      
+      var rankEmoji = ['🥇','🥈','🥉'][i] || '#'+(i+1);
+      return '<div class="ai-pick-card" id="' + id + '" onclick="var c=document.getElementById(\'' + id + '\');c.classList.toggle(\'open\')">' +
+        '<div class="ai-pick-head">' +
+          '<span class="ai-pick-rank">' + rankEmoji + '</span>' +
+          '<span class="ai-pick-name" title="' + esc(p.name||'') + '">' + esc(p.name||'') + '</span>' +
+          '<span class="ai-pick-brief">' + esc(brief) + '</span>' +
+          '<span class="ai-pick-arrow">▼</span>' +
         '</div>' +
-        // 关键信号 - 从 points 提取
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">' +
-          points.map(function(pt, idx) {
-            var label = pt.replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'');
-            var isPos = /买入|看好|优良|供<求|溢/.test(label);
-            var isNeg = /风险|暂无|供>求|折价/.test(label);
-            var icon = isNeg ? '<span style="color:#ef4444;font-weight:700">✗</span>' : '<span style="color:#22c55e;font-weight:700">✓</span>';
-            if (isPos) icon = '<span style="font-size:11px;font-weight:700;color:#22c55e">●</span>';
-            if (isNeg) icon = '<span style="font-size:11px;font-weight:700;color:#ef4444">●</span>';
-            return '<div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;line-height:1.6;color:var(--text2);padding:4px 0">' +
-              icon + '<span>' + esc(label) + '</span>' +
-            '</div>';
-          }).join('') +
-        '</div>' +
-        // 风险提示
-        (k ? '<div style="font-size:10px;color:#ef4444;line-height:1.5;padding:6px 10px;background:rgba(239,68,68,.06);border-radius:6px;border-left:2px solid rgba(239,68,68,.3);margin-top:6px">' +
-          '<span style="opacity:.7">⚠</span> ' + esc(k) + '</div>' : '') +
-        // 操作计划
-        (p.operation ? '<div style="font-size:10px;color:#60a5fa;line-height:1.6;padding:8px 10px;background:rgba(96,165,250,.06);border-radius:6px;border-left:2px solid rgba(96,165,250,.3);margin-top:6px">' +
-          '<span style="font-weight:700">📋 操作计划</span> ' + esc(p.operation) + '</div>' : '') +
-        (p.entry_low || p.entry_high ? '<div style="font-size:9px;color:var(--text3);margin-top:3px;display:flex;gap:10px">' +
-          (p.entry_low ? '<span>📥 挂单: ¥' + esc(p.entry_low) + '</span>' : '') +
-          (p.entry_high ? '<span>📈 止盈: ¥' + esc(p.entry_high) + '</span>' : '') +
-        '</div>' : '') +
+        '<div class="ai-pick-body">' + bodyHtml + '</div>' +
       '</div>';
     }).join('');
     // 策略和总览
