@@ -20,7 +20,7 @@ DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', 'sk-3a9f8fed7ff94e7398e3a9164807cb
 # 追踪分析固定用 DeepSeek
 AI_KEY = DEEPSEEK_KEY
 AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions'
-MODEL = 'deepseek-chat'
+MODEL = 'deepseek-v4-flash'
 
 # ── 数据读写 ──
 

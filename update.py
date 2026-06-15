@@ -1492,7 +1492,7 @@ def generate_ai_recommendations():
             f'禁区: 价格波动/关注市场/科隆/溢价合理/性能/稳定/新手/玩家/高手/适合新生/稀缺求'
         )
         data = json.dumps({
-            'model': 'deepseek-chat',
+            'model': 'deepseek-v4-flash',
             'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON格式。'}, {'role': 'user', 'content': prompt}],
             'response_format': {'type': 'json_object'},
             'max_tokens': 2000, 'temperature': 0.3
@@ -1534,7 +1534,7 @@ def generate_ai_recommendations():
             # 重试：简化 prompt 兜底
             print('[AI] JSON parse failed, retrying with simplified prompt...')
             retry_data = json.dumps({
-                'model': 'deepseek-chat',
+                'model': 'deepseek-v4-flash',
                 'messages': [
                     {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象，不要任何解释。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":""}],"strategy":"","summary":""}'},
                     {'role': 'user', 'content': f'从以下候选中选3个最优买入:\n{candidates_text[:2000]}\n记住:只输出JSON。'}
