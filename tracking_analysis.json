@@ -1,52 +1,65 @@
 {
   "overview": {
-    "verdict": "短期信号偏保守，流动性优先",
-    "success_pattern": "高求售比、低溢价的ECO供需失衡推荐",
-    "failure_pattern": "高溢价但求售比低的BUFF信号推荐",
+    "verdict": "多平台信号优于ECO信号",
+    "success_pattern": "强调多平台溢价和流动性，涨幅明显",
+    "failure_pattern": "纯ECO信号缺乏多平台支撑，多持平或下跌",
     "confidence_trend": "持平",
-    "market_signal": "供需失衡主导，求购活跃但溢价空间有限"
+    "market_signal": "分化明显，多平台信号有效，ECO信号需谨慎"
+  },
+  "reason_analysis": {
+    "right_reasons": "注重多平台溢价、流动性评估，结合求购活跃度",
+    "wrong_reasons": "过度依赖单一ECO供需比，忽略溢价不匹配和缺乏多平台验证",
+    "reason_keywords_avoid": "纯ECO信号, 缺乏多平台溢价, 待观察",
+    "reason_keywords_use": "多平台溢价, 流动性高, 求购活跃, 溢价匹配"
   },
   "lessons": [
     {
       "id": "L01",
-      "category": "scoring",
-      "lesson": "ECO评分权重应提升，因其更反映流动性",
+      "category": "reason",
+      "lesson": "纯ECO信号成功率低，需结合多平台数据",
       "impact": "高",
-      "action": "将ECO评分权重上调10%"
+      "action": "ECO推荐必须附加多平台溢价验证"
     },
     {
       "id": "L02",
-      "category": "source",
-      "lesson": "BUFF高溢价需结合求售比验证",
+      "category": "reason",
+      "lesson": "多平台信号推荐全部上涨，可靠性高",
       "impact": "高",
-      "action": "仅采纳求售比>500%的高溢价推荐"
+      "action": "优先选择多平台信号，增加其权重"
     },
     {
       "id": "L03",
-      "category": "timing",
-      "lesson": "1天观察期过短，不宜频繁操作",
+      "category": "reason",
+      "lesson": "⚠溢价不足·待观察标记大多无效",
       "impact": "中",
-      "action": "延长追踪周期至3-7天"
+      "action": "废除该标签，改为综合评分低于阈值则过滤"
     },
     {
       "id": "L04",
-      "category": "market",
-      "lesson": "求售比>1000%时溢价负值更安全",
+      "category": "reason",
+      "lesson": "求购/售比极高但价格未涨，需谨慎",
       "impact": "中",
-      "action": "设定溢价>-5%的阈值"
+      "action": "结合价格走势和溢价率，避免单一指标"
+    },
+    {
+      "id": "L05",
+      "category": "reason",
+      "lesson": "部分推荐理由重复，缺乏针对性",
+      "impact": "低",
+      "action": "理由应包含具体指标数值（如溢价率）"
     }
   ],
   "scoring_feedback": {
-    "eco_weight_advice": "+10%",
-    "buff_weight_advice": "-10%",
-    "premium_threshold_advice": "降低溢阈值至5%以下，避免追高",
-    "liquidity_advice": "提高流动性权重，侧重求售比>500%"
+    "eco_weight_advice": "-20%",
+    "buff_weight_advice": "+20%",
+    "premium_threshold_advice": "多平台溢价阈值提高至15%以上",
+    "liquidity_advice": "增加流动性评分权重至40%"
   },
-  "recommendation_prompt_tweak": "增加求售比和实际溢价率对比，减少单纯多平台热度描述",
+  "reason_prompt_tweak": "强调多平台溢价和流动性，避免单一供需比，理由需含具体溢价率和在售数量",
   "meta": {
-    "total_tracks": 30,
-    "date_range": "2026-06-16~2026-06-16",
-    "analyzed_at": "2026-06-15T17:37:10Z",
+    "total_tracks": 60,
+    "date_range": "2026-06-15~2026-06-16",
+    "analyzed_at": "2026-06-15T19:35:32Z",
     "model": "deepseek-v4-flash"
   }
 }

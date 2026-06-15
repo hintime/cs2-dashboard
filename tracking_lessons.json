@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 2,
+  "total_analyses": 3,
   "lessons": [
     {
       "id": "L01",
@@ -10,8 +10,8 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 6,
-      "last_seen": "2026-06-16"
+      "confirmed": 7,
+      "last_seen": "2026-06-15"
     },
     {
       "id": "L02",
@@ -20,8 +20,8 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 6,
-      "last_seen": "2026-06-16"
+      "confirmed": 7,
+      "last_seen": "2026-06-15"
     },
     {
       "id": "L03",
@@ -30,8 +30,8 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 6,
-      "last_seen": "2026-06-16"
+      "confirmed": 7,
+      "last_seen": "2026-06-15"
     },
     {
       "id": "L04",
@@ -40,12 +40,21 @@
       "impact": "中",
       "action": "拓宽信息来源，增加数据维度",
       "added_at": "2026-06-16",
-      "confirmed": 4,
-      "last_seen": "2026-06-16"
+      "confirmed": 5,
+      "last_seen": "2026-06-15"
+    },
+    {
+      "id": "L05",
+      "category": "reason",
+      "lesson": "部分推荐理由重复，缺乏针对性",
+      "impact": "低",
+      "action": "理由应包含具体指标数值（如溢价率）",
+      "added_at": "2026-06-15",
+      "confirmed": 1
     }
   ],
   "history": [],
-  "last_updated": "2026-06-15T17:37:10Z",
+  "last_updated": "2026-06-15T19:35:32Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -94,7 +103,37 @@
         "profitable": 20,
         "rate": 66.7
       }
+    },
+    {
+      "seq": 3,
+      "ts": "2026-06-15T19:35:32Z",
+      "overview": {
+        "verdict": "多平台信号优于ECO信号",
+        "success_pattern": "强调多平台溢价和流动性，涨幅明显",
+        "failure_pattern": "纯ECO信号缺乏多平台支撑，多持平或下跌",
+        "confidence_trend": "持平",
+        "market_signal": "分化明显，多平台信号有效，ECO信号需谨慎"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "-20%",
+        "buff_weight_advice": "+20%",
+        "premium_threshold_advice": "多平台溢价阈值提高至15%以上",
+        "liquidity_advice": "增加流动性评分权重至40%"
+      },
+      "reason_analysis": {
+        "right_reasons": "注重多平台溢价、流动性评估，结合求购活跃度",
+        "wrong_reasons": "过度依赖单一ECO供需比，忽略溢价不匹配和缺乏多平台验证",
+        "reason_keywords_avoid": "纯ECO信号, 缺乏多平台溢价, 待观察",
+        "reason_keywords_use": "多平台溢价, 流动性高, 求购活跃, 溢价匹配"
+      },
+      "prompt_tweak": "强调多平台溢价和流动性，避免单一供需比，理由需含具体溢价率和在售数量",
+      "stats": {
+        "total": 60,
+        "priced": 60,
+        "profitable": 43,
+        "rate": 71.7
+      }
     }
   ],
-  "last_track_count": 30
+  "last_track_count": 60
 }
