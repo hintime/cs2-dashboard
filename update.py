@@ -1558,10 +1558,29 @@ def generate_ai_recommendations():
                 yprem = (yyyp_sell - eco_price) / eco_price * 100
                 if abs(yprem) > 3:
                     premium += f' 悠悠溢价{yprem:+.0f}%'
+            # 短期趋势（从历史价格推算）
+            trend_7d = ''
+            eh = item.get('eco_history', [])
+            if len(eh) >= 2 and eh[-2] > 0:
+                chg7 = (eh[-1] - eh[-2]) / eh[-2] * 100
+                if abs(chg7) > 1:
+                    trend_7d = f'7日{"+" if chg7>0 else ""}{chg7:.0f}%'
+            mh = item.get('multi_history', [])
+            if len(mh) >= 2 and mh[-2] > 0 and not trend_7d:
+                chg7 = (mh[-1] - mh[-2]) / mh[-2] * 100
+                if abs(chg7) > 1:
+                    trend_7d = f'7日{"+" if chg7>0 else ""}{chg7:.0f}%'
+            # 平台价差（用于跨平台套利建议）
+            spread = ''
+            if buff_sell > 0 and yyyp_sell > 0:
+                sp = abs(buff_sell - yyyp_sell)
+                if sp > 0:
+                    cheaper = 'BUFF' if buff_sell < yyyp_sell else '悠悠'
+                    spread = f'平台价差{sp:.0f}元({cheaper}更便宜)'
             lines.append(
                 f'#{i+1} {name} | ¥{price:.0f} | 评分{score:.1f} | 策略:{tag} | '
                 f'ECO在售{eco_sell}/BUFF在售{buff_sell_num}/悠悠在售{yyyp_sell_num} | '
-                f'BUFF求购{buff_buy_num} | {premium} | {reason}'
+                f'BUFF求购{buff_buy_num} | {premium} | {trend_7d} | {spread} | {reason}'
             )
         candidates_text = '\n'.join(lines)
         # 读取多维市场上下文
@@ -1606,9 +1625,12 @@ def generate_ai_recommendations():
             f'- 操作建议: 目标价/止损价必须基于当前价的合理百分比，不要写脱离数据的数字\n'
             f'- ⚠️ 持有周期硬性规则: T+7锁定期意味着最短持有7天！任何「持有X天」的X必须≥7，禁止「持有3-5天」「持有3-7天」等\n\n'
             f'要求: 每选一个都要说明【为什么选它而不是排名相邻的】，指出最大优势和最大隐患。\n\n'
-            f'【输出JSON——三个关键字段各有职责，不要混在一起】\n{{'
-            f'"reasoning":"你的完整推理过程(150-200字,说明分析步骤+选择逻辑+交叉比对)",'
-            f'"picks":[{{"rank":1,"name":"饰品名","reason":"买入理由(100-150字)","risk":"风险评估(80-120字)","operation":"操作计划(80-120字)"}}],'
+            f'【输出JSON——6个字段各司其职】\n{{'
+            f'"reasoning":"你的完整推理过程(100-150字,分析步骤+选择逻辑+交叉比对)",'
+            f'"picks":[{{"rank":1,"name":"饰品名",'
+            f'"reason":"买入理由(100-150字)","risk":"风险评估(80-120字)","operation":"操作计划(80-120字)",'
+            f'"price_zone":"推荐入手区间","sentiment":"综合研判","trend_signals":["信号1","信号2","信号3"],"platform_advice":"最佳买卖平台"'
+            f'}}],'
             f'"strategy":"整体策略建议(50-80字)","summary":"总结(50-80字)","self_critique":"自我批判(50字,风险盲区)"'
             f'}}\n\n'
             f'字段职责详解(每个字段独立写，内容不重复):\n'
@@ -1617,13 +1639,25 @@ def generate_ai_recommendations():
             f'- 供需判断(在售XX/求购XX→供<求或供>求，明确买卖方市场)\n'
             f'- 平台溢价情况(BUFF溢价X%·悠悠溢价X%)\n'
             f'- 流动性评级+变现周期(T+7锁定+销售天)\n'
-            f'格式: 用逗号分隔，自然流畅，不要用❶❷❸❹❺标记\n\n'
+            f'格式: 用逗号分隔，自然流畅\n\n'
             f'【risk=风险评估 80-120字】\n'
             f'- 2-3个具体风险点，每个引用数据支撑\n'
             f'- 格式: 「最大优势是...，最大隐患是...」\n\n'
             f'【operation=操作计划 80-120字】\n'
             f'- 挂单价/分批策略/仓位%/止盈目标(+X%)/止损(-X%)/持有周期/退出条件\n'
             f'⚠️ 持有周期硬约束: CS2所有饰品买入后T+7锁定不可交易，持有周期最少7天，禁止写「3-5天」「3-7天」等<7天的周期\n\n'
+            f'【price_zone=推荐入手价格区间 30-50字】\n'
+            f'- 格式: 「保守区间¥XX-¥XX·依据: 距求购价X%安全垫·距近期低点X%」\n'
+            f'- 区间下沿=求购价上浮2-5%，上沿=当前价下浮0-3%\n\n'
+            f'【sentiment=综合研判 1-2个词】\n'
+            f'- 选项: 强烈看多/看多/中性偏多/中性/中性偏空/看空/强烈看空\n'
+            f'- 综合供需、溢价、趋势、流动性判断\n\n'
+            f'【trend_signals=关键信号 数组3件】\n'
+            f'- 每个信号格式: 「+信号描述」(正面)「-信号描述」(负面)「=信号描述」(中性)\n'
+            f'- 从数据中提取: 如「+7日涨8%」「-溢价超10%」「=流动性优良」\n\n'
+            f'【platform_advice=平台套利建议 20-40字】\n'
+            f'- 格式: 「买:BUFF/悠悠(因为价更低)·卖:BUFF/悠悠(因为价更高)·价差X元」\n'
+            f'- 基于候选数据中BUFF售/悠悠售的实际价格\n\n'
             f'禁区: 价格波动/关注市场/科隆/溢价合理/性能/稳定/新手/玩家/高手/适合新生/稀缺求\n'
             f'市场规则: CS2饰品买入后T+7锁定(7天不可交易)·BUFF/悠悠有品手续费1-5%·考虑锁定期后的价格风险'
         )
@@ -1678,7 +1712,7 @@ def generate_ai_recommendations():
             retry_data = json.dumps({
                 'model': 'deepseek-v4-flash',
                 'messages': [
-                    {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象，不要任何解释。reason=买入理由(引用数据)，risk=风险评估(具体风险点)，operation=操作计划(挂单价/仓位/止盈止损/退出)。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":"","operation":""}],"strategy":"","summary":""}'},
+                    {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象。字段: reason=买入理由, risk=风险评估, operation=操作计划, price_zone=入手区间, sentiment=综合研判, trend_signals=[3个信号], platform_advice=平台建议。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":"","operation":"","price_zone":"","sentiment":"","trend_signals":[],"platform_advice":""}],"strategy":"","summary":""}'},
                     {'role': 'user', 'content': f'从以下候选中选3个最优买入:\n{candidates_text[:2000]}\n记住:只输出JSON。'}
                 ],
                 'response_format': {'type': 'json_object'},
@@ -1706,6 +1740,13 @@ def generate_ai_recommendations():
             picks = parsed
         picks['date'] = time.strftime('%Y-%m-%d %H:%M')
         picks['total_candidates'] = len(candidates)
+        # 注入 price（从候选数据匹配），供前端价格评估面板使用
+        for p in picks.get('picks', []):
+            if not p.get('price'):
+                for c in candidates:
+                    if c.get('name', '') == p.get('name', ''):
+                        p['price'] = round(c.get('price', 0))
+                        break
         # 注入当前评分权重（来自追踪教训）
         try:
             eco_m, buff_m = _get_scoring_weights_from_lessons()
