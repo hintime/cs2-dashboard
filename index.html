@@ -266,8 +266,10 @@ body::before{
 .ai-pick-head{display:flex;align-items:center;gap:8px;min-height:24px}
 .ai-pick-rank{font-size:12px;font-weight:700;color:var(--text2);min-width:24px}
 .ai-pick-name{font-size:13px;font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ai-pick-brief{font-size:10px;color:var(--text3);white-space:nowrap}
-.ai-pick-arrow{font-size:12px;color:var(--text3);transition:transform .2s;min-width:16px;text-align:center}
+.ai-pick-brief{font-size:10px;color:var(--text3);white-space:nowrap;flex:1;overflow:hidden;text-overflow:ellipsis}
+.ai-pick-tags{display:flex;gap:4px;flex-shrink:0}
+.ai-pick-tag{font-size:9px;padding:1px 6px;border-radius:4px;border:1px solid;white-space:nowrap;line-height:1.4}
+.ai-pick-arrow{font-size:12px;color:var(--text3);transition:transform .2s;min-width:16px;text-align:center;flex-shrink:0}
 .ai-pick-card.open .ai-pick-arrow{transform:rotate(180deg)}
 .ai-pick-body{display:none;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);animation:fadeIn .2s}
 .ai-pick-card.open .ai-pick-body{display:block}
@@ -2058,58 +2060,45 @@ function renderAIRecommendations() {
       var op = p.operation || '';
       var id = 'aiPick' + i;
       
-      // 解析五维分析（❶❷❸❹❺）提取为关键因素
-      var points = [];
-      var dimMatch = r.match(/[❶❷❸❹❺][^❶❷❸❹❺]*/g);
-      if (dimMatch) {
-        points = dimMatch.map(function(d) { return d.trim(); });
-      }
+      // 提取关键标签（从 reason 中智能抽取）
+      var tags = [];
+      if (/供不应求|供<求|卖方市场/.test(r)) tags.push({t:'卖方市场',c:'positive'});
+      if (/供大于求|供>求|买方市场/.test(r)) tags.push({t:'买方市场',c:'negative'});
+      if (/溢价\d+%/.test(r)) { var m = r.match(/溢价(\d+%)/); if (m) tags.push({t:'溢价'+m[1],c:'positive'}); }
+      if (/求售比\d+%/.test(r)) { var m2 = r.match(/求售比(\d+%)/); if (m2) tags.push({t:'求售比'+m2[1],c:'positive'}); }
+      if (/低价|风险小|成本优势/.test(r)) tags.push({t:'低成本',c:'positive'});
+      if (/竞争大|在售\d+件/.test(r) && /[1-9]\d{2,}件/.test(r)) tags.push({t:'竞争较大',c:'negative'});
+      if (/涨幅|上涨/.test(r)) tags.push({t:'看涨信号',c:'positive'});
+      if (/稀缺|仅\d+件/.test(r)) tags.push({t:'稀缺品',c:'positive'});
+      if (tags.length === 0) tags.push({t:'AI精选',c:'neutral'});
+      if (tags.length > 3) tags = tags.slice(0, 3);
       
-      // 从 reason 提取第一个维度作为简要描述
-      var brief = '';
-      if (points.length) {
-        var p1 = points[0].replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'').slice(0,35);
-        if (points.length >= 3) var p3 = points[2].replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'').slice(0,25);
-        brief = p1 + (p3 ? ' · ' + p3 : '');
-      } else {
-        brief = r.slice(0,60);
-      }
+      // 简要描述：提取第一句
+      var brief = r.replace(/[，,。.].*/, '').slice(0, 50);
+      if (brief.length >= 45) brief += '…';
       
-      // 构建展开面板HTML
+      // 标签条
+      var tagHtml = tags.map(function(t) {
+        var color = t.c === 'positive' ? 'var(--fall)' : t.c === 'negative' ? 'var(--rise)' : 'var(--text2)';
+        return '<span class="ai-pick-tag" style="border-color:' + color + ';color:' + color + '">' + esc(t.t) + '</span>';
+      }).join('');
+      
+      // 构建展开面板
       var bodyHtml = '';
-      // 关键因素列表
-      if (points.length) {
-        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">关键因素</div><div class="ai-factor-list">';
-        points.forEach(function(pt) {
-          var dimName = pt.slice(0,3);
-          var label = pt.replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'');
-          var cls = 'neutral';
-          if (/买入|看好|优良|供<求|卖方|强劲|活跃/.test(label)) cls = 'positive';
-          if (/风险|暂无|供>求|折价|较差|枯竭|买方|竞争大/.test(label)) cls = 'negative';
-          var icon = cls === 'positive' ? '✓' : cls === 'negative' ? '✗' : '—';
-          bodyHtml += '<div class="ai-factor ' + cls + '"><span class="ai-factor-icon">' + icon + '</span><span>' + esc(label) + '</span></div>';
-        });
-        bodyHtml += '</div></div>';
-      }
+      // 买入理由
+      bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">📊 买入理由</div>';
+      bodyHtml += '<div style="font-size:10px;color:var(--text2);line-height:1.7;padding:6px 10px">' + esc(r) + '</div></div>';
       
       // 风险提示
       if (k) {
-        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">风险提示</div>';
+        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">⚠️ 风险评估</div>';
         bodyHtml += '<div style="font-size:10px;color:#ef4444;line-height:1.6;padding:6px 10px;background:rgba(239,68,68,.06);border-radius:6px;border-left:2px solid rgba(239,68,68,.3)">' + esc(k) + '</div></div>';
       }
       
       // 操作计划
       if (op) {
-        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">操作计划</div>';
+        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">🎯 操作计划</div>';
         bodyHtml += '<div class="ai-pick-op">' + esc(op) + '</div></div>';
-      }
-      
-      // 挂单+止盈
-      if (p.entry_low || p.entry_high) {
-        bodyHtml += '<div style="font-size:9px;color:var(--text3);display:flex;gap:12px">';
-        if (p.entry_low) bodyHtml += '<span>📥 挂单: ¥' + esc(p.entry_low) + '</span>';
-        if (p.entry_high) bodyHtml += '<span>📈 止盈: ¥' + esc(p.entry_high) + '</span>';
-        bodyHtml += '</div>';
       }
       
       var rankEmoji = ['🥇','🥈','🥉'][i] || '#'+(i+1);
@@ -2118,6 +2107,7 @@ function renderAIRecommendations() {
           '<span class="ai-pick-rank">' + rankEmoji + '</span>' +
           '<span class="ai-pick-name" title="' + esc(p.name||'') + '">' + esc(p.name||'') + '</span>' +
           '<span class="ai-pick-brief">' + esc(brief) + '</span>' +
+          '<span class="ai-pick-tags">' + tagHtml + '</span>' +
           '<span class="ai-pick-arrow">▼</span>' +
         '</div>' +
         '<div class="ai-pick-body">' + bodyHtml + '</div>' +

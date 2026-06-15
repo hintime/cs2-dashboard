@@ -1604,21 +1604,24 @@ def generate_ai_recommendations():
             f'- 溢价率: 用候选数据中的具体数字，不要自己编\n'
             f'- T+7锁定期: 变现周期=7天缓冲+上述销售时间，不能写「1天变现」\n'
             f'- 操作建议: 目标价/止损价必须基于当前价的合理百分比，不要写脱离数据的数字\n\n'
-            f'要求: 每选一个都要说明【为什么选它而不是排名相邻的】。\n'
-            f'对选中的每个，指出它的最大优势和最大隐患。\n\n'
-            f'【输出JSON】\n{{'
-            f'"reasoning":"你的推理过程(100-150字,说明分析步骤+选择逻辑)",'
-            f'"picks":[{{"rank":1,"name":"饰品名","reason":"","risk":"","operation":""}}],'
-            f'"strategy":"","summary":"","self_critique":"自我批判(50字,指出可能的风险盲区)"'
+            f'要求: 每选一个都要说明【为什么选它而不是排名相邻的】，指出最大优势和最大隐患。\n\n'
+            f'【输出JSON——三个关键字段各有职责，不要混在一起】\n{{'
+            f'"reasoning":"你的完整推理过程(150-200字,说明分析步骤+选择逻辑+交叉比对)",'
+            f'"picks":[{{"rank":1,"name":"饰品名","reason":"买入理由(100-150字)","risk":"风险评估(80-120字)","operation":"操作计划(80-120字)"}}],'
+            f'"strategy":"整体策略建议(50-80字)","summary":"总结(50-80字)","self_critique":"自我批判(50字,风险盲区)"'
             f'}}\n\n'
-            f'【reason字段5点,每点30-50字,总计180-250字】\n'
-            f'❶ 评分位次: 「全表第X位·综合评分XX·ECO分XX/BUFF分XX·策略标签XX·相比邻位优势」\n'
-            f'❷ 供需格局: 「在售XX件/求购XX件·供<求/供>求·买方/卖方市场·囤货/出货建议」\n'
-            f'❸ 平台溢价: BUFF价→「BUFF¥XX溢价X%·悠悠¥XX溢价X%·价差空间XX元·跨平台套利判断」\n'
-            f'❹ 流动性评估: 「在售规模XX件·T+7锁定期7天·流动性评级(优良/一般/较差)·变现周期=7天+销售天(在售<100件≈1-3天/100-1000≈3-7天/>1000≈7-14天)」\n'
-            f'❺ 操作建议: 「买入/观望·目标¥XX(+XX%)·止损¥XX(-XX%)·仓位X%·持有周期X天·退出条件」\n\n'
-            f'【risk字段2-3点,80-120字,必须引用具体数字】\n'
-            f'【operation字段80-120字: 挂单价·分批·仓位·止盈·止损·退出时机】\n\n'
+            f'字段职责详解(每个字段独立写，内容不重复):\n'
+            f'【reason=买入理由 100-150字】\n'
+            f'- 评分位次+策略标签+与邻位的对比优势\n'
+            f'- 供需判断(在售XX/求购XX→供<求或供>求，明确买卖方市场)\n'
+            f'- 平台溢价情况(BUFF溢价X%·悠悠溢价X%)\n'
+            f'- 流动性评级+变现周期(T+7锁定+销售天)\n'
+            f'格式: 用逗号分隔，自然流畅，不要用❶❷❸❹❺标记\n\n'
+            f'【risk=风险评估 80-120字】\n'
+            f'- 2-3个具体风险点，每个引用数据支撑\n'
+            f'- 格式: 「最大优势是...，最大隐患是...」\n\n'
+            f'【operation=操作计划 80-120字】\n'
+            f'- 挂单价/分批策略/仓位%/止盈目标(+X%)/止损(-X%)/持有周期/退出条件\n\n'
             f'禁区: 价格波动/关注市场/科隆/溢价合理/性能/稳定/新手/玩家/高手/适合新生/稀缺求\n'
             f'市场规则: CS2饰品买入后T+7锁定(7天不可交易)·BUFF/悠悠有品手续费1-5%·考虑锁定期后的价格风险'
         )
@@ -1630,7 +1633,7 @@ def generate_ai_recommendations():
             ],
             'response_format': {'type': 'json_object'},
             'thinking': {'type': 'enabled'},
-            'max_tokens': 3000, 'temperature': 0.3
+            'max_tokens': 8000, 'temperature': 0.3
         }).encode('utf-8')
         req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
             'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
@@ -1638,6 +1641,8 @@ def generate_ai_recommendations():
         resp = urllib.request.urlopen(req, timeout=90)
         r = json.loads(resp.read().decode('utf-8'))
         content = r['choices'][0]['message']['content'].strip()
+        rc = r['choices'][0]['message'].get('reasoning_content', '')
+        print(f'[AI] thinking={len(rc)}chars → output={len(content)}chars')
         
         # ── 鲁棒 JSON 解析 ──
         def safe_parse_json(raw):
@@ -1671,11 +1676,11 @@ def generate_ai_recommendations():
             retry_data = json.dumps({
                 'model': 'deepseek-v4-flash',
                 'messages': [
-                    {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象，不要任何解释。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":"","operation":""}],"strategy":"","summary":""}'},
+                    {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象，不要任何解释。reason=买入理由(引用数据)，risk=风险评估(具体风险点)，operation=操作计划(挂单价/仓位/止盈止损/退出)。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":"","operation":""}],"strategy":"","summary":""}'},
                     {'role': 'user', 'content': f'从以下候选中选3个最优买入:\n{candidates_text[:2000]}\n记住:只输出JSON。'}
                 ],
                 'response_format': {'type': 'json_object'},
-                'max_tokens': 3000, 'temperature': 0.3
+                'max_tokens': 8000, 'temperature': 0.3
             }).encode('utf-8')
             retry_req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=retry_data, headers={
                 'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
