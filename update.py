@@ -1495,8 +1495,7 @@ def generate_ai_recommendations():
             'model': 'deepseek-v4-flash',
             'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON格式。'}, {'role': 'user', 'content': prompt}],
             'response_format': {'type': 'json_object'},
-            'thinking': {'type': 'enabled'},
-            'max_tokens': 2000, 'temperature': 0.3
+            'max_tokens': 1500, 'temperature': 0.3
         }).encode('utf-8')
         req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
             'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
@@ -1541,7 +1540,7 @@ def generate_ai_recommendations():
                     {'role': 'user', 'content': f'从以下候选中选3个最优买入:\n{candidates_text[:2000]}\n记住:只输出JSON。'}
                 ],
                 'response_format': {'type': 'json_object'},
-                'max_tokens': 2000, 'temperature': 0.3
+                'max_tokens': 1500, 'temperature': 0.3
             }).encode('utf-8')
             retry_req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=retry_data, headers={
                 'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
