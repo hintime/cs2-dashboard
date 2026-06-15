@@ -2,7 +2,121 @@
   {
     "date": "2026-06-15",
     "tag": "chore",
+    "title": "data update 2026-06-15 05:27",
+    "desc": "data update 2026-06-15 05:27"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
     "title": "market index 2026-06-15 03:44",
     "desc": "market index 2026-06-15 03:44"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
+    "title": "data update 2026-06-15 00:20",
+    "desc": "data update 2026-06-15 00:20"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "chore",
+    "title": "market index 2026-06-14 23:04",
+    "desc": "market index 2026-06-14 23:04"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "chore",
+    "title": "data update 2026-06-14 22:22",
+    "desc": "data update 2026-06-14 22:22"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "chore",
+    "title": "market index 2026-06-14 21:06",
+    "desc": "market index 2026-06-14 21:06"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "chore",
+    "title": "data update 2026-06-14 20:39",
+    "desc": "data update 2026-06-14 20:39"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "chore",
+    "title": "market index 2026-06-14 19:19",
+    "desc": "market index 2026-06-14 19:19"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "feat",
+    "title": "AI推荐卡片重设计—信号指示器+五维关键因素网格",
+    "desc": "AI推荐卡片重设计—信号指示器+五维关键因素网格"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "feat",
+    "title": "AI推荐五维分析—评分/供需/溢价/流动性/操作建议逐点展开",
+    "desc": "AI推荐五维分析—评分/供需/溢价/流动性/操作建议逐点展开"
+  },
+  {
+    "date": "2026-06-14",
+    "tag": "chore",
+    "title": "market index 2026-06-14 17:16",
+    "desc": "market index 2026-06-14 17:16"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "推荐追踪完整修复—双键索引+名映射+缓存破",
+    "desc": "推荐追踪完整修复—双键索引+名映射+缓存破"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
+    "title": "AI分析时间戳更新至06-15 01:08",
+    "desc": "AI分析时间戳更新至06-15 01:08"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "推荐追踪—英文名显示中文+ECO价--修复",
+    "desc": "推荐追踪—英文名显示中文+ECO价--修复"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "涨跌榜格式修复—get_movers_data返回列表非嵌套dict",
+    "desc": "涨跌榜格式修复—get_movers_data返回列表非嵌套dict"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "秒级精度+SteamDT分批写入—网络中断不丢已查数据",
+    "desc": "秒级精度+SteamDT分批写入—网络中断不丢已查数据"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "refactor",
+    "title": "generate_correlation切SQLite — price_history.json全链路退役",
+    "desc": "generate_correlation切SQLite — price_history.json全链路退役"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "price_summary多通道—BUFF/YY/ECO优先级覆盖5866物品(原783)",
+    "desc": "price_summary多通道—BUFF/YY/ECO优先级覆盖5866物品(原783)"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "BUFF/YY价格恢复 — CSQAQ限流修复+buff_history回填兜底",
+    "desc": "BUFF/YY价格恢复 — CSQAQ限流修复+buff_history回填兜底"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "refactor",
+    "title": "SQLite全量价格存储 — price_history.db替代price_history.json",
+    "desc": "SQLite全量价格存储 — price_history.db替代price_history.json"
   }
 ]
