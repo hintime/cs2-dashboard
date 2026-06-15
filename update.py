@@ -1597,6 +1597,13 @@ def generate_ai_recommendations():
             f'第二步：逐件评估候选。共{len(candidates)}件：\n{candidates_text}\n'
             f'{_get_tracking_feedback()}\n'
             f'第三步：交叉比对，选出最优3-5个买入目标。\n\n'
+            f'【数据验证铁律——理由必须基于输入数据，严禁编造】\n'
+            f'- 供需判断: 在售量>求购量→供大于求(买方市场)；在售量<求购量→供不应求(卖方市场)\n'
+            f'- 如果求购=0，写「求购数据缺失·仅参考在售」不能写供<求\n'
+            f'- 流动性: 在售<100→优良; 100-500→一般; >500→充裕但竞争大; >1000→需要价格优势\n'
+            f'- 溢价率: 用候选数据中的具体数字，不要自己编\n'
+            f'- T+7锁定期: 变现周期=7天缓冲+上述销售时间，不能写「1天变现」\n'
+            f'- 操作建议: 目标价/止损价必须基于当前价的合理百分比，不要写脱离数据的数字\n\n'
             f'要求: 每选一个都要说明【为什么选它而不是排名相邻的】。\n'
             f'对选中的每个，指出它的最大优势和最大隐患。\n\n'
             f'【输出JSON】\n{{'
@@ -1617,7 +1624,10 @@ def generate_ai_recommendations():
         )
         data = json.dumps({
             'model': 'deepseek-v4-flash',
-            'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON格式。'}, {'role': 'user', 'content': prompt}],
+            'messages': [
+                {'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON。必须严格基于输入数据推理，禁止编造任何数字或判断。供需关系必须由在售数和求购数的大小决定。'},
+                {'role': 'user', 'content': prompt}
+            ],
             'response_format': {'type': 'json_object'},
             'thinking': {'type': 'enabled'},
             'max_tokens': 3000, 'temperature': 0.3
