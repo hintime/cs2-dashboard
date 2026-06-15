@@ -1,5 +1,59 @@
 [
   {
+    "date": "2026-06-16",
+    "tag": "feat",
+    "title": "AI追踪分析引擎—深度分析推荐涨跌根因+提炼教训反哺推荐逻辑",
+    "desc": "AI追踪分析引擎—深度分析推荐涨跌根因+提炼教训反哺推荐逻辑"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "fix",
+    "title": "status页时间戳优先级—加alerts_updated+market_updated到fallback链",
+    "desc": "status页时间戳优先级—加alerts_updated+market_updated到fallback链"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "fix",
+    "title": "数据时间戳显示—前端优先读alerts_updated+pipeline兜底写updated",
+    "desc": "数据时间戳显示—前端优先读alerts_updated+pipeline兜底写updated"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "fix",
+    "title": "DB种子触发—price_summary从1M+记录重建+CI移除git add -f防止DB变脏",
+    "desc": "DB种子触发—price_summary从1M+记录重建+CI移除git add -f防止DB变脏"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
+    "title": "price_history.json纳入版本控制—783物品×30天ECO历史数据",
+    "desc": "price_history.json纳入版本控制—783物品×30天ECO历史数据"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "price_history.json从gitignore移除—作为CI种子数据源",
+    "desc": "price_history.json从gitignore移除—作为CI种子数据源"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "图表数据稀疏—首次运行自动从buff_history+price_history种子DB",
+    "desc": "图表数据稀疏—首次运行自动从buff_history+price_history种子DB"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "fix",
+    "title": "holdingsR const→let—并行加载后重新赋值冲突",
+    "desc": "holdingsR const→let—并行加载后重新赋值冲突"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, changelog.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json 2026-06-15 23:40"
+  },
+  {
     "date": "2026-06-15",
     "tag": "perf",
     "title": "骨架屏重设计+并行加载+进度条动画",
@@ -64,59 +118,5 @@
     "tag": "chore",
     "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
     "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json 2026-06-15 15:39"
-  },
-  {
-    "date": "2026-06-15",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json 2026-06-15 14:39"
-  },
-  {
-    "date": "2026-06-15",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, buff_history.json, changelog.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json 2026-06-15 13:36"
-  },
-  {
-    "date": "2026-06-15",
-    "tag": "chore",
-    "title": "data update 2026-06-15 05:27",
-    "desc": "data update 2026-06-15 05:27"
-  },
-  {
-    "date": "2026-06-15",
-    "tag": "chore",
-    "title": "market index 2026-06-15 03:44",
-    "desc": "market index 2026-06-15 03:44"
-  },
-  {
-    "date": "2026-06-15",
-    "tag": "chore",
-    "title": "data update 2026-06-15 00:20",
-    "desc": "data update 2026-06-15 00:20"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "chore",
-    "title": "market index 2026-06-14 23:04",
-    "desc": "market index 2026-06-14 23:04"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "chore",
-    "title": "data update 2026-06-14 22:22",
-    "desc": "data update 2026-06-14 22:22"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "chore",
-    "title": "market index 2026-06-14 21:06",
-    "desc": "market index 2026-06-14 21:06"
-  },
-  {
-    "date": "2026-06-14",
-    "tag": "chore",
-    "title": "data update 2026-06-14 20:39",
-    "desc": "data update 2026-06-14 20:39"
   }
 ]
