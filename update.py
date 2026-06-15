@@ -2306,8 +2306,16 @@ def main():
     if os.path.exists(market_path):
         try:
             m = read_json(market_path)
-            if m: m['updated'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()); write_json(market_path, m)
-        except: pass
+            if m and isinstance(m, dict):
+                ts = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+                m['updated'] = ts
+                # 同步更新 alerts_updated（如果 alerts 分支没跑，这里兜底）
+                if not m.get('alerts_updated'):
+                    m['alerts_updated'] = ts
+                write_json(market_path, m)
+                print(f'[META] market.json updated -> {ts}')
+        except Exception as e:
+            print(f'[META] Failed to update market.json timestamp: {e}', file=sys.stderr)
 
     # ── 衍生 price_summary + AI 分析 ──
     generate_price_summary()
