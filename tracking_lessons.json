@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 3,
+  "total_analyses": 1,
   "lessons": [
     {
       "id": "L01",
@@ -10,7 +10,7 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 3,
+      "confirmed": 5,
       "last_seen": "2026-06-16"
     },
     {
@@ -20,7 +20,7 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 3,
+      "confirmed": 5,
       "last_seen": "2026-06-16"
     },
     {
@@ -30,7 +30,7 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 3,
+      "confirmed": 5,
       "last_seen": "2026-06-16"
     },
     {
@@ -45,25 +45,32 @@
     }
   ],
   "history": [],
-  "last_updated": "2026-06-15T17:14:56Z",
+  "last_updated": "2026-06-15T17:20:08Z",
   "analysis_history": [
     {
-      "seq": 3,
-      "ts": "2026-06-15T17:14:56Z",
+      "seq": 1,
+      "ts": "2026-06-15T17:20:08Z",
       "overview": {
-        "verdict": "多平台信号优于ECO信号",
-        "success_pattern": "多平台信号搭配高BUFF溢价（>20%）的推荐评分最高",
-        "failure_pattern": "ECO信号但溢价为负或极低，高求购比未转化为实际涨幅",
+        "verdict": "中价品稳健，高溢价风险大",
+        "success_pattern": "多平台信号+中低价+溢价<30%",
+        "failure_pattern": "单一ECO信号+溢价过高或流动性差",
         "confidence_trend": "持平",
-        "market_signal": "市场波动大，高价品领涨领跌，低价品求购活跃但溢价不匹配"
+        "market_signal": "供需失衡主导，求购活跃支撑"
       },
       "scoring_feedback": {
         "eco_weight_advice": "-10%",
-        "buff_weight_advice": "+15%",
-        "premium_threshold_advice": "将正溢价阈值从5%提升至10%",
-        "liquidity_advice": "增加求购量/出售量比值稳定性检查"
+        "buff_weight_advice": "+10%",
+        "premium_threshold_advice": "多平台溢价阈值降至20%",
+        "liquidity_advice": "增加求购比权重至20%"
       },
-      "prompt_tweak": "减少对静态求购比的依赖，增加近1小时溢价变化趋势分析"
+      "prompt_tweak": "减少ECO高分信号依赖，增加多平台价差和求购比考量",
+      "stats": {
+        "total": 30,
+        "priced": 30,
+        "profitable": 20,
+        "rate": 66.7
+      }
     }
-  ]
+  ],
+  "last_track_count": 30
 }

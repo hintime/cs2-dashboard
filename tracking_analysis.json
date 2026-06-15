@@ -1,52 +1,45 @@
 {
   "overview": {
-    "verdict": "多平台信号优于ECO信号",
-    "success_pattern": "多平台信号搭配高BUFF溢价（>20%）的推荐评分最高",
-    "failure_pattern": "ECO信号但溢价为负或极低，高求购比未转化为实际涨幅",
+    "verdict": "中价品稳健，高溢价风险大",
+    "success_pattern": "多平台信号+中低价+溢价<30%",
+    "failure_pattern": "单一ECO信号+溢价过高或流动性差",
     "confidence_trend": "持平",
-    "market_signal": "市场波动大，高价品领涨领跌，低价品求购活跃但溢价不匹配"
+    "market_signal": "供需失衡主导，求购活跃支撑"
   },
   "lessons": [
     {
       "id": "L01",
       "category": "source",
-      "lesson": "多平台信号评分普遍更高，应优先采用",
+      "lesson": "多平台信号优于单一ECO信号，但需警惕溢价泡沫",
       "impact": "高",
-      "action": "增加多平台信号在推荐中的权重"
+      "action": "对多平台信号增加溢价率上限过滤"
     },
     {
       "id": "L02",
-      "category": "timing",
-      "lesson": "高求购比但负溢价的ECO信号需警惕",
-      "impact": "高",
-      "action": "结合实时溢价趋势而非静态求购比"
+      "category": "scoring",
+      "lesson": "ECO评分偏高但实际收益率有限",
+      "impact": "中",
+      "action": "降低ECO评分权重，增加流动性考量"
     },
     {
       "id": "L03",
-      "category": "scoring",
-      "lesson": "ECO评分易高估负溢价饰品，需修正",
-      "impact": "中",
-      "action": "下调ECO评分中求购比的权重"
-    },
-    {
-      "id": "L04",
       "category": "market",
-      "lesson": "市场冷热不均，应区分高、低价区间策略",
+      "lesson": "求购比高但价格上行动力不足",
       "impact": "中",
-      "action": "对低价品<¥50增加流动性考量"
+      "action": "结合近期涨跌幅动态调整入场信号"
     }
   ],
   "scoring_feedback": {
     "eco_weight_advice": "-10%",
-    "buff_weight_advice": "+15%",
-    "premium_threshold_advice": "将正溢价阈值从5%提升至10%",
-    "liquidity_advice": "增加求购量/出售量比值稳定性检查"
+    "buff_weight_advice": "+10%",
+    "premium_threshold_advice": "多平台溢价阈值降至20%",
+    "liquidity_advice": "增加求购比权重至20%"
   },
-  "recommendation_prompt_tweak": "减少对静态求购比的依赖，增加近1小时溢价变化趋势分析",
+  "recommendation_prompt_tweak": "减少ECO高分信号依赖，增加多平台价差和求购比考量",
   "meta": {
     "total_tracks": 30,
     "date_range": "2026-06-16~2026-06-16",
-    "analyzed_at": "2026-06-15T17:14:56Z",
+    "analyzed_at": "2026-06-15T17:20:08Z",
     "model": "deepseek-v4-flash"
   }
 }

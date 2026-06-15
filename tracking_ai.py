@@ -289,6 +289,33 @@ def _get_market_background():
 
 # ── 教训积累 ──
 
+def _compute_track_stats():
+    """计算当前追踪数据的成功率（用于对比进化效果）"""
+    tracks = load_all_tracks()
+    if not tracks:
+        return {'total': 0, 'profitable': 0, 'rate': 0}
+    
+    # 从 price_summary 获取最新价格
+    ps = _load_json(os.path.join(DATA_DIR, 'price_summary.json')) or {}
+    
+    profitable = 0
+    priced = 0
+    for t in tracks:
+        rec_price = t.get('price', 0)
+        if rec_price <= 0:
+            continue
+        # 查最新价格：先用 hash_name (英语)，再用 name (中文)
+        pdata = ps.get(t.get('hash_name', ''), None) or ps.get(t.get('name', ''), {})
+        latest_prices = pdata.get('prices', []) if isinstance(pdata, dict) else []
+        cur_price = latest_prices[-1] if latest_prices else 0
+        if cur_price > 0:
+            priced += 1
+            if cur_price > rec_price:
+                profitable += 1
+    
+    rate = round(profitable / priced * 100, 1) if priced > 0 else 0
+    return {'total': len(tracks), 'priced': priced, 'profitable': profitable, 'rate': rate}
+
 LESSONS_PATH = os.path.join(DATA_DIR, 'tracking_lessons.json')
 
 def extract_lessons(analysis):
@@ -315,7 +342,8 @@ def extract_lessons(analysis):
         'ts': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'overview': analysis.get('overview', {}),
         'scoring_feedback': analysis.get('scoring_feedback', {}),
-        'prompt_tweak': analysis.get('recommendation_prompt_tweak', '')
+        'prompt_tweak': analysis.get('recommendation_prompt_tweak', ''),
+        'stats': _compute_track_stats()  # 当前追踪成功率
     }
     analysis_history = lessons_db.get('analysis_history', [])
     analysis_history.append(analysis_snapshot)
