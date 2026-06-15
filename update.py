@@ -987,6 +987,23 @@ def generate_price_summary():
     except Exception as e:
         print(f'[SUMMARY] generate_price_summary failed: {e}', file=sys.stderr)
 
+def _seed_db_if_needed(price_db):
+    """首次运行或DB数据稀疏时，从buff_history.json种子历史数据"""
+    try:
+        stats = price_db.get_stats()
+        tr = stats['total_records']
+        if tr > 100000:
+            return
+        print('[DB-SEED] DB sparse (' + str(tr) + ' records), seeding from buff_history.json...')
+        price_db.import_from_buff_history(os.path.join(DATA_DIR, 'buff_history.json'))
+        # 也尝试从本地 price_history.json 种子
+        ph_file = os.path.join(DATA_DIR, 'price_history.json')
+        if os.path.exists(ph_file):
+            price_db.import_from_price_history_json(ph_file)
+        print('[DB-SEED] Done: ' + str(price_db.get_stats()['total_records']) + ' total records')
+    except Exception as e:
+        print(f'[DB-SEED] Failed: {e}', file=sys.stderr)
+
 def merge_buff_history_to_tracked():
     """从 buff_history.json 提取最新 BUFF/YY 价格回填 eco_tracked.json
     作为 CSQAQ API 限流时的兜底方案
@@ -2089,6 +2106,8 @@ def main():
             # ── Record price history for ALL tracked items (SQLite) ──
             try:
                 import price_db
+                # 首次运行自动从历史数据种子DB，避免图表数据稀疏
+                _seed_db_if_needed(price_db)
                 tracked_path = os.path.join(DATA_DIR, 'eco_tracked.json')
                 if os.path.exists(tracked_path):
                     tracked = read_json(tracked_path)
