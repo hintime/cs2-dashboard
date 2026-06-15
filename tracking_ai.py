@@ -159,8 +159,9 @@ def analyze_performance(tracks, price_context=None):
     mid = [t for t in tracks if 10 <= t.get('price', 0) < 100]
     high = [t for t in tracks if t.get('price', 0) >= 100]
     
-    # 构建分析文本
+    # 构建分析文本（含当前价格，用于对比推荐价判断涨跌）
     items_text = []
+    ps = _load_json(os.path.join(DATA_DIR, 'price_summary.json')) or {}
     for t in tracks[:40]:  # 40件样本
         p = t.get('price', 0)
         s = t.get('score', 0)
@@ -168,32 +169,44 @@ def analyze_performance(tracks, price_context=None):
         ys = t.get('yyyp_sell', 0)
         ch_eco = t.get('channel_eco', 0)
         ch_buff = t.get('channel_buff', 0)
-        reason = (t.get('reason', '') or '')[:80]
+        reason = (t.get('reason', '') or '')[:120]
         
-        # 计算溢价率
+        # 当前价格（用 price_summary 最新值）
+        name_lookup = t.get('hash_name', '') or t.get('name', '')
+        pdata = ps.get(name_lookup, {})
+        latest_prices = pdata.get('prices', []) if isinstance(pdata, dict) else []
+        cur_price = latest_prices[-1] if latest_prices else 0
+        
+        # 结果判断
+        outcome = ''
+        if p > 0 and cur_price > 0:
+            chg = (cur_price - p) / p * 100
+            if chg > 5: outcome = f' ✅涨{chg:+.0f}%'
+            elif chg > 0: outcome = f' ↗微涨{chg:+.0f}%'
+            elif chg > -5: outcome = f' →持平{chg:+.0f}%'
+            else: outcome = f' ❌跌{chg:+.0f}%'
+        
+        # 溢价率
         premium = ''
         if p > 0 and bs > 0:
             prem = (bs - p) / p * 100
             premium = f' 溢价{prem:+.1f}%'
-        elif p > 0 and ys > 0:
-            prem = (ys - p) / p * 100
-            premium = f' 溢价{prem:+.1f}%(YY)'
         
         items_text.append(
-            f"{t.get('name','?')[:35]} | ¥{p:.0f} | 分{s:.0f} | {t.get('tag_label','')} "
-            f"| ECO分{ch_eco} BUFF分{ch_buff}{premium} | {reason}"
+            f"{t.get('name','?')[:35]} | ¥{p:.0f}→¥{cur_price:.0f}{outcome} | 分{s:.0f} | {t.get('tag_label','')} "
+            f"| 理由: {reason}"
         )
     
     # 获取市场背景
     market_bg = _get_market_background()
     
-    prompt = f"""分析以下CS2饰品推荐追踪数据，深挖涨跌根因并提炼教训。
+    prompt = f"""分析以下CS2饰品推荐追踪数据，重点分析推荐理由的准确性与优化方向。
 
 【追踪概况】共{total}件推荐，{len(dates)}天（{dates[0]}~{dates[-1] if dates else 'N/A'}）
 ECO推荐{len(eco_items)}件，BUFF推荐{len(buff_items)}件
-低价(<¥10):{len(cheap)}件 中价(¥10-100):{len(mid)}件 高价(>¥100):{len(high)}件
+标注: ✅=涨>5% ↗=微涨 →=持平 ❌=跌>5%
 
-【推荐清单】(名/价/分/来源/维度分/溢价/理由)
+【推荐清单】(名/推荐价→现价/结果/分/标签/原始推荐理由)
 {chr(10).join(items_text)}
 
 【市场背景】{market_bg}
@@ -202,21 +215,27 @@ ECO推荐{len(eco_items)}件，BUFF推荐{len(buff_items)}件
 {{
   "overview": {{
     "verdict": "整体评价(1句话,15字内)",
-    "success_pattern": "成功推荐的共性特征(40字内)",
-    "failure_pattern": "失败推荐的共性特征(40字内)",
+    "success_pattern": "涨的推荐都说了什么对的话？(40字内)",
+    "failure_pattern": "跌的推荐都说了什么错的话？(40字内)",
     "confidence_trend": "上升/下降/持平",
     "market_signal": "当前市场信号(一句话)"
   }},
+  "reason_analysis": {{
+    "right_reasons": "正确的推荐理由有哪些共同特征？(50字内，例如:强调多平台溢价、流动性评估准确)",
+    "wrong_reasons": "错误的推荐理由有哪些共同特征？(50字内，例如:过度依赖单一ECO信号、忽略溢价不匹配)",
+    "reason_keywords_avoid": "推荐理由中应避免的词汇/判断(30字内，逗号分隔)",
+    "reason_keywords_use": "推荐理由中应强调的词汇/判断(30字内，逗号分隔)"
+  }},
   "lessons": [
-    {{"id": "L01", "category": "timing/market/source/scoring", "lesson": "具体教训(30字内)", "impact": "高/中/低", "action": "如何改进(30字内)"}}
+    {{"id": "L01", "category": "reason/scoring/timing/market/source", "lesson": "具体教训(30字内)", "impact": "高/中/低", "action": "如何改进推荐理由(30字内)"}}
   ],
   "scoring_feedback": {{
-    "eco_weight_advice": "+X%/-X%/不变(ECO评分权重建议)",
-    "buff_weight_advice": "+X%/-X%/不变(BUFF评分权重建议)",
-    "premium_threshold_advice": "溢价率阈值调整建议(20字内)",
-    "liquidity_advice": "流动性权重调整建议(20字内)"
+    "eco_weight_advice": "+X%/-X%/不变",
+    "buff_weight_advice": "+X%/-X%/不变",
+    "premium_threshold_advice": "溢价率阈值建议(20字内)",
+    "liquidity_advice": "流动性权重建议(20字内)"
   }},
-  "recommendation_prompt_tweak": "推荐理由生成优化建议(50字内，例如:减少XX维度，增加XX考虑)"
+  "reason_prompt_tweak": "推荐理由生成优化建议(60字内:该强调什么维度、避免什么判断、用什么表述)"
 }}"""
 
     print(f'[TRACK-AI] Analyzing {total} tracks ({len(items_text)} items)...')
@@ -342,7 +361,8 @@ def extract_lessons(analysis):
         'ts': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'overview': analysis.get('overview', {}),
         'scoring_feedback': analysis.get('scoring_feedback', {}),
-        'prompt_tweak': analysis.get('recommendation_prompt_tweak', ''),
+        'reason_analysis': analysis.get('reason_analysis', {}),
+        'prompt_tweak': analysis.get('reason_prompt_tweak', '') or analysis.get('recommendation_prompt_tweak', ''),
         'stats': _compute_track_stats()  # 当前追踪成功率
     }
     analysis_history = lessons_db.get('analysis_history', [])
@@ -387,18 +407,42 @@ def extract_lessons(analysis):
     print(f'[TRACK-AI] Lessons: {len(lessons_db["lessons"])} active, {len(lessons_db["history"])} archived')
 
 def get_lessons_for_prompt():
-    """获取当前教训，格式化为可注入推荐Prompt的文本"""
+    """获取当前教训，格式化为可注入推荐Prompt的文本（含推荐理由反馈）"""
     lessons_db = _load_json(LESSONS_PATH)
-    if not lessons_db or not lessons_db.get('lessons'):
+    if not lessons_db:
         return ''
     
-    lines = ['\n【历史追踪教训（来自AI分析）】']
-    for l in lessons_db['lessons'][:5]:
-        conf = l.get('confirmed', 1)
-        stars = '⭐' * min(conf, 3)
-        lines.append(f"- {stars} [{l.get('category','')}] {l.get('lesson','')} → {l.get('action','')}")
+    lines = []
     
-    return '\n'.join(lines)
+    # 推荐理由优化（从 reason_analysis 提取）
+    ah = lessons_db.get('analysis_history', [])
+    if ah:
+        latest = ah[-1]
+        ra = latest.get('reason_analysis', {})
+        if ra.get('right_reasons') or ra.get('wrong_reasons'):
+            lines.append('\n【推荐理由优化反馈（AI追踪分析）】')
+            if ra.get('right_reasons'):
+                lines.append(f'- ✅ 正确理由特征: {ra["right_reasons"]}')
+            if ra.get('wrong_reasons'):
+                lines.append(f'- ❌ 错误理由特征: {ra["wrong_reasons"]}')
+            if ra.get('reason_keywords_use'):
+                lines.append(f'- 📝 推荐理由中应强调: {ra["reason_keywords_use"]}')
+            if ra.get('reason_keywords_avoid'):
+                lines.append(f'- 🚫 推荐理由中应避免: {ra["reason_keywords_avoid"]}')
+    
+    # 评分教训
+    lessons = lessons_db.get('lessons', [])
+    if lessons:
+        if not lines:
+            lines.append('\n【历史追踪教训（来自AI分析）】')
+        else:
+            lines.append('\n【评分权重教训】')
+        for l in lessons[:3]:
+            conf = l.get('confirmed', 1)
+            stars = '⭐' * min(conf, 3)
+            lines.append(f"- {stars} [{l.get('category','')}] {l.get('lesson','')} → {l.get('action','')}")
+    
+    return '\n'.join(lines) if lines else ''
 
 # ── 单物品深度分析 ──
 

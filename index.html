@@ -2102,6 +2102,18 @@ function renderAIRecommendations() {
         adjHtml += '</div>';
       }
       
+      // 推荐理由优化方向（从 reason_analysis）
+      if (latest && latest.reason_analysis) {
+        var ra = latest.reason_analysis;
+        if (ra.right_reasons || ra.wrong_reasons) {
+          adjHtml += '<div style="font-size:9px;color:var(--text2);line-height:1.5;margin-top:4px">';
+          adjHtml += '💬 理由优化: ';
+          if (ra.right_reasons) adjHtml += '<span style="color:var(--fall)">✅' + esc(ra.right_reasons).slice(0, 40) + '</span> ';
+          if (ra.wrong_reasons) adjHtml += '<span style="color:var(--rise)">❌' + esc(ra.wrong_reasons).slice(0, 40) + '</span>';
+          adjHtml += '</div>';
+        }
+      }
+      
       if (adjHtml) {
         strategyEl.innerHTML += '<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,.06);border-radius:8px;border-left:2px solid rgba(251,191,36,.3)">' + adjHtml + '</div>';
       }

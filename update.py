@@ -665,6 +665,8 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
         
         # ── 注入追踪教训信号（反哺推荐理由）──
         lesson_signal = ''
+        reason_enhance = _get_reason_enhancements()  # 从追踪分析获取理由优化建议
+        
         if tag == 'eco':
             # 教训: ECO信号溢价低/负→容易失败，需标注风险
             if buff_score < 5 or (bs > 0 and price > 0 and (bs - price) / price * 100 < 3):
@@ -725,6 +727,13 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
 
         reason = '{} | ECO分{:.0f}/BUFF分{:.0f}→综合{:.0f} | {} | 💡 {} | 建议分仓操作,单品<10%{}'.format(
             display_tag, eco_score, buff_score, final_score, combined_reason, buy_advice, lesson_signal.replace(' ✓', ''))
+        
+        # 理由增强：根据追踪教训追加优化提示
+        if reason_enhance:
+            if reason_enhance.get('use') and reason_enhance['use'] not in combined_reason:
+                pass  # 留作未来扩展
+            if reason_enhance.get('wrong'):
+                reason += ' | [AI建议] ' + reason_enhance['wrong'][:40]
 
         all_recs.append({
             'name': gn,
@@ -1467,11 +1476,9 @@ def _get_scoring_weights_from_lessons():
         buff_advice = latest.get('buff_weight_advice', '').strip()
         
         def parse_pct(s):
-            """从 '+10%', '-20%', '不变' 中提取数字乘数"""
             if not s or '不变' in s:
                 return 1.0
             try:
-                # 提取数字
                 import re
                 m = re.search(r'([+-]?\d+)', s)
                 if m:
@@ -1488,6 +1495,32 @@ def _get_scoring_weights_from_lessons():
         return eco_m, buff_m
     except:
         return 1.0, 1.0
+
+def _get_reason_enhancements():
+    """从追踪教训中提取推荐理由优化建议
+    返回 (avoid_keywords, use_keywords, wrong_patterns)
+    """
+    try:
+        import json, os
+        lessons_path = os.path.join(DATA_DIR, 'tracking_lessons.json')
+        if not os.path.exists(lessons_path):
+            return None
+        with open(lessons_path, 'r', encoding='utf-8') as f:
+            db = json.load(f)
+        ah = db.get('analysis_history', [])
+        if not ah:
+            return None
+        ra = ah[-1].get('reason_analysis', {})
+        if not ra:
+            return None
+        return {
+            'avoid': ra.get('reason_keywords_avoid', ''),
+            'use': ra.get('reason_keywords_use', ''),
+            'wrong': ra.get('wrong_reasons', '')[:60],
+            'right': ra.get('right_reasons', '')[:60]
+        }
+    except:
+        return None
 
 def generate_ai_recommendations():
     """AI 购买推荐分析 — 综合评分+多维度数据，给出最优购买建议"""
