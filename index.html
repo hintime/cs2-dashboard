@@ -1447,7 +1447,8 @@ async function loadAll() {
   const holdingsP = fetch('holdings.json?v=' + t0, fetchOpts).then(r => r.json()).catch(() => null);
   
   // 尽快渲染主内容
-  const [marketR, holdingsR] = await Promise.all([marketP, holdingsP]);
+  const [marketR, _hr] = await Promise.all([marketP, holdingsP]);
+  let holdingsR = _hr;
   updateProgress(60);
 
   // AI 分析异步预热
