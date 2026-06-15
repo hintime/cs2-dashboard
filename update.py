@@ -30,7 +30,7 @@ PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 # CSQAQ removed — alerts now self-computed from BUFF price history
 STEAM_KEY = os.environ.get('STEAMDT_KEY', '')
 GH_TOKEN = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN', '')
-ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz')
+DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', 'sk-3a9f8fed7ff94e7398e3a9164807cb24')
 REPO = 'hintime/cs2-dashboard'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, '..') if SCRIPT_DIR.endswith('.github') else SCRIPT_DIR
@@ -1047,9 +1047,9 @@ def merge_buff_history_to_tracked():
         print(f'[BUFF-BACKFILL] Failed: {e}', file=sys.stderr)
 
 def generate_ai_analysis():
-    """智谱AI全量持仓分析 — JSON结构化 + 批量单次调用 + 联网搜索"""
-    if not ZHIPU_KEY or ZHIPU_KEY == 'test_key':
-        print('[AI] No Zhipu key, skip')
+    """DeepSeek AI 全量持仓分析 — JSON结构化 + 批量单次调用"""
+    if not DEEPSEEK_KEY or DEEPSEEK_KEY == 'test_key':
+        print('[AI] No DeepSeek key, skip')
         return
     holdings = read_json(os.path.join(DATA_DIR, 'holdings.json'))
     items = holdings.get('items', []) if isinstance(holdings, dict) else holdings
@@ -1059,24 +1059,15 @@ def generate_ai_analysis():
     items = sorted(items, key=lambda x: x.get('cost', 0) * x.get('qty', 1), reverse=True)
     total = len(items)
     
-    # ① 联网搜索 CS2 最新市场新闻
+    # ① 市场背景（基于本地数据推断，DeepSeek 无联网搜索）
     news_context = ''
     try:
-        news_data = json.dumps({
-            'model': 'glm-4-flash',
-            'messages': [{'role': 'user', 'content': '搜索2026年6月CS2饰品市场最新动态，包括：CS2大行动更新、箱子新出、饰品价格异动、BUFF市场热点。用中文总结3条最重要的信息。'}],
-            'tools': [{'type': 'web_search', 'web_search': {'search_query': 'CS2 skins market June 2026 latest news'}}],
-            'max_tokens': 500, 'temperature': 0.3
-        }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=news_data, headers={
-            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
-        })
-        resp = urllib.request.urlopen(req, timeout=30)
-        nr = json.loads(resp.read().decode('utf-8'))
-        news_context = nr['choices'][0]['message'].get('content', '')
-        print(f'[AI] News: {news_context[:80]}...')
+        from tracking_ai import _get_market_background
+        news_context = _get_market_background()
+        if news_context:
+            print(f'[AI] Market context: {news_context[:80]}...')
     except Exception as e:
-        print(f'[AI] News search failed: {e}')
+        pass
 
     # ② 构建批量分析 Prompt（所有持仓编入一张表）
     items_text = '\n'.join([
@@ -1094,17 +1085,15 @@ def generate_ai_analysis():
     
     try:
         data = json.dumps({
-            'model': 'glm-4-flash',
+            'model': 'deepseek-chat',
             'messages': [
                 {'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON，不返回任何其他内容。'},
                 {'role': 'user', 'content': prompt}
             ],
-            'response_format': {'type': 'json_object'},
-            'thinking': {'type': 'enabled'},
-            'max_tokens': 4096, 'temperature': 0.3
+            'response_format': {'type': 'json_object'},            'max_tokens': 4096, 'temperature': 0.3
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=120)
         r = json.loads(resp.read().decode('utf-8'))
@@ -1133,17 +1122,15 @@ def generate_ai_analysis():
             pnl_pct = (price - cost) / cost * 100 if cost > 0 else 0
             try:
                 data = json.dumps({
-                    'model': 'glm-4-flash',
+                    'model': 'deepseek-chat',
                     'messages': [
                         {'role': 'system', 'content': '你是CS2饰品分析师。返回JSON：{"verdict":"持有/买入/减仓/观望","confidence":80,"reason":"一句话","risk":"一句话"}'},
                         {'role': 'user', 'content': f'{name}，¥{price:.0f}，7日{r7:+.1f}%，30日{r30:+.1f}%，成本¥{cost:.0f}，盈亏{pnl_pct:+.1f}%'}
                     ],
-                    'response_format': {'type': 'json_object'},
-            'thinking': {'type': 'enabled'},
-                    'max_tokens': 200, 'temperature': 0.3
+                    'response_format': {'type': 'json_object'},                    'max_tokens': 200, 'temperature': 0.3
                 }).encode('utf-8')
-                req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-                    'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+                req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+                    'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
                 })
                 resp = urllib.request.urlopen(req, timeout=20)
                 rr = json.loads(resp.read().decode('utf-8'))
@@ -1161,7 +1148,7 @@ def generate_ai_analysis():
 
 def generate_ai_daily_report():
     """AI 自动生成每日市场报告"""
-    if not ZHIPU_KEY: return
+    if not DEEPSEEK_KEY: return
     try:
         # 收集市场数据作为上下文
         scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
@@ -1172,15 +1159,15 @@ def generate_ai_daily_report():
         loser_text = ' | '.join([l.get('n','')[:20] + (' ' + str(l.get('r7','')) + '%' if l.get('r7') else '') for l in losers])
         prompt = f'CS2饰品市场日报。全市场{total_items}件追踪品，均价¥{avg_p:.0f}。涨幅TOP: {gainer_text}。跌幅TOP: {loser_text}。请用中文写一段150字市场总结。'
         data = json.dumps({
-            'model': 'glm-4-flash',
+            'model': 'deepseek-chat',
             'messages': [
                 {'role': 'system', 'content': '你是CS2饰品市场日报编辑。写简洁专业的市场分析。'},
                 {'role': 'user', 'content': prompt}
             ],
             'max_tokens': 500, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=30)
         r = json.loads(resp.read().decode('utf-8'))
@@ -1196,7 +1183,7 @@ def generate_ai_daily_report():
 
 def generate_ai_anomaly():
     """AI 解读异动饰品"""
-    if not ZHIPU_KEY: return
+    if not DEEPSEEK_KEY: return
     try:
         # 检查 fluctuation 数据
         bh = read_json(os.path.join(DATA_DIR, 'buff_history.json'))
@@ -1226,15 +1213,15 @@ def generate_ai_anomaly():
         items_text = '\n'.join([f'{n}: 在售量 {pr}→{nr} ({pct:+.0f}%)' for n, pct, nr, pr in top])
         prompt = f'CS2饰品在售量异动检测，以下饰品在售量变化超过10%：\n{items_text}\n请分析这些异动可能的原因和影响，100字以内。'
         data = json.dumps({
-            'model': 'glm-4-flash',
+            'model': 'deepseek-chat',
             'messages': [
                 {'role': 'system', 'content': '你是CS2饰品市场分析师。简洁分析在售量异动原因。'},
                 {'role': 'user', 'content': prompt}
             ],
             'max_tokens': 2000, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=20)
         r = json.loads(resp.read().decode('utf-8'))
@@ -1246,7 +1233,7 @@ def generate_ai_anomaly():
 
 def generate_ai_stock_picks():
     """AI 扫描全市场找低估品"""
-    if not ZHIPU_KEY: return
+    if not DEEPSEEK_KEY: return
     try:
         scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
         movers = scan.get('movers', {})
@@ -1258,13 +1245,13 @@ def generate_ai_stock_picks():
             return
         prompt = f'以下CS2饰品近期跌幅较大，请从中选出3-5个最有反弹潜力的：\n{items_text}\n返回JSON：{{"picks":[{{"name":"","reason":"","target":"+X%","confidence":80}}],"rationale":"一句话"}}'
         data = json.dumps({
-            'model': 'glm-4-flash',
+            'model': 'deepseek-chat',
             'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON。'}, {'role': 'user', 'content': prompt}],
             'response_format': {'type': 'json_object'},
             'max_tokens': 1000, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=30)
         r = json.loads(resp.read().decode('utf-8'))
@@ -1276,7 +1263,7 @@ def generate_ai_stock_picks():
 
 def generate_ai_market_insight():
     """AI 全量市场洞察 — 一次调用，聚合摘要分析全量饰品"""
-    if not ZHIPU_KEY: return
+    if not DEEPSEEK_KEY: return
     try:
         scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
         if not scan: return
@@ -1299,12 +1286,12 @@ def generate_ai_market_insight():
             f'要求：分析短期市场情绪、资金流向、风险点。简洁专业，100-150字。'
         )
         data = json.dumps({
-            'model': 'glm-4-flash',
+            'model': 'deepseek-chat',
             'messages': [{'role': 'system', 'content': '你是CS2市场分析师，回答一段150字分析。'}, {'role': 'user', 'content': prompt}],
             'max_tokens': 500, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=30)
         r = json.loads(resp.read().decode('utf-8'))
@@ -1319,7 +1306,7 @@ def generate_ai_market_insight():
 
 def generate_ai_news_impact():
     """AI 空投监控 — 解读 CS2 最新公告对饰品市场的影响"""
-    if not ZHIPU_KEY: return
+    if not DEEPSEEK_KEY: return
     try:
         news_path = os.path.join(DATA_DIR, 'news.json')
         if not os.path.exists(news_path): return
@@ -1350,12 +1337,12 @@ def generate_ai_news_impact():
             f'若公告与饰品无关，回复"本期公告对饰品市场无直接影响。"'
         )
         data = json.dumps({
-            'model': 'glm-4-flash',
+            'model': 'deepseek-chat',
             'messages': [{'role': 'user', 'content': prompt}],
             'max_tokens': 2000, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=30)
         r = json.loads(resp.read().decode('utf-8'))
@@ -1380,7 +1367,7 @@ def _get_tracking_feedback():
 
 def generate_ai_recommendations():
     """AI 购买推荐分析 — 综合评分+多维度数据，给出最优购买建议"""
-    if not ZHIPU_KEY: return
+    if not DEEPSEEK_KEY: return
     try:
         market = read_json(os.path.join(DATA_DIR, 'market.json'))
         recs = market.get('recommendations', {})
@@ -1447,13 +1434,13 @@ def generate_ai_recommendations():
             f'禁区: 价格波动/关注市场/科隆/溢价合理/性能/稳定/新手/玩家/高手/适合新生/稀缺求'
         )
         data = json.dumps({
-            'model': 'glm-4-flash',
+            'model': 'deepseek-chat',
             'messages': [{'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON格式。'}, {'role': 'user', 'content': prompt}],
             'response_format': {'type': 'json_object'},
             'max_tokens': 2000, 'temperature': 0.3
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=90)
         r = json.loads(resp.read().decode('utf-8'))
@@ -1489,7 +1476,7 @@ def generate_ai_recommendations():
             # 重试：简化 prompt 兜底
             print('[AI] JSON parse failed, retrying with simplified prompt...')
             retry_data = json.dumps({
-                'model': 'glm-4-flash',
+                'model': 'deepseek-chat',
                 'messages': [
                     {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象，不要任何解释。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":""}],"strategy":"","summary":""}'},
                     {'role': 'user', 'content': f'从以下候选中选3个最优买入:\n{candidates_text[:2000]}\n记住:只输出JSON。'}
@@ -1497,8 +1484,8 @@ def generate_ai_recommendations():
                 'response_format': {'type': 'json_object'},
                 'max_tokens': 2000, 'temperature': 0.3
             }).encode('utf-8')
-            retry_req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=retry_data, headers={
-                'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
+            retry_req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=retry_data, headers={
+                'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
             })
             retry_resp = urllib.request.urlopen(retry_req, timeout=45)
             retry_r = json.loads(retry_resp.read().decode('utf-8'))

@@ -267,20 +267,14 @@ loadTracks();
               }
             });
         } else {
-          // ③ 本地 fallback（无 CI 分析时的简要AI总结）
+          // ③ 无 CI 分析数据时的简要统计展示
           var summary = '累计推荐'+total+'件，'+uniqueDays+'天，盈利率'+(total>0?(profited/total*100).toFixed(0):0)+'%，平均收益'+(avgRet>=0?'+':'')+avgRet.toFixed(1)+'%';
           if (bestName) summary += '，最佳'+bestName.slice(0,15)+'+'+bestRet.toFixed(1)+'%';
           if (worstName) summary += '，最差'+worstName.slice(0,15)+worstRet.toFixed(1)+'%';
 
-          el.innerHTML = '<div style="font-size:11px;color:var(--text3);margin-bottom:6px">CI分析数据暂未生成，显示本地简析</div>';
-          
-          fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
-            method:'POST', headers:{'Authorization':'Bearer 981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz','Content-Type':'application/json'},
-            body:JSON.stringify({model:'glm-4-flash',messages:[{role:'system',content:'你是CS2投资追踪分析师。50-80字评价和建议。'},{role:'user',content:'我的CS2饰品推荐追踪：'+summary}],max_tokens:300,temperature:0.5})
-          }).then(function(r){return r.json()}).then(function(data){
-            var text = (data.choices && data.choices[0] && data.choices[0].message.content) || '';
-            el.innerHTML += '<div style="font-size:12px;line-height:1.7;color:var(--text2);padding:8px 0">'+text+'</div>';
-          }).catch(function(){ el.innerHTML += '<span style="color:var(--text3)">AI 暂不可用</span>'; });
+          el.innerHTML = '<div style="font-size:11px;color:var(--text3);margin-bottom:6px">📡 等待CI管线生成深度分析...</div>' +
+            '<div style="font-size:12px;line-height:1.7;color:var(--text2);padding:8px 0">' + esc(summary) + '</div>' +
+            '<div style="font-size:10px;color:var(--text3);margin-top:4px">AI分析将在下次CI运行时自动生成</div>';
         }
       });
   }

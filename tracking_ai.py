@@ -16,8 +16,8 @@ import urllib.error
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = SCRIPT_DIR
-ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz')
-MODEL = 'glm-4-flash'
+DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', 'sk-3a9f8fed7ff94e7398e3a9164807cb24')
+MODEL = 'deepseek-chat'
 
 # ── 数据读写 ──
 
@@ -86,7 +86,7 @@ def load_all_tracks():
 # ── AI 调用 ──
 
 def _call_zhipu(messages, max_tokens=2048, temperature=0.5, json_mode=False):
-    """智谱 API 调用（含重试）"""
+    """DeepSeek API 调用（含重试）"""
     for attempt in range(3):
         try:
             body = {
@@ -100,10 +100,10 @@ def _call_zhipu(messages, max_tokens=2048, temperature=0.5, json_mode=False):
             
             data = json.dumps(body).encode('utf-8')
             req = urllib.request.Request(
-                'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+                'https://api.deepseek.com/v1/chat/completions',
                 data=data,
                 headers={
-                    'Authorization': f'Bearer {ZHIPU_KEY}',
+                    'Authorization': f'Bearer {DEEPSEEK_KEY}',
                     'Content-Type': 'application/json'
                 }
             )

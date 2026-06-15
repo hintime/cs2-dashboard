@@ -1,52 +1,52 @@
 {
   "overview": {
-    "verdict": "推荐效果一般，需调整策略",
-    "success_pattern": "多平台热度高，稀缺度高",
-    "failure_pattern": "供需失衡，溢价过高",
+    "verdict": "多平台信号推荐表现优于ECO信号",
+    "success_pattern": "多平台信号、高溢价、中低价位，流动性好",
+    "failure_pattern": "ECO信号、高求售比但溢价为负或极低，流动性差",
     "confidence_trend": "下降",
-    "market_signal": "市场波动大，需谨慎操作"
+    "market_signal": "市场整体偏弱，求购活跃但溢价空间小"
   },
   "lessons": [
     {
       "id": "L01",
-      "category": "timing/market/source/scoring",
-      "lesson": "市场信号解读不足，导致供需失衡",
+      "category": "source",
+      "lesson": "多平台信号推荐涨幅明显，ECO信号推荐多亏损",
       "impact": "高",
-      "action": "加强市场趋势分析，调整推荐时机"
+      "action": "优先采用多平台信号，减少ECO信号依赖"
     },
     {
       "id": "L02",
-      "category": "timing/market/source/scoring",
-      "lesson": "溢价过高导致推荐失败",
+      "category": "scoring",
+      "lesson": "ECO评分高但溢价为负的推荐表现差",
       "impact": "高",
-      "action": "设定合理溢价阈值，避免盲目跟风"
+      "action": "降低ECO评分权重，增加溢价率权重"
     },
     {
       "id": "L03",
-      "category": "scoring",
-      "lesson": "ECO评分权重过高，导致部分推荐失误",
+      "category": "market",
+      "lesson": "高求售比但溢价为负的饰品流动性差",
       "impact": "中",
-      "action": "调整ECO和BUFF评分权重，平衡推荐结果"
+      "action": "避免推荐溢价为负的ECO信号饰品"
     },
     {
       "id": "L04",
-      "category": "source",
-      "lesson": "信息来源单一，缺乏全面性",
+      "category": "timing",
+      "lesson": "一天内推荐效果有限，需更长时间验证",
       "impact": "中",
-      "action": "拓宽信息来源，增加数据维度"
+      "action": "延长追踪周期至3-7天"
     }
   ],
   "scoring_feedback": {
-    "eco_weight_advice": "+10%/-10%/不变",
-    "buff_weight_advice": "+5%/-5%/不变",
-    "premium_threshold_advice": "溢价率调整至20%以内",
-    "liquidity_advice": "增加流动性权重"
+    "eco_weight_advice": "-20%",
+    "buff_weight_advice": "+20%",
+    "premium_threshold_advice": "溢价率阈值提高至+10%",
+    "liquidity_advice": "增加流动性评分，如求售比"
   },
-  "recommendation_prompt_tweak": "减少单一维度，增加市场趋势和稀缺度考虑",
+  "recommendation_prompt_tweak": "减少ECO信号推荐，增加多平台信号；考虑溢价率和流动性",
   "meta": {
     "total_tracks": 30,
     "date_range": "2026-06-16~2026-06-16",
-    "analyzed_at": "2026-06-15T16:22:57Z",
-    "model": "glm-4-flash"
+    "analyzed_at": "2026-06-15T17:01:45Z",
+    "model": "deepseek-chat"
   }
 }
