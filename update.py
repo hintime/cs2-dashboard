@@ -640,10 +640,10 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                     if scarce > 5:
                         buff_reasons.append('悠悠在售仅{}件'.format(yyyp_sell_num))
 
-    # ══════════ Combined ══════════
-    # 应用AI追踪教训的评分权重调整
-    eco_mult, buff_mult = _get_scoring_weights_from_lessons()
-    final_score = max(eco_score * eco_mult, buff_score * buff_mult)
+        # ══════════ Combined ══════════
+        # 应用AI追踪教训的评分权重调整
+        eco_mult, buff_mult = _get_scoring_weights_from_lessons()
+        final_score = max(eco_score * eco_mult, buff_score * buff_mult)
 
         if final_score < 25:
             continue
@@ -1608,6 +1608,16 @@ def generate_ai_recommendations():
             picks = parsed
         picks['date'] = time.strftime('%Y-%m-%d %H:%M')
         picks['total_candidates'] = len(candidates)
+        # 注入当前评分权重（来自追踪教训）
+        try:
+            eco_m, buff_m = _get_scoring_weights_from_lessons()
+            if eco_m != 1.0 or buff_m != 1.0:
+                picks['scoring_weights'] = {
+                    'eco': round((eco_m - 1) * 100),
+                    'buff': round((buff_m - 1) * 100)
+                }
+        except:
+            pass
         write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), picks)
         print(f'[AI] Recommendations: {len(picks.get("picks",[]))} picks generated')
     except Exception as e:

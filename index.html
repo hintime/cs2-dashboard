@@ -2073,6 +2073,49 @@ function renderAIRecommendations() {
     if (data.summary) parts.push('<span style="color:#c084fc;font-weight:600">📋 ' + esc(data.summary) + '</span>');
     if (data.strategy) parts.push('<span style="color:var(--text2)">💡 ' + esc(data.strategy) + '</span>');
     strategyEl.innerHTML = parts.join(' · ');
+    
+    // ④ 显示追踪教训反哺的评分权重调整
+    var showLessons = function(lessons) {
+      var latest = (lessons && lessons.analysis_history && lessons.analysis_history.length)
+        ? lessons.analysis_history[lessons.analysis_history.length - 1] : null;
+      var sf = latest ? latest.scoring_feedback || {} : {};
+      var lessonsList = lessons ? lessons.lessons || [] : [];
+      
+      // 优先用 ai_recommendations 里的 scoring_weights（后端已算好）
+      var sw = data.scoring_weights;
+      var adjHtml = '';
+      if (sw || sf.eco_weight_advice || sf.buff_weight_advice) {
+        adjHtml += '<div style="display:flex;gap:10px;align-items:center;font-size:10px;margin-bottom:6px">';
+        adjHtml += '<span style="color:var(--text3)">📊 评分权重(AI调整):</span>';
+        var ecoV = sw ? sw.eco : (sf.eco_weight_advice||'不变');
+        var buffV = sw ? sw.buff : (sf.buff_weight_advice||'不变');
+        adjHtml += '<span style="color:' + (String(ecoV).indexOf('-')>=0?'var(--fall)':'var(--rise)') + '">ECO ' + (ecoV>0?'+':'') + ecoV + '%</span>';
+        adjHtml += '<span style="color:' + (String(buffV).indexOf('+')>=0?'var(--fall)':'var(--rise)') + '">BUFF ' + (buffV>0?'+':'') + buffV + '%</span>';
+        adjHtml += '<span style="color:var(--text3)">| 溢价: ' + esc(sf.premium_threshold_advice||'?') + '</span>';
+        adjHtml += '</div>';
+      }
+      
+      // 最新教训摘要
+      if (lessonsList.length) {
+        adjHtml += '<div style="font-size:9px;color:var(--text3);line-height:1.5">';
+        adjHtml += '🧠 ' + lessonsList.slice(0, 2).map(function(l) { return esc(l.lesson).slice(0, 35) + (l.confirmed>=3?' ✓':'') ; }).join(' · ');
+        adjHtml += '</div>';
+      }
+      
+      if (adjHtml) {
+        strategyEl.innerHTML += '<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,.06);border-radius:8px;border-left:2px solid rgba(251,191,36,.3)">' + adjHtml + '</div>';
+      }
+    };
+    
+    // 如果 ai_recommendations 已有 scoring_weights，直接显示
+    if (data.scoring_weights) {
+      showLessons(null);
+    }
+    // 否则从 tracking_lessons.json 获取
+    fetch('tracking_lessons.json?v=' + Date.now())
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .catch(function() { return null; })
+      .then(showLessons);
   }).catch(function() {
     banner.style.display = 'none';
   });
