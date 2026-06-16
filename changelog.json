@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-06-16",
+    "tag": "chore",
+    "title": "update ai_recommendations.json, buff_history.json, changelog",
+    "desc": "json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, rec_tracks.json, tracking_analysis.json, tracking_lessons.json 2026-06-16 10:26"
+  },
+  {
     "date": "2026-06-15",
     "tag": "chore",
     "title": "data update 2026-06-15 23:28",
@@ -112,11 +118,5 @@
     "tag": "feat",
     "title": "吸取教训前后成功率对比—进化轨迹显示盈利变化+趋势柱状图",
     "desc": "吸取教训前后成功率对比—进化轨迹显示盈利变化+趋势柱状图"
-  },
-  {
-    "date": "2026-06-16",
-    "tag": "perf",
-    "title": "DeepSeek成本精打细算—追踪24h限1次/track增长<20%跳过/推荐关思考/降max_tokens",
-    "desc": "DeepSeek成本精打细算—追踪24h限1次/track增长<20%跳过/推荐关思考/降max_tokens"
   }
 ]
