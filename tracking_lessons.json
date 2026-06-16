@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 3,
+  "total_analyses": 4,
   "lessons": [
     {
       "id": "L01",
@@ -10,8 +10,8 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 7,
-      "last_seen": "2026-06-15"
+      "confirmed": 8,
+      "last_seen": "2026-06-16"
     },
     {
       "id": "L02",
@@ -20,8 +20,8 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 7,
-      "last_seen": "2026-06-15"
+      "confirmed": 8,
+      "last_seen": "2026-06-16"
     },
     {
       "id": "L03",
@@ -30,8 +30,8 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 7,
-      "last_seen": "2026-06-15"
+      "confirmed": 8,
+      "last_seen": "2026-06-16"
     },
     {
       "id": "L04",
@@ -40,8 +40,8 @@
       "impact": "中",
       "action": "拓宽信息来源，增加数据维度",
       "added_at": "2026-06-16",
-      "confirmed": 5,
-      "last_seen": "2026-06-15"
+      "confirmed": 6,
+      "last_seen": "2026-06-16"
     },
     {
       "id": "L05",
@@ -50,11 +50,12 @@
       "impact": "低",
       "action": "理由应包含具体指标数值（如溢价率）",
       "added_at": "2026-06-15",
-      "confirmed": 1
+      "confirmed": 2,
+      "last_seen": "2026-06-16"
     }
   ],
   "history": [],
-  "last_updated": "2026-06-15T19:35:32Z",
+  "last_updated": "2026-06-16T02:26:16Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -132,6 +133,36 @@
         "priced": 60,
         "profitable": 43,
         "rate": 71.7
+      }
+    },
+    {
+      "seq": 4,
+      "ts": "2026-06-16T02:26:16Z",
+      "overview": {
+        "verdict": "整体表现优秀，涨多跌少",
+        "success_pattern": "强调多平台溢价、流动性稀缺、求购活跃，涨超20%",
+        "failure_pattern": "仅依赖ECO供需比，忽略溢价和流动性，涨幅有限",
+        "confidence_trend": "上升",
+        "market_signal": "多平台溢价和流动性主导上涨，ECO信号需结合溢价"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "-20%",
+        "buff_weight_advice": "+20%",
+        "premium_threshold_advice": "多平台溢价>20%为佳",
+        "liquidity_advice": "在售<100件或求售比>100%加分"
+      },
+      "reason_analysis": {
+        "right_reasons": "共同特征：多平台溢价强劲、在售稀少、求购活跃，评分高且AI优选",
+        "wrong_reasons": "共同特征：单一ECO信号，忽略实际溢价不足，评分低且表现持平",
+        "reason_keywords_avoid": "仅ECO信号，供需比高但无溢价，待观察",
+        "reason_keywords_use": "多平台溢价强劲，在售稀少，求购活跃，AI优选"
+      },
+      "prompt_tweak": "推荐理由应强调多平台溢价数值、在售稀少、求购活跃，避免单独使用ECO信号，统一用“多平台信号·溢价强劲”表述",
+      "stats": {
+        "total": 60,
+        "priced": 60,
+        "profitable": 58,
+        "rate": 96.7
       }
     }
   ],

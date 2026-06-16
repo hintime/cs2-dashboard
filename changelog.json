@@ -2,7 +2,121 @@
   {
     "date": "2026-06-15",
     "tag": "chore",
+    "title": "data update 2026-06-15 23:28",
+    "desc": "data update 2026-06-15 23:28"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
     "title": "market index 2026-06-15 22:18",
     "desc": "market index 2026-06-15 22:18"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
+    "title": "market index 2026-06-15 19:44",
+    "desc": "market index 2026-06-15 19:44"
+  },
+  {
+    "date": "2026-06-15",
+    "tag": "chore",
+    "title": "data update 2026-06-15 19:35",
+    "desc": "data update 2026-06-15 19:35"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "feat",
+    "title": "推荐卡片升级为分层分析面板",
+    "desc": "推荐卡片升级为分层分析面板"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "fix",
+    "title": "T+7持有周期硬约束—禁止<7天的持有建议",
+    "desc": "T+7持有周期硬约束—禁止<7天的持有建议"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "fix",
+    "title": "推荐卡片渲染修复+API max_tokens提升+prompt优化",
+    "desc": "推荐卡片渲染修复+API max_tokens提升+prompt优化"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "feat",
+    "title": "推荐精选折叠式卡片—点击名称展开关键因素+风险+操作计划",
+    "desc": "推荐精选折叠式卡片—点击名称展开关键因素+风险+操作计划"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "fix",
+    "title": "强制数据验证—供需由数字决定+禁止编造+流动性分级+系统提示升级",
+    "desc": "强制数据验证—供需由数字决定+禁止编造+流动性分级+系统提示升级"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "fix",
+    "title": "流动性评估修正—加入T+7锁定期规则+在售量对应变现天数",
+    "desc": "流动性评估修正—加入T+7锁定期规则+在售量对应变现天数"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "feat",
+    "title": "深度推理链—3步分析+自我批判+市场扫描注入+推理过程展示",
+    "desc": "深度推理链—3步分析+自我批判+市场扫描注入+推理过程展示"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "feat",
+    "title": "推荐理由更丰富—5维度30-50字/新增operation字段/详细操作计划/max_tokens→3000",
+    "desc": "推荐理由更丰富—5维度30-50字/新增operation字段/详细操作计划/max_tokens→3000"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, rec_tracks.json, tracking_analysis.json, tracking_lessons.json 2026-06-16 01:37"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "feat",
+    "title": "从推荐理由本身吸取教训—分析理由准确性+反哺理由生成+前端展示",
+    "desc": "从推荐理由本身吸取教训—分析理由准确性+反哺理由生成+前端展示"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "feat",
+    "title": "教训反哺推荐理由—ECO信号标注溢价风险+BUFF信号强调溢价强度",
+    "desc": "教训反哺推荐理由—ECO信号标注溢价风险+BUFF信号强调溢价强度"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "fix",
+    "title": "推荐板块显示AI教训权重+缩进修复+scoring_weights写入json",
+    "desc": "推荐板块显示AI教训权重+缩进修复+scoring_weights写入json"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "fix",
+    "title": "推荐卡片使用AI深度理由+追踪教训反哺评分权重",
+    "desc": "推荐卡片使用AI深度理由+追踪教训反哺评分权重"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "perf",
+    "title": "预算放宽(月15元)—推荐开思考/追踪4次-天/40件/token回2000",
+    "desc": "预算放宽(月15元)—推荐开思考/追踪4次-天/40件/token回2000"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "feat",
+    "title": "吸取教训前后成功率对比—进化轨迹显示盈利变化+趋势柱状图",
+    "desc": "吸取教训前后成功率对比—进化轨迹显示盈利变化+趋势柱状图"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "perf",
+    "title": "DeepSeek成本精打细算—追踪24h限1次/track增长<20%跳过/推荐关思考/降max_tokens",
+    "desc": "DeepSeek成本精打细算—追踪24h限1次/track增长<20%跳过/推荐关思考/降max_tokens"
   }
 ]
