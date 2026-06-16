@@ -2,6 +2,12 @@
   {
     "date": "2026-06-16",
     "tag": "chore",
+    "title": "update ai_recommendations.json, buff_history.json, changelog",
+    "desc": "json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, rec_tracks.json 2026-06-16 12:38"
+  },
+  {
+    "date": "2026-06-16",
+    "tag": "chore",
     "title": "market index 2026-06-16 03:38",
     "desc": "market index 2026-06-16 03:38"
   },
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "推荐板块显示AI教训权重+缩进修复+scoring_weights写入json",
     "desc": "推荐板块显示AI教训权重+缩进修复+scoring_weights写入json"
-  },
-  {
-    "date": "2026-06-16",
-    "tag": "fix",
-    "title": "推荐卡片使用AI深度理由+追踪教训反哺评分权重",
-    "desc": "推荐卡片使用AI深度理由+追踪教训反哺评分权重"
   }
 ]
