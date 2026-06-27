@@ -32,7 +32,7 @@ STEAM_KEY = os.environ.get('STEAMDT_KEY', '')
 GH_TOKEN = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN', '')
 DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', 'sk-3a9f8fed7ff94e7398e3a9164807cb24')
 ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz')
-AI_PROVIDER = os.environ.get('AI_PROVIDER', 'deepseek')  # 'deepseek' or 'zhipu'
+AI_PROVIDER = os.environ.get('AI_PROVIDER', 'zhipu')  # 统一用智谱 GLM-4
 REPO = 'hintime/cs2-dashboard'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, '..') if SCRIPT_DIR.endswith('.github') else SCRIPT_DIR
@@ -43,7 +43,7 @@ RETRY_DELAY = 2
 # ═══════════════ AI Provider 统一调度 ═══════════════
 def _ai_key():
     """返回当前 provider 的 API key"""
-    return DEEPSEEK_KEY if AI_PROVIDER == 'deepseek' else ZHIPU_KEY
+    return ZHIPU_KEY
 
 def _ai_endpoint():
     """返回当前 provider 的 API endpoint"""
@@ -1524,7 +1524,7 @@ def _get_reason_enhancements():
 
 def generate_ai_recommendations():
     """AI 购买推荐分析 — 综合评分+多维度数据，给出最优购买建议"""
-    if not DEEPSEEK_KEY: return
+    if not ZHIPU_KEY: return
     try:
         market = read_json(os.path.join(DATA_DIR, 'market.json'))
         recs = market.get('recommendations', {})
@@ -1662,23 +1662,21 @@ def generate_ai_recommendations():
             f'市场规则: CS2饰品买入后T+7锁定(7天不可交易)·BUFF/悠悠有品手续费1-5%·考虑锁定期后的价格风险'
         )
         data = json.dumps({
-            'model': 'deepseek-v4-flash',
+            'model': 'glm-4-flash',
             'messages': [
                 {'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON。必须严格基于输入数据推理，禁止编造任何数字或判断。供需关系必须由在售数和求购数的大小决定。'},
                 {'role': 'user', 'content': prompt}
             ],
             'response_format': {'type': 'json_object'},
-            'thinking': {'type': 'enabled'},
             'max_tokens': 8000, 'temperature': 0.3
         }).encode('utf-8')
-        req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
+        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
+            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
         })
         resp = urllib.request.urlopen(req, timeout=90)
         r = json.loads(resp.read().decode('utf-8'))
         content = r['choices'][0]['message']['content'].strip()
-        rc = r['choices'][0]['message'].get('reasoning_content', '')
-        print(f'[AI] thinking={len(rc)}chars → output={len(content)}chars')
+        print(f'[AI] Recommendations → output={len(content)}chars')
         
         # ── 鲁棒 JSON 解析 ──
         def safe_parse_json(raw):
@@ -1710,7 +1708,7 @@ def generate_ai_recommendations():
             # 重试：简化 prompt 兜底
             print('[AI] JSON parse failed, retrying with simplified prompt...')
             retry_data = json.dumps({
-                'model': 'deepseek-v4-flash',
+                'model': 'glm-4-flash',
                 'messages': [
                     {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象。字段: reason=买入理由, risk=风险评估, operation=操作计划, price_zone=入手区间, sentiment=综合研判, trend_signals=[3个信号], platform_advice=平台建议。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":"","operation":"","price_zone":"","sentiment":"","trend_signals":[],"platform_advice":""}],"strategy":"","summary":""}'},
                     {'role': 'user', 'content': f'从以下候选中选3个最优买入:\n{candidates_text[:2000]}\n记住:只输出JSON。'}
@@ -1718,8 +1716,8 @@ def generate_ai_recommendations():
                 'response_format': {'type': 'json_object'},
                 'max_tokens': 8000, 'temperature': 0.3
             }).encode('utf-8')
-            retry_req = urllib.request.Request('https://api.deepseek.com/v1/chat/completions', data=retry_data, headers={
-                'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
+            retry_req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=retry_data, headers={
+                'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
             })
             retry_resp = urllib.request.urlopen(retry_req, timeout=45)
             retry_r = json.loads(retry_resp.read().decode('utf-8'))
