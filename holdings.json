@@ -1,7 +1,7 @@
 {
-  "update_time": "2026-07-03 23:02:43",
+  "update_time": "2026-07-04 02:51:15",
   "total_cost": 20309.35,
-  "total_market": 6632.31,
+  "total_market": 6645.78,
   "items": [
     {
       "name": "M4A1消音版 | 苔藓石英 (崭新出厂)",
@@ -240,15 +240,19 @@
         {
           "date": "2026-07-03",
           "price": 882.0
+        },
+        {
+          "date": "2026-07-04",
+          "price": 882.0
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -10.09,
-      "rate_30": -1.45,
-      "buff_sell": 905.9,
+      "rate_7": -10.37,
+      "rate_30": -7.93,
+      "buff_sell": 905.8,
       "buff_buy": 850.0,
-      "buff_sell_num": 99,
-      "buff_buy_num": 10
+      "buff_sell_num": 101,
+      "buff_buy_num": 8
     },
     {
       "name": "法玛斯 | 纪念碑 (崭新出厂)",
@@ -487,15 +491,19 @@
         {
           "date": "2026-07-03",
           "price": 485.0
+        },
+        {
+          "date": "2026-07-04",
+          "price": 485.0
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -6.55,
-      "rate_30": 38.97,
+      "rate_7": -6.73,
+      "rate_30": 18.29,
       "buff_sell": 482.99,
-      "buff_buy": 451.0,
-      "buff_sell_num": 191,
-      "buff_buy_num": 35
+      "buff_buy": 452.0,
+      "buff_sell_num": 199,
+      "buff_buy_num": 31
     },
     {
       "name": "P2000 | 火灵 (崭新出厂)",
@@ -734,11 +742,15 @@
         {
           "date": "2026-07-03",
           "price": 786.38
+        },
+        {
+          "date": "2026-07-04",
+          "price": 786.38
         }
       ],
-      "rate_1": -0.08,
-      "rate_7": -1.83,
-      "rate_30": -1.08,
+      "rate_1": 0.0,
+      "rate_7": 0.88,
+      "rate_30": -13.49,
       "buff_sell": 788.0,
       "buff_buy": 707.0,
       "buff_sell_num": 68,
@@ -749,7 +761,7 @@
       "wear": "FN",
       "wear_value": null,
       "cost": 760.0,
-      "price": 181.75,
+      "price": 181.74,
       "category": "冲锋枪",
       "qty": 2,
       "market_hash": "UMP-45 | Blaze (Factory New)",
@@ -981,22 +993,26 @@
         {
           "date": "2026-07-03",
           "price": 181.75
+        },
+        {
+          "date": "2026-07-04",
+          "price": 181.74
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -3.32,
-      "rate_30": -3.32,
+      "rate_1": -0.01,
+      "rate_7": -0.14,
+      "rate_30": -1.76,
       "buff_sell": 175.0,
       "buff_buy": 171.0,
-      "buff_sell_num": 242,
-      "buff_buy_num": 30
+      "buff_sell_num": 243,
+      "buff_buy_num": 27
     },
     {
       "name": "M4A4 | 炼狱之火 (略有磨损)",
       "wear": "MW",
       "wear_value": null,
       "cost": 744.0,
-      "price": 454.8,
+      "price": 463.0,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | Hellish (Minimal Wear)",
@@ -1228,22 +1244,26 @@
         {
           "date": "2026-07-03",
           "price": 454.8
+        },
+        {
+          "date": "2026-07-04",
+          "price": 463.0
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -8.86,
-      "rate_30": 9.09,
-      "buff_sell": 447.0,
-      "buff_buy": 424.0,
-      "buff_sell_num": 335,
-      "buff_buy_num": 38
+      "rate_1": 1.8,
+      "rate_7": 0.43,
+      "rate_30": 9.46,
+      "buff_sell": 454.0,
+      "buff_buy": 427.0,
+      "buff_sell_num": 328,
+      "buff_buy_num": 43
     },
     {
       "name": "海军上尉里克索尔 | 海军水面战中心海豹部队",
       "wear": "other",
       "wear_value": null,
       "cost": 667.0,
-      "price": 163.0,
+      "price": 162.0,
       "category": "其他",
       "qty": 2,
       "market_hash": "Lt. Commander Ricksaw | NSWC SEAL",
@@ -1475,22 +1495,26 @@
         {
           "date": "2026-07-03",
           "price": 163.0
+        },
+        {
+          "date": "2026-07-04",
+          "price": 162.0
         }
       ],
-      "rate_1": 0.01,
-      "rate_7": -2.19,
-      "rate_30": 4.49,
-      "buff_sell": 159.5,
+      "rate_1": -0.61,
+      "rate_7": 0.01,
+      "rate_30": -8.98,
+      "buff_sell": 159.0,
       "buff_buy": 155.0,
-      "buff_sell_num": 896,
-      "buff_buy_num": 147
+      "buff_sell_num": 899,
+      "buff_buy_num": 145
     },
     {
       "name": "“蓝莓” 铅弹 | 海军水面战中心海豹部队",
       "wear": "other",
       "wear_value": null,
       "cost": 591.0,
-      "price": 108.99,
+      "price": 111.99,
       "category": "其他",
       "qty": 3,
       "market_hash": "'Blueberries' Buckshot | NSWC SEAL",
@@ -1722,22 +1746,26 @@
         {
           "date": "2026-07-03",
           "price": 108.99
+        },
+        {
+          "date": "2026-07-04",
+          "price": 111.99
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -5.23,
-      "rate_30": -6.85,
-      "buff_sell": 102.63,
+      "rate_1": 2.75,
+      "rate_7": -0.89,
+      "rate_30": -4.28,
+      "buff_sell": 102.5,
       "buff_buy": 99.0,
       "buff_sell_num": 173,
-      "buff_buy_num": 26
+      "buff_buy_num": 25
     },
     {
       "name": "M4A4 | 都市 DDPAT (崭新出厂)",
       "wear": "FN",
       "wear_value": null,
       "cost": 410.0,
-      "price": 287.1,
+      "price": 282.0,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | Urban DDPAT (Factory New)",
@@ -1969,22 +1997,26 @@
         {
           "date": "2026-07-03",
           "price": 287.1
+        },
+        {
+          "date": "2026-07-04",
+          "price": 282.0
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -3.98,
-      "rate_30": 2.9,
-      "buff_sell": 288.0,
-      "buff_buy": 263.0,
+      "rate_1": -1.78,
+      "rate_7": -9.9,
+      "rate_30": -11.88,
+      "buff_sell": 287.99,
+      "buff_buy": 264.0,
       "buff_sell_num": 123,
-      "buff_buy_num": 8
+      "buff_buy_num": 7
     },
     {
       "name": "M4A4 | 多边形编辑 (略有磨损)",
       "wear": "MW",
       "wear_value": null,
       "cost": 393.0,
-      "price": 136.61,
+      "price": 138.0,
       "category": "步枪",
       "qty": 3,
       "market_hash": "M4A4 | Polysoup (Minimal Wear)",
@@ -2216,15 +2248,19 @@
         {
           "date": "2026-07-03",
           "price": 136.61
+        },
+        {
+          "date": "2026-07-04",
+          "price": 138.0
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -1.01,
-      "rate_30": 13.47,
-      "buff_sell": 143.0,
+      "rate_1": 1.02,
+      "rate_7": 5.29,
+      "rate_30": 21.05,
+      "buff_sell": 142.5,
       "buff_buy": 127.0,
-      "buff_sell_num": 150,
-      "buff_buy_num": 30
+      "buff_sell_num": 151,
+      "buff_buy_num": 33
     },
     {
       "name": "摩托手套（★） | 第三特种兵连 (久经沙场)",
@@ -2463,14 +2499,18 @@
         {
           "date": "2026-07-03",
           "price": 311.95
+        },
+        {
+          "date": "2026-07-04",
+          "price": 311.95
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -2.21,
+      "rate_7": 0.63,
       "rate_30": 2.95,
       "buff_sell": 296.97,
       "buff_buy": 286.0,
-      "buff_sell_num": 204,
+      "buff_sell_num": 203,
       "buff_buy_num": 35
     },
     {
@@ -2710,14 +2750,18 @@
         {
           "date": "2026-07-03",
           "price": 169.82
+        },
+        {
+          "date": "2026-07-04",
+          "price": 169.82
         }
       ],
       "rate_1": 0.0,
-      "rate_7": 21.3,
-      "rate_30": 11.72,
-      "buff_sell": 172.22,
+      "rate_7": 19.59,
+      "rate_30": -5.66,
+      "buff_sell": 174.1,
       "buff_buy": 142.0,
-      "buff_sell_num": 46,
+      "buff_sell_num": 45,
       "buff_buy_num": 6
     },
     {
@@ -2957,15 +3001,19 @@
         {
           "date": "2026-07-03",
           "price": 49.9
+        },
+        {
+          "date": "2026-07-04",
+          "price": 49.9
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -5.55,
-      "rate_30": -11.21,
-      "buff_sell": 49.4,
-      "buff_buy": 46.6,
-      "buff_sell_num": 1161,
-      "buff_buy_num": 175
+      "rate_7": -5.47,
+      "rate_30": -10.7,
+      "buff_sell": 49.18,
+      "buff_buy": 46.5,
+      "buff_sell_num": 1176,
+      "buff_buy_num": 159
     },
     {
       "name": "印花 | FaZe Clan（全息）| 2024年上海锦标赛",
@@ -3204,12 +3252,16 @@
         {
           "date": "2026-07-03",
           "price": 23.17
+        },
+        {
+          "date": "2026-07-04",
+          "price": 23.17
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -19.32,
-      "rate_30": -38.05,
-      "buff_sell": 23.8,
+      "rate_7": -18.53,
+      "rate_30": -30.71,
+      "buff_sell": 23.5,
       "buff_buy": 21.7,
       "buff_sell_num": 137,
       "buff_buy_num": 27
@@ -3451,10 +3503,14 @@
         {
           "date": "2026-07-03",
           "price": 19.99
+        },
+        {
+          "date": "2026-07-04",
+          "price": 19.99
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -8.85,
+      "rate_7": -7.97,
       "rate_30": -33.37,
       "buff_sell": 19.7,
       "buff_buy": 17.3,
@@ -3466,7 +3522,7 @@
       "wear": "MW",
       "wear_value": null,
       "cost": 184.0,
-      "price": 190.0,
+      "price": 189.79,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | 龍王 (Dragon King) (Minimal Wear)",
@@ -3698,15 +3754,19 @@
         {
           "date": "2026-07-03",
           "price": 190.0
+        },
+        {
+          "date": "2026-07-04",
+          "price": 189.79
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": 2.7,
-      "rate_30": 14.46,
-      "buff_sell": 188.99,
-      "buff_buy": 179.0,
-      "buff_sell_num": 409,
-      "buff_buy_num": 56
+      "rate_1": -0.11,
+      "rate_7": 2.59,
+      "rate_30": 9.07,
+      "buff_sell": 188.49,
+      "buff_buy": 180.0,
+      "buff_sell_num": 408,
+      "buff_buy_num": 45
     },
     {
       "name": "印花 | HEROIC（全息）| 2024年上海锦标赛",
@@ -3945,22 +4005,26 @@
         {
           "date": "2026-07-03",
           "price": 19.97
+        },
+        {
+          "date": "2026-07-04",
+          "price": 19.97
         }
       ],
       "rate_1": 0.0,
       "rate_7": -11.24,
-      "rate_30": -49.24,
-      "buff_sell": 20.99,
+      "rate_30": -45.48,
+      "buff_sell": 20.78,
       "buff_buy": 18.7,
-      "buff_sell_num": 106,
-      "buff_buy_num": 151
+      "buff_sell_num": 116,
+      "buff_buy_num": 150
     },
     {
       "name": "准备就绪的列赞 | 军刀",
       "wear": "other",
       "wear_value": null,
       "cost": 137.0,
-      "price": 53.0,
+      "price": 53.03,
       "category": "匕首",
       "qty": 1,
       "market_hash": "Rezan The Ready | Sabre",
@@ -4192,14 +4256,18 @@
         {
           "date": "2026-07-03",
           "price": 53.0
+        },
+        {
+          "date": "2026-07-04",
+          "price": 53.03
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -11.64,
-      "rate_30": -8.62,
-      "buff_sell": 52.9,
+      "rate_1": 0.06,
+      "rate_7": -7.61,
+      "rate_30": -16.48,
+      "buff_sell": 53.2,
       "buff_buy": 51.0,
-      "buff_sell_num": 736,
+      "buff_sell_num": 724,
       "buff_buy_num": 178
     },
     {
@@ -4207,7 +4275,7 @@
       "wear": "other",
       "wear_value": null,
       "cost": 135.0,
-      "price": 39.61,
+      "price": 39.54,
       "category": "印花",
       "qty": 2,
       "market_hash": "Sticker | Evil Geniuses (Holo) | Stockholm 2021",
@@ -4439,14 +4507,18 @@
         {
           "date": "2026-07-03",
           "price": 39.61
+        },
+        {
+          "date": "2026-07-04",
+          "price": 39.54
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": 5.23,
-      "rate_30": -9.98,
-      "buff_sell": 36.39,
+      "rate_1": -0.18,
+      "rate_7": 5.05,
+      "rate_30": 0.1,
+      "buff_sell": 36.2,
       "buff_buy": 33.0,
-      "buff_sell_num": 950,
+      "buff_sell_num": 946,
       "buff_buy_num": 3068
     },
     {
@@ -4454,7 +4526,7 @@
       "wear": "other",
       "wear_value": null,
       "cost": 130.0,
-      "price": 53.21,
+      "price": 53.28,
       "category": "匕首",
       "qty": 1,
       "market_hash": "Blackwolf | Sabre",
@@ -4686,22 +4758,26 @@
         {
           "date": "2026-07-03",
           "price": 53.21
+        },
+        {
+          "date": "2026-07-04",
+          "price": 53.28
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -10.6,
-      "rate_30": -6.25,
-      "buff_sell": 51.4,
+      "rate_1": 0.13,
+      "rate_7": -12.02,
+      "rate_30": -8.86,
+      "buff_sell": 52.74,
       "buff_buy": 50.0,
-      "buff_sell_num": 588,
-      "buff_buy_num": 136
+      "buff_sell_num": 582,
+      "buff_buy_num": 137
     },
     {
       "name": "M4A4 | 彼岸花 (略有磨损)",
       "wear": "MW",
       "wear_value": null,
       "cost": 127.0,
-      "price": 111.46,
+      "price": 106.87,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | Spider Lily (Minimal Wear)",
@@ -4933,22 +5009,26 @@
         {
           "date": "2026-07-03",
           "price": 111.46
+        },
+        {
+          "date": "2026-07-04",
+          "price": 106.87
         }
       ],
-      "rate_1": -1.35,
-      "rate_7": -2.99,
-      "rate_30": 14.72,
-      "buff_sell": 111.0,
+      "rate_1": -4.12,
+      "rate_7": -4.58,
+      "rate_30": -2.85,
+      "buff_sell": 105.0,
       "buff_buy": 104.0,
-      "buff_sell_num": 534,
-      "buff_buy_num": 65
+      "buff_sell_num": 535,
+      "buff_buy_num": 56
     },
     {
       "name": "印花 | paiN Gaming （全息） | 2021年斯德哥尔摩锦标赛",
       "wear": "other",
       "wear_value": null,
       "cost": 103.0,
-      "price": 30.71,
+      "price": 30.7,
       "category": "印花",
       "qty": 1,
       "market_hash": "Sticker | paiN Gaming (Holo) | Stockholm 2021",
@@ -5180,14 +5260,18 @@
         {
           "date": "2026-07-03",
           "price": 30.71
+        },
+        {
+          "date": "2026-07-04",
+          "price": 30.7
         }
       ],
-      "rate_1": 0.03,
-      "rate_7": -13.71,
-      "rate_30": -22.64,
-      "buff_sell": 30.98,
+      "rate_1": -0.03,
+      "rate_7": -14.08,
+      "rate_30": -20.59,
+      "buff_sell": 30.97,
       "buff_buy": 28.5,
-      "buff_sell_num": 221,
+      "buff_sell_num": 220,
       "buff_buy_num": 63
     },
     {
@@ -5427,15 +5511,19 @@
         {
           "date": "2026-07-03",
           "price": 14.09
+        },
+        {
+          "date": "2026-07-04",
+          "price": 14.09
         }
       ],
       "rate_1": 0.0,
       "rate_7": -10.54,
-      "rate_30": -27.74,
-      "buff_sell": 14.0,
+      "rate_30": -28.84,
+      "buff_sell": 14.2,
       "buff_buy": 13.3,
-      "buff_sell_num": 110,
-      "buff_buy_num": 61
+      "buff_sell_num": 107,
+      "buff_buy_num": 59
     },
     {
       "name": "印花 | Natus Vincere （全息） | 2021年斯德哥尔摩锦标赛",
@@ -5674,14 +5762,18 @@
         {
           "date": "2026-07-03",
           "price": 20.99
+        },
+        {
+          "date": "2026-07-04",
+          "price": 20.99
         }
       ],
       "rate_1": 0.0,
       "rate_7": 0.0,
       "rate_30": -22.83,
-      "buff_sell": 21.4,
+      "buff_sell": 21.3,
       "buff_buy": 20.0,
-      "buff_sell_num": 505,
+      "buff_sell_num": 504,
       "buff_buy_num": 49
     },
     {
@@ -5689,7 +5781,7 @@
       "wear": "other",
       "wear_value": null,
       "cost": 56.8,
-      "price": 12.22,
+      "price": 13.56,
       "category": "印花",
       "qty": 2,
       "market_hash": "Sticker | fnatic (Holo) | Budapest 2025",
@@ -5921,15 +6013,19 @@
         {
           "date": "2026-07-03",
           "price": 12.22
+        },
+        {
+          "date": "2026-07-04",
+          "price": 13.56
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -16.98,
-      "rate_30": -46.87,
-      "buff_sell": 14.1,
-      "buff_buy": 13.8,
-      "buff_sell_num": 122,
-      "buff_buy_num": 25
+      "rate_1": 10.97,
+      "rate_7": -7.06,
+      "rate_30": -24.67,
+      "buff_sell": 14.0,
+      "buff_buy": 13.5,
+      "buff_sell_num": 130,
+      "buff_buy_num": 18
     },
     {
       "name": "双持贝瑞塔 | 街头抢匪 (崭新出厂)",
@@ -6168,15 +6264,19 @@
         {
           "date": "2026-07-03",
           "price": 31.8
+        },
+        {
+          "date": "2026-07-04",
+          "price": 31.8
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -8.17,
-      "rate_30": -20.08,
-      "buff_sell": 31.19,
-      "buff_buy": 28.4,
-      "buff_sell_num": 217,
-      "buff_buy_num": 21
+      "rate_7": -5.53,
+      "rate_30": -24.48,
+      "buff_sell": 32.98,
+      "buff_buy": 28.6,
+      "buff_sell_num": 208,
+      "buff_buy_num": 22
     },
     {
       "name": "印花 | Complexity Gaming（全息）| 2022年安特卫普锦标赛",
@@ -6415,14 +6515,18 @@
         {
           "date": "2026-07-03",
           "price": 30.11
+        },
+        {
+          "date": "2026-07-04",
+          "price": 30.11
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -8.23,
-      "rate_30": -15.4,
-      "buff_sell": 28.53,
+      "rate_7": -4.41,
+      "rate_30": -39.77,
+      "buff_sell": 28.52,
       "buff_buy": 26.8,
-      "buff_sell_num": 211,
+      "buff_sell_num": 202,
       "buff_buy_num": 100
     },
     {
@@ -6430,7 +6534,7 @@
       "wear": "other",
       "wear_value": null,
       "cost": 46.5,
-      "price": 17.9,
+      "price": 19.36,
       "category": "印花",
       "qty": 1,
       "market_hash": "Sticker | Ninjas in Pyjamas (Holo) | Stockholm 2021",
@@ -6662,14 +6766,18 @@
         {
           "date": "2026-07-03",
           "price": 17.9
+        },
+        {
+          "date": "2026-07-04",
+          "price": 19.36
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -15.88,
-      "rate_30": -24.66,
-      "buff_sell": 19.75,
+      "rate_1": 8.16,
+      "rate_7": -9.02,
+      "rate_30": -20.72,
+      "buff_sell": 19.7,
       "buff_buy": 18.7,
-      "buff_sell_num": 586,
+      "buff_sell_num": 587,
       "buff_buy_num": 163
     },
     {
@@ -6909,14 +7017,18 @@
         {
           "date": "2026-07-03",
           "price": 20.5
+        },
+        {
+          "date": "2026-07-04",
+          "price": 20.5
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -8.85,
-      "rate_30": -29.91,
-      "buff_sell": 20.13,
-      "buff_buy": 18.0,
-      "buff_sell_num": 125,
+      "rate_7": -7.37,
+      "rate_30": -29.55,
+      "buff_sell": 20.03,
+      "buff_buy": 18.5,
+      "buff_sell_num": 147,
       "buff_buy_num": 25
     },
     {
@@ -6924,7 +7036,7 @@
       "wear": "other",
       "wear_value": null,
       "cost": 31.0,
-      "price": 14.17,
+      "price": 13.75,
       "category": "印花",
       "qty": 1,
       "market_hash": "Sticker | MIBR (Holo) | Budapest 2025",
@@ -7156,14 +7268,18 @@
         {
           "date": "2026-07-03",
           "price": 14.17
+        },
+        {
+          "date": "2026-07-04",
+          "price": 13.75
         }
       ],
-      "rate_1": 1.36,
-      "rate_7": -5.53,
-      "rate_30": -39.96,
-      "buff_sell": 12.79,
+      "rate_1": -2.96,
+      "rate_7": -12.36,
+      "rate_30": -41.74,
+      "buff_sell": 12.6,
       "buff_buy": 12.3,
-      "buff_sell_num": 126,
+      "buff_sell_num": 131,
       "buff_buy_num": 200
     },
     {
@@ -7171,7 +7287,7 @@
       "wear": "other",
       "wear_value": null,
       "cost": 10.78,
-      "price": 8.26,
+      "price": 8.61,
       "category": "音乐盒",
       "qty": 1,
       "market_hash": "Music Kit | DRYDEN, Feel The Power",
@@ -7403,15 +7519,19 @@
         {
           "date": "2026-07-03",
           "price": 8.26
+        },
+        {
+          "date": "2026-07-04",
+          "price": 8.61
         }
       ],
-      "rate_1": -5.6,
-      "rate_7": -0.72,
-      "rate_30": -5.38,
-      "buff_sell": 8.96,
+      "rate_1": 4.24,
+      "rate_7": 4.74,
+      "rate_30": 1.65,
+      "buff_sell": 8.95,
       "buff_buy": 8.6,
       "buff_sell_num": 986,
-      "buff_buy_num": 68
+      "buff_buy_num": 66
     },
     {
       "name": "M4A4 | 蚀刻领主 (略有磨损)",
@@ -7650,14 +7770,18 @@
         {
           "date": "2026-07-03",
           "price": 6.59
+        },
+        {
+          "date": "2026-07-04",
+          "price": 6.59
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -5.04,
-      "rate_30": 7.86,
-      "buff_sell": 6.28,
+      "rate_7": 0.3,
+      "rate_30": 7.5,
+      "buff_sell": 6.26,
       "buff_buy": 6.3,
-      "buff_sell_num": 474,
+      "buff_sell_num": 470,
       "buff_buy_num": 172
     },
     {
@@ -7897,6 +8021,10 @@
         {
           "date": "2026-07-03",
           "price": 0.02
+        },
+        {
+          "date": "2026-07-04",
+          "price": 0.02
         }
       ],
       "rate_1": 0.0,
@@ -7904,7 +8032,7 @@
       "rate_30": 0.0,
       "buff_sell": 0.02,
       "buff_buy": 0.0,
-      "buff_sell_num": 392,
+      "buff_sell_num": 361,
       "buff_buy_num": 0
     }
   ],
