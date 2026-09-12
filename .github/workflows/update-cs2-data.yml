@@ -37,11 +37,11 @@ jobs:
 
       - name: Update data
         env:
-          ECO_PRIVATE_KEY_B64: $\{\{ secrets.ECO_PRIVATE_KEY_B64 \}\}
-          CSQ_API_TOKEN: $\{\{ secrets.CSQ_API_TOKEN \}\}
-          CSQAQ_PROXY_URL: $\{\{ secrets.CSQAQ_PROXY_URL \}\}
-          STEAMDT_KEY: $\{\{ secrets.STEAMDT_KEY \}\}
-          GH_TOKEN: $\{\{ secrets.GITHUB_TOKEN \}\}
+          ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
+          CSQ_API_TOKEN: ${{ secrets.CSQ_API_TOKEN }}
+          CSQAQ_PROXY_URL: ${{ secrets.CSQAQ_PROXY_URL }}
+          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "=== $(date) Running update.py ==="
           python update.py all 2>&1
