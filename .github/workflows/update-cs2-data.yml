@@ -12,9 +12,9 @@ jobs:
       contents: write
 
     steps:
+      # 使用 Actions 内置的 GITHUB_TOKEN（每次运行自动签发、永不过期），
+      # 不再依赖 secrets.GH_PAT，避免 PAT 过期导致 workflow 静默失效。
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_PAT }}
 
       - uses: actions/setup-python@v5
         with:
@@ -34,7 +34,7 @@ jobs:
           CSQ_API_TOKEN: ${{ secrets.CSQ_API_TOKEN }}
           CSQAQ_PROXY_URL: ${{ secrets.CSQAQ_PROXY_URL }}
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "=== $(date) Running update.py ==="
           echo "STEAMDT_KEY is set: ${{ secrets.STEAMDT_KEY != '' }}"
