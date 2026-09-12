@@ -30,10 +30,12 @@ jobs:
       run:
         shell: cmd
 
+    # 全部使用 Actions 内置的 GITHUB_TOKEN（每次运行自动签发、永不过期），
+    # 不再依赖 secrets.GH_PAT。变量名沿用 GH_PAT，便于 scripts/git_ops.py 读取。
     steps:
       - name: Checkout repo (silent, no git console popup)
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_PAT: ${{ secrets.GITHUB_TOKEN }}
           GIT_TERMINAL_PROMPT: '0'
           GIT_ASKPASS: 'echo'
         run: |
@@ -48,7 +50,7 @@ jobs:
 
       - name: Configure git
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set PATH=C:\Users\Lenovo\AppData\Local\Programs\Python\Python312;C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Scripts;%PATH%
           python scripts\git_ops.py config
@@ -61,7 +63,7 @@ jobs:
           CSQAQ_PROXY_URL: ${{ secrets.CSQAQ_PROXY_URL }}
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
           ENRICH_BUFF: '1'
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_TERMINAL_PROMPT: '0'
           GIT_ASKPASS: 'echo'
           GITHUB_ACTIONS: 'true'
@@ -77,7 +79,7 @@ jobs:
         if: inputs.mode == 'all' || inputs.mode == '' || inputs.mode == 'index'
         env:
           ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTIONS: 'true'
         run: |
           set PATH=C:\Users\Lenovo\AppData\Local\Programs\Python\Python312;C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\Scripts;%PATH%
