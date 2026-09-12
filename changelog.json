@@ -1,8 +1,122 @@
 [
   {
-    "date": "2026-07-15",
+    "date": "2026-09-12",
+    "tag": "fix",
+    "title": "fix(ci): 改用内置 GITHUB_TOKEN，移除对会过期的 GH_PAT 依赖",
+    "desc": "fix(ci): 改用内置 GITHUB_TOKEN，移除对会过期的 GH_PAT 依赖"
+  },
+  {
+    "date": "2026-09-12",
+    "tag": "fix",
+    "title": "fix(ci): 改用内置 GITHUB_TOKEN，移除对会过期的 GH_PAT 依赖",
+    "desc": "fix(ci): 改用内置 GITHUB_TOKEN，移除对会过期的 GH_PAT 依赖"
+  },
+  {
+    "date": "2026-09-12",
+    "tag": "fix",
+    "title": "fix(ci): push 失败改为非0退出(不再假绿)；pull 失败不再 reset --hard 丢弃数据",
+    "desc": "fix(ci): push 失败改为非0退出(不再假绿)；pull 失败不再 reset --hard 丢弃数据"
+  },
+  {
+    "date": "2026-09-12",
     "tag": "chore",
-    "title": "market index 2026-07-15 05:08",
-    "desc": "market index 2026-07-15 05:08"
+    "title": "market index 2026-09-12 08:18",
+    "desc": "market index 2026-09-12 08:18"
+  },
+  {
+    "date": "2026-09-12",
+    "tag": "chore",
+    "title": "market index 2026-09-12 02:51",
+    "desc": "market index 2026-09-12 02:51"
+  },
+  {
+    "date": "2026-09-11",
+    "tag": "chore",
+    "title": "market index 2026-09-11 23:50",
+    "desc": "market index 2026-09-11 23:50"
+  },
+  {
+    "date": "2026-09-11",
+    "tag": "chore",
+    "title": "market index 2026-09-11 20:22",
+    "desc": "market index 2026-09-11 20:22"
+  },
+  {
+    "date": "2026-09-11",
+    "tag": "chore",
+    "title": "market index 2026-09-11 17:42",
+    "desc": "market index 2026-09-11 17:42"
+  },
+  {
+    "date": "2026-09-11",
+    "tag": "chore",
+    "title": "market index 2026-09-11 14:00",
+    "desc": "market index 2026-09-11 14:00"
+  },
+  {
+    "date": "2026-09-11",
+    "tag": "chore",
+    "title": "market index 2026-09-11 08:30",
+    "desc": "market index 2026-09-11 08:30"
+  },
+  {
+    "date": "2026-09-11",
+    "tag": "chore",
+    "title": "market index 2026-09-11 02:42",
+    "desc": "market index 2026-09-11 02:42"
+  },
+  {
+    "date": "2026-09-10",
+    "tag": "chore",
+    "title": "market index 2026-09-10 22:12",
+    "desc": "market index 2026-09-10 22:12"
+  },
+  {
+    "date": "2026-09-10",
+    "tag": "chore",
+    "title": "market index 2026-09-10 18:54",
+    "desc": "market index 2026-09-10 18:54"
+  },
+  {
+    "date": "2026-09-10",
+    "tag": "chore",
+    "title": "market index 2026-09-10 14:01",
+    "desc": "market index 2026-09-10 14:01"
+  },
+  {
+    "date": "2026-09-10",
+    "tag": "chore",
+    "title": "market index 2026-09-10 08:36",
+    "desc": "market index 2026-09-10 08:36"
+  },
+  {
+    "date": "2026-09-10",
+    "tag": "chore",
+    "title": "market index 2026-09-10 02:48",
+    "desc": "market index 2026-09-10 02:48"
+  },
+  {
+    "date": "2026-09-09",
+    "tag": "chore",
+    "title": "market index 2026-09-09 22:11",
+    "desc": "market index 2026-09-09 22:11"
+  },
+  {
+    "date": "2026-09-09",
+    "tag": "chore",
+    "title": "market index 2026-09-09 19:01",
+    "desc": "market index 2026-09-09 19:01"
+  },
+  {
+    "date": "2026-09-09",
+    "tag": "chore",
+    "title": "market index 2026-09-09 14:06",
+    "desc": "market index 2026-09-09 14:06"
+  },
+  {
+    "date": "2026-09-09",
+    "tag": "chore",
+    "title": "market index 2026-09-09 08:33",
+    "desc": "market index 2026-09-09 08:33"
   }
 ]
