@@ -1,6 +1,30 @@
 [
   {
     "date": "2026-09-12",
+    "tag": "chore",
+    "title": "market index 2026-09-12 13:19",
+    "desc": "market index 2026-09-12 13:19"
+  },
+  {
+    "date": "2026-09-12",
+    "tag": "chore",
+    "title": "data update",
+    "desc": "data update"
+  },
+  {
+    "date": "2026-09-12",
+    "tag": "fix",
+    "title": "fix(ci): 修正被转义的 ${{ }} 表达式（上一提交引入了多余反斜杠）",
+    "desc": "fix(ci): 修正被转义的 ${{ }} 表达式（上一提交引入了多余反斜杠）"
+  },
+  {
+    "date": "2026-09-12",
+    "tag": "fix",
+    "title": "chore(ci): 停用云端 Update CS2 Data 的定时触发（与本机 runner 重复），保留手动 di",
+    "desc": "patch"
+  },
+  {
+    "date": "2026-09-12",
     "tag": "fix",
     "title": "fix(ci): 改用内置 GITHUB_TOKEN，移除对会过期的 GH_PAT 依赖",
     "desc": "fix(ci): 改用内置 GITHUB_TOKEN，移除对会过期的 GH_PAT 依赖"
@@ -94,29 +118,5 @@
     "tag": "chore",
     "title": "market index 2026-09-10 02:48",
     "desc": "market index 2026-09-10 02:48"
-  },
-  {
-    "date": "2026-09-09",
-    "tag": "chore",
-    "title": "market index 2026-09-09 22:11",
-    "desc": "market index 2026-09-09 22:11"
-  },
-  {
-    "date": "2026-09-09",
-    "tag": "chore",
-    "title": "market index 2026-09-09 19:01",
-    "desc": "market index 2026-09-09 19:01"
-  },
-  {
-    "date": "2026-09-09",
-    "tag": "chore",
-    "title": "market index 2026-09-09 14:06",
-    "desc": "market index 2026-09-09 14:06"
-  },
-  {
-    "date": "2026-09-09",
-    "tag": "chore",
-    "title": "market index 2026-09-09 08:33",
-    "desc": "market index 2026-09-09 08:33"
   }
 ]
