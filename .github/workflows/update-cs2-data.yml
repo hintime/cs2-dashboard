@@ -1,8 +1,15 @@
 name: Update CS2 Data
 
 on:
-  schedule:
-    - cron: '0 */2 * * *'  # 每2小时更新价格+异动
+  # ⚠️ 2026-09-12 已停用定时触发。
+  # 原因：本 workflow（云端 ubuntu）与本机 self-hosted runner 的
+  # "Update All CS2 Data" 功能完全重复，都是每 2 小时跑一遍 update.py all，
+  # 造成重复抓取与重复消耗智谱 AI 额度；且云端每次都要靠种子文件重建数据库，
+  # 数据底座不如本机（本机有完整 price_history.db）。
+  # 数据更新现由 "Update All CS2 Data" 独家负责。
+  # 如需临时启用，用 workflow_dispatch 手动触发即可。
+  # schedule:
+  #   - cron: '0 */2 * * *'  # 每2小时更新价格+异动
   workflow_dispatch:
 
 jobs:
@@ -30,14 +37,13 @@ jobs:
 
       - name: Update data
         env:
-          ECO_PRIVATE_KEY_B64: ${{ secrets.ECO_PRIVATE_KEY_B64 }}
-          CSQ_API_TOKEN: ${{ secrets.CSQ_API_TOKEN }}
-          CSQAQ_PROXY_URL: ${{ secrets.CSQAQ_PROXY_URL }}
-          STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ECO_PRIVATE_KEY_B64: $\{\{ secrets.ECO_PRIVATE_KEY_B64 \}\}
+          CSQ_API_TOKEN: $\{\{ secrets.CSQ_API_TOKEN \}\}
+          CSQAQ_PROXY_URL: $\{\{ secrets.CSQAQ_PROXY_URL \}\}
+          STEAMDT_KEY: $\{\{ secrets.STEAMDT_KEY \}\}
+          GH_TOKEN: $\{\{ secrets.GITHUB_TOKEN \}\}
         run: |
           echo "=== $(date) Running update.py ==="
-          echo "STEAMDT_KEY is set: ${{ secrets.STEAMDT_KEY != '' }}"
           python update.py all 2>&1
 
       - name: Commit and push
