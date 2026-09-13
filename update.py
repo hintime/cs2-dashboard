@@ -2555,6 +2555,20 @@ def main():
                 write_json(os.path.join(DATA_DIR, 'market_overview.json'), _ov)
                 dirty_files.add('market_overview.json')
                 _i = _ov['index']
+                # 板块数据（单次请求拿全部板块）
+                try:
+                    _sec = firepulse.fetch_sectors(category_type=-1, limit=24)
+                    if _sec:
+                        write_json(os.path.join(DATA_DIR, 'market_sectors.json'), {
+                            'sectors': _sec,
+                            'updated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+                            'source': 'firepulse',
+                        })
+                        dirty_files.add('market_sectors.json')
+                        print('[FirePulse] 板块: %d 个' % len(_sec))
+                except Exception as _e4:
+                    print('[FirePulse] 板块获取失败: %s' % _e4, file=sys.stderr)
+
                 # 大盘时间序列（供前端画走势图）
                 try:
                     firepulse.append_overview_history(
