@@ -28,3 +28,6 @@ price_history.json
 # 运行时日志（每轮更新都在变化，不应入库）
 *.log
 update_log.txt
+
+# 本机运行时密钥（云端走 Secrets，此文件仅本机使用）
+local_keys.env
