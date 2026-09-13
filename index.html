@@ -1676,7 +1676,7 @@ async function loadAll() {
     }
   }).catch(function(){});
   // 加载 BUFF 历史数据（用于持仓折线图）
-  fetch('buff_history.json?v=' + t0).then(function(r){ return r.ok ? r.json() : {}; }).then(function(bh){
+  fetch('buff_recent.json?v=' + t0).then(function(r){ return r.ok ? r.json() : {}; }).then(function(bh){
     window._buffHistory = bh || {};
     // 用 buff_history 补充持仓物品的 BUFF/悠悠价格
     if (H && H.length) {
