@@ -62,7 +62,7 @@ function loadStatus() {
     market:     fetch('market.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     holdings:   fetch('holdings.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     ecoTracked: fetch('eco_tracked.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
-    buffHistory:fetch('buff_history.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
+    buffHistory:fetch('buff_recent.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     dataStatus: fetch('data_status.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     marketScan: fetch('market_scan.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     dailyReport:fetch('daily_report.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
