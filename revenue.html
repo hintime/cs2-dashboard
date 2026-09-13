@@ -123,7 +123,7 @@ document.getElementById('revTabs').addEventListener('click', function(e) {
 });
 
 loadRev();
-(function(){var _l=Date.now();setInterval(function(){fetch('market.json?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.update_time||d.alerts_updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadRev();}}).catch(function(){})},60000)})();
+(function(){var _l=Date.now();setInterval(function(){fetch('data_status.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadRev();}}).catch(function(){})},60000)})();
 </script>
 </body>
 </html>
