@@ -2,7 +2,9 @@ name: Update All CS2 Data
 
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    # 每 6 小时一次：含 AI 深度分析，单次约 2 小时。
+    # 高频价格刷新由 update-prices.yml 负责（不调 AI）。
+    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       mode:
