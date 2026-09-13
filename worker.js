@@ -203,14 +203,19 @@ export default {
 
       // ── 代理 GitHub Pages 静态文件 ──
       const target = GH_PAGES + (path === '/' ? '/index.html' : path)
-      const resp = await fetch(target, { cf: { cacheTtl: 60, cacheEverything: true } })
+      // 缓存策略：数据文件(.json) 长缓存 4 小时——前端已用「数据版本号」
+      // 作为缓存键，数据一变 URL 就变，不会读到旧数据；
+      // 页面/JS/CSS 保持 60 秒短缓存，保证改版后能及时生效。
+      const isData = /\.json$/i.test(path)
+      const cacheSec = isData ? 14400 : 60
+      const resp = await fetch(target, { cf: { cacheTtl: cacheSec, cacheEverything: true } })
       const text = await resp.text()
       const ext = path.split('.').pop()
       const ct = ext === 'json' ? 'application/json' :
         ext === 'html' || path === '/' || !ext ? 'text/html; charset=utf-8' :
         ext === 'css' ? 'text/css' : ext === 'js' ? 'application/javascript' : 'text/plain'
       return new Response(text, {
-        headers: { 'Content-Type': ct, 'Cache-Control': 'public, max-age=60', 'Access-Control-Allow-Origin': '*' },
+        headers: { 'Content-Type': ct, 'Cache-Control': 'public, max-age=' + cacheSec, 'Access-Control-Allow-Origin': '*' },
       })
     } catch (e) {
       return json({ error: e.message }, 500, cors)
