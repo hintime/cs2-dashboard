@@ -520,3 +520,29 @@ def append_overview_history(ov, path, keep_days=30):
     except Exception as e:
         print('[FirePulse] 大盘历史保存失败: %s' % e, file=sys.stderr)
     return hist
+
+
+# ══════════════════ 板块数据 ══════════════════
+def fetch_sectors(category_type=-1, limit=24):
+    """板块列表：指数 + 涨跌幅 + 走势，**一次请求拿全部**。
+
+    category_type: 0 全部板块 / -1 热门板块 / 2 一级板块
+    实测返回 51 个板块，字段比文档多（含 change_index_percent / index_values / trade_volume）。
+    """
+    d = _post('/v1/category/list/new', {'category_type': category_type})
+    if not d or d.get('code') not in (0, 200):
+        return []
+    arr = d.get('data') or []
+    out = []
+    for x in arr[:limit]:
+        out.append({
+            'id': x.get('id'),
+            'name': x.get('name'),
+            'img': x.get('img'),
+            'index': x.get('current_index'),
+            'change': x.get('change_index'),
+            'change_pct': x.get('change_index_percent'),
+            'volume': x.get('trade_volume'),
+            'trend': (x.get('index_values') or [])[:48],
+        })
+    return out
