@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from eco_sign import get_eco_key, sign_eco
 
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
-CSQ_KEY = os.environ.get('CSQ_API_TOKEN', 'HXGPY1R7L5W7K7F3O4K1E2N8')
+CSQ_KEY = os.environ.get('CSQ_API_TOKEN', '')
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
