@@ -881,6 +881,7 @@ html { scroll-behavior: smooth; }
         <div style="font-size:10px;color:var(--text3);letter-spacing:.5px">饰品指数</div>
         <div style="font-size:19px;font-weight:700;margin:3px 0"><span id="fpIndex">--</span></div>
         <div style="font-size:11px" id="fpIndexChg">--</div>
+        <div id="fpSpark" style="margin-top:5px;min-height:22px"></div>
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
         <div style="font-size:10px;color:var(--text3);letter-spacing:.5px">今日成交额</div>
@@ -898,6 +899,8 @@ html { scroll-behavior: smooth; }
         <div style="font-size:11px" id="fpGreedyLabel">--</div>
       </div>
     </div>
+    <!-- FirePulse 板块 -->
+    <div id="fpSectors" style="display:none;gap:8px;overflow-x:auto;padding:2px 0 10px;font-size:12px"></div>
     <div class="panel-head" style="flex-direction:column;align-items:stretch;gap:12px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
@@ -1952,6 +1955,47 @@ async function loadFirePulseOverview() {
       document.getElementById('fpGreedy').textContent = Number(gd.value).toFixed(1);
       var gl = document.getElementById('fpGreedyLabel');
       gl.textContent = (gd.label || '') + (gd.change != null ? (' · ' + (gd.change >= 0 ? '+' : '') + gd.change) : '');
+
+  // 走势图（大盘历史）
+  try {
+    var hr = await fetch('market_overview_history.json?v=' + t);
+    if (hr.ok) {
+      var hd = await hr.json();
+      var pts = [];
+      Object.keys(hd || {}).sort().forEach(function (day) {
+        (hd[day] || []).forEach(function (p) { if (p.index != null) pts.push(p.index); });
+      });
+      pts = pts.slice(-24);
+      var sp = document.getElementById('fpSpark');
+      if (sp && typeof window.sparkline === 'function' && pts.length >= 2) {
+        sp.innerHTML = window.sparkline(pts, (pts[pts.length-1] >= pts[0]) ? 'var(--rise)' : 'var(--fall)', 110, 22);
+        sp.title = '最近采样点的指数走势';
+      }
+    }
+  } catch (e) {}
+
+  // 板块数据
+  try {
+    var sr = await fetch('market_sectors.json?v=' + t);
+    if (sr.ok) {
+      var sd = await sr.json();
+      var box = document.getElementById('fpSectors');
+      if (box && sd && sd.sectors && sd.sectors.length) {
+        box.style.display = 'flex';
+        box.innerHTML = sd.sectors.map(function (s) {
+          var pct = s.change_pct;
+          var cls = (pct != null && pct >= 0) ? 'clr-rise' : 'clr-fall';
+          var val = (s.index != null) ? Number(s.index).toFixed(0) : '--';
+          var txt = (pct != null) ? ((pct >= 0 ? '+' : '') + Number(pct).toFixed(2) + '%') : '--';
+          return '<div style="flex:0 0 auto;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;white-space:nowrap;line-height:1.5">'
+            + '<span style="color:var(--text2)">' + (s.name || '') + '</span> '
+            + '<b style="margin-left:4px">' + val + '</b> '
+            + '<span class="' + cls + '" style="margin-left:3px">' + txt + '</span>'
+            + '</div>';
+        }).join('');
+      }
+    }
+  } catch (e) {}
       gl.style.color = (gd.value >= 60) ? 'var(--rise)' : (gd.value <= 30 ? 'var(--fall)' : 'var(--text3)');
     }
   } catch (e) {}
