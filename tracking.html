@@ -198,7 +198,7 @@ function renderTracks(tracks, nowPrices, marketData, nameMap) {
 }
 
 loadTracks();
-(function(){var _l=Date.now();setInterval(function(){fetch('market.json?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.update_time||d.alerts_updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadTracks();}}).catch(function(){})},60000)})();
+(function(){var _l=Date.now();setInterval(function(){fetch('data_status.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadTracks();}}).catch(function(){})},60000)})();
   // ── AI 追踪分析（双源：CI端全量分析 + 本地简要总结）──
   function runAITrackAnalysis() {
     var card = document.getElementById('aiTrackCard');
