@@ -2560,6 +2560,42 @@ def main():
                     (_ov['greedy'].get('value') or 0), (_ov['greedy'].get('label') or '')))
         else:
             print('[FirePulse] 未配置 FIREPULSE_KEY，跳过大盘')
+
+        # 板块数据（列表 + 热门板块涨跌）
+        if firepulse.enabled():
+            try:
+                _sec = firepulse.fetch_sector_overview(top_n=10, kline_for_top=24)
+                if _sec:
+                    write_json(os.path.join(DATA_DIR, 'sectors.json'), _sec)
+                    dirty_files.add('sectors.json')
+                    print('[FirePulse] 板块: 共 %d 个, 取到涨跌 %d 个' % (
+                        len(_sec['list']), _sec.get('enriched', 0)))
+            except Exception as _e:
+                print('[FirePulse] 板块失败: %s' % _e, file=sys.stderr)
+
+            # 大盘时序（每小时一条，累积成走势）
+            try:
+                _hp = os.path.join(DATA_DIR, 'market_overview_history.json')
+                _hist, _added = firepulse.append_overview_history(_ov, _hp)
+                if _added:
+                    dirty_files.add('market_overview_history.json')
+                    print('[FirePulse] 大盘历史: +1 条，共 %d 条' % len(_hist or []))
+            except Exception as _e:
+                print('[FirePulse] 大盘历史失败: %s' % _e, file=sys.stderr)
+
+            # 持仓精确化（多平台价 + 存世量 + 30 日涨跌）
+            try:
+                _hp2 = os.path.join(DATA_DIR, 'holdings.json')
+                _h2 = read_json(_hp2)
+                _items2 = (_h2 or {}).get('items', []) if isinstance(_h2, dict) else []
+                if _items2:
+                    _cnt = firepulse.enrich_items(_items2, id_cache={}, max_items=40)
+                    if _cnt:
+                        write_json(_hp2, _h2)
+                        dirty_files.add('holdings.json')
+                        print('[FirePulse] 持仓精确化: %d/%d 项' % (_cnt, len(_items2)))
+            except Exception as _e:
+                print('[FirePulse] 持仓精确化失败: %s' % _e, file=sys.stderr)
     except Exception as _e:
         print('[FirePulse] 大盘生成失败: %s' % _e, file=sys.stderr)
 
