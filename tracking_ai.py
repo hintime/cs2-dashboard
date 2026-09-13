@@ -16,7 +16,7 @@ import urllib.error
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = SCRIPT_DIR
-DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', 'sk-3a9f8fed7ff94e7398e3a9164807cb24')
+DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', '')
 # 追踪分析固定用 DeepSeek
 AI_KEY = DEEPSEEK_KEY
 AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions'
