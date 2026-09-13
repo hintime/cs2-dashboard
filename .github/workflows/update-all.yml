@@ -70,6 +70,7 @@ jobs:
           CSQAQ_PROXY_URL: ${{ secrets.CSQAQ_PROXY_URL }}
           ZHIPU_KEY: ${{ secrets.ZHIPU_KEY }}
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
+          FIREPULSE_KEY: ${{ secrets.FIREPULSE_KEY }}
           ENRICH_BUFF: '1'
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_TERMINAL_PROMPT: '0'
