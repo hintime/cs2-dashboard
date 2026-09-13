@@ -1861,7 +1861,7 @@ async function renderNews() {
   if (!DOM.newsSection) return;
   DOM.newsSection.style.display = '';
   // 加载 AI 空投监控
-  fetch('ai_news_impact.json?' + Date.now()).then(function(r) { return r.ok ? r.json() : null; }).then(function(d) {
+  fetch('ai_news_impact.json?v=' + Math.floor(Date.now()/900000)).then(function(r) { return r.ok ? r.json() : null; }).then(function(d) {
     var bar = document.getElementById('aiNewsImpact');
     var txt = document.getElementById('aiNewsImpactText');
     if (!bar || !txt) return;
@@ -2022,7 +2022,7 @@ function generateAIInsight() {
   var text = document.getElementById('aiInsightText');
   if (!bar || !text) return;
   // 优先用后端 AI 生成的全量市场洞察（一次 API 调 8793 件摘要）
-  fetch('ai_market_insight.json?' + Date.now()).then(function(r) {
+  fetch('ai_market_insight.json?v=' + Math.floor(Date.now()/900000)).then(function(r) {
     return r.ok ? r.json() : null;
   }).then(function(data) {
     if (data && data.insight) {
@@ -2827,11 +2827,11 @@ async function pollUpdateComplete(startTime) {
     await sleep(INTERVAL);
     try {
       // 检查 market.json 的更新时间是否比 startTime 新
-      const r = await fetch('market.json?v=' + Date.now(), { cache: 'no-store' });
+      const r = await fetch('data_status.json?ts=' + Date.now(), { cache: 'no-store' });
       if (r.ok) {
         const data = await r.json();
         // 检测多个时间戳字段（alerts / items / index）
-        const updateTime = data.alerts_updated || data.items_updated || data.index_updated;
+        const updateTime = data.updated;
         if (updateTime) {
           // 支持毫秒时间戳和 ISO 字符串两种格式
           const updateTs = typeof updateTime === 'number' ? updateTime : new Date(updateTime).getTime();
@@ -4518,10 +4518,10 @@ window.CAT_LABELS = CAT_LABELS;
   setInterval(function(){
     var holdNames = (window.H || []).map(function(h){ return h.mh || ''; }).filter(Boolean)
     if (typeof fetchLivePrices === 'function') fetchLivePrices((window.recData && window.recData.all) || [], holdNames)
-    fetch('market.json?v=' + Date.now(), {cache:'no-store'})
+    fetch('data_status.json?ts=' + Date.now(), {cache:'no-store'})
       .then(function(r){ return r.json(); })
       .then(function(data){
-        var ut = data.update_time || data.alerts_updated || '';
+        var ut = data.updated || '';
         if (!ut) return;
         var t = new Date(ut).getTime();
         if (t > _lastUpdate) { _lastUpdate = t; showToast('📊 数据已更新', 3000); loadAll(); }
