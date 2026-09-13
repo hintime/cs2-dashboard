@@ -21,3 +21,6 @@ run_update.cmd
 *.db-wal
 *.db-shm
 git_credential.txt
+
+# price_history.json 已废弃：由本地 SQLite 取代，不再入库
+price_history.json
