@@ -2546,6 +2546,23 @@ def main():
     except Exception as e:
         print(f'[REPORT] generate_report failed: {e}', file=sys.stderr)
 
+    # ── FirePulse 大盘（饰品指数/成交额/贪婪指数）──
+    try:
+        import firepulse
+        if firepulse.enabled():
+            _ov = firepulse.fetch_overview()
+            if _ov:
+                write_json(os.path.join(DATA_DIR, 'market_overview.json'), _ov)
+                dirty_files.add('market_overview.json')
+                _i = _ov['index']
+                print('[FirePulse] 大盘: 指数 %.2f (%.2f%%), 贪婪 %.1f(%s)' % (
+                    _i.get('current') or 0, _i.get('change_pct') or 0,
+                    (_ov['greedy'].get('value') or 0), (_ov['greedy'].get('label') or '')))
+        else:
+            print('[FirePulse] 未配置 FIREPULSE_KEY，跳过大盘')
+    except Exception as _e:
+        print('[FirePulse] 大盘生成失败: %s' % _e, file=sys.stderr)
+
     # ── 同步生成数据状态摘要 ──
     try:
         import json
