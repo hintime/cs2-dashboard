@@ -313,8 +313,8 @@ def load_buff_history():
         try:
             _buff_history_cache = read_json(history_file)
             return _buff_history_cache
-        except:
-            pass
+        except Exception as _e:
+            print(f'[WARN] 读取 buff_history 缓存失败: {_e}', file=sys.stderr)
     return {}
 
 def save_buff_history(steamdt_prices):
@@ -1011,8 +1011,8 @@ def fetch_steam_news():
                     match = rd.get('match', 0)
                     if translated and translated != text and match >= 0.5:
                         return translated
-            except:
-                pass
+            except Exception as _e:
+                print(f'[WARN] 翻译(主源)失败: {_e}', file=sys.stderr)
             # Fallback: Google Translate (may be blocked)
             try:
                 turl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=' + urllib.parse.quote(text[:200])
@@ -1021,8 +1021,8 @@ def fetch_steam_news():
                     translated = resp[0][0][0]
                     if translated and translated != text:
                         return translated
-            except:
-                pass
+            except Exception as _e:
+                print(f'[WARN] 翻译(备用源)失败: {_e}', file=sys.stderr)
             return text
 
         # Chinese source labels
@@ -1077,7 +1077,8 @@ def write_json(path, data):
             os.replace(tmp, path)  # Windows 上原子替换
         else:
             os.rename(tmp, path)
-    except:
+    except Exception as _e:
+        print(f'[WARN] 原子写入失败，回退直接写入: {_e}', file=sys.stderr)
         # 回退到直接写入
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -1466,7 +1467,8 @@ def _get_tracking_feedback():
     try:
         import tracking_ai
         return tracking_ai.get_lessons_for_prompt()
-    except:
+    except Exception as _e:
+        print(f'[WARN] 读取 AI 历史教训失败: {_e}', file=sys.stderr)
         return ''
 
 def _get_scoring_weights_from_lessons():
@@ -1496,8 +1498,8 @@ def _get_scoring_weights_from_lessons():
                 if m:
                     pct = int(m.group(1)) / 100.0
                     return 1.0 + pct
-            except:
-                pass
+            except Exception as _e:
+                print(f'[WARN] 解析权重反馈系数失败: {_e}', file=sys.stderr)
             return 1.0
         
         eco_m = parse_pct(eco_advice)
@@ -1505,7 +1507,8 @@ def _get_scoring_weights_from_lessons():
         if eco_m != 1.0 or buff_m != 1.0:
             print(f'[REC] AI反馈: ECO×{eco_m:.2f} BUFF×{buff_m:.2f} (from tracking lessons)')
         return eco_m, buff_m
-    except:
+    except Exception as _e:
+        print(f'[WARN] 计算推荐权重失败: {_e}', file=sys.stderr)
         return 1.0, 1.0
 
 def _get_reason_enhancements():
@@ -1531,7 +1534,8 @@ def _get_reason_enhancements():
             'wrong': ra.get('wrong_reasons', '')[:60],
             'right': ra.get('right_reasons', '')[:60]
         }
-    except:
+    except Exception as _e:
+        print(f'[WARN] 构造推荐理由(旧路径)失败: {_e}', file=sys.stderr)
         return None
 
 def generate_ai_recommendations():
@@ -1765,8 +1769,8 @@ def generate_ai_recommendations():
                     'eco': round((eco_m - 1) * 100),
                     'buff': round((buff_m - 1) * 100)
                 }
-        except:
-            pass
+        except Exception as _e:
+            print(f'[WARN] 写 AI 推荐前处理失败: {_e}', file=sys.stderr)
         write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), picks)
         print(f'[AI] Recommendations: {len(picks.get("picks",[]))} picks generated')
     except Exception as e:
@@ -1853,8 +1857,8 @@ def push_all():
                                        '-c', 'http.sslVerify=false', 'pull', '--rebase', 'origin', 'main'],
                                       check=False, cwd=DATA_DIR, capture_output=True)
                         subprocess.run(['git', 'stash', 'pop'], check=False, cwd=DATA_DIR, capture_output=True)
-                    except:
-                        pass
+                    except Exception as _e:
+                        print(f'[WARN] git 同步回滚失败: {_e}', file=sys.stderr)
                 else:
                     print(f'[PUSH] All 3 attempts failed, data not pushed!', file=sys.stderr)
 
@@ -2413,8 +2417,8 @@ def main():
                             history = price_db.get_history(hn, channel='yy')
                             if history:
                                 r['yyyp_history'] = [h['price'] for h in history[-60:]]
-                        except:
-                            pass
+                        except Exception as _e:
+                            print(f'[WARN] 注入悠悠历史失败: {_e}', file=sys.stderr)
                     # Re-write market.json with history injected
                     market['recommendations'] = recs
                     # Include tracked item names for frontend autocomplete
@@ -2542,8 +2546,8 @@ def main():
                 'last': stats['last_ts'],
                 'size_mb': stats['db_size_mb']
             }
-        except:
-            pass
+        except Exception as _e:
+            print(f'[WARN] 读取 price_db 统计失败: {_e}', file=sys.stderr)
         # buff_history dates
         bh_path = os.path.join(DATA_DIR, 'buff_history.json')
         if os.path.exists(bh_path):
