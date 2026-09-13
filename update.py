@@ -2603,24 +2603,30 @@ def main():
         print(f'[AI] {name} failed after 3 retries (rate limit)', file=sys.stderr)
         _last_ai_call[0] = time.time()
     
-    _ai_call_with_rate_limit(generate_ai_analysis, 'Analysis')
-    _ai_call_with_rate_limit(generate_ai_daily_report, 'Daily report')
-    _ai_call_with_rate_limit(generate_ai_anomaly, 'Anomaly')
-    _ai_call_with_rate_limit(generate_ai_stock_picks, 'Stock picks')
-    _ai_call_with_rate_limit(generate_ai_market_insight, 'Market insight')
-    _ai_call_with_rate_limit(generate_ai_news_impact, 'News impact')
-    _ai_call_with_rate_limit(generate_ai_recommendations, 'Recommendations')
+    # ═════ ── AI 开关：SKIP_AI=1 时跳过全部大模型调用 ── ═════
+    # 用于高频价格线（update-prices workflow）：只刷价格/评分/异动，
+    # 不消耗智谱额度，从而可以高频跑。AI 分析由低频的 update-all 负责。
+    if os.environ.get('SKIP_AI') == '1':
+        print('[AI] SKIP_AI=1 -> 跳过全部 AI 分析（仅更新价格与评分数据）')
+    else:
+        _ai_call_with_rate_limit(generate_ai_analysis, 'Analysis')
+        _ai_call_with_rate_limit(generate_ai_daily_report, 'Daily report')
+        _ai_call_with_rate_limit(generate_ai_anomaly, 'Anomaly')
+        _ai_call_with_rate_limit(generate_ai_stock_picks, 'Stock picks')
+        _ai_call_with_rate_limit(generate_ai_market_insight, 'Market insight')
+        _ai_call_with_rate_limit(generate_ai_news_impact, 'News impact')
+        _ai_call_with_rate_limit(generate_ai_recommendations, 'Recommendations')
 
-    # ── 追踪AI分析：深度分析推荐涨跌根因 + 提炼教训（数据量>=3条时）──
-    try:
-        import tracking_ai
-        analysis = tracking_ai.main()  # 从 rec_tracks.json 加载全量追踪
-        if analysis:
-            dirty_files.add('tracking_analysis.json')
-            dirty_files.add('tracking_lessons.json')
-            print('[TRACK-AI] ✨ 分析完成，教训已积累')
-    except Exception as e:
-        print(f'[TRACK-AI] Failed (non-fatal): {e}', file=sys.stderr)
+        # ── 追踪AI分析：深度分析推荐涨跌根因 + 提炼教训（数据量>=3条时）──
+        try:
+            import tracking_ai
+            analysis = tracking_ai.main()  # 从 rec_tracks.json 加载全量追踪
+            if analysis:
+                dirty_files.add('tracking_analysis.json')
+                dirty_files.add('tracking_lessons.json')
+                print('[TRACK-AI] ✨ 分析完成，教训已积累')
+        except Exception as e:
+            print(f'[TRACK-AI] Failed (non-fatal): {e}', file=sys.stderr)
 
     # ── Push all dirty files at once ──
     push_all()
