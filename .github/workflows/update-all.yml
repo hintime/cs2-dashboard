@@ -16,9 +16,14 @@ on:
           - alerts
           - index
 
+# ⚠️ cancel-in-progress 必须为 false。
+# 本 workflow 单次全量更新约需 2 小时，而触发间隔仅 2 小时；
+# 若开启 cancel-in-progress，后一个运行会掐死前一个，导致永远跑不完、
+# 数据无法提交（2026-09-12 实测：#1164/#1165/#1166 连续被取消）。
+# 改为 false 后，同一时间只运行一个，后续触发排队等待。
 concurrency:
   group: cs2-dashboard-update
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: write
