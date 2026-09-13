@@ -26,12 +26,26 @@ import eco_catalog
 import recommend  # CSQAQ multi-platform price provider
 
 # ═══════════════ CONFIG ═══════════════
+# ── 本地密钥文件（不入 git）：每行 KEY=VALUE，供本机运行时使用 ──
+# 云端由 GitHub Actions Secrets 注入；本机读此文件，
+# 避免把密钥写进代码（原明文默认值已于 2026-09-13 移除）。
+_local_keys = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'local_keys.env')
+if os.path.exists(_local_keys):
+    try:
+        for _line in open(_local_keys, encoding='utf-8'):
+            _line = _line.strip()
+            if _line and not _line.startswith('#') and '=' in _line:
+                _k, _v = _line.split('=', 1)
+                os.environ.setdefault(_k.strip(), _v.strip())
+    except Exception as _e:
+        print('[WARN] 读取 local_keys.env 失败: ' + str(_e))
+
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 # CSQAQ removed — alerts now self-computed from BUFF price history
 STEAM_KEY = os.environ.get('STEAMDT_KEY', '')
 GH_TOKEN = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN', '')
-DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', 'sk-3a9f8fed7ff94e7398e3a9164807cb24')
-ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz')
+DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', '')
+ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '')
 AI_PROVIDER = os.environ.get('AI_PROVIDER', 'zhipu')  # 统一用智谱 GLM-4
 REPO = 'hintime/cs2-dashboard'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
