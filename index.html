@@ -1460,8 +1460,17 @@ function setCachedMarket(market) {
 }
 
 async function loadAll() {
-  const t0 = Date.now();
-  const fetchOpts = { cache: 'no-store' };
+  // 用「数据版本号」代替「当前时间戳」作为缓存键：
+  // 数据未更新时 URL 不变，浏览器可直接命中缓存，不再每次都下载 8MB+ 数据。
+  // （旧写法 Date.now() + cache:'no-store' 等于完全禁用缓存）
+  let t0 = String(Math.floor(Date.now() / 300000));
+  try {
+    var _st = await fetch('data_status.json?ts=' + Date.now(), { cache: 'no-store' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .catch(function() { return null; });
+    if (_st && _st.updated) t0 = String(_st.updated).replace(/[^0-9A-Za-z:_-]/g, '');
+  } catch (e) {}
+  const fetchOpts = {};
   updateProgress(20);
   
   await loadOverrides();
