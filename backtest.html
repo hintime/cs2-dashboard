@@ -81,10 +81,9 @@ function esc(s) {
 
 // ── 加载持仓 + 渲染回测（优先用 localStorage，保持一致） ──
 function loadBacktest() {
-  // 缓存键：优先用上次拿到的「数据版本号」（存 localStorage），数据未更新则 URL 不变
-// → 命中浏览器缓存；无记录时退化为 5 分钟粒度。
-var t0 = (function(){ try { return localStorage.getItem('_dataVer') || String(Math.floor(Date.now()/300000)); } catch(e) { return String(Math.floor(Date.now()/300000)); } })();
-try { fetch('data_status.json?ts=' + Date.now(), { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(st){ if (st && st.updated) { try { localStorage.setItem('_dataVer', st.updated); } catch(e) {} } }).catch(function(){}); } catch(e) {}
+  // 缓存键：15 分钟时间窗（数据约每 30 分钟更新一次）。同一窗口内，所有访问与各个页面
+// 共用同一批 URL → 命中浏览器缓存；跨窗口自动换新 URL 拉取最新数据。
+var t0 = Math.floor(Date.now() / 900000);
   H = [];
   // 直接从 holdings.json 读取真实持仓
   Promise.all([
