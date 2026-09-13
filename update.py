@@ -186,8 +186,8 @@ def _check_host_blocked(host):
             HOSTS_BLOCKED.add(host)
             print(f'[HOSTS] {host} blocked by hosts file (127.0.0.1), skipping')
             return True
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f'[WARN] 读取 hosts 文件失败: {_e}', file=sys.stderr)
     return False
 
 # ═══════════════ HTTP HELPERS ═══════════════
@@ -896,8 +896,9 @@ def fetch_steamdt_prices(hash_names, verbose=True):
                     prices[name] = data
                     if verbose and len(prices) <= 3:
                         print(f'  [SteamDT] {name[:40]}: {data["source"]} sell={data["buff_sell"]:.2f}')
-            except Exception:
-                pass
+            except Exception as _e:
+                if len(prices) < 3:
+                    print(f'[WARN] SteamDT 拓价失败({name[:40]}): {_e}', file=sys.stderr)
         if verbose:
             print(f'[SteamDT] Got {len(prices)}/{len(hash_names)} prices')
         return prices
@@ -1171,8 +1172,8 @@ def generate_ai_analysis():
         news_context = _get_market_background()
         if news_context:
             print(f'[AI] Market context: {news_context[:80]}...')
-    except Exception as e:
-        pass
+    except Exception as _e:
+        print(f'[WARN] 获取市场背景失败: {_e}', file=sys.stderr)
 
     # ② 构建批量分析 Prompt（所有持仓编入一张表）
     items_text = '\n'.join([
@@ -1879,8 +1880,8 @@ def github_push_file(path, content_str, message):
         req = urllib.request.Request(f'{api_url}?ref=main', headers=headers)
         with urllib.request.urlopen(req, timeout=15, context=ctx) as r:
             sha = json.loads(r.read().decode())['sha']
-    except Exception:
-        pass
+    except Exception as _e:
+        print(f'[WARN] 读取远端 SHA 失败: {_e}', file=sys.stderr)
 
     b64 = base64.b64encode(content_str.encode('utf-8')).decode('ascii')
     body_dict = {'message': message, 'content': b64, 'branch': 'main'}
