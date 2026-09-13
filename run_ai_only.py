@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '981fb5b064af4d86896d804ddea2acbc.VmZsKxfM4fL4vefz')
+ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '')
 
 def read_json(p):
     with open(p, 'r', encoding='utf-8') as f:
