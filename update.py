@@ -325,13 +325,15 @@ def save_buff_history(steamdt_prices):
     
     history = load_buff_history()
     
-    # Keep last 48 hours + 15 days
+    # Keep last 12 hours + 15 days
+    # 小时级从 48 降到 12：异动对比只需邻近时点，旧时点对功能无贡献，
+    # 却让 buff_history.json 长期维持 50MB+ —— 每次提交都拖累 git 体积与前端加载。
     dates = sorted(history.keys(), reverse=True)
     keep = []
     for d in dates:
-        if len(d) == 16 and len(keep) < 48:  # hourly: YYYY-MM-DDTHH:MM
+        if len(d) == 16 and len(keep) < 12:  # hourly: YYYY-MM-DDTHH:MM
             keep.append(d)
-        elif len(d) == 10 and len(keep) < 48+15:  # daily: YYYY-MM-DD
+        elif len(d) == 10 and len(keep) < 12+15:  # daily: YYYY-MM-DD
             keep.append(d)
     for old_date in dates:
         if old_date not in keep:
@@ -364,6 +366,16 @@ def save_buff_history(steamdt_prices):
     
     write_json(history_file, history)
     _buff_history_cache = history
+    # 导出「前端精简版」（仅最近 12 个时点）——
+    # 页面只需近期趋势，却以前要下载整份 50MB+ 的全量历史。
+    try:
+        recent_keys = sorted(history.keys())[-12:]
+        buff_recent = {k: history[k] for k in recent_keys}
+        write_json(os.path.join(DATA_DIR, 'buff_recent.json'), buff_recent)
+        dirty_files.add('buff_recent.json')
+        print(f'[HISTORY] buff_recent.json exported: {len(buff_recent)} snapshots')
+    except Exception as e:
+        print(f'[HISTORY] buff_recent export failed: {e}', file=sys.stderr)
     y_c = sum(1 for v in history[hour_key].values() if v.get('yyyp_sell', 0) > 0)
     print(f'[HISTORY] Hour {hour_key} + Day {day_key}: {len(steamdt_prices)} items, {y_c} with 悠悠')
     return history
