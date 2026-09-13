@@ -418,3 +418,105 @@ def enrich_items(items, id_cache=None, max_items=30, on_progress=None):
         if on_progress:
             on_progress(name, ok)
     return ok
+
+
+# ══════════════════ ID 缓存（避免重复调用搜索接口）══════════════════
+def load_id_cache(path):
+    try:
+        return json.load(open(path, encoding='utf-8'))
+    except Exception:
+        return {}
+
+
+def save_id_cache(path, cache):
+    try:
+        tmp = path + '.tmp'
+        json.dump(cache, open(tmp, 'w', encoding='utf-8'), ensure_ascii=False)
+        os.replace(tmp, path)
+    except Exception as e:
+        print('[FirePulse] ID 缓存保存失败: %s' % e, file=sys.stderr)
+
+
+def resolve_id(display_name, cache):
+    """名字 -> 饰品ID：优先用缓存，没有才调搜索接口（省一半请求）"""
+    if not display_name:
+        return None
+    k = str(display_name).strip()
+    if not k:
+        return None
+    if k in cache and cache[k]:
+        return cache[k]
+    lst = search_skin(k, limit=1)
+    sid = lst[0].get('id') if lst else None
+    if sid:
+        cache[k] = sid
+    return sid
+
+
+# ══════════════════ 批量补充多平台数据 ══════════════════
+def enrich_items(items, cache, limit=120):
+    """对 items 逐个补充 FirePulse 数据（10 平台价 + 存世量 + 30日涨跌）。
+
+    返回成功补充的条数。单条失败不影响其他条目。
+    """
+    if not items:
+        return 0
+    n = 0
+    for it in items[:limit]:
+        try:
+            name = it.get('name') or it.get('market_hash') or it.get('n') or it.get('HashName') or ''
+            sid = resolve_id(name, cache)
+            if not sid:
+                continue
+            det = fetch_detail(sid)
+            if not det:
+                continue
+            f = to_dashboard_fields(det)
+            if f:
+                it.update(f)
+                n += 1
+        except Exception as e:
+            print('[FirePulse] 补充失败(%s): %s' % (str(it.get('name'))[:24], str(e)[:70]), file=sys.stderr)
+            continue
+    return n
+
+
+# ══════════════════ 大盘时间序列 ══════════════════
+def append_overview_history(ov, path, keep_days=30):
+    """把本次大盘追加进历史文件（按日期分组，每天最多 48 个点，保留最近 keep_days 天）
+
+    结构: { "YYYY-MM-DD": [ {t, index, pct, greedy, amount, volume, up, down}, ... ] }
+    """
+    if not ov:
+        return None
+    hist = {}
+    try:
+        hist = json.load(open(path, encoding='utf-8'))
+    except Exception:
+        hist = {}
+    if not isinstance(hist, dict):
+        hist = {}
+    day = time.strftime('%Y-%m-%d', time.gmtime())
+    point = {
+        't': ov.get('updated'),
+        'index': (ov.get('index') or {}).get('current'),
+        'pct': (ov.get('index') or {}).get('change_pct'),
+        'greedy': (ov.get('greedy') or {}).get('value'),
+        'amount': (ov.get('trade') or {}).get('today_amount'),
+        'volume': (ov.get('trade') or {}).get('today_volume'),
+        'up': (ov.get('updown') or {}).get('up'),
+        'down': (ov.get('updown') or {}).get('down'),
+    }
+    arr = hist.setdefault(day, [])
+    arr.append(point)
+    if len(arr) > 48:
+        hist[day] = arr[-48:]
+    for dd in sorted(hist.keys())[:-keep_days]:
+        hist.pop(dd, None)
+    try:
+        tmp = path + '.tmp'
+        json.dump(hist, open(tmp, 'w', encoding='utf-8'), ensure_ascii=False)
+        os.replace(tmp, path)
+    except Exception as e:
+        print('[FirePulse] 大盘历史保存失败: %s' % e, file=sys.stderr)
+    return hist
