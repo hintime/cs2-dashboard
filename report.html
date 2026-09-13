@@ -175,7 +175,7 @@ if (Object.keys(window._aiAnalysis||{}).length) renderAI();
 loadReport().then(renderReport).catch(function(e) {
   document.getElementById('reportDate').textContent = '加载失败: ' + e.message;
 });
-(function(){var _l=Date.now();setInterval(function(){fetch('market.json?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.update_time||d.alerts_updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadReport().then(renderReport);}}).catch(function(){})},60000)})();
+(function(){var _l=Date.now();setInterval(function(){fetch('data_status.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadReport().then(renderReport);}}).catch(function(){})},60000)})();
 </script>
 </body>
 </html>
