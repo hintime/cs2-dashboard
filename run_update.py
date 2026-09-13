@@ -14,7 +14,12 @@ if os.path.exists(eco_key_path):
     with open(eco_key_path) as f:
         os.environ.setdefault('ECO_PRIVATE_KEY_B64', f.read().strip())
 
-os.environ.setdefault('STEAMDT_KEY', '6fdc816dc6c2469588f34050cc32a9e4')
+if os.path.exists(os.path.join(DATA_DIR, 'local_keys.env')):
+    for _l in open(os.path.join(DATA_DIR, 'local_keys.env'), encoding='utf-8'):
+        _l = _l.strip()
+        if _l and not _l.startswith('#') and '=' in _l:
+            _k, _v = _l.split('=', 1)
+            os.environ.setdefault(_k.strip(), _v.strip())
 # 从 git_credential.txt 读取 GitHub Token（不提交到 git）
 _token_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.git', '..', 'git_credential.txt')
 if not os.path.exists(_token_path):
