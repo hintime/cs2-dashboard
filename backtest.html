@@ -251,8 +251,8 @@ loadBacktest();
 (function(){
   var _last = Date.now();
   setInterval(function(){
-    fetch('market.json?v=' + Date.now(), {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
-      var ut = d.update_time || d.alerts_updated || '';
+    fetch('data_status.json?ts=' + Date.now(), {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+      var ut = d.updated || '';
       if (ut && new Date(ut).getTime() > _last) { _last = new Date(ut).getTime(); loadBacktest(); }
     }).catch(function(){});
   }, 60000);
