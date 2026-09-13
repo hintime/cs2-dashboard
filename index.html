@@ -871,10 +871,6 @@ html { scroll-behavior: smooth; }
         <div style="font-size:10px;color:var(--text3);margin-top:2px" id="signalSub"></div>
       </div>
     </div>
-    <!-- FirePulse 板块涨跌（数据源: sectors.json） -->
-    <div id="fpSectors" style="display:none;margin:-4px 0 12px 0;gap:6px;flex-wrap:wrap">
-      <span style="font-size:10px;color:var(--text3);align-self:center;margin-right:2px">板块</span>
-    </div>
     <!-- FirePulse 大盘（数据源: market_overview.json） -->
     <div id="fpOverview" style="display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px">
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
@@ -1733,7 +1729,6 @@ async function loadAll() {
   }).catch(function(){});
   renderNews();
   loadFirePulseOverview();
-  loadFirePulseSectors();
   setTimeout(hideSkeleton, 80);
 }
 
@@ -1889,36 +1884,6 @@ function calcSentiment() {
   return { score: score, vibe: vibe, color: color, signals: signals };
 }
 
-// ── FirePulse 板块涨跌 ──
-async function loadFirePulseSectors() {
-  try {
-    var t = Math.floor(Date.now()/900000);
-    var r = await fetch('sectors.json?v=' + t);
-    if (!r.ok) return;
-    var d = await r.json();
-    if (!d) return;
-    var el = document.getElementById('fpSectors');
-    if (!el) return;
-    var up = (d.up || []).slice(0, 6);
-    var down = (d.down || []).slice(-6).reverse();
-    if (!up.length && !down.length) return;
-    function chip(x) {
-      var rise = x.ratio >= 0;
-      var col = rise ? 'var(--rise)' : 'var(--fall)';
-      var bg = rise ? 'rgba(239,68,68,.10)' : 'rgba(34,197,94,.10)';
-      return '<span style="display:inline-flex;align-items:center;gap:4px;background:' + bg +
-        ';border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-size:11px;white-space:nowrap">' +
-        '<span style="color:var(--text2)">' + x.name + '</span>' +
-        '<span style="color:' + col + ';font-weight:600">' + (rise ? '+' : '') + Number(x.ratio).toFixed(2) + '%</span></span>';
-    }
-    var html = '';
-    up.forEach(function(x){ html += chip(x); });
-    down.forEach(function(x){ html += chip(x); });
-    el.insertAdjacentHTML('beforeend', html);
-    el.style.display = 'flex';
-  } catch (e) {}
-}
-
 // ── FirePulse 大盘条 ──
 async function loadFirePulseOverview() {
   try {
@@ -1955,6 +1920,9 @@ async function loadFirePulseOverview() {
       document.getElementById('fpGreedy').textContent = Number(gd.value).toFixed(1);
       var gl = document.getElementById('fpGreedyLabel');
       gl.textContent = (gd.label || '') + (gd.change != null ? (' · ' + (gd.change >= 0 ? '+' : '') + gd.change) : '');
+      gl.style.color = (gd.value >= 60) ? 'var(--rise)' : (gd.value <= 30 ? 'var(--fall)' : 'var(--text3)');
+    }
+  } catch (e) {}
 
   // 走势图（大盘历史）
   try {
@@ -1970,11 +1938,13 @@ async function loadFirePulseOverview() {
       if (sp && typeof window.sparkline === 'function' && pts.length >= 2) {
         sp.innerHTML = window.sparkline(pts, (pts[pts.length-1] >= pts[0]) ? 'var(--rise)' : 'var(--fall)', 110, 22);
         sp.title = '最近采样点的指数走势';
+      } else if (sp && pts.length < 2) {
+        sp.innerHTML = '<span style="font-size:9px;color:var(--text3)">走势图需累积多个采样点</span>';
       }
     }
   } catch (e) {}
 
-  // 板块数据
+  // 板块数据（24 个板块横向滚动）
   try {
     var sr = await fetch('market_sectors.json?v=' + t);
     if (sr.ok) {
@@ -1983,23 +1953,21 @@ async function loadFirePulseOverview() {
       if (box && sd && sd.sectors && sd.sectors.length) {
         box.style.display = 'flex';
         box.innerHTML = sd.sectors.map(function (s) {
-          var pct = s.change_pct;
-          var cls = (pct != null && pct >= 0) ? 'clr-rise' : 'clr-fall';
+          var spct = s.change_pct;
+          var scls = (spct != null && spct >= 0) ? 'clr-rise' : 'clr-fall';
           var val = (s.index != null) ? Number(s.index).toFixed(0) : '--';
-          var txt = (pct != null) ? ((pct >= 0 ? '+' : '') + Number(pct).toFixed(2) + '%') : '--';
+          var txt = (spct != null) ? ((spct >= 0 ? '+' : '') + Number(spct).toFixed(2) + '%') : '--';
           return '<div style="flex:0 0 auto;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;white-space:nowrap;line-height:1.5">'
             + '<span style="color:var(--text2)">' + (s.name || '') + '</span> '
             + '<b style="margin-left:4px">' + val + '</b> '
-            + '<span class="' + cls + '" style="margin-left:3px">' + txt + '</span>'
+            + '<span class="' + scls + '" style="margin-left:3px">' + txt + '</span>'
             + '</div>';
         }).join('');
       }
     }
   } catch (e) {}
-      gl.style.color = (gd.value >= 60) ? 'var(--rise)' : (gd.value <= 30 ? 'var(--fall)' : 'var(--text3)');
-    }
-  } catch (e) {}
 }
+
 
 async function renderNews() {
   if (!DOM.newsSection) return;
