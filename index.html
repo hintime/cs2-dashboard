@@ -871,6 +871,29 @@ html { scroll-behavior: smooth; }
         <div style="font-size:10px;color:var(--text3);margin-top:2px" id="signalSub"></div>
       </div>
     </div>
+    <!-- FirePulse 大盘（数据源: market_overview.json） -->
+    <div id="fpOverview" style="display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:.5px">饰品指数</div>
+        <div style="font-size:19px;font-weight:700;margin:3px 0"><span id="fpIndex">--</span></div>
+        <div style="font-size:11px" id="fpIndexChg">--</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:.5px">今日成交额</div>
+        <div style="font-size:19px;font-weight:700;margin:3px 0" id="fpAmount">--</div>
+        <div style="font-size:11px;color:var(--text3)" id="fpAmountMom">--</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:.5px">涨跌分布</div>
+        <div style="font-size:19px;font-weight:700;margin:3px 0"><span class="clr-rise" id="fpUp">--</span><span style="color:var(--text3);font-size:13px"> / </span><span class="clr-fall" id="fpDown">--</span></div>
+        <div style="font-size:11px;color:var(--text3)">上涨 / 下跌</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:.5px">贪婪指数</div>
+        <div style="font-size:19px;font-weight:700;margin:3px 0" id="fpGreedy">--</div>
+        <div style="font-size:11px" id="fpGreedyLabel">--</div>
+      </div>
+    </div>
     <div class="panel-head" style="flex-direction:column;align-items:stretch;gap:12px">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
@@ -1702,6 +1725,7 @@ async function loadAll() {
     }
   }).catch(function(){});
   renderNews();
+  loadFirePulseOverview();
   setTimeout(hideSkeleton, 80);
 }
 
@@ -1855,6 +1879,47 @@ function calcSentiment() {
   var vibe = score >= 65 ? '🐂 看多' : score <= 35 ? '🐻 看空' : '⚖ 中性';
   var color = score >= 65 ? 'var(--rise)' : score <= 35 ? 'var(--fall)' : 'var(--text2)';
   return { score: score, vibe: vibe, color: color, signals: signals };
+}
+
+// ── FirePulse 大盘条 ──
+async function loadFirePulseOverview() {
+  try {
+    var t = Math.floor(Date.now()/900000);
+    var r = await fetch('market_overview.json?v=' + t);
+    if (!r.ok) return;
+    var d = await r.json();
+    if (!d || !d.index) return;
+    var el = document.getElementById('fpOverview');
+    if (!el) return;
+    el.style.display = 'grid';
+    var ix = d.index || {}, tr = d.trade || {}, ud = d.updown || {}, gd = d.greedy || {};
+    var pct = ix.change_pct;
+    document.getElementById('fpIndex').textContent = (ix.current != null) ? Number(ix.current).toFixed(2) : '--';
+    var chg = document.getElementById('fpIndexChg');
+    if (pct != null) {
+      var cls = pct >= 0 ? 'clr-rise' : 'clr-fall';
+      var days = ix.change_days ? (' · 连' + (ix.change_days > 0 ? '涨' : '跌') + Math.abs(ix.change_days) + '天') : '';
+      chg.className = cls;
+      chg.textContent = (pct >= 0 ? '+' : '') + Number(pct).toFixed(2) + '%' + days;
+    }
+    if (tr.today_amount != null) {
+      document.getElementById('fpAmount').textContent = '¥' + (tr.today_amount/10000).toFixed(0) + '万';
+      var mom = tr.amount_mom;
+      var mEl = document.getElementById('fpAmountMom');
+      if (mom != null) {
+        mEl.textContent = '环比昨日 ' + (mom >= 0 ? '+' : '') + Number(mom).toFixed(1) + '%';
+        mEl.className = mom >= 0 ? 'clr-rise' : 'clr-fall';
+      }
+    }
+    if (ud.up != null) document.getElementById('fpUp').textContent = ud.up;
+    if (ud.down != null) document.getElementById('fpDown').textContent = ud.down;
+    if (gd.value != null) {
+      document.getElementById('fpGreedy').textContent = Number(gd.value).toFixed(1);
+      var gl = document.getElementById('fpGreedyLabel');
+      gl.textContent = (gd.label || '') + (gd.change != null ? (' · ' + (gd.change >= 0 ? '+' : '') + gd.change) : '');
+      gl.style.color = (gd.value >= 60) ? 'var(--rise)' : (gd.value <= 30 ? 'var(--fall)' : 'var(--text3)');
+    }
+  } catch (e) {}
 }
 
 async function renderNews() {
