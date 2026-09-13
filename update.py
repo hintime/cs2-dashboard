@@ -2555,6 +2555,31 @@ def main():
                 write_json(os.path.join(DATA_DIR, 'market_overview.json'), _ov)
                 dirty_files.add('market_overview.json')
                 _i = _ov['index']
+                # 大盘时间序列（供前端画走势图）
+                try:
+                    firepulse.append_overview_history(
+                        _ov, os.path.join(DATA_DIR, 'market_overview_history.json'))
+                    dirty_files.add('market_overview_history.json')
+                except Exception as _e2:
+                    print('[FirePulse] 大盘历史追加失败: %s' % _e2, file=sys.stderr)
+
+                # 持仓精确化：用 10 平台价补充持仓数据（仅 all 模式，控制额度消耗）
+                if mode in ('all',):
+                    try:
+                        _hp = os.path.join(DATA_DIR, 'holdings.json')
+                        _h = read_json(_hp)
+                        if isinstance(_h, dict) and _h.get('items'):
+                            _cp = os.path.join(DATA_DIR, 'firepulse_ids.json')
+                            _c = firepulse.load_id_cache(_cp)
+                            _n = firepulse.enrich_items(_h['items'], _c, limit=120)
+                            if _n:
+                                firepulse.save_id_cache(_cp, _c)
+                                write_json(_hp, _h)
+                                dirty_files.update(['holdings.json', 'firepulse_ids.json'])
+                                print('[FirePulse] 持仓精确化: %d 件已补充多平台数据' % _n)
+                    except Exception as _e3:
+                        print('[FirePulse] 持仓精确化失败: %s' % _e3, file=sys.stderr)
+
                 print('[FirePulse] 大盘: 指数 %.2f (%.2f%%), 贪婪 %.1f(%s)' % (
                     _i.get('current') or 0, _i.get('change_pct') or 0,
                     (_ov['greedy'].get('value') or 0), (_ov['greedy'].get('label') or '')))
