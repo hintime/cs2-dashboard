@@ -24,3 +24,7 @@ git_credential.txt
 
 # price_history.json 已废弃：由本地 SQLite 取代，不再入库
 price_history.json
+
+# 运行时日志（每轮更新都在变化，不应入库）
+*.log
+update_log.txt
