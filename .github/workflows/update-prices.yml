@@ -51,6 +51,7 @@ jobs:
           CSQ_API_TOKEN: ${{ secrets.CSQ_API_TOKEN }}
           CSQAQ_PROXY_URL: ${{ secrets.CSQAQ_PROXY_URL }}
           STEAMDT_KEY: ${{ secrets.STEAMDT_KEY }}
+          FIREPULSE_KEY: ${{ secrets.FIREPULSE_KEY }}
           ENRICH_BUFF: '1'
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SKIP_AI: '1'
