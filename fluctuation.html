@@ -97,7 +97,7 @@ function esc(s) {
 
 function loadFluct() {
   var t0 = Date.now();
-  fetch('buff_history.json?v=' + t0)
+  fetch('buff_recent.json?v=' + t0)
     .then(function(r) { return r.ok ? r.json() : null; })
     .then(function(data) {
       if (!data) {
