@@ -114,7 +114,10 @@ var ICONS = {'武器':'🔫','刀':'🔪','手套':'🧤','探员':'🕵️'};
 var COLORS = {'武器':'#60a5fa','刀':'#a78bfa','手套':'#fbbf24','探员':'#34d399'};
 
 function loadHeatmap() {
-  var t0 = Date.now();
+  // 缓存键：优先用上次拿到的「数据版本号」（存 localStorage），数据未更新则 URL 不变
+// → 命中浏览器缓存；无记录时退化为 5 分钟粒度。
+var t0 = (function(){ try { return localStorage.getItem('_dataVer') || String(Math.floor(Date.now()/300000)); } catch(e) { return String(Math.floor(Date.now()/300000)); } })();
+try { fetch('data_status.json?ts=' + Date.now(), { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(st){ if (st && st.updated) { try { localStorage.setItem('_dataVer', st.updated); } catch(e) {} } }).catch(function(){}); } catch(e) {}
   Promise.all([
     fetch('eco_tracked.json?v=' + t0).then(function(r) { return r.ok ? r.json() : null; }),
     fetch('price_summary.json?v=' + t0).then(function(r) { return r.ok ? r.json() : {}; })
