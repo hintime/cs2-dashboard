@@ -1,122 +1,122 @@
 [
   {
-    "date": "2026-09-13",
-    "tag": "chore",
-    "title": "data update",
-    "desc": "data update"
+    "date": "2026-09-14",
+    "tag": "fix",
+    "title": "feat(ui): real tab-view navigation + unified KPI card system",
+    "desc": "feat(ui): real tab-view navigation + unified KPI card system"
   },
   {
     "date": "2026-09-13",
     "tag": "fix",
-    "title": "perf(web): 用数据版本号替代时间戳做缓存键，解除 no-store —— 数据未变时二次访问命中缓存",
-    "desc": "perf(web): 用数据版本号替代时间戳做缓存键，解除 no-store —— 数据未变时二次访问命中缓存"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "chore",
-    "title": ".gitignore 忽略 price_history.json",
-    "desc": ".gitignore 忽略 price_history.json"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "chore",
-    "title": "移除 price_history.json（34MB 历史遗留；push_all 早已 discard 它，runner",
-    "desc": "已有本地 394MB SQLite）"
+    "title": "fix(web): 走势图改用 API 自带 trend_24h（无需等采样积累，立即可见）",
+    "desc": "fix(web): 走势图改用 API 自带 trend_24h（无需等采样积累，立即可见）"
   },
   {
     "date": "2026-09-13",
     "tag": "fix",
-    "title": "chore(data): 生成前端专用 buff_recent.json（最近 12 时点，替换 52MB 全量历史）",
-    "desc": "chore(data): 生成前端专用 buff_recent.json（最近 12 时点，替换 52MB 全量历史）"
+    "title": "fix(web): 合并板块实现——删除失效的 sectors.json 版本，板块/走势图移到正确位置",
+    "desc": "fix(web): 合并板块实现——删除失效的 sectors.json 版本，板块/走势图移到正确位置"
   },
   {
     "date": "2026-09-13",
     "tag": "fix",
-    "title": "perf(web): status.html 改用 buff_recent.json 精简版（原加载 52MB 全量历史",
+    "title": "feat(web): 大盘条加指数走势图，新增 FirePulse 板块横条",
+    "desc": "feat(web): 大盘条加指数走势图，新增 FirePulse 板块横条"
+  },
+  {
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "chore(data): 首份 market_sectors.json（FirePulse 板块指数/涨跌）",
+    "desc": "chore(data): 首份 market_sectors.json（FirePulse 板块指数/涨跌）"
+  },
+  {
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "chore(data): 首份 market_overview_history.json（FirePulse）",
+    "desc": "chore(data): 首份 market_overview_history.json（FirePulse）"
+  },
+  {
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "chore(data): 首份 market_sectors.json（FirePulse）",
+    "desc": "chore(data): 首份 market_sectors.json（FirePulse）"
+  },
+  {
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "feat(data): 生成 market_sectors.json（FirePulse 板块指数/涨跌）",
+    "desc": "feat(data): 生成 market_sectors.json（FirePulse 板块指数/涨跌）"
+  },
+  {
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "feat(firepulse): 新增板块接口 fetch_sectors（指数/涨跌/走势，单次请求）",
+    "desc": "feat(firepulse): 新增板块接口 fetch_sectors（指数/涨跌/走势，单次请求）"
+  },
+  {
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "feat(data): update.py 接入大盘时间序列 + FirePulse 持仓精确化（限 all 模式控额度",
     "desc": ""
   },
   {
     "date": "2026-09-13",
     "tag": "fix",
-    "title": "perf(web): backtest.html 改用 buff_recent.json 精简版（原加载 52MB 全量",
-    "desc": "史）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "perf(web): fluctuation.html 改用 buff_recent.json 精简版（原加载 52MB",
-    "desc": "全量历史）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "perf(web): index.html 改用 buff_recent.json 精简版（原加载 52MB 全量历史）",
-    "desc": "perf(web): index.html 改用 buff_recent.json 精简版（原加载 52MB 全量历史）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "perf(data): buff_history 小时级保留 48→12，并导出前端精简版 buff_recent.js",
-    "desc": "n"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "chore(ci): 完整分析线降频为每6小时（价格高频刷新已由 update-prices 承担）",
-    "desc": "chore(ci): 完整分析线降频为每6小时（价格高频刷新已由 update-prices 承担）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(ci): 新增高频价格线 update-prices.yml（每30分钟，SKIP_AI=1 不调大模型）",
-    "desc": "feat(ci): 新增高频价格线 update-prices.yml（每30分钟，SKIP_AI=1 不调大模型）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(update): 新增 SKIP_AI 开关 —— 置 1 时跳过全部 AI 调用，仅更新价格/评分数据",
-    "desc": "feat(update): 新增 SKIP_AI 开关 —— 置 1 时跳过全部 AI 调用，仅更新价格/评分数据"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "fix(ci): cancel-in-progress 改为 false —— 单次更新约2小时，与原设置互相取消导致永",
-    "desc": "跑不完"
+    "title": "feat(firepulse): 新增 ID 缓存、批量补充、大盘时间序列三个能力",
+    "desc": "feat(firepulse): 新增 ID 缓存、批量补充、大盘时间序列三个能力"
   },
   {
     "date": "2026-09-13",
     "tag": "chore",
-    "title": "market index 2026-09-13 02:50",
-    "desc": "market index 2026-09-13 02:50"
+    "title": "market index 2026-09-13 08:43",
+    "desc": "market index 2026-09-13 08:43"
   },
   {
-    "date": "2026-09-12",
-    "tag": "chore",
-    "title": "market index 2026-09-12 23:40",
-    "desc": "market index 2026-09-12 23:40"
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "feat(web): 首页新增板块涨跌行（FirePulse 52 个板块，展示涨跌幅各前 6）",
+    "desc": "feat(web): 首页新增板块涨跌行（FirePulse 52 个板块，展示涨跌幅各前 6）"
   },
   {
-    "date": "2026-09-12",
-    "tag": "chore",
-    "title": "market index 2026-09-12 20:06",
-    "desc": "market index 2026-09-12 20:06"
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "chore(data): 首份 market_overview_history.json",
+    "desc": "chore(data): 首份 market_overview_history.json"
   },
   {
-    "date": "2026-09-12",
-    "tag": "chore",
-    "title": "market index 2026-09-12 16:41",
-    "desc": "market index 2026-09-12 16:41"
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "chore(data): 首份 sectors.json",
+    "desc": "chore(data): 首份 sectors.json"
   },
   {
-    "date": "2026-09-12",
-    "tag": "chore",
-    "title": "data update",
-    "desc": "data update"
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "feat(data): update.py 接入板块数据(sectors.json)、大盘时序(market_overv",
+    "desc": "ew_history.json)、持仓精确化"
   },
   {
-    "date": "2026-09-12",
-    "tag": "chore",
-    "title": "market index 2026-09-12 13:19",
-    "desc": "market index 2026-09-12 13:19"
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "feat(data): firepulse.py 新增板块列表/K线/板块概览、大盘时序累积、持仓精确化",
+    "desc": "feat(data): firepulse.py 新增板块列表/K线/板块概览、大盘时序累积、持仓精确化"
+  },
+  {
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "feat(web): 首页新增 FirePulse 大盘条（饰品指数/成交额/涨跌分布/贪婪指数）",
+    "desc": "feat(web): 首页新增 FirePulse 大盘条（饰品指数/成交额/涨跌分布/贪婪指数）"
+  },
+  {
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "chore(data): 首份 FirePulse 大盘数据 market_overview.json",
+    "desc": "chore(data): 首份 FirePulse 大盘数据 market_overview.json"
+  },
+  {
+    "date": "2026-09-13",
+    "tag": "fix",
+    "title": "fix(sec): .github/workflows/update-prices.yml 注入 FIREPULSE_K",
+    "desc": "Y"
   }
 ]
