@@ -1,6 +1,12 @@
 [
   {
     "date": "2026-09-14",
+    "tag": "chore",
+    "title": "data update",
+    "desc": "data update"
+  },
+  {
+    "date": "2026-09-14",
     "tag": "fix",
     "title": "feat(ui): real tab-view navigation + unified KPI card system",
     "desc": "feat(ui): real tab-view navigation + unified KPI card system"
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "chore(data): 首份 FirePulse 大盘数据 market_overview.json",
     "desc": "chore(data): 首份 FirePulse 大盘数据 market_overview.json"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "fix(sec): .github/workflows/update-prices.yml 注入 FIREPULSE_K",
-    "desc": "Y"
   }
 ]
