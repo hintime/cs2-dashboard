@@ -3180,17 +3180,33 @@ async function fetchLivePrices(items, holdNames) {
     var csqaqData = await resp.json()
     // 识别数据来源
     var sourceDetected = false;
+    var touched = false;
     ;(items || []).forEach(function(r){
       var hn = r.hash_name || r.name
       if (hn && csqaqData[hn]) {
         var dp = csqaqData[hn]
         if (!sourceDetected && dp._source) { sourceDetected = dp._source; }
-        if (dp.buff_sell > 0) { r.buff_sell = dp.buff_sell; r.buff_source = 'BUFF'; }
+        if (dp.buff_sell > 0) { r.buff_sell = dp.buff_sell; r.buff_source = 'BUFF'; touched = true; }
         if (dp.buff_sell_num > 0) r.buff_sell_num = dp.buff_sell_num
         if (dp.yyyp_sell > 0) r.yyyp_sell = dp.yyyp_sell
         if (dp.yyyp_sell_num > 0) r.yyyp_sell_num = dp.yyyp_sell_num
+        // ★ Steam 独立市场价：刷新后立刻重算偏离度，否则卡片上的
+        //   「Steam偏离」会一直停留在 market.json 生成时的旧值。
+        if (dp.steam_sell > 0) {
+          var _prevSteam = r.n_steam || r.steam_sell || 0;
+          r.steam_sell = dp.steam_sell
+          r.n_steam = dp.steam_sell
+          if (dp.steam_sell_num > 0) r.steam_sell_num = dp.steam_sell_num
+          var _expect = (r.buff_sell || 0) * 1.45
+          if (_expect > 0) {
+            r.n_dev_steam = Math.round((dp.steam_sell - _expect) / _expect * 1000) / 10
+          }
+          if (_prevSteam !== dp.steam_sell) touched = true
+        }
       }
     })
+    // 价格变了 → 立即重渲染推荐列表，让偏离度标签跟着更新
+    if (touched && typeof renderAllRecs === 'function') renderAllRecs()
     // 更新数据来源标记（双源显示）
     var srcBadge = document.getElementById('dataSourceBadge');
     if (srcBadge) {
@@ -3465,6 +3481,12 @@ function renderAllRecs() {
         if (yyypSellNum > 0) depthHtml += ' <span class="r-dp-num">▲' + yyypSellNum + '</span>';
         depthHtml += '</span>';
       }
+      // Steam 社区市场（独立市场基准，与 BUFF/悠悠 非同源，天然贵约 45%）
+      var steamPrice = item.n_steam || item.steam_sell || 0;
+      if (steamPrice > 0) {
+        if (ecoPrice > 0 || buffPrice > 0 || yyypPrice > 0) depthHtml += ' ';
+        depthHtml += '<span style="color:#8b9dc3;font-size:10px" title="Steam 社区市场，独立于国内平台；含 15% 抽成，天然比国内贵约 45%">Steam <span class="r-dp-sell">¥' + steamPrice.toFixed(2) + '</span></span>';
+      }
       depthHtml += '</div>';
     }
 
@@ -3505,22 +3527,30 @@ function renderAllRecs() {
       trendHtml = '<span class="rc-trend" style="color:' + mrCls + '">' + (_mr >= 0 ? '+' : '') + _mr.toFixed(1) + '% 月</span>';
     }
 
-    // ══ FirePulse 数据行：存世量 / 平台覆盖 / 跨平台价差 ══
+    // ══ FirePulse 数据行：存世量 / 平台覆盖 / 跨市场偏离 ══
     var fpParts = [];
     var _sup = parseFloat(item.fp_total_supply);
     if (_sup > 0) fpParts.push('<span><i>存世</i> <b>' + (_sup >= 10000 ? (_sup / 10000).toFixed(1) + '万' : Math.round(_sup)) + '</b></span>');
     var _pc = parseInt(item.fp_platform_count, 10);
     if (_pc > 0) fpParts.push('<span><i>平台</i> <b>' + _pc + '</b></span>');
-    var _bs = parseFloat(item.buff_sell) || 0;
-    var _others = [parseFloat(item.igxe_sell), parseFloat(item.yyyp_sell), parseFloat(item.eco_platform_price)]
-      .filter(function(p) { return p > 0; });
-    if (_bs > 0 && _others.length) {
-      var _min = Math.min.apply(null, _others);
-      var _gap = (_min - _bs) / _min * 100;
-      if (Math.abs(_gap) >= 1) {
-        var gapCls = _gap > 0 ? 'var(--fall)' : 'var(--rise)';
-        fpParts.push('<span><i>价差</i> <b style="color:' + gapCls + '">' + (_gap > 0 ? '-' : '+') + Math.abs(_gap).toFixed(1) + '%</b></span>');
-      }
+
+    // ── 跨市场偏离度（唯一的真·跨市场信号）──
+    //   Steam 社区市场与 BUFF 非同源，含 15% 抽成 + 美元计价，天然贵约 45%。
+    //   所以看绝对值没意义，要看「偏离常态比值多少」：
+    //     |dev| ≤ 25%  → 正常结构价差，不是信号
+    //     dev < -25%   → Steam 相对异常便宜（跨境价差机会）
+    //     dev > +25%   → Steam 异常贵（国内买更划算）
+    //   ⚠ 旧版这里拿 igxe/yyyp/eco_platform 跟 buff_sell 比"价差" —— ECO 是低端档位价、
+    //     悠悠与 BUFF 同源，算出来的数字毫无交易意义，已移除。
+    var nd = item.n_dev_steam;
+    if (typeof nd === 'number' && isFinite(nd)) {
+      var ndAbs = Math.abs(nd), ndTxt, ndCls;
+      if (nd < -25) { ndTxt = '异常便宜' + ndAbs.toFixed(0) + '%'; ndCls = 'var(--fall)'; }
+      else if (nd > 25) { ndTxt = '异常贵' + ndAbs.toFixed(0) + '%'; ndCls = 'var(--rise)'; }
+      else { ndTxt = '正常'; ndCls = 'var(--text3)'; }
+      fpParts.push('<span title="对比 Steam 独立市场的常态比值 1.45，偏离 ' + (nd >= 0 ? '+' : '') + nd.toFixed(1) + '%"><i>Steam偏离</i> <b style="color:' + ndCls + '">' + ndTxt + '</b></span>');
+    } else if (item.n_steam > 0) {
+      fpParts.push('<span title="已有 Steam 价但缺国内价，无法计算偏离"><i>Steam</i> <b>¥' + Number(item.n_steam).toFixed(0) + '</b></span>');
     }
     var fpHtml = fpParts.length ? '<div class="rc-fp">' + fpParts.join('') + '</div>' : '';
 
@@ -4665,6 +4695,42 @@ window.CAT_LABELS = CAT_LABELS;
     addPlat('ECO', item.eco_price, item.eco_selling, 'var(--text2)');
     if (prows.length) body.innerHTML += '<div class="rm-sec">各平台在售</div><div class="rm-plats">' + prows.join('') + '</div>';
 
+    // ══ 独立市场基准（跨市场信号）══
+    //   只用「与 BUFF 非同源」的市场做锚。Steam 社区市场符合：含 15% 抽成 +
+    //   美元计价，与国内平台定价逻辑无关，所以能算出真正的跨市场偏离。
+    //   同源的悠悠/BUFF 差价常年在 1-2%，拿去当基准溢价恒为 ±0.x% —— 假指标。
+    var _steam = item.n_steam || item.steam_sell || 0;
+    var _refSrc = item.n_ref_src || '';
+    var _dev = item.n_dev_steam;
+    if (_steam > 0) {
+      var _srcName = _refSrc === 'csqaq' ? 'Steam 社区市场' : (_refSrc === 'eco' ? 'ECO 多平台均价' : (_refSrc || '独立市场'));
+      var _bHtml = '<div class="rm-sec">独立市场基准</div>'
+        + '<div style="display:flex;flex-direction:column;gap:6px">'
+        + '<div style="display:flex;align-items:center;gap:8px;font-size:12px">'
+        +   '<span style="color:#8b9dc3;font-weight:600">' + _srcName + '</span>'
+        +   '<span style="font-weight:700;color:var(--text)">¥' + Number(_steam).toFixed(2) + '</span>'
+        +   (_refSrc ? '<span style="font-size:9px;color:var(--text3);background:var(--surface2);padding:1px 6px;border-radius:6px">来源 ' + _refSrc + '</span>' : '')
+        + '</div>';
+
+      if (typeof _dev === 'number' && isFinite(_dev)) {
+        var _dAbs = Math.abs(_dev), _dTxt, _dCls, _dNote;
+        if (_dev < -25) { _dTxt = '异常便宜 ' + _dAbs.toFixed(1) + '%'; _dCls = 'var(--fall)'; _dNote = 'Steam 比常态低 ' + _dAbs.toFixed(0) + '%，存在跨境价差空间（注意抽成与提现成本）'; }
+        else if (_dev > 25) { _dTxt = '异常贵 +' + _dAbs.toFixed(1) + '%'; _dCls = 'var(--rise)'; _dNote = 'Steam 比常态高 ' + _dAbs.toFixed(0) + '%，国内平台买入更划算'; }
+        else { _dTxt = '正常带内 ' + (_dev >= 0 ? '+' : '') + _dev.toFixed(1) + '%'; _dCls = 'var(--text3)'; _dNote = '偏离在 ±25% 常态波动带内，属正常结构价差，不构成信号'; }
+        _bHtml += '<div style="background:var(--surface2);border-radius:8px;padding:8px 10px;border-left:3px solid ' + _dCls + '">'
+          + '<div style="font-size:12px;color:' + _dCls + ';font-weight:600">' + _dTxt + '</div>'
+          + '<div style="font-size:10px;color:var(--text3);margin-top:3px;line-height:1.5">' + _dNote + '　基准：Steam/BUFF 常态比值 1.45</div>'
+          + '</div>';
+      } else {
+        _bHtml += '<div style="font-size:10px;color:var(--text3)">缺少国内价或 Steam 价，无法计算偏离度</div>';
+      }
+      _bHtml += '</div>';
+      body.innerHTML += _bHtml;
+    } else if (item.n_warn && item.n_warn.length) {
+      body.innerHTML += '<div class="rm-sec">独立市场基准</div>'
+        + '<div style="font-size:11px;color:var(--text3)">⚠ ' + esc(String(item.n_warn[0])) + '</div>';
+    }
+
     // 多平台数据（SteamDT 采集的其他平台）
     var platforms = item.platforms;
     if (platforms && typeof platforms === 'object') {
@@ -4773,12 +4839,24 @@ window.CAT_LABELS = CAT_LABELS;
     var modalAlt = modalYyyp.length > 0 ? modalYyyp : modalMulti;
     var altLabel = modalYyyp.length > 0 ? '悠悠价格' : 'BUFF价格';
     var altColor = modalYyyp.length > 0 ? 'var(--amber)' : 'var(--rise)';
-    if (modalEco.length >= 2 || modalAlt.length >= 2) {
+    // ── Steam 独立市场曲线（与国内平台非同源，可交叉验证走势）──
+    var modalSteam = [];
+    var _bhAll = window._buffHistory || {};
+    var _mhn = item.hash_name || item.mh || item.name || '';
+    if (_mhn) {
+      Object.keys(_bhAll).sort().forEach(function(d) {
+        var dv = _bhAll[d] && _bhAll[d][_mhn] && _bhAll[d][_mhn].steam_sell;
+        if (dv > 0) modalSteam.push(dv);
+      });
+    }
+    if (modalEco.length >= 2 || modalAlt.length >= 2 || modalSteam.length >= 2) {
       var ecoSvg = window.sparkline(modalEco, 'var(--blue)', 240, 40);
       var altSvg = window.sparkline(modalAlt, altColor, 240, 40);
+      var steamSvg = window.sparkline(modalSteam, '#8b9dc3', 240, 40);
       body.innerHTML += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-top:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:6px">价格走势</div><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">' +
         (ecoSvg ? '<div><div style="font-size:9px;color:var(--blue);margin-bottom:2px">ECO价格</div>' + ecoSvg + '</div>' : '') +
         (altSvg ? '<div><div style="font-size:9px;color:' + altColor + ';margin-bottom:2px">' + altLabel + '</div>' + altSvg + '</div>' : '') +
+        (steamSvg ? '<div title="Steam 社区市场，独立市场基准"><div style="font-size:9px;color:#8b9dc3;margin-bottom:2px">Steam</div>' + steamSvg + '</div>' : '') +
         '</div></div>';
     }
 

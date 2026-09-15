@@ -365,6 +365,10 @@ def save_buff_history(steamdt_prices):
                 'buff_buy_num': info.get('buff_buy_num', 0),
                 'yyyp_sell': info.get('yyyp_sell', 0),
                 'yyyp_sell_num': info.get('yyyp_sell_num', 0),
+                # ★ 独立市场基准价：Steam 社区市场。
+                #   留在历史里，前端折线图才能画出「国内价 vs 独立市场」的交叉走势，
+                #   而不是只能对比同样源的 BUFF/悠悠（价差常年 1-2%，看不出东西）。
+                'steam_sell': info.get('steam_sell', 0),
             }
             # 也从 platforms 取悠悠数据
             plats = info.get('platforms', {})

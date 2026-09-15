@@ -83,6 +83,10 @@ export default {
                     buff_sell_num: item.buffSellNum || 0,
                     yyyp_sell: item.yyypSellPrice || 0,
                     yyyp_sell_num: item.yyypSellNum || 0,
+                    // ★ 独立市场基准价：Steam 社区市场（CSQAQ 免费返回）。
+                    //   没有它前端就算不出跨市场偏离度，只能退回同源假指标。
+                    steam_sell: item.steamSellPrice || 0,
+                    steam_sell_num: item.steamSellNum || 0,
                     _source: 'csqaq'
                   };
                 });
