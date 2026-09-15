@@ -2,6 +2,30 @@
   {
     "date": "2026-09-15",
     "tag": "chore",
+    "title": "market index 2026-09-15 07:06",
+    "desc": "market index 2026-09-15 07:06"
+  },
+  {
+    "date": "2026-09-15",
+    "tag": "fix",
+    "title": "chore(data): 首轮归一化数据回填 —— 独立基准价 steam_sell",
+    "desc": "chore(data): 首轮归一化数据回填 —— 独立基准价 steam_sell"
+  },
+  {
+    "date": "2026-09-15",
+    "tag": "fix",
+    "title": "feat(data): 三源数据接入归一化层 + 修复 Steam 基准价假指标",
+    "desc": "feat(data): 三源数据接入归一化层 + 修复 Steam 基准价假指标"
+  },
+  {
+    "date": "2026-09-15",
+    "tag": "chore",
+    "title": "data update",
+    "desc": "data update"
+  },
+  {
+    "date": "2026-09-15",
+    "tag": "chore",
     "title": "market index 2026-09-15 00:11",
     "desc": "market index 2026-09-15 00:11"
   },
@@ -94,29 +118,5 @@
     "tag": "fix",
     "title": "feat(data): 生成 market_sectors.json（FirePulse 板块指数/涨跌）",
     "desc": "feat(data): 生成 market_sectors.json（FirePulse 板块指数/涨跌）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(firepulse): 新增板块接口 fetch_sectors（指数/涨跌/走势，单次请求）",
-    "desc": "feat(firepulse): 新增板块接口 fetch_sectors（指数/涨跌/走势，单次请求）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(data): update.py 接入大盘时间序列 + FirePulse 持仓精确化（限 all 模式控额度",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(firepulse): 新增 ID 缓存、批量补充、大盘时间序列三个能力",
-    "desc": "feat(firepulse): 新增 ID 缓存、批量补充、大盘时间序列三个能力"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "chore",
-    "title": "market index 2026-09-13 08:43",
-    "desc": "market index 2026-09-13 08:43"
   }
 ]
