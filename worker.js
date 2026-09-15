@@ -207,19 +207,33 @@ export default {
 
       // ── 代理 GitHub Pages 静态文件 ──
       const target = GH_PAGES + (path === '/' ? '/index.html' : path)
-      // 缓存策略：数据文件(.json) 长缓存 4 小时——前端已用「数据版本号」
-      // 作为缓存键，数据一变 URL 就变，不会读到旧数据；
-      // 页面/JS/CSS 保持 60 秒短缓存，保证改版后能及时生效。
+      // 缓存策略（2026-09-15 修正）：
+      //   ① data_status.json —— **必须 0 缓存**。它是前端的「缓存版本号」来源，
+      //      前端用它的 updated 字段拼出 market.json?v=<updated>。
+      //      旧版把它和别的 .json 一起缓存 4 小时 → 版本号自己就是陈旧的
+      //      → 整个版本号机制失效，数据更新后最长 4 小时看不到新值。
+      //      （实测线上 6 次采样出现 2 种 updated 值，正是此因）
+      //   ② 其它数据文件(.json) —— 短缓存 120 秒。它们靠 ?v=<版本号> 天然区分，
+      //      但前提是①能及时回源；再加一层短 TTL 兜底，避免边缘节点长期不一致。
+      //   ③ 页面/JS/CSS 保持 60 秒，改版能及时生效。
+      // 另外：上游 raw.githubusercontent 自身也有约 5 分钟的 CDN 缓存，
+      //       故把 cacheTtl 归零/设短，让 Worker 侧不与上游延迟叠加。
+      const isStatus = /^\/data_status\.json$/i.test(path)
       const isData = /\.json$/i.test(path)
-      const cacheSec = isData ? 14400 : 60
-      const resp = await fetch(target, { cf: { cacheTtl: cacheSec, cacheEverything: true } })
+      const cacheSec = isStatus ? 0 : (isData ? 120 : 60)
+      const resp = await fetch(target, {
+        cf: { cacheTtl: cacheSec, cacheEverything: true },
+      })
       const text = await resp.text()
       const ext = path.split('.').pop()
       const ct = ext === 'json' ? 'application/json' :
         ext === 'html' || path === '/' || !ext ? 'text/html; charset=utf-8' :
         ext === 'css' ? 'text/css' : ext === 'js' ? 'application/javascript' : 'text/plain'
+      const cacheHeader = isStatus
+        ? 'no-store, no-cache, must-revalidate, max-age=0'
+        : 'public, max-age=' + cacheSec
       return new Response(text, {
-        headers: { 'Content-Type': ct, 'Cache-Control': 'public, max-age=' + cacheSec, 'Access-Control-Allow-Origin': '*' },
+        headers: { 'Content-Type': ct, 'Cache-Control': cacheHeader, 'Access-Control-Allow-Origin': '*' },
       })
     } catch (e) {
       return json({ error: e.message }, 500, cors)
