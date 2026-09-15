@@ -480,3 +480,46 @@ has been disabled`。改用 **`CredReadW`（advapi32）**直接读 Windows 凭�
 SIGTERM，脚本必须**每步 flush 落盘**，否则结果全丢。
 另：`python -c` 里嵌多行中文会被安全策略拦（误判为从 Bash 调 PowerShell），
 应改用 Write 工具写 `.py` 文件再执行。
+
+
+---
+
+## (15) `refs/remotes/...` 的 **reflog 残留**会让 `fsck` 报错（rc=2）
+
+**症状**
+```
+$ git fsck
+dangling tree 44d221f039fd4fdf02528652f0a545a6d8880189
+error: refs/remotes/origin/main: invalid reflog entry 50686f4f1f7bd7d85f321be8c1c195f1116b6968
+```
+rc=2。但 `show-ref` / `rev-parse` / `status` / `log` 全部 rc=0，仓库**功能完全正常**。
+
+**成因**
+`_sync_remote_tracking_ref()` 为了修 `--force-with-lease` 的 `stale info`，
+用纯文件系统直接覆盖写 `refs/remotes/origin/main`。
+但 `.git/logs/refs/remotes/origin/main` 里**还留着指向旧 sha 的 reflog 条目**，
+而那个旧 sha（`50686f4f`）本机根本没有对象（fetch 从来没落过对象，见 (10)(11)）。
+`fsck` 校验收到的 reflog 条目 → 报 `invalid reflog entry`。
+
+**关键认知**
+- reflog 是**纯审计**用途，删掉不影响任何正确性（不影响 HEAD、索引、对象可达性）
+- ⚠️ 和 (12) 同一条铁律：**必须移到 `.git` 目录树之外**。
+  git 会**递归扫描** `logs/`，改名成 `main.bak` / `main.dead` 依然会被解析并报错。
+- 移出后要顺手删掉留下的**空目录**（`logs/refs/remotes/` 等），否则还是会被扫到
+
+**修复（已脚本化）**
+```python
+shutil.move(os.path.join(gitd,'logs','refs','remotes','origin','main'),
+            os.path.join(TRASH,'reflog_logs_refs_remotes_origin_main'))
+# 再自下而上删掉空目录
+for root, dirs, files in os.walk(os.path.join(gitd,'logs'), topdown=False):
+    for d in dirs:
+        dp = os.path.join(root, d)
+        if not os.listdir(dp):
+            os.rmdir(dp)
+```
+修复后 `fsck` → **rc=0**。
+
+**副产品**：`refs/remotes/origin/main` 这个本地引用本身在最终版里**已经不存在**了
+（只剩 `refs/heads/main`），这完全没问题 —— push 流程用的是 `git ls-remote`
+直接问远端，不依赖本地 tracking ref。
