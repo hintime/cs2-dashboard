@@ -1,9 +1,13 @@
 name: Update CS2 Market Index
 
 on:
-  schedule:
-    # 每2小时运行一次（0,2,4,6,8,10,12,14,16,18,20,22点）
-    - cron: '0 */2 * * *'
+  # ⚠️ 2026-09-16 已停用定时触发，改由本机调度器 updater_daemon.py 接管。
+  # 原因：统一收口，避免本机调度器与 GitHub cron 双写同一批 json（冲突/重复抓取）。
+  # 本机调度器每 2 小时跑一次 index_collector.py。
+  # 如需临时启用，用 workflow_dispatch 手动触发即可。
+  # schedule:
+  #   # 每2小时运行一次（0,2,4,6,8,10,12,14,16,18,20,22点）
+  #   - cron: '0 */2 * * *'
   workflow_dispatch:
 
 permissions:

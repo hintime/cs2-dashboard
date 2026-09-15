@@ -1,10 +1,16 @@
 name: Update All CS2 Data
 
 on:
-  schedule:
-    # 每 6 小时一次：含 AI 深度分析，单次约 2 小时。
-    # 高频价格刷新由 update-prices.yml 负责（不调 AI）。
-    - cron: '0 */6 * * *'
+  # ⚠️ 2026-09-16 已停用定时触发，改由本机调度器 updater_daemon.py 接管。
+  # 原因：GitHub Actions 的 schedule 是"尽力而为"、不可靠；self-hosted runner
+  # 的作业常年卡在 Checkout 步骤后死去（2026-09-15 实测 Update All 于 03:11 UTC
+  # 失败，失败步骤 = Commit and push）。
+  # 本机调度器以当前用户身份常驻，6 小时一跑全量（含 AI），不依赖 GitHub 调度。
+  # 如需临时启用，用 workflow_dispatch 手动触发即可。
+  # schedule:
+  #   # 每 6 小时一次：含 AI 深度分析，单次约 2 小时。
+  #   # 高频价格刷新由 update-prices.yml 负责（不调 AI）。
+  #   - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       mode:
