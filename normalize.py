@@ -168,7 +168,7 @@ def normalize(item, fp=None, src_hint=None):
 
     # ── 2. 基准价 ref_price：必须是「与 BUFF 非同源」的市场，否则溢价恒为 0 ──
     #
-    # ⚠ 血泪教训（2026-09-14 复核）：
+    # ⚠ 血泪教训一（2026-09-14 复核）：
     #   最初我用 [buff_sell, yyyp_sell] 的中位当基准。实测 4714/4805 条两者都有值，
     #   但 BUFF 与悠悠是**同市场同口径**、价差常年在 1-2%，
     #   于是 median ≈ buff_sell，premium_buff 恒等于 ±0.x% —— 这是个假指标！
@@ -176,6 +176,18 @@ def normalize(item, fp=None, src_hint=None):
     #   1) eco_platform_price  (ECO 在 10 平台体系的独立均价)
     #   2) steam_sell          (Steam 社区市场，与国内平台定价逻辑不同)
     #   3) 若都没有 → ref=0，明确标记「无法评估溢价」，**绝不**退回同源价凑数
+    #
+    # ⚠ 血泪教训二（2026-09-15 实测 186 条）：
+    #   Steam 社区市场含 15% 平台抽成 + 美元计价，**天然比 BUFF 贵约 45%**
+    #   （实测 Steam/BUFF 比值：中位 1.46，四分位 1.36~1.55）。
+    #   直接把 steam_sell 当 ref 去算 premium_buff，结果永远是 -30% 左右的深度负数
+    #   —— 那是两个市场的**正常结构性价差**，不是套利信号。**又一个假指标！**
+    # 结论：premium 必须相对「市场常态比值」来衡量，而不是绝对比值。
+    #   下面保留 ref_price 原义（独立市场绝对价，供参考展示），
+    #   同时单独算 deviation_from_norm（偏离常态多少）作为真正的信号。
+    STEAM_BUFF_NORM = 1.45   # Steam/BUFF 市场常态比值（实测中位数）
+    STEAM_BUFF_TOL = 0.25    # 常态波动带 ±25%
+
     ref, ref_src, ref_conf = 0.0, '', 0.0
     steam_sell = _f(item.get('steam_sell'))
     if eco_plat > 0:
@@ -196,6 +208,18 @@ def normalize(item, fp=None, src_hint=None):
     if ref > 0:
         src['ref_price'] = ref_src
         conf['ref_price'] = round(ref_conf, 2)
+
+    # ── 2b. 跨市场「异常偏离」：真正的套利/风险信号 ──
+    # 做法：拿 BUFF 价按常态比值推算出「Steam 本应是多少」，
+    #       再看实际 Steam 价偏离这个预期多少。
+    #   dev < -25%  → 该饰品在 Steam 相对异常便宜（有跨境价差机会）
+    #   dev > +25%  → Steam 异常贵（国内买更划算）
+    #   |dev| ≤ 25% → 属正常结构价差，不构成信号
+    dev_steam = None
+    if steam_sell > 0 and sd_sell > 0:
+        expected = sd_sell * STEAM_BUFF_NORM
+        if expected > 0:
+            dev_steam = round((steam_sell - expected) / expected * 100, 1)
 
     # ── 3. 求购 ──
     buy = _nz(sd_buy, eco_qg)
@@ -278,6 +302,10 @@ def normalize(item, fp=None, src_hint=None):
         'premium_yyyp': None,
         'premium_igxe': None,
         'premium_liquid': None,
+        # ── 真正的信号：相对「Steam/BUFF 常态比值」的异常偏离 ──
+        # 绝对值一律负数（Steam 天然贵 45%），只有偏离常态才有意义
+        'dev_steam': dev_steam,
+        'dev_norm': STEAM_BUFF_NORM,
     }
     if ref > 0:
         if sd_sell > 0:
@@ -352,6 +380,8 @@ def apply_to_item(item, fp=None):
     item['n_m7'] = u['m7']
     item['n_m30'] = u['m30']
     item['n_steam'] = u['steam_sell']
+    item['n_dev_steam'] = u['dev_steam']
+    item['n_dev_norm'] = u['dev_norm']
     item['n_premium_buff'] = u['premium_buff']
     item['n_premium_yyyp'] = u['premium_yyyp']
     item['n_premium_igxe'] = u['premium_igxe']
@@ -361,6 +391,8 @@ def apply_to_item(item, fp=None):
     item['n_src'] = m['_src']
     item['n_conf'] = m['_conf']
     item['n_warn'] = m['_warn']
+    # 便捷字段：基准价来自哪个源（前端直接显示，不用去 _src 字典里翻）
+    item['n_ref_src'] = m['_src'].get('ref_price', '')
     return item
 
 
@@ -391,6 +423,19 @@ if __name__ == '__main__':
             ('双源冲突取低价并告警', {
                 '_steamdt_buff': '100', '_csqaq_buff': '200',
             }, None, {'price': 100.0, 'warn': True}),
+            # ⚠ 血泪教训二：Steam 天然比 BUFF 贵 45%，直接算溢价永远是深负数。
+            #   正确做法是算「偏离常态多少」。这里比值正好 1.45 → 偏离 0%。
+            ('Steam常态比值不应报异常', {
+                'buff_sell': '100', 'steam_sell': '145',
+            }, None, {'ref_price': 145.0, 'dev_steam': 0.0}),
+            # Steam 比常态贵一倍（290 vs 预期145）→ 偏离 +100%
+            ('Steam异常偏贵应报正偏离', {
+                'buff_sell': '100', 'steam_sell': '290',
+            }, None, {'dev_steam': 100.0}),
+            # Steam 只有常态六成（87 vs 预期145）→ 偏离 -40%
+            ('Steam异常便宜应报负偏离', {
+                'buff_sell': '100', 'steam_sell': '87',
+            }, None, {'dev_steam': -40.0}),
         ]
         fails = 0
         for name, it, fp, expect in cases:
@@ -403,6 +448,11 @@ if __name__ == '__main__':
             if 'premium_buff' in expect and u['premium_buff'] != expect['premium_buff']:
                 ok = False
                 detail.append('premium_buff=%s 期望 %s' % (u['premium_buff'], expect['premium_buff']))
+            if 'dev_steam' in expect:
+                dv = u.get('dev_steam')
+                if dv is None or abs(dv - expect['dev_steam']) > 0.11:
+                    ok = False
+                    detail.append('dev_steam=%s 期望 %s' % (dv, expect['dev_steam']))
             if 'price' in expect:
                 if abs(u['price'] - expect['price']) > 0.01:
                     ok = False

@@ -556,6 +556,18 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             }
     print(f'[REC] BUFF prices available for {len(buff_map)} items')
 
+    # ── 接入归一化层（四源统一 + 交叉验证）──
+    # normalize.py 把 ECO / SteamDT / CSQAQ / FirePulse 四个来源归一成统一字段，
+    # 并算出真正可信的 ref_price（独立市场基准）与跨平台溢价。
+    # 关键红线：基准必须来自「与 BUFF 非同源」的市场，否则溢价恒为 0（假指标）。
+    _norm = None
+    try:
+        import normalize as _normalize
+        _norm = _normalize
+        print('[REC] normalize.py 已加载（四源归一化）')
+    except Exception as _ne:
+        print(f'[REC] normalize.py 加载失败，退回原始逻辑: {_ne}', file=sys.stderr)
+
     all_recs = []
 
     for item in tracked:
@@ -569,6 +581,15 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
 
         if price < 20:  # Skip items below ¥20 (filter cheap stickers/graffiti)
             continue
+
+        # ── 四源归一化：产出统一字段 + 可信溢价 ──
+        # 就地回写 n_* 前缀字段，不污染原有字段，保证平滑接入。
+        n_meta = None
+        if _norm is not None:
+            try:
+                n_meta = _norm.apply_to_item(item)
+            except Exception as _ne:
+                n_meta = None
 
         # ══════════ ECO Score (0-100): supply/demand + valuation ══════════
         eco_score = 0.0
@@ -782,6 +803,18 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'platforms': bd.get('platforms', {}),
             'yyyp_sell': item.get('yyyp_sell', 0) or 0,
             'yyyp_sell_num': item.get('yyyp_sell_num', 0) or 0,
+            # ── 归一化层产出的统一字段（前端「数据来源」小标用）──
+            'n_ref': item.get('n_ref', 0),
+            'n_ref_src': item.get('n_ref_src', ''),
+            'n_steam': item.get('n_steam', 0),
+            # 真正的信号：相对 Steam/BUFF 常态比值(1.45)的异常偏离。
+            # 直接看 premium_buff 永远是深负数（两个市场的结构性价差），
+            # 只有 |dev|>25% 才是值得关注的异常。
+            'n_dev_steam': item.get('n_dev_steam'),
+            'n_premium_buff': item.get('n_premium_buff'),
+            'n_premium_yyyp': item.get('n_premium_yyyp'),
+            'n_cov': item.get('n_cov', 0),
+            'n_warn': item.get('n_warn', []),
             '_reason': reason,
             '_cat': tag,
         })
@@ -2254,18 +2287,29 @@ def main():
                     batch_prices = recommend.fetch_csqaq_batch_prices(all_hashnames)
                     if batch_prices:
                         merged = 0
+                        steam_ok = 0
                         for item in tracked:
                             hn = item.get('HashName', '')
                             if hn and hn in batch_prices:
                                 bp = batch_prices[hn]
+                                # ⚠ 2026-09-15：保留双源原值，供 normalize 层做真·交叉验证。
+                                #   CSQAQ 的全量值写进 _csqaq_buff；SteamDT 稍后会覆盖 buff_sell，
+                                #   所以必须在这里先把 CSQAQ 原值单独存一份，否则丢失。
                                 if bp.get('buff_sell', 0) > 0:
+                                    item['_csqaq_buff'] = bp['buff_sell']
                                     item['buff_sell'] = bp['buff_sell']
                                     item['buff_source'] = 'BUFF'
                                 item['buff_sell_num'] = bp.get('buff_sell_num', 0) or item.get('buff_sell_num', 0)
                                 item['yyyp_sell'] = bp.get('yyyp_sell', 0)
                                 item['yyyp_sell_num'] = bp.get('yyyp_sell_num', 0)
+                                # ★ 独立市场基准价：Steam 社区市场（与 BUFF/悠悠 非同源）
+                                #   没有它 → ref_price 覆盖率 0% → 溢价永远算不出来（假指标）
+                                if bp.get('steam_sell', 0) > 0:
+                                    item['steam_sell'] = bp['steam_sell']
+                                    item['steam_sell_num'] = bp.get('steam_sell_num', 0)
+                                    steam_ok += 1
                                 merged += 1
-                        print(f'[CSQAQ] Batch merged: {merged} items')
+                        print(f'[CSQAQ] Batch merged: {merged} items (独立基准价 steam_sell: {steam_ok})')
                         # ── CSQAQ 全量数据 → 保存到 buff_history（秒级完成，无批次限制）──
                         if batch_prices and len(batch_prices) > 100:
                             try:
@@ -2349,6 +2393,12 @@ def main():
                             hn = item.get('HashName', '')
                             if hn and hn in full_prices:
                                 bp = full_prices[hn]
+                                # ⚠ 2026-09-15：SteamDT 会覆盖 buff_sell。
+                                #   先把 SteamDT 原值单独存一份到 _steamdt_buff，
+                                #   否则 CSQAQ 的 _csqaq_buff 就成了孤儿，双源无法交叉验证。
+                                if bp.get('buff_sell', 0) > 0:
+                                    item['_steamdt_buff'] = bp['buff_sell']
+                                    item['_steamdt_src'] = bp.get('buff_source', '')
                                 item['buff_sell'] = bp.get('buff_sell', 0)
                                 item['buff_buy'] = bp.get('buff_buy', 0)
                                 item['buff_sell_num'] = bp.get('buff_sell_num', 0)
