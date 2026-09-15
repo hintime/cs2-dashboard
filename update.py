@@ -2097,9 +2097,17 @@ def git_push_locally(files, message):
     #    main **没有共同祖先**（本地是独立的 root 提交链），因此普通 push 会被
     #    `non-fast-forward` 拒绝。数据以本机为准，所以这里接受强推。
     #    用 `--force-with-lease`（而非 --force）保留"远端被别人改过就中止"的保护。
+    #
+    #    但 lease 要求本地 `refs/remotes/origin/main` 与远端当前值一致 ——
+    #    本仓库 fetch 从没成功过，该 ref 一直是旧值，于是 lease 必然报
+    #    `(stale info)` 而拒绝。所以推送前必须用 ls-remote 把基准校准到远端真值。
+    if not _sync_remote_tracking_ref():
+        print('[PUSH] lease 基准校准失败，仍尝试 force（数据以本机为准）', file=sys.stderr)
+
     attempts = [
         (['push', 'origin', 'main'], '普通'),
         (['push', '--force-with-lease', 'origin', 'main'], 'force-with-lease'),
+        (['push', '--force', 'origin', 'main'], 'force'),
     ]
     last_err = ''
     for extra, tag in attempts:
@@ -2426,16 +2434,61 @@ def _ensure_git_identity():
                 print(f'[GIT][WARN] 写 {key} 失败: {err_s.strip()[:120]}', file=sys.stderr)
 
 
+def _sync_remote_tracking_ref():
+    """把 refs/remotes/origin/main 校准成**远端真实**的 sha。
+
+    为什么需要（2026-09-16 实测）：
+      `git push --force-with-lease` 会拿本地的 `refs/remotes/origin/main` 与远端
+      当前值比对，不一致就拒绝并报 `! [rejected] main -> main (stale info)`。
+      而这个仓库的 fetch 从来没成功过 —— 本地那个 ref 一直停在旧值
+      （如 `25df639`），远端其实已是 `dbfcfde`，于是 lease 永远校验失败，
+      强推通道被自己锁死。
+
+    解法：用 `git ls-remote`（只读、不需要本地对象、4~5 秒）拿到远端真实 sha，
+    再用纯文件系统写入本地 ref。这样 `--force-with-lease` 就能通过，
+    同时**保留**了它的保护语义：若期间有别人推过，sha 变了，lease 仍会中止。
+
+    写入用二进制模式 —— 文本模式在 Windows 上会产生 '\r\n'，git 会判为 bad ref。
+    """
+    rc, out, err = _git_run(_git_auth_args() + ['ls-remote', 'origin', 'main'],
+                            timeout=120, allow_kill=False)
+    if rc != 0:
+        print(f'[GIT][WARN] ls-remote 失败 rc={rc}：{err.strip()[:160]}', file=sys.stderr)
+        return False
+
+    sha = ''
+    for line in out.splitlines():
+        parts = line.split()
+        if len(parts) == 2 and parts[1] == 'refs/heads/main' and len(parts[0]) == 40:
+            sha = parts[0]
+            break
+    if not sha:
+        print('[GIT][WARN] ls-remote 未返回 refs/heads/main', file=sys.stderr)
+        return False
+
+    gitd = os.path.join(DATA_DIR, '.git')
+    rel = 'refs/remotes/origin/main'
+    dst = os.path.join(gitd, *rel.split('/'))
+    try:
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        with open(dst, 'wb') as f:
+            f.write(sha.encode('ascii') + b'\n')
+        if open(dst, 'rb').read().strip().decode('ascii', 'replace') == sha:
+            print(f'[GIT] 校准 {rel} = {sha[:8]}（远端真实值）')
+            return True
+        print(f'[GIT][WARN] 校准 {rel} 后回读失败', file=sys.stderr)
+    except Exception as _e:
+        print(f'[GIT][WARN] 写 {rel} 失败：{_e}', file=sys.stderr)
+    return False
+
+
 def _repair_remote_ref():
-    """fetch 之后强制把 origin/main 落成 loose ref（并回读验证）。
+    """把 origin/main 落成 loose ref（用 FETCH_HEAD / packed-refs 的 sha）。
 
-    背景（2026-09-16 实测）：git for Windows 的 `update-ref` 在 ref 的中间目录
-    不存在时会**静默失败**（rc=0，不建文件）。`git fetch` 内部同样走 update-ref，
-    于是出现「fetch 打印 `[new branch] main -> origin/main`，但
-    `git rev-parse refs/remotes/origin/main` 报 ambiguous argument」。
-
-    这里用纯文件系统写入 + 回读校验，绕过该 bug。sha 取自 FETCH_HEAD
-    （最近一次 fetch 的真实结果）。
+    历史用途：`git fetch` 报告 `[new branch] main -> origin/main` 但 ref 实际
+    没建（git for Windows 的 update-ref 在中间目录缺失时静默失败）。
+    现已不再依赖 fetch；新代码用 `_sync_remote_tracking_ref()` 从 ls-remote
+    取真实 sha。此函数保留作为无网络时的兜底。
     """
     gitd = os.path.join(DATA_DIR, '.git')
     ref = 'refs/remotes/origin/main'
