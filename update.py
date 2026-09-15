@@ -2076,9 +2076,19 @@ def git_push_locally(files, message):
         if rc != 0:
             raise RuntimeError(f'git add -f {f} 失败 rc={rc}: {err.strip()[:160]}')
 
-    rc, out, err = _git_run(['commit', '-m', message, '--no-verify'], timeout=180)
-    if rc != 0 and 'nothing to commit' not in (out + err):
-        raise RuntimeError(f'git commit 失败 rc={rc}: {err.strip()[:200]}')
+    # ⚠️ 提交前先确认暂存区**真的有**改动。
+    #   `git commit` 在"没有东西可提交"时返回 rc=1，且 stdout/stderr 都可能为空
+    #   （取决于 git 版本与 --no-verify），靠匹配 'nothing to commit' 不可靠 ——
+    #   实测就是这样误报 `git commit 失败 rc=1: ` 的。
+    rc, staged, err = _git_run(['diff', '--cached', '--name-only'], timeout=120)
+    if rc != 0:
+        raise RuntimeError(f'git diff --cached 失败 rc={rc}: {err.strip()[:160]}')
+    if not staged.strip():
+        print('[PUSH] 暂存区无改动，跳过 commit（数据与 HEAD 一致）')
+    else:
+        rc, out, err = _git_run(['commit', '-m', message, '--no-verify'], timeout=180)
+        if rc != 0:
+            raise RuntimeError(f'git commit 失败 rc={rc}: {(err or out).strip()[:250]}')
 
     # Push: 优先 Token（HTTP Basic，见 _git_auth_args），fallback 到空 credential helper
     # （push 超时**不强杀**：push 中断可能留下半推的 ref 状态，代价高于多等一会儿）
