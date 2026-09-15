@@ -1,5 +1,47 @@
 [
   {
+    "date": "2026-09-15",
+    "tag": "chore",
+    "title": "market index 2026-09-15 00:11",
+    "desc": "market index 2026-09-15 00:11"
+  },
+  {
+    "date": "2026-09-14",
+    "tag": "chore",
+    "title": "market index 2026-09-14 21:21",
+    "desc": "market index 2026-09-14 21:21"
+  },
+  {
+    "date": "2026-09-15",
+    "tag": "fix",
+    "title": "feat(tools): 新增 FirePulse 额度预算器 firepulse_budget.py",
+    "desc": "feat(tools): 新增 FirePulse 额度预算器 firepulse_budget.py"
+  },
+  {
+    "date": "2026-09-15",
+    "tag": "feat",
+    "title": "移除热力图子页面（导航入口 + 页面文件）",
+    "desc": "移除热力图子页面（导航入口 + 页面文件）"
+  },
+  {
+    "date": "2026-09-15",
+    "tag": "fix",
+    "title": "feat(data): 新增统一数据层 normalize.py —— 四源归一化 + 交叉验证兜底",
+    "desc": "feat(data): 新增统一数据层 normalize.py —— 四源归一化 + 交叉验证兜底"
+  },
+  {
+    "date": "2026-09-14",
+    "tag": "chore",
+    "title": "market index 2026-09-14 16:07",
+    "desc": "market index 2026-09-14 16:07"
+  },
+  {
+    "date": "2026-09-14",
+    "tag": "chore",
+    "title": "data update",
+    "desc": "data update"
+  },
+  {
     "date": "2026-09-14",
     "tag": "chore",
     "title": "data update",
@@ -76,47 +118,5 @@
     "tag": "chore",
     "title": "market index 2026-09-13 08:43",
     "desc": "market index 2026-09-13 08:43"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(web): 首页新增板块涨跌行（FirePulse 52 个板块，展示涨跌幅各前 6）",
-    "desc": "feat(web): 首页新增板块涨跌行（FirePulse 52 个板块，展示涨跌幅各前 6）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "chore(data): 首份 market_overview_history.json",
-    "desc": "chore(data): 首份 market_overview_history.json"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "chore(data): 首份 sectors.json",
-    "desc": "chore(data): 首份 sectors.json"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(data): update.py 接入板块数据(sectors.json)、大盘时序(market_overv",
-    "desc": "ew_history.json)、持仓精确化"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(data): firepulse.py 新增板块列表/K线/板块概览、大盘时序累积、持仓精确化",
-    "desc": "feat(data): firepulse.py 新增板块列表/K线/板块概览、大盘时序累积、持仓精确化"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(web): 首页新增 FirePulse 大盘条（饰品指数/成交额/涨跌分布/贪婪指数）",
-    "desc": "feat(web): 首页新增 FirePulse 大盘条（饰品指数/成交额/涨跌分布/贪婪指数）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "chore(data): 首份 FirePulse 大盘数据 market_overview.json",
-    "desc": "chore(data): 首份 FirePulse 大盘数据 market_overview.json"
   }
 ]
