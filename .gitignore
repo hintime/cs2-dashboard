@@ -31,3 +31,12 @@ update_log.txt
 
 # 本机运行时密钥（云端走 Secrets，此文件仅本机使用）
 local_keys.env
+
+# 本机调度器（updater_daemon.py）的运行时文件
+.updater.lock
+.updater_state.json
+logs/
+.runner_local/
+
+# 数据迁移前的一次性备份（cs2-move-data.py 产出，不入库）
+.pre_switch_backup/

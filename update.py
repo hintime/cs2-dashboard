@@ -17,6 +17,17 @@ import json, time, base64, urllib.request, urllib.error, urllib.parse, subproces
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 sys.stdout.reconfigure(encoding='utf-8', errors='replace') if hasattr(sys.stdout, 'reconfigure') else None
 sys.stderr.reconfigure(encoding='utf-8', errors='replace') if hasattr(sys.stderr, 'reconfigure') else None
+
+# ── git safe.directory：GitHub Actions self-hosted runner 以 SYSTEM 身份运行，
+#    而 runner 工作目录（C:\actions-runner\_work\...）归交互用户所有，
+#    git >= 2.35.2 会因此报 "detected dubious ownership in repository" 并中止。
+#    safe.directory 属于安全配置，git 会无视仓库本地配置，因此只能走
+#    环境变量通道（与命令行 -c 同优先级，且对整个进程树生效）。
+#    （系统级 gitconfig 需管理员权限，此处避免依赖。）
+if not os.environ.get('GIT_CONFIG_COUNT'):
+    os.environ['GIT_CONFIG_COUNT'] = '1'
+    os.environ['GIT_CONFIG_KEY_0'] = 'safe.directory'
+    os.environ['GIT_CONFIG_VALUE_0'] = '*'
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -43,13 +54,82 @@ if os.path.exists(_local_keys):
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 # CSQAQ removed — alerts now self-computed from BUFF price history
 STEAM_KEY = os.environ.get('STEAMDT_KEY', '')
-GH_TOKEN = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN', '')
+
+
+def _credential_manager_token():
+    """从 Windows 凭据管理器取 GitHub token。
+
+    本机（非 CI）环境下 GH_TOKEN / GITHUB_TOKEN 都没有，token 实际存在
+    Windows 凭据管理器的 `git:https://github.com` 条目里（git-credential-manager
+    写的）。原实现完全没读它，于是 `git_push_locally` 退回空 credential helper，
+    push 一律 401 —— 数据在本机攒着、永远推不上去。
+    """
+    if sys.platform != 'win32':
+        return ''
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class CREDENTIAL(ctypes.Structure):
+            _fields_ = [("Flags", wintypes.DWORD),
+                        ("Type", wintypes.DWORD),
+                        ("TargetName", wintypes.LPWSTR),
+                        ("Comment", wintypes.LPWSTR),
+                        ("LastWritten", wintypes.FILETIME),
+                        ("CredentialBlobSize", wintypes.DWORD),
+                        ("CredentialBlob", ctypes.POINTER(ctypes.c_byte)),
+                        ("Persist", wintypes.DWORD),
+                        ("AttributeCount", wintypes.DWORD),
+                        ("Attributes", ctypes.c_void_p),
+                        ("TargetAlias", wintypes.LPWSTR),
+                        ("UserName", wintypes.LPWSTR)]
+
+        advapi32 = ctypes.windll.advapi32
+        advapi32.CredReadW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD,
+                                       wintypes.DWORD, ctypes.POINTER(ctypes.POINTER(CREDENTIAL))]
+        advapi32.CredReadW.restype = wintypes.BOOL
+        pcred = ctypes.POINTER(CREDENTIAL)()
+        if not advapi32.CredReadW("git:https://github.com", 1, 0, ctypes.byref(pcred)):
+            return ''
+        c = pcred.contents
+        blob = ctypes.string_at(c.CredentialBlob, c.CredentialBlobSize)
+        advapi32.CredFree(pcred)
+        # git-credential-manager 存的是 utf-16-le
+        for enc in ('utf-16-le', 'utf-8', 'latin-1'):
+            try:
+                v = blob.decode(enc).strip('\x00').strip()
+                if v:
+                    return v
+            except (UnicodeDecodeError, LookupError):
+                continue
+    except Exception as _e:
+        print('[WARN] 读取 Windows 凭据管理器失败: ' + str(_e), file=sys.stderr)
+    return ''
+
+
+GH_TOKEN = (os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
+            or _credential_manager_token())
 DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', '')
 ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '')
 AI_PROVIDER = os.environ.get('AI_PROVIDER', 'zhipu')  # 统一用智谱 GLM-4
 REPO = 'hintime/cs2-dashboard'
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, '..') if SCRIPT_DIR.endswith('.github') else SCRIPT_DIR
+
+# ── git 非交互环境（本机/VPS/CI 通用）──
+# 少了这几个环境变量，git 一旦需要凭据就会弹窗或直接挂住等输入。
+GIT_ENV = {**os.environ,
+           'GCM_INTERACTIVE': 'never',
+           'GIT_TERMINAL_PROMPT': '0',
+           'GIT_ASKPASS': 'echo'}
+# git 公共参数：清掉 credential.helper（优先用显式 token），
+# 并统一走 openssl backend + 关 SSL 校验（本机 hosts 走透明代理，证书链不完整）。
+GIT_BASE = ['-c', 'credential.helper=', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
+
+# 非 CI 环境下 GH_TOKEN 为空的告警（会导致 push 静默失败）
+if not GH_TOKEN and not os.environ.get('GITHUB_ACTIONS'):
+    print('[WARN] 未取到 GitHub token（env / Windows 凭据管理器均无），'
+          '本次数据将无法推送', file=sys.stderr)
 
 MAX_RETRIES = 3
 RETRY_DELAY = 2
@@ -1894,25 +1974,27 @@ def push_all():
         return
     else:
         # Local: single git commit + push（带重试）
+        last_err = None
         for attempt in range(3):
             try:
                 git_push_locally(sorted(dirty_files), message)
+                last_err = None
                 break
             except Exception as e:
+                last_err = e
                 print(f'[PUSH] Attempt {attempt+1} failed: {e}', file=sys.stderr)
                 if attempt < 2:
                     time.sleep(3)
-                    # 拉取远程并 rebase
-                    try:
-                        subprocess.run(['git', 'stash'], check=False, cwd=DATA_DIR, capture_output=True)
-                        subprocess.run(['git', '-c', 'credential.helper=', '-c', 'http.sslBackend=openssl',
-                                       '-c', 'http.sslVerify=false', 'pull', '--rebase', 'origin', 'main'],
-                                      check=False, cwd=DATA_DIR, capture_output=True)
-                        subprocess.run(['git', 'stash', 'pop'], check=False, cwd=DATA_DIR, capture_output=True)
-                    except Exception as _e:
-                        print(f'[WARN] git 同步回滚失败: {_e}', file=sys.stderr)
-                else:
-                    print(f'[PUSH] All 3 attempts failed, data not pushed!', file=sys.stderr)
+                    # ⚠️ 重试**不再** fetch + rebase。
+                    #   实测（2026-09-16）这条仓库里 fetch 从没真正下到对象
+                    #   （FETCH_HEAD 写了、对象没下来），而 rebase 一旦被超时
+                    #   强杀就会清空 refs/ → 仓库变 "not a git repository"。
+                    #   更关键的是：远端数据比本地旧，rebase 进来只会覆盖新数据。
+                    #   所以重试只做纯 push —— push 不需要远端对象在本地存在。
+                    pass
+        if last_err is not None:
+            # 必须让调用方知道数据没推上去 —— 否则自动任务会「静默成功」地空转。
+            raise RuntimeError(f'push 重试 3 次全部失败，数据未推送: {last_err}')
 
 def github_push_file(path, content_str, message):
     """Push a single file via GitHub Contents API"""
@@ -1950,86 +2032,510 @@ def github_push_file(path, content_str, message):
         print(f'[ERROR] Push {path}: HTTP {e.code}: {err}', file=sys.stderr)
         return False
 
-def git_push_locally(files, message):
-    """Push via local git in a single commit (token-based auth, no popup)"""
-    git_env = {**os.environ, 'GCM_INTERACTIVE': 'never', 'GIT_TERMINAL_PROMPT': '0', 'GIT_ASKPASS': 'echo'}
-    cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-    for f in files:
-        subprocess.run(['git', 'add', '-f', f], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
-    subprocess.run(['git', 'commit', '-m', message], check=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
-    # Push: 优先 Token，fallback 到空 credential helper
+def _git_auth_args():
+    """构造带鉴权的 git 参数（优先 token）。
+
+    ⚠️ 这里是踩过大坑的地方（2026-09-16）：**GitHub 的 git smart HTTP
+    不接受 `Authorization: Bearer <token>`** —— 那是 GitHub *API* 的格式。
+    用 Bearer 时 git 服务端视作未认证，于是退回向用户索要密码，
+    在非交互环境直接报：
+
+        fatal: Cannot prompt because user interactivity has been disabled.
+        fatal: unable to get password from user
+
+    正确格式是 HTTP **Basic**：`x-access-token:<token>`。
+    实测对照（`git ls-remote`）：
+        Bearer  → rc=128 失败
+        Basic   → rc=0   成功
+    用 `http.extraHeader` 传（而不是把 token 写进 remote URL），
+    好处是不会在 `.git/config` 里留下明文。
+    """
     if GH_TOKEN:
-        push_cmd = ['git', '-c', f'http.extraHeader=Authorization: Bearer {GH_TOKEN}',
-                    '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false', 'push', 'origin', 'main']
-    else:
-        push_cmd = ['git', '-c', 'credential.helper=', '-c', 'http.sslBackend=openssl',
-                    '-c', 'http.sslVerify=false', 'push', 'origin', 'main']
-    result = subprocess.run(push_cmd, capture_output=True, text=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
-    if result.returncode == 0:
-        print(f'[OK] Git pushed: {message}')
-    else:
-        # Fallback: try without any credential helper
-        print(f'[WARN] Git push failed (rc={result.returncode}), retrying with empty cred...', file=sys.stderr)
-        push_cmd2 = ['git', '-c', 'credential.helper=', '-c', 'http.sslBackend=openssl',
-                     '-c', 'http.sslVerify=false', 'push', 'origin', 'main']
-        result2 = subprocess.run(push_cmd2, capture_output=True, text=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
-        if result2.returncode == 0:
-            print(f'[OK] Git pushed (fallback): {message}')
+        b64 = base64.b64encode(
+            ('x-access-token:' + GH_TOKEN).encode('utf-8')).decode('ascii')
+        return ['-c', 'http.extraHeader=Authorization: Basic ' + b64,
+                '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
+    return list(GIT_BASE)
+
+
+def git_push_locally(files, message):
+    """Push via local git in a single commit (token-based auth, no popup)
+
+    失败时**抛异常**。原实现只把错误打到 stderr 就返回，于是上游
+    `for attempt in range(3)` 的重试循环永远拿不到异常、一次都不会重试，
+    而且 update.py 最终仍以 rc=0 退出 —— 表面「成功」，实际数据没推上去
+    （2026-09-15 就是这么连续空转了 2.9 小时）。
+    """
+    git_env = GIT_ENV
+    cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+
+    # 逐文件 -f 强加：这批数据文件多被 .gitignore 排除（如 *.db / *.log），
+    # 必须 -f 才会进暂存区。
+    for f in files:
+        rc, _, err = _git_run(['add', '-f', f], timeout=120)
+        if rc != 0:
+            raise RuntimeError(f'git add -f {f} 失败 rc={rc}: {err.strip()[:160]}')
+
+    rc, out, err = _git_run(['commit', '-m', message, '--no-verify'], timeout=180)
+    if rc != 0 and 'nothing to commit' not in (out + err):
+        raise RuntimeError(f'git commit 失败 rc={rc}: {err.strip()[:200]}')
+
+    # Push: 优先 Token（HTTP Basic，见 _git_auth_args），fallback 到空 credential helper
+    # （push 超时**不强杀**：push 中断可能留下半推的 ref 状态，代价高于多等一会儿）
+    #
+    # ⚠️ 关于 `--force-with-lease`：本仓库是 shallow clone，本地 main 与远端
+    #    main **没有共同祖先**（本地是独立的 root 提交链），因此普通 push 会被
+    #    `non-fast-forward` 拒绝。数据以本机为准，所以这里接受强推。
+    #    用 `--force-with-lease`（而非 --force）保留"远端被别人改过就中止"的保护。
+    attempts = [
+        (['push', 'origin', 'main'], '普通'),
+        (['push', '--force-with-lease', 'origin', 'main'], 'force-with-lease'),
+    ]
+    last_err = ''
+    for extra, tag in attempts:
+        rc, out, err = _git_run(_git_auth_args() + extra, timeout=300, allow_kill=False)
+        if rc == 0:
+            print(f'[OK] Git pushed ({tag}): {message}')
+            return
+        last_err = (err or out).strip()[:300]
+        print(f'[WARN] Git push {tag} 失败 (rc={rc}): {last_err}', file=sys.stderr)
+
+    raise RuntimeError(f'git push 失败: {last_err}')
+
+# ═══════════════ GIT 子进程安全执行（2026-09-16 新增）═══════════════
+# 背景：本机到 GitHub 只有 ~20 KB/s。`subprocess.run(timeout=)` 在 Windows 上
+# **只杀直接子进程**，git 拉起的 git-remote-https / index-pack 会变成孤儿继续
+# 占着 .git 里的锁；而把 git stash 这类会改写 .git 内部结构的命令中途砍掉，
+# 还可能让 `refs/` 目录整个消失 → 仓库变成 "not a git repository"。
+# 因此这里统一走 Popen + 超时后 taskkill /T 回收整棵树的方式。
+def _kill_tree(pid):
+    """强杀进程及其所有子进程（Windows）。"""
+    if sys.platform != 'win32':
+        try:
+            os.kill(pid, 9)
+        except Exception:
+            pass
+        return
+    try:
+        subprocess.run(['taskkill', '/F', '/T', '/PID', str(pid)],
+                       capture_output=True, timeout=30,
+                       creationflags=subprocess.CREATE_NO_WINDOW)
+    except Exception as _e:
+        print(f'[GIT][WARN] taskkill 失败 pid={pid}: {_e}', file=sys.stderr)
+
+
+def _git_run(args, cwd=None, env=None, timeout=120, allow_kill=True):
+    """跑 git 命令，超时后**回收整棵进程树**。
+
+    返回 (rc, stdout, stderr)；超时返回 rc=-9。
+    输出按 utf-8 → gbk → latin-1 逐级解码 —— Windows 中文版 git 的报错是 GBK，
+    而 Popen(text=True) 的 errors 参数不会作用于内部读取线程，会直接把
+    UnicodeDecodeError 抛成难以定位的 TypeError。
+
+    ⚠️ `allow_kill=False` 时超时也**不杀进程**：只放弃等待、直接返回。
+    某些 git 操作（rebase 等）被强杀后会破坏 `.git` 内部结构（实测
+    `refs/` 目录会被清掉 → 整个仓库报 "not a git repository"），
+    这类命令宁可让它自己跑完也不杀。
+    """
+    # 每次 git 操作前都自愈 refs —— 便宜（几个 os.path.isdir），
+    # 但能挡住「上一轮被杀的 git 留下的残缺状态」。
+    _ensure_refs()
+
+    cwd = cwd or DATA_DIR
+    env = env or GIT_ENV
+    cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+    try:
+        p = subprocess.Popen(['git'] + list(args), cwd=cwd, env=env,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             creationflags=cf)
+    except Exception as _e:
+        return -1, '', f'Popen failed: {_e!r}'
+    try:
+        raw_out, raw_err = p.communicate(timeout=timeout)
+        rc = p.returncode
+    except subprocess.TimeoutExpired:
+        if allow_kill:
+            print(f'[GIT][WARN] git {" ".join(args[:3])} 超时 {timeout}s，回收进程树…',
+                  file=sys.stderr)
+            _kill_tree(p.pid)
+            try:
+                raw_out, raw_err = p.communicate(timeout=15)
+            except Exception:
+                raw_out, raw_err = b'', b''
         else:
-            print(f'[ERROR] Git push failed: {result2.stderr.strip()[:200]}', file=sys.stderr)
+            # 不杀 —— 让它自己跑完。但我们不再等待，直接放弃本次调用。
+            # 注意：这样会留下一个仍在运行的 git 进程，因此调用方必须理解
+            # 「这一轮不同步远端」是可接受的（本机数据优先）。
+            print(f'[GIT][WARN] git {" ".join(args[:3])} 超时 {timeout}s，'
+                  f'按策略不杀进程、放弃等待（远端同步跳过，用本地数据继续）', file=sys.stderr)
+            raw_out, raw_err = b'', b''
+        rc = -9
+
+    def _dec(b):
+        if not b:
+            return ''
+        for enc in ('utf-8', 'gbk', 'latin-1'):
+            try:
+                return b.decode(enc)
+            except (UnicodeDecodeError, LookupError):
+                continue
+        return b.decode('utf-8', 'replace')
+
+    return rc, _dec(raw_out), _dec(raw_err)
+
+
+def _ensure_refs():
+    """自愈：确保 .git/refs 骨架存在，并且 ref 真的**可读**。
+
+    这是踩过坑的兜底 —— 一次被中途杀掉的 `git stash` / `git rebase` 让整个
+    refs/ 目录消失，之后 git 一律报 "not a git repository"（其实 objects
+    齐全、数据完好），只能手工重建。这里把重建逻辑固化下来。
+
+    ⚠️ 本函数**绝不调用 `_git_run`**（否则 `_git_run` → `_ensure_refs` →
+    `_git_run` 无限递归）。全部走纯文件系统判断。
+
+    ── 2026-09-16 关键发现 ────────────────────────────────────────────
+    **`git update-ref <ref>` 在 ref 的中间目录不存在时，会静默失败：
+    返回 rc=0，但不创建任何文件。** 实测（git for Windows）：
+
+        $ git update-ref refs/remotes/origin/main <sha>
+        rc=0                                    ← 报告成功
+        文件 .git/refs/remotes/origin/main 存在=False   ← 什么都没建
+        $ git rev-parse refs/remotes/origin/main
+        fatal: ambiguous argument ...           ← 读不到
+
+        # 而手工 makedirs + open(...,'w') 写同一个路径 → rev-parse 立刻 rc=0
+
+    这就是为什么 `git fetch` 会打印 `[new branch] main -> origin/main`
+    却查不到该 ref、为什么 refs/ 目录一直是空的：fetch 内部走 update-ref，
+    同样静默失败。所以本函数**必须**在写完后回读验证，不能只看 rc。
+    ──────────────────────────────────────────────────────────────────
+    """
+    gitd = os.path.join(DATA_DIR, '.git')
+    if not os.path.isdir(gitd):
+        return False
+
+    fixed = False
+    for d in ('refs/heads', 'refs/tags', 'refs/remotes/origin'):
+        p = os.path.join(gitd, *d.split('/'))
+        if not os.path.isdir(p):
+            try:
+                os.makedirs(p, exist_ok=True)
+                print(f'[GIT] 自愈：重建 {d}')
+                fixed = True
+            except Exception as _e:
+                print(f'[GIT][WARN] 建目录失败 {d}: {_e}', file=sys.stderr)
+
+    # HEAD 内容形如 "ref: refs/heads/main"，检查该 ref 文件是否存在
+    try:
+        head_ref = open(os.path.join(gitd, 'HEAD'), encoding='utf-8').read().strip()
+    except Exception:
+        head_ref = ''
+
+    # ⚠️ 先读 packed-refs。git fetch / pack-refs 会把 ref 从 loose 文件
+    # 迁进 packed-refs 并删掉 loose 文件 —— 如果只看「loose 文件在不在」，
+    # 会把这种**正常状态**误判为缺失，然后用 packed-refs 的旧 sha 重建，
+    # 结果每轮都把 fetch 刚更新的 origin/main **覆盖回旧值**（死循环）。
+    packed_map = {}
+    packed = os.path.join(gitd, 'packed-refs')
+    if os.path.exists(packed):
+        for line in open(packed, encoding='utf-8', errors='replace'):
+            line = line.strip()
+            if not line or line.startswith('#') or line.startswith('^'):
+                continue
+            parts = line.split()
+            if len(parts) == 2:
+                packed_map[parts[1]] = parts[0]
+
+    need = []
+    if head_ref.startswith('ref: '):
+        need.append(head_ref[5:].strip())
+    need.append('refs/remotes/origin/main')
+
+    def _loose_ok(ref):
+        """loose ref 文件是否存在**且内容合法**。
+
+        ⚠️ 光看存在性不够：如果文件是文本模式写的，Windows 会留下 '\r\n'，
+        git 会判定为 "bad ref"（`git show-ref` 直接 rc=128）。这种情况必须
+        当作"需要重建"处理，否则仓库一直处于半坏状态。
+        """
+        fp = os.path.join(gitd, *ref.split('/'))
+        if not os.path.exists(fp):
+            return False
+        try:
+            raw = open(fp, 'rb').read()
+        except Exception:
+            return False
+        # 合法形式：40 位 hex + 单个 '\n'（不要 '\r'）
+        return raw == raw.strip() + b'\n' and len(raw.strip()) == 40 \
+            and all(c in b'0123456789abcdef' for c in raw.strip())
+
+    missing = []
+    for r in need:
+        if _loose_ok(r):
+            continue
+        if r in packed_map and not os.path.exists(os.path.join(gitd, *r.split('/'))):
+            continue                 # 已在 packed-refs 里 —— 正常，无需重建
+        missing.append(r)
+
+    if not missing:
+        return fixed
+
+    # ⚠️ remote-tracking ref 的 sha **优先取 FETCH_HEAD**：它才是最近一次
+    # fetch 的真实结果。packed-refs 里的值往往是上一轮的旧值，用它会让
+    # origin/main 永远停在旧提交。
+    def _sha_of(ref):
+        if ref == 'refs/remotes/origin/main':
+            fp = os.path.join(gitd, 'FETCH_HEAD')
+            if os.path.exists(fp):
+                try:
+                    txt = open(fp, encoding='utf-8', errors='replace').read().strip()
+                    first = txt.split()[0] if txt.split() else ''
+                    if len(first) == 40 and all(c in '0123456789abcdef' for c in first):
+                        return first, 'FETCH_HEAD'
+                except Exception:
+                    pass
+        if ref in packed_map:
+            return packed_map[ref], 'packed-refs'
+        return None, None
+
+    wrote = 0
+    for rel in missing:
+        sha, src = _sha_of(rel)
+        if not sha and rel == 'refs/remotes/origin/main':
+            # 退一步：HEAD 自身的 sha 至少能让 git 认出仓库
+            sha, src = packed_map.get('refs/heads/main'), 'packed-refs(heads/main)'
+        if not sha:
+            print(f'[GIT][WARN] refs 缺失 {rel} 且找不到可用 sha，无法自愈', file=sys.stderr)
+            continue
+        p = os.path.join(gitd, *rel.split('/'))
+        try:
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            # ⚠️ 必须二进制写入：文本模式在 Windows 上会把 '\n' 变成 '\r\n'，
+            #    而 git 要求 loose ref 以单个 '\n' 结尾，多出的 '\r' 会让
+            #    ref 变成 "bad ref"（show-ref 直接 rc=128）。
+            with open(p, 'wb') as f:
+                f.write(sha.encode('ascii') + b'\n')
+            # ⚠️ 回读验证 —— 目录缺失等情况下写入可能没生效
+            if os.path.exists(p) and open(p, 'rb').read().strip().decode('ascii', 'replace') == sha:
+                print(f'[GIT] 自愈：重建 {rel} = {sha[:8]} (源 {src})')
+                fixed = True
+                wrote += 1
+            else:
+                print(f'[GIT][WARN] 写入 {rel} 后回读校验失败', file=sys.stderr)
+        except Exception as _e:
+            print(f'[GIT][WARN] 写 {rel} 失败: {_e}', file=sys.stderr)
+
+    return fixed
+
+
+def _dirty_tracked():
+    """已跟踪文件的改动路径（含已暂存与未暂存）。
+
+    `git status --porcelain` 的格式是两列状态 + 空格 + 路径：
+        ' M file'  工作区改（未暂存）
+        'M  file'  已暂存
+        'MM file'  暂存后又改
+        'A  file'  新增已暂存
+        'D  file'  删除已暂存
+    任一一列非空都算「工作区不干净」，都必须纳入中转提交，
+    否则 rebase 会以 `You have unstaged changes` 拒绝。
+    （原实现只切 `l[3:]`，把 'M  x' 切成了 'x'，但没意识到
+      ' A x' / 'A  x' 这些**已暂存**的也要一并处理。）
+    """
+    rc, out, _ = _git_run(['status', '--porcelain', '--untracked-files=no'], timeout=120)
+    if rc != 0:
+        return None
+    files = []
+    for line in out.splitlines():
+        if len(line) < 4:
+            continue
+        path = line[3:].strip()
+        if ' -> ' in path:                       # 重命名 'R  old -> new'
+            path = path.split(' -> ', 1)[1].strip()
+        if len(path) >= 2 and path[0] == '"' and path[-1] == '"':
+            path = path[1:-1]
+        if path:
+            files.append(path)
+    return files
+
+
+def _commit_all_local(message):
+    """把所有已跟踪改动提交成一次中转提交。
+
+    返回 True = 工作区已干净（或本来就干净）；False = 仍不干净。
+    用 `git add -A -- <files>` 而不是逐个 `add`，因为它同时覆盖
+    「已暂存 / 未暂存 / 删除」三种状态。
+    """
+    files = _dirty_tracked()
+    if files is None:
+        print('[GIT][WARN] 无法读取工作区状态', file=sys.stderr)
+        return False
+    if not files:
+        return True
+
+    print(f'[GIT] 工作区有 {len(files)} 个已跟踪改动，先落地为本地中转提交')
+    rc_a, _, err_a = _git_run(['add', '-A', '--', *files], timeout=300)
+    if rc_a != 0:
+        print(f'[GIT][WARN] add 失败：{err_a.strip()[:200]}', file=sys.stderr)
+        return False
+
+    rc_c, out_c, err_c = _git_run(['commit', '-m', message, '--no-verify'], timeout=300)
+    if rc_c != 0:
+        if 'nothing to commit' in (out_c + err_c):
+            return True
+        print(f'[GIT][WARN] 中转提交失败：{err_c.strip()[:250]}', file=sys.stderr)
+        return False
+
+    # 复核：提交后必须真的干净
+    left = _dirty_tracked()
+    if left:
+        print(f'[GIT][WARN] 中转提交后仍有 {len(left)} 个改动未落地', file=sys.stderr)
+        return False
+    return True
+
+
+def _ensure_git_identity():
+    """确保仓库有提交身份。
+
+    踩过的坑（2026-09-16）：新建/重建的克隆里既没有 global 也没有 local 的
+    user.name / user.email，于是每一个 `git commit` 都 rc=128 报
+    "Author identity unknown" —— 抓取全部正常、只有最后一步提交失败，
+    表现为「跑了几分钟、日志很漂亮、数据一条没上去」。
+
+    这里只写 **仓库本地** 配置，不动用户的 global 设置。
+    """
+    for key, val in (('user.name', 'cs2-runner'),
+                     ('user.email', 'cs2-runner@localhost')):
+        rc, out, _ = _git_run(['config', '--get', key], timeout=30)
+        if rc != 0 or not out.strip():
+            rc_s, _, err_s = _git_run(['config', key, val], timeout=30)
+            if rc_s == 0:
+                print(f'[GIT] 已补写仓库本地 {key} = {val}')
+            else:
+                print(f'[GIT][WARN] 写 {key} 失败: {err_s.strip()[:120]}', file=sys.stderr)
+
+
+def _repair_remote_ref():
+    """fetch 之后强制把 origin/main 落成 loose ref（并回读验证）。
+
+    背景（2026-09-16 实测）：git for Windows 的 `update-ref` 在 ref 的中间目录
+    不存在时会**静默失败**（rc=0，不建文件）。`git fetch` 内部同样走 update-ref，
+    于是出现「fetch 打印 `[new branch] main -> origin/main`，但
+    `git rev-parse refs/remotes/origin/main` 报 ambiguous argument」。
+
+    这里用纯文件系统写入 + 回读校验，绕过该 bug。sha 取自 FETCH_HEAD
+    （最近一次 fetch 的真实结果）。
+    """
+    gitd = os.path.join(DATA_DIR, '.git')
+    ref = 'refs/remotes/origin/main'
+    dst = os.path.join(gitd, *ref.split('/'))
+
+    # 已能正常解析就不用管
+    if os.path.exists(dst):
+        return
+
+    fh = os.path.join(gitd, 'FETCH_HEAD')
+    sha = ''
+    if os.path.exists(fh):
+        try:
+            first = open(fh, encoding='utf-8', errors='replace').read().strip().split()
+            if first and len(first[0]) == 40 and all(c in '0123456789abcdef' for c in first[0]):
+                sha = first[0]
+        except Exception:
+            sha = ''
+    if not sha:
+        # 退一步：用 packed-refs 里的 main
+        try:
+            for line in open(os.path.join(gitd, 'packed-refs'), encoding='utf-8', errors='replace'):
+                line = line.strip()
+                if line.endswith(' refs/heads/main'):
+                    sha = line.split()[0]
+                    break
+        except Exception:
+            sha = ''
+    if not sha:
+        print('[GIT][WARN] 无法确定 origin/main 的 sha，跳过补写', file=sys.stderr)
+        return
+
+    try:
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+        # 二进制写入：避免 Windows 文本模式把 '\n' 写成 '\r\n'（会让 ref 变 bad ref）
+        with open(dst, 'wb') as f:
+            f.write(sha.encode('ascii') + b'\n')
+        # 回读验证：目录缺失等场景下，写入可能"成功"但文件不在
+        if os.path.exists(dst) and open(dst, 'rb').read().strip().decode('ascii', 'replace') == sha:
+            print(f'[GIT] 补写 refs/remotes/origin/main = {sha[:8]}')
+        else:
+            print('[GIT][WARN] 补写 origin/main 后回读校验失败', file=sys.stderr)
+    except Exception as _e:
+        print(f'[GIT][WARN] 补写 origin/main 失败: {_e}', file=sys.stderr)
+
+
+def git_sync_safe():
+    """本地提交 + 直接 push，**不做 fetch / rebase**。
+
+    ── 为什么彻底放弃 fetch/rebase（2026-09-16 实测结论）─────────────────
+    原实现是「stash(已删) → fetch --depth=1 → rebase FETCH_HEAD」。逐条否掉：
+
+    1. **fetch 在这个仓库里从来没成功落过对象**。反复观察到：
+       - `git fetch --depth=1 origin main` 返回 rc=0，stderr 打印
+         `* [new branch] main -> origin/main`，看起来成功；
+       - 但 `git cat-file -t <FETCH_HEAD>` → `could not get object info`；
+       - `git for-each-ref` → `missing object <sha> for refs/remotes/origin/main`；
+       - `git fsck` → `error: refs/remotes/origin/main: invalid sha1 pointer`。
+       即 fetch 只写了 FETCH_HEAD 和 pack 元数据，真实对象没下来。
+       （pack 目录里躺着的 `tmp_pack_*` 残留也是同一个成因。）
+
+    2. **rebase 是破坏 refs/ 的头号元凶**。rebase 会重写 refs/ 与索引，
+       实测一旦被超时强杀，整个 `refs/` 目录会被清空，仓库立刻变成
+       `fatal: not a git repository`（objects 与数据其实完好）。
+
+    3. **远端数据比本地旧**。远端 changelog 停在 9/15 21:05，本地已到 9/16 00:38。
+       fetch/rebase 过来的是**更旧**的数据，只会覆盖本地的新数据。
+
+    4. 本地是 shallow clone，fsck 永远报浅边界处的 missing blob（固有特性）。
+
+    结论：这条同步线收益为负。改为「本地独立提交 → 直接 push」，
+    由 push 端负责把本地数据推上去。push 不需要远端对象在本地存在，
+    因此完全绕开了上面 1~4 的所有问题。
+
+    幂等且无阻塞：没有任何网络拉取，全部步骤都有超时且可安全强杀。
+    """
+    _ensure_refs()
+    _ensure_git_identity()
+
+    lock_path = os.path.join(DATA_DIR, '.git', 'index.lock')
+    if os.path.exists(lock_path):
+        try:
+            os.remove(lock_path)
+            print('[GIT] Removed stale index.lock')
+        except Exception:
+            pass
+
+    # HEAD 必须可解析（仓库骨架没坏）
+    rc, _, err = _git_run(['rev-parse', '--verify', 'HEAD'], timeout=30)
+    if rc != 0:
+        print(f'[GIT][WARN] HEAD 不可解析（{err.strip()[:120]}），跳过 git 步骤', file=sys.stderr)
+        return
+
+    # 把工作区改动落成本地提交，保证后续 push 有内容可推。
+    # 注意：这只是"落地"，不 push —— 真正的 push 由 push_all()/git_push_locally()
+    # 在数据生成完之后统一做（那时才知道哪些文件真的变了）。
+    if not _commit_all_local(f'wip: local snapshot {time.strftime("%Y-%m-%d %H:%M")}'):
+        print('[GIT][WARN] 本地中转提交未完成，继续跑数据更新（不影响推送）', file=sys.stderr)
+
 
 # ═══════════════ MAIN ═══════════════
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else 'all'
 
-    # ── 静默同步 Git（自动解决冲突）──
-    git_env = {**os.environ, 'GCM_INTERACTIVE': 'never', 'GIT_TERMINAL_PROMPT': '0', 'GIT_ASKPASS': 'echo'}
-    cf = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-    GIT_BASE = ['-c', 'credential.helper=', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
-    # 清理可能的锁文件
-    lock_path = os.path.join(DATA_DIR, '.git', 'index.lock')
-    if os.path.exists(lock_path):
-        try: os.remove(lock_path)
-        except: pass
-        print('[GIT] Removed stale index.lock')
+    # ── 静默同步 Git（带超时保护，绝不死等）──
     try:
-        # 保存本地改动
-        subprocess.run(['git', 'stash', '--include-untracked'], check=False, cwd=DATA_DIR, env=git_env,
-                       creationflags=cf, capture_output=True)
-        # 拉取远程
-        result = subprocess.run(['git'] + GIT_BASE + ['pull', '--rebase', 'origin', 'main'],
-                                capture_output=True, text=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
-        if result.returncode != 0:
-            # 检查是否有冲突
-            if 'CONFLICT' in result.stdout + result.stderr:
-                print('[GIT] Conflict detected, auto-resolving data files...')
-                # 数据文件接受远程版本（CI 数据是最新的）
-                result2 = subprocess.run(['git', 'diff', '--name-only', '--diff-filter=U'],
-                                        capture_output=True, text=True, cwd=DATA_DIR, env=git_env, creationflags=cf)
-                conflicts = result2.stdout.strip().split('\n') if result2.stdout.strip() else []
-                for f in conflicts:
-                    f = f.strip()
-                    if f and any(f.endswith(ext) for ext in ('.json', '.log', '.csv')):
-                        subprocess.run(['git', 'checkout', '--theirs', f],
-                                      check=False, cwd=DATA_DIR, env=git_env, creationflags=cf)
-                        subprocess.run(['git', 'add', f],
-                                      check=False, cwd=DATA_DIR, env=git_env, creationflags=cf)
-                        print(f'[GIT] Auto-resolved: {f}')
-                # 继续 rebase
-                subprocess.run(['git', 'rebase', '--continue'], check=False, cwd=DATA_DIR, env=git_env,
-                               creationflags=cf, capture_output=True)
-            else:
-                print(f'[GIT] Pull failed: {result.stderr[:200]}', file=sys.stderr)
-                subprocess.run(['git', 'rebase', '--abort'], check=False, cwd=DATA_DIR, env=git_env,
-                               creationflags=cf, capture_output=True)
-                subprocess.run(['git'] + GIT_BASE + ['pull', 'origin', 'main'],
-                              check=False, cwd=DATA_DIR, env=git_env, creationflags=cf, capture_output=True)
-        # 恢复本地改动
-        subprocess.run(['git', 'stash', 'pop'], check=False, cwd=DATA_DIR, env=git_env,
-                       creationflags=cf, capture_output=True)
+        git_sync_safe()
     except Exception as e:
         print(f'[GIT] Sync failed: {e}', file=sys.stderr)
-    
+
     # 兜底扫描：修复 git sync 残留的冲突标记
     _fix_corrupted_jsons()
 

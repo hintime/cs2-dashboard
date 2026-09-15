@@ -1,122 +1,20 @@
 [
   {
-    "date": "2026-09-15",
+    "date": "2026-09-16",
+    "tag": "fix",
+    "title": "wip: local sync 2026-09-16 00:37",
+    "desc": "wip: local sync 2026-09-16 00:37"
+  },
+  {
+    "date": "2026-09-16",
     "tag": "chore",
-    "title": "market index 2026-09-15 07:06",
-    "desc": "market index 2026-09-15 07:06"
+    "title": "本地数据快照（重建索引）",
+    "desc": "本地数据快照（重建索引）"
   },
   {
     "date": "2026-09-15",
     "tag": "fix",
-    "title": "chore(data): 首轮归一化数据回填 —— 独立基准价 steam_sell",
-    "desc": "chore(data): 首轮归一化数据回填 —— 独立基准价 steam_sell"
-  },
-  {
-    "date": "2026-09-15",
-    "tag": "fix",
-    "title": "feat(data): 三源数据接入归一化层 + 修复 Steam 基准价假指标",
-    "desc": "feat(data): 三源数据接入归一化层 + 修复 Steam 基准价假指标"
-  },
-  {
-    "date": "2026-09-15",
-    "tag": "chore",
-    "title": "data update",
-    "desc": "data update"
-  },
-  {
-    "date": "2026-09-15",
-    "tag": "chore",
-    "title": "market index 2026-09-15 00:11",
-    "desc": "market index 2026-09-15 00:11"
-  },
-  {
-    "date": "2026-09-14",
-    "tag": "chore",
-    "title": "market index 2026-09-14 21:21",
-    "desc": "market index 2026-09-14 21:21"
-  },
-  {
-    "date": "2026-09-15",
-    "tag": "fix",
-    "title": "feat(tools): 新增 FirePulse 额度预算器 firepulse_budget.py",
-    "desc": "feat(tools): 新增 FirePulse 额度预算器 firepulse_budget.py"
-  },
-  {
-    "date": "2026-09-15",
-    "tag": "feat",
-    "title": "移除热力图子页面（导航入口 + 页面文件）",
-    "desc": "移除热力图子页面（导航入口 + 页面文件）"
-  },
-  {
-    "date": "2026-09-15",
-    "tag": "fix",
-    "title": "feat(data): 新增统一数据层 normalize.py —— 四源归一化 + 交叉验证兜底",
-    "desc": "feat(data): 新增统一数据层 normalize.py —— 四源归一化 + 交叉验证兜底"
-  },
-  {
-    "date": "2026-09-14",
-    "tag": "chore",
-    "title": "market index 2026-09-14 16:07",
-    "desc": "market index 2026-09-14 16:07"
-  },
-  {
-    "date": "2026-09-14",
-    "tag": "chore",
-    "title": "data update",
-    "desc": "data update"
-  },
-  {
-    "date": "2026-09-14",
-    "tag": "chore",
-    "title": "data update",
-    "desc": "data update"
-  },
-  {
-    "date": "2026-09-14",
-    "tag": "fix",
-    "title": "feat(ui): real tab-view navigation + unified KPI card system",
-    "desc": "feat(ui): real tab-view navigation + unified KPI card system"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "fix(web): 走势图改用 API 自带 trend_24h（无需等采样积累，立即可见）",
-    "desc": "fix(web): 走势图改用 API 自带 trend_24h（无需等采样积累，立即可见）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "fix(web): 合并板块实现——删除失效的 sectors.json 版本，板块/走势图移到正确位置",
-    "desc": "fix(web): 合并板块实现——删除失效的 sectors.json 版本，板块/走势图移到正确位置"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(web): 大盘条加指数走势图，新增 FirePulse 板块横条",
-    "desc": "feat(web): 大盘条加指数走势图，新增 FirePulse 板块横条"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "chore(data): 首份 market_sectors.json（FirePulse 板块指数/涨跌）",
-    "desc": "chore(data): 首份 market_sectors.json（FirePulse 板块指数/涨跌）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "chore(data): 首份 market_overview_history.json（FirePulse）",
-    "desc": "chore(data): 首份 market_overview_history.json（FirePulse）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "chore(data): 首份 market_sectors.json（FirePulse）",
-    "desc": "chore(data): 首份 market_sectors.json（FirePulse）"
-  },
-  {
-    "date": "2026-09-13",
-    "tag": "fix",
-    "title": "feat(data): 生成 market_sectors.json（FirePulse 板块指数/涨跌）",
-    "desc": "feat(data): 生成 market_sectors.json（FirePulse 板块指数/涨跌）"
+    "title": "fix(cache): data_status.json 改为不缓存，其余 .json 降至 120s",
+    "desc": "fix(cache): data_status.json 改为不缓存，其余 .json 降至 120s"
   }
 ]
