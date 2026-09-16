@@ -229,10 +229,28 @@ export default {
       const ct = ext === 'json' ? 'application/json' :
         ext === 'html' || path === '/' || !ext ? 'text/html; charset=utf-8' :
         ext === 'css' ? 'text/css' : ext === 'js' ? 'application/javascript' : 'text/plain'
-      const cacheHeader = isStatus
-        ? 'no-store, no-cache, must-revalidate, max-age=0'
-        : 'public, max-age=' + cacheSec
+      // ⚠️ 2026-09-16 修复：原实现在这里**没有传 status**。
+      //    `new Response(body, {headers})` 不指定 status 时默认 200，
+      //    于是上游（raw.githubusercontent）返回的 404 被包装成了 HTTP 200。
+      //    后果（都是实际危害）：
+      //      · 搜索引擎会把不存在的页面当正常页面收录
+      //      · 任何按状态码做的监控 / 爬虫 / 健康检查都会误判
+      //      · 排查线上问题的人被误导 —— 本项目就因此白查了一轮
+      //    实测：/definitely-not-exist-12345.html → HTTP 200，正文却是 "404: Not Found"。
+      //
+      //    修法 ①：透传上游 status。
+      //    修法 ②：404 不缓存。否则某个路径被探过一次 404 后，
+      //            边缘节点会把这个 404 缓存 60~120 秒，期间即使文件补上了也仍然 404。
+      //    注：204/304 按规范不允许带 body，而这里总是构造带 body 的 Response，
+      //        故这两种状态码退回 200，避免 new Response 抛错。
+      const upstreamStatus = (resp.status === 204 || resp.status === 304) ? 200 : resp.status
+      const cacheHeader = upstreamStatus === 404
+        ? 'no-store'
+        : isStatus
+          ? 'no-store, no-cache, must-revalidate, max-age=0'
+          : 'public, max-age=' + cacheSec
       return new Response(text, {
+        status: upstreamStatus,
         headers: { 'Content-Type': ct, 'Cache-Control': cacheHeader, 'Access-Control-Allow-Origin': '*' },
       })
     } catch (e) {
