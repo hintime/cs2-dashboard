@@ -29,6 +29,35 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      # ⚠️ 2026-09-16：原实现 `path: '.'` 会把**整个仓库根目录**都发布出去。
+      #    实测（基于 git ls-files）会被公开的内容：
+      #      ① market_history/  847 个文件  330.9 MB  ← 前端零引用
+      #         + index_history/ 114 个文件    0.3 MB  ← 前端零引用
+      #         + buff_history.json 26.9 MB / eco_catalog.json 19.0 MB ← 前端零引用
+      #         合计约 377 MB 白送流量（手机一进站就可能被拉取）
+      #      ② 内部文档 *.md（ROOT_FIX.md 等，含架构与运维细节）
+      #      ③ 后端源码 *.py + 本机运维脚本 *.bat/*.vbs/*.ps1/*.cmd + 数据库 schema *.sql
+      #      ④ 内部目录 __pycache__ / tools / .workbuddy / scripts / .github
+      #    注：上面的 `paths-ignore: '**.md'` 只是「md 变更不触发部署」，
+      #    **不等于不部署 md** —— 别被它误导。
+      #    这里在打包前原地清理，保持 `path: '.'` 不变（避免漏文件导致白屏）。
+      - name: Exclude internal files from deployment
+        run: |
+          set -x
+          # ① 大体积历史数据（已确认前端零引用；本机流水线仍保留这些文件）
+          rm -rf market_history index_history
+          rm -f buff_history.json eco_catalog.json
+          # ② 内部文档 / 后端源码 / 本机脚本 / DB schema
+          rm -f *.md *.py *.sql local_keys.env
+          rm -f *.bat *.vbs *.ps1 *.cmd
+          # ③ 内部目录
+          rm -rf .github scripts tools backup docs
+          rm -rf __pycache__ .workbuddy .pre_switch_backup logs
+          echo "===== 部署内容（应只剩静态站点文件）====="
+          ls -1
+          echo "===== 大目录确认已移除 ====="
+          ls -d market_history index_history 2>&1 || echo "OK: 历史数据目录已移除"
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
