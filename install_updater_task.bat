@@ -8,9 +8,13 @@ REM    · 可在「未登录」时也运行 / 登录后延迟启动
 REM    · 进程意外退出后有计划任务级的重启
 REM    · 错过的时间点可在唤醒后补跑
 REM
-REM  两个任务：
-REM    CS2-Updater-AtLogon   登录后延迟 1 分钟启动常驻调度器
-REM    CS2-Updater-Watchdog  每 15 分钟巡检，进程不在则拉起
+REM  两个机制（互补）：
+REM    HKCU Run 项               登录后启动常驻调度器（无需任何特权）
+REM    CS2-Updater-Watchdog      每 15 分钟巡检，进程不在则拉起（/SC MINUTE 普通权限即可）
+REM
+REM  ⚠️ 2026-09-16 修订：原先用 CS2-Updater-AtLogon(/SC ONLOGON) 做登录自启，
+REM     但该触发器**需要管理员权限**，普通双击必报「拒绝访问」→ 任务静默建不出来。
+REM     已改为写 HKCU\...\Run 项，效果等价且免提权。
 REM ============================================================
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
@@ -40,22 +44,20 @@ echo   仓库    : %REPO%
 echo   解释器  : %PY%
 echo.
 
-REM ── 1. 登录后启动 ──
-schtasks /Query /TN "%TASK1%" >nul 2>&1
-if not errorlevel 1 (
-    echo [%TASK1%] 已存在，先删除旧任务...
-    schtasks /Delete /TN "%TASK1%" /F >nul 2>&1
-)
-schtasks /Create ^
-    /TN "%TASK1%" ^
-    /TR "\"%PY%\" \"%REPO%updater_daemon.py\"" ^
-    /SC ONLOGON ^
-    /DELAY 0001:00 ^
-    /F >nul
+REM ── 1. 登录自启 ──
+REM ⚠️ 2026-09-16 修订：**不再用 `/SC ONLOGON`**。
+REM    原因：创建 ONLOGON 触发器需要管理员权限，普通双击运行必报「拒绝访问」，
+REM    于是任务静默建不出来（就是"双击了却没反应"的元凶之一）。
+REM    改用 HKCU\...\Run 注册表项 —— 效果等价（登录后启动），且**无需任何特权**。
+echo [1/3] 写入登录自启项（HKCU Run，无需管理员权限）...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" ^
+    /v "CS2DashboardUpdater" ^
+    /t REG_SZ ^
+    /d "\"%PY%\" \"%REPO%updater_daemon.py\"" /f >nul
 if errorlevel 1 (
-    echo   [警告] 创建 %TASK1% 失败
+    echo   [警告] 写入 Run 项失败
 ) else (
-    echo   [OK] %TASK1%  : 登录后 1 分钟启动调度器
+    echo   [OK] 已写入 Run 项 CS2DashboardUpdater（登录后自启）
 )
 
 REM ── 2. 巡检看门狗 ──
