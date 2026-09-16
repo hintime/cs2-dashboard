@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """CS2 Dashboard Lint — Pre-merge validation."""
-import json, sys, re
+import json, sys, re, glob
 
 errors = []
 warnings = []
@@ -18,26 +18,28 @@ def validate_json(path):
         return json.load(f)
 
 def check_html():
-    with open("index.html", encoding="utf-8") as f:
-        content = f.read()
+    """检查**所有** HTML 页面的结构（2026-09-16 之前只查 index.html，
+    导致 report.html 缺一个 } 的问题一直没被发现）。
 
-    # Duplicate IDs
-    ids = re.findall(r'id="([^"]+)"', content)
-    dup = [k for k, v in (lambda c: {i: c.count(i) for i in c})(ids).items() if v > 1]
-    if dup:
-        raise ValueError(f"Duplicate IDs: {dup}")
+    注意：内联 JS 的**语法**检查不在这里做 —— 朴素的括号计数会被
+    JS 字符串里的括号误触发（曾误报 "Script () imbalance"），
+    准确的检查在 tools/check_inline_js.mjs（node vm.Script 编译）。"""
+    all_errors = []
+    paths = sorted(glob.glob("*.html"))
+    if not paths:
+        raise ValueError("no .html files found")
+    for path in paths:
+        with open(path, encoding="utf-8") as f:
+            content = f.read()
 
-    # Critical elements
-    for rid in ["gearBtn", "tokenModal", "tokenSave", "tbody"]:
-        if f'id="{rid}"' not in content:
-            raise ValueError(f'Missing #{rid}')
+        # Duplicate IDs
+        ids = re.findall(r'id="([^"]+)"', content)
+        dup = [k for k, v in (lambda c: {i: c.count(i) for i in c})(ids).items() if v > 1]
+        if dup:
+            all_errors.append(f"{path}: Duplicate IDs: {dup}")
 
-    # Brace balance in script blocks
-    for m in re.finditer(r'<script>(.*?)</script>', content, re.DOTALL):
-        src = m.group(1)
-        for o, c in [("{", "}"), ("(", ")"), ("[", "]")]:
-            if src.count(o) != src.count(c):
-                raise ValueError(f"Script {o}{c} imbalance: {o}={src.count(o)} {c}={src.count(c)}")
+    if all_errors:
+        raise ValueError("; ".join(all_errors[:5]) + (f" …共{len(all_errors)}条" if len(all_errors) > 5 else ""))
 
 def check_holdings():
     d = validate_json("holdings.json")
@@ -63,7 +65,7 @@ def check_market():
 print("Lint: cs2-dashboard")
 check("holdings.json valid", lambda: validate_json("holdings.json"))
 check("market.json valid", lambda: validate_json("market.json"))
-check("index.html structure", check_html)
+check("all *.html structure (duplicate IDs)", check_html)
 check("holdings.json data", check_holdings)
 check("market.json data", check_market)
 

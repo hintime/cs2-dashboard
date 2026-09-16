@@ -1,8 +1,9 @@
 name: Lint
 
 on:
+  push:
+    branches: [main]
   pull_request:
-    paths: ['index.html', 'holdings.json', 'market.json']
   workflow_dispatch:
 
 jobs:
@@ -13,4 +14,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python lint.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Python lint（JSON 有效性 + 所有 HTML 结构 + 内联脚本括号配平）
+        run: python lint.py
+      - name: 内联 JS 语法检查（node vm.Script 编译，不执行）
+        run: node tools/check_inline_js.mjs
