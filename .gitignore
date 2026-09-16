@@ -40,3 +40,6 @@ logs/
 
 # 数据迁移前的一次性备份（cs2-move-data.py 产出，不入库）
 .pre_switch_backup/
+
+# 阶段0 改动前的原件备份（仅本机保留用于回滚，不入库）
+backup/
