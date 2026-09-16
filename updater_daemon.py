@@ -594,12 +594,41 @@ def run_update(mode):
 
 
 def _commit_push(message):
-    """给不自带 push 的脚本（index_collector.py）补一次提交推送。"""
+    """给不自带 push 的脚本（index_collector.py）补一次提交推送。
+
+    ⚠️ 2026-09-16 修复两个缺陷（此前 index **每次**推送都失败）：
+      1. **没有注入任何凭据**，只设了"禁止交互"。于是 `git push` 只能索要密码，
+         在非交互环境下必然失败：
+             fatal: Cannot prompt because user interactivity has been disabled.
+         这正是日志里 `✘ index 推送失败` 反复出现的原因；
+         而 prices 之所以没事，是因为它走 update.py 内部的 `_git_auth_args()`
+         （那里注入了认证）。→ 现在与 update.py 保持一致。
+         ⚠️ 必须用 HTTP **Basic**（`x-access-token:<token>`）：
+            `Authorization: Bearer` 是 GitHub *API* 的格式，git smart HTTP 端点
+            不认，会退化成交互式索要密码。
+      2. **不再 `pull --rebase`**：rebase 会重写 refs/，一旦被超时强杀就会清空
+         整个 refs/，让仓库变成 "not a git repository"；而且远端数据可能更旧，
+         rebase 进来只会覆盖新数据。改为「本地提交 → 直接 push」——
+         push 不需要远端对象在本地存在。
+    """
     env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_ASKPASS": "echo",
            "GCM_INTERACTIVE": "never"}
+
+    # 注入 HTTP Basic 认证；用 `-c` 传参，不把 token 落到 .git/config 里
+    auth = []
+    tok = _local_github_token()
+    if tok:
+        import base64 as _b64
+        _cred = _b64.b64encode(
+            ('x-access-token:' + tok).encode('utf-8')).decode('ascii')
+        auth = ['-c', 'http.extraHeader=Authorization: Basic ' + _cred]
+    else:
+        log("   ⚠️ 未取到 GitHub token，index 推送可能失败", "WARN")
+
     def g(*args, check=False):
-        r = subprocess.run(["git"] + list(args), cwd=REPO, env=env, capture_output=True,
-                           text=True, creationflags=CREATE_NO_WINDOW, errors="replace")
+        r = subprocess.run(["git"] + auth + list(args), cwd=REPO, env=env,
+                           capture_output=True, text=True,
+                           creationflags=CREATE_NO_WINDOW, errors="replace")
         if check and r.returncode != 0:
             raise RuntimeError((r.stderr or r.stdout or "")[:200])
         return r
@@ -609,15 +638,10 @@ def _commit_push(message):
             log("   index 无变更，跳过提交")
             return
         g("commit", "-m", message, check=True)
-        r = g("pull", "--rebase", "origin", "main")
-        if r.returncode != 0:
-            g("rebase", "--abort")
-            raise RuntimeError("pull --rebase 失败: " + (r.stderr or "")[:150])
         g("push", "origin", "main", check=True)
         log("   ✔ index 已推送")
     except Exception as e:
         log("   ✘ index 推送失败: %s" % e, "ERROR")
-        g("rebase", "--abort")
 
 
 # ══════════════════ 主循环 ══════════════════
