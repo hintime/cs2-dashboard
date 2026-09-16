@@ -6,18 +6,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CS2 数据状态</title>
 <style>
-:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#60a5fa;--amber:#fbbf24;--radius:14px}
+:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#60a5fa;--amber:#fbbf24;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.container{max-width:1000px;margin:0 auto;padding:28px 20px 40px}
+.container{max-width:1000px;margin:0 auto;padding:24px 16px 32px}
 h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sub{font-size:11px;color:var(--text3);margin-top:3px}
+.sub{font-size:11px;color:var(--text3);margin-top:4px}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
 .header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}
 .header .nav a:hover{text-decoration:underline}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:0 2px 16px rgba(0,0,0,.25)}
-.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.3px}
-.row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(55,65,81,.08);font-size:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 24px;margin-bottom:16px;box-shadow:0 2px 16px rgba(0,0,0,.25)}
+.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:12px;letter-spacing:.3px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(55,65,81,.08);font-size:12px}
 .row:last-child{border-bottom:none}
 .row .label{color:var(--text2);min-width:140px}
 .row .value{color:var(--text);font-weight:600;text-align:right;font-family:'DM Mono','JetBrains Mono',monospace}
@@ -26,8 +26,8 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
 .row .value.old{color:var(--rise)}
 .loading{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:30px;color:var(--text3);font-size:12px}
-.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-left:6px}
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:12px}
+.badge{display:inline-block;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:600;margin-left:4px}
 .badge-ok{background:rgba(52,211,153,.15);color:var(--fall)}
 .badge-warn{background:rgba(251,191,36,.15);color:var(--amber)}
 .badge-old{background:rgba(248,113,113,.15);color:var(--rise)}

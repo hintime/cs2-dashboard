@@ -6,25 +6,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CS2 持仓回测</title>
 <style>
-:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#60a5fa;--amber:#fbbf24;--radius:14px;--shadow:0 2px 16px rgba(0,0,0,.25)}
+:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#60a5fa;--amber:#fbbf24;--radius:12px;--shadow:0 2px 16px rgba(0,0,0,.25)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.container{max-width:1000px;margin:0 auto;padding:28px 20px 40px}
+.container{max-width:1000px;margin:0 auto;padding:24px 16px 32px}
 h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sub{font-size:11px;color:var(--text3);margin-top:3px}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+.sub{font-size:11px;color:var(--text3);margin-top:4px}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
 .header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}.header .nav a:hover{text-decoration:underline}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
-.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:14px;letter-spacing:.3px}
-.empty{text-align:center;padding:40px;color:var(--text3);font-size:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:12px;letter-spacing:.3px}
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:12px}
 
 /* ── KPI ── */
-.bt-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
-.bt-kpi{background:var(--surface2);border-radius:8px;padding:12px 14px;text-align:center}
+.bt-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px}
+.bt-kpi{background:var(--surface2);border-radius:8px;padding:12px 12px;text-align:center}
 .bt-kpi-l{font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.3px}
 .bt-kpi-v{font-size:18px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
 .bt-kpi.rise .bt-kpi-v{color:var(--rise)}
 .bt-kpi.fall .bt-kpi-v{color:var(--fall)}
-.bt-kpi .bt-kpi-sub{font-size:10px;color:var(--text3);margin-top:2px;font-weight:400}
+.bt-kpi .bt-kpi-sub{font-size:10px;color:var(--text3);margin-top:4px;font-weight:400}
 
 /* ── Chart ── */
 .bt-chart-wrap{width:100%}
@@ -34,9 +34,9 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
 .bt-zero-line{stroke:rgba(255,255,255,.08);stroke-width:1;stroke-dasharray:4,3}
 
 /* ── Items ── */
-.bt-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-.bt-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
-.bt-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.bt-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.bt-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 12px}
+.bt-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .bt-item-name{font-size:12px;font-weight:600;color:var(--text);max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bt-item-pnl{font-size:13px;font-weight:700;font-family:'DM Mono','JetBrains Mono',monospace}
 .bt-item-chart{margin-top:4px;height:40px}
