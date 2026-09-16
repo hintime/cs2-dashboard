@@ -43,3 +43,20 @@ logs/
 
 # 阶段0 改动前的原件备份（仅本机保留用于回滚，不入库）
 backup/
+
+# ── 2026-09-16：移出 git 的大体积数据 / 内部文档 ──
+# 原因：Pages 用 legacy「从分支部署」，分支里有什么就公开发布什么。
+# 这些文件前端零引用（已核实），但会随站点公开，共约 377 MB。
+# 这些文件**仅保留在本机**，换机器 clone 不会带过来 —— 需要时另行备份。
+market_history/
+index_history/
+__pycache__/
+tools/
+buff_history.json
+eco_catalog.json
+ROOT_FIX.md
+OPTIMIZE_REPORT.md
+OPTIMIZATION_LOG.md
+UPDATER_README.md
+CLOUDFLARE_SETUP.md
+最后一步-手动安装计划任务.md
