@@ -28,6 +28,24 @@ import argparse
 import traceback
 from datetime import datetime, timedelta
 
+# ── 强制 stdout/stderr 用 UTF-8 ──
+# ⚠️ 2026-09-16 血泪教训（本 bug 让调度器「拉起即死」了 1.5 小时）：
+#    由计划任务拉起的进程，stdout 继承系统默认代码页 cp936(GBK)。
+#    而下面的日志里用了 "▶"（U+25B6）——**GBK 里没有这个字符** ——
+#    于是 print() 抛 UnicodeEncodeError；"─"(U+2500) 恰好在 GBK 里有编码，
+#    所以日志总是"打印完分隔线就没了"。
+#    更糟的是异常被 main_loop 捕获后试图 log("主循环异常...")，
+#    而 traceback 里正好包含那行含 "▶" 的源码 → 二次抛异常 → 直接跳到
+#    finally 退出，**连异常原因都留不下来**，排查时完全看不到线索。
+#    子进程 update.py 之所以没事，是因为 run_update() 给它传了
+#    PYTHONIOENCODING=utf-8；父进程自己漏了。
+#    这里补上（errors="replace" 兜底，任何情况下都不再抛）。
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 # ── git safe.directory ──
 # 当本调度器由计划任务以 SYSTEM 运行时，仓库属主是交互用户，
 # git >= 2.35.2 会拒绝操作。经环境变量通道注入（同命令行 -c 优先级）。
@@ -314,7 +332,17 @@ def _logfile():
 def log(msg, level="INFO"):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     line = "[%s] %-5s %s" % (ts, level, msg)
-    print(line, flush=True)
+    # ⚠️ print 必须单独包异常保护（2026-09-16 实测踩坑）：
+    #    daemon 由计划任务以 DETACHED | CREATE_NO_WINDOW 拉起，
+    #    此时 stdout 句柄可能无效 → print 抛 OSError / UnicodeEncodeError。
+    #    原先 print 写在 try **之外**，一抛异常就直接跳过下面的写文件，
+    #    于是日志断在半截 —— 排查时看到的现象正是「daemon 打印到某一行就没了」，
+    #    而真正的原因（异常）因为没能落盘而完全不可见。
+    #    日志是本进程唯一的可观测通道，任何情况下都必须保证落盘。
+    try:
+        print(line, flush=True)
+    except Exception:
+        pass
     try:
         with open(_logfile(), "a", encoding="utf-8") as f:
             f.write(line + "\n")
@@ -354,8 +382,13 @@ def acquire_lock():
             try:
                 out = subprocess.run(
                     ["tasklist", "/FI", "PID eq %d" % old, "/NH"],
-                    capture_output=True, text=True, creationflags=CREATE_NO_WINDOW)
-                alive = str(old) in (out.stdout or "")
+                    capture_output=True, creationflags=CREATE_NO_WINDOW)
+                # ⚠️ 不要用 text=True（2026-09-16 实测踩坑）：
+                #    中文 Windows 的 tasklist 输出是 GBK，而本环境强制 UTF-8，
+                #    subprocess 的后台 reader 线程解码时抛 UnicodeDecodeError →
+                #    stdout 拿不到内容 → 恒判"PID 已失效" → 每次都会误杀重启。
+                #    PID 是纯 ASCII 数字，直接在 bytes 里搜，彻底绕开编码问题。
+                alive = str(old).encode("ascii") in (out.stdout or b"")
             except Exception:
                 alive = True
             if alive and old != os.getpid():
@@ -435,63 +468,37 @@ def _git(*args, timeout=60):
 
 
 def git_sync():
-    """运行前尝试把仓库对齐远端。
+    """运行前的 git 健康检查 —— **不做任何网络操作**。
 
-    ⚠️ 本机到 GitHub 走 `hosts → 127.0.0.1 透明代理`，实测带宽只有 ~20 KB/s。
-    在这个带宽下，任何需要真正传输数据的 fetch 都要几分钟到几十分钟，若
-    放在每轮更新之前同步等待，会把 30 分钟的 prices 周期彻底拖死。
+    ⚠️ 2026-09-16 决策：彻底放弃 git fetch（与 update.py 的 git_sync_safe 保持一致）。
+    原实现是「探测式 fetch（--depth=1，超时 120s，失败重试 2 次）」，实测有害无益：
 
-    因此策略是「**尽力而为、绝不阻塞**」：
-      1. 先做一次很短的探测式 fetch（`--depth=1`，超时 120s）
-      2. 成功 → 好，本地与远端对齐
-      3. 超时/失败 → 直接放弃本次同步，继续跑更新
-         （本地对象库自足，update.py 的 commit/push 仍能正常工作）
+      1) **本仓库的 fetch 从未真正落过对象**：它打印
+         `* [new branch] main -> origin/main` 且 rc=0，但 `cat-file` 取不到对象、
+         `fsck` 报 invalid sha1 pointer。根因是 `update-ref` 在 Windows 上
+         中间目录缺失时**静默失败**（rc=0 却不建 ref），而 git fetch 内部正用它写 ref。
+      2) **慢链路必超时**：本机到 GitHub 实测带宽仅 ~20 KB/s，--depth=1 也拉不动；
+         白等 120s×2（外加 sleep 5s+10s）≈ 4.5 分钟，还会占住 .git 锁，
+         把 30 分钟的 prices 周期彻底拖死。
+      3) **远端比本地旧**：fetch 回来只会覆盖更新的数据。
 
-    真正的「与远端对齐」由每轮的 push（pull --rebase）兜底完成。
+    daemon 的职责是「按时跑 update.py」，而 update.py 自身已完全不做
+    fetch/pull/rebase，推送由它内部的 push_all() 完成 —— 无需预先拉取。
+    对齐远端这件事，由 push 端单向完成即可。
+
+    因此这里只留一次「本地对象库是否自足」的检查，不碰网络。
     """
-    transient = ("502", "503", "504", "timed out", "Connection reset",
-                 "unexpected eof", "early EOF", "RPC failed", "Recv failure",
-                 "Could not resolve host", "Empty reply from server",
-                 "Connection timed out", "Failed to connect")
-
-    # 本地对象库是否自足（有 HEAD 且能解析），决定失败时是否可以安全继续
+    # 本地对象库是否自足（有 HEAD 且能解析），决定后续 git 步骤能否安全进行
     try:
         if _git("rev-parse", "--verify", "HEAD", timeout=30).returncode != 0:
-            log("本地 HEAD 不可解析，跳过远端同步", "WARN")
+            log("本地 HEAD 不可解析，跳过后续 git 步骤", "WARN")
             return False
     except Exception as e:
-        log("git 不可用（%s），跳过同步" % type(e).__name__, "WARN")
+        log("git 不可用（%s），跳过 git 步骤" % type(e).__name__, "WARN")
         return False
 
-    last_err = ""
-    for attempt in range(2):
-        try:
-            r = _git("fetch", "--depth=1", "--no-tags", "origin", "main",
-                     timeout=120)
-        except subprocess.TimeoutExpired:
-            log("git fetch 探测超时（120s，带宽仅 ~20KB/s），跳过本次同步 —— "
-                "本地对象库自足，更新照常进行", "WARN")
-            return False
-        except Exception as e:
-            log("git fetch 异常 %s，跳过同步" % type(e).__name__, "WARN")
-            return False
+    return True
 
-        if r.returncode == 0:
-            if attempt:
-                log("git fetch 第 %d 次成功" % (attempt + 1))
-            return True
-
-        last_err = (r.stderr or r.stdout or "").strip()[:200]
-        if not any(m in last_err for m in transient):
-            break
-        delay = 5 * (2 ** attempt)
-        log("git fetch 第 %d 次失败（可重试），%.0fs 后重试: %s"
-            % (attempt + 1, delay,
-               last_err.splitlines()[0][:110] if last_err else "?"), "WARN")
-        time.sleep(delay)
-
-    log("git fetch 失败（数据以本地为准，继续执行）: %s" % last_err, "WARN")
-    return False
 
 
 # ══════════════════ 执行一次更新 ══════════════════
@@ -735,9 +742,14 @@ def watchdog():
     if alive_pid:
         try:
             out = subprocess.run(["tasklist", "/FI", "PID eq %d" % alive_pid, "/NH"],
-                                 capture_output=True, text=True,
+                                 capture_output=True,
                                  creationflags=CREATE_NO_WINDOW)
-            if str(alive_pid) in (out.stdout or ""):
+            # ⚠️ 不要用 text=True（2026-09-16 实测踩坑，见 acquire_lock 同名注释）：
+            #    中文 Windows 的 tasklist 输出是 GBK，本环境强制 UTF-8 →
+            #    后台 reader 线程解码抛 UnicodeDecodeError → stdout 为空 →
+            #    恒判"已失效" → 每 15 分钟误杀重启一次正在干活的调度器。
+            #    PID 是纯 ASCII 数字，直接在 bytes 里搜最稳。
+            if str(alive_pid).encode("ascii") in (out.stdout or b""):
                 return 0                      # 活着，什么都不做
         except Exception:
             pass
