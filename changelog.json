@@ -2,6 +2,18 @@
   {
     "date": "2026-09-16",
     "tag": "fix",
+    "title": "fix(worker): 透传上游状态码 —— 不再把 404 包装成 200",
+    "desc": "fix(worker): 透传上游状态码 —— 不再把 404 包装成 200"
+  },
+  {
+    "date": "2026-09-16",
+    "tag": "fix",
+    "title": "chore(site): 把大体积数据与内部文档移出 git 索引（Pages legacy 模式下不再公开）",
+    "desc": "chore(site): 把大体积数据与内部文档移出 git 索引（Pages legacy 模式下不再公开）"
+  },
+  {
+    "date": "2026-09-16",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-16 20:25",
     "desc": "wip: local snapshot 2026-09-16 20:25"
   },
