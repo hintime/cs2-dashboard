@@ -2,6 +2,24 @@
   {
     "date": "2026-09-16",
     "tag": "fix",
+    "title": "fix(scheduler): 计划任务不再弹黑窗口 —— 去掉 cmd /c，直调 pythonw",
+    "desc": "fix(scheduler): 计划任务不再弹黑窗口 —— 去掉 cmd /c，直调 pythonw"
+  },
+  {
+    "date": "2026-09-16",
+    "tag": "chore",
+    "title": "market index 2026-09-16 14:40",
+    "desc": "market index 2026-09-16 14:40"
+  },
+  {
+    "date": "2026-09-16",
+    "tag": "fix",
+    "title": "fix(daemon): 修复非 GBK 符号导致常驻进程静默退出 + 移除 git fetch",
+    "desc": "fix(daemon): 修复非 GBK 符号导致常驻进程静默退出 + 移除 git fetch"
+  },
+  {
+    "date": "2026-09-16",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-16 14:26",
     "desc": "wip: local snapshot 2026-09-16 14:26"
   },
