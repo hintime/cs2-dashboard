@@ -12,9 +12,15 @@ REM  两个机制（互补）：
 REM    HKCU Run 项               登录后启动常驻调度器（无需任何特权）
 REM    CS2-Updater-Watchdog      每 15 分钟巡检，进程不在则拉起（/SC MINUTE 普通权限即可）
 REM
-REM  ⚠️ 2026-09-16 修订：原先用 CS2-Updater-AtLogon(/SC ONLOGON) 做登录自启，
+REM  ⚠️ 2026-09-16 修订一：原先用 CS2-Updater-AtLogon(/SC ONLOGON) 做登录自启，
 REM     但该触发器**需要管理员权限**，普通双击必报「拒绝访问」→ 任务静默建不出来。
 REM     已改为写 HKCU\...\Run 项，效果等价且免提权。
+REM
+REM  ⚠️ 2026-09-16 修订二：★ 一切自启/任务都必须满足「静默、不弹窗」：
+REM     · 用 **pythonw.exe**（GUI 子系统，无控制台），不要用 python.exe
+REM     · **绝不要包 `cmd /c`** —— cmd.exe 是控制台程序，任务每跑一次就弹一次黑窗
+REM     · 不要用 `start ""` 不带 /B（会新建窗口）
+REM     这三条任一违反，用户就会每 15 分钟被弹一次窗口。
 REM ============================================================
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
@@ -61,6 +67,11 @@ if errorlevel 1 (
 )
 
 REM ── 2. 巡检看门狗 ──
+REM ⚠️ 2026-09-16 修订：**不要用 `cmd /c` 包一层**。
+REM    原因：cmd.exe 是控制台程序 —— 任务每 15 分钟运行一次，
+REM    就会弹出一次黑窗口。而 pythonw.exe 属于 GUI 子系统，
+REM    直接调用**不会创建任何控制台窗口**。
+REM    （原先写 `cmd /c` 只是为了绕引号转义，但代价是每 15 分钟弹一次窗。）
 schtasks /Query /TN "%TASK2%" >nul 2>&1
 if not errorlevel 1 (
     echo [%TASK2%] 已存在，先删除旧任务...
@@ -68,14 +79,14 @@ if not errorlevel 1 (
 )
 schtasks /Create ^
     /TN "%TASK2%" ^
-    /TR "cmd /c \"\"%PY%\" \"%REPO%updater_daemon.py\" --watchdog\"" ^
+    /TR "\"%PY%\" \"%REPO%updater_daemon.py\" --watchdog" ^
     /SC MINUTE ^
     /MO 15 ^
     /F >nul
 if errorlevel 1 (
     echo   [警告] 创建 %TASK2% 失败
 ) else (
-    echo   [OK] %TASK2%  : 每 15 分钟巡检，掉线自动拉起
+    echo   [OK] %TASK2%  : 每 15 分钟巡检，掉线自动拉起（静默，无窗口）
 )
 
 REM ── 3. 立即启动一次 ──

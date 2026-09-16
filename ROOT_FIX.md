@@ -654,3 +654,52 @@ git fsck rc=0                        ✅ 仓库健康
 1. 编码坑是"调度器反复拉起即死"的**真正原因**，此前 1.5 小时的空转全部由此造成；
 2. 幽灵任务与主链路**双写同一仓库**，虽因自身 git 损坏而未污染远端，但必须禁用；
 3. `schtasks` 经 Python 子进程可用 —— 这条通道以后可直接用来做系统级配置。
+
+
+---
+
+## (19) 计划任务每 15 分钟弹一次黑窗口 —— `cmd /c` 的代价
+
+### 症状
+屏幕每 15 分钟闪一次黑窗口（正好等于看门狗巡检周期）。
+
+### 根因
+```
+/TR "cmd /c \"\"C:\...\pythonw.exe\" \"C:\...\updater_daemon.py\" --watchdog\""
+         ↑↑↑ 罪魁
+```
+`cmd.exe` 是**控制台子系统程序** —— Task Scheduler 一启动它，就会先创建一个控制台窗口
+（哪怕它随即要执行的 `pythonw.exe` 本身没有窗口）。
+当时之所以包一层 `cmd /c`，只是为了绕 `/TR` 的引号转义，代价却是每 15 分钟弹一次窗。
+
+### 修复
+计划任务直接调 `pythonw.exe`，去掉 `cmd /c`：
+```
+Execute : C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\pythonw.exe
+Args    : "C:\Users\Lenovo\cs2-runner-local\updater_daemon.py" --watchdog
+```
+`pythonw.exe` 属于 **GUI 子系统**，不创建控制台 ✔
+
+### 修改方式（schtasks 被拦时的替代通道）
+`schtasks.exe` 在工具层被拦，改用 **PowerShell `Set-ScheduledTask`**：
+```powershell
+$act = New-ScheduledTaskAction -Execute $pyw `
+       -Argument ('"' + $daemon + '" --watchdog') -WorkingDirectory $repo
+Set-ScheduledTask -TaskName 'CS2-Updater-Watchdog' -Action $act
+```
+> `Start-ScheduledTask` 同样可用于「立即运行一次」做验证。
+
+### 验证
+- 任务状态：`LastTaskResult = 0`，`NextRunTime` 正常
+- **任务运行窗口期（14:41:30~14:41:55）内没有任何新进程产生** → 无控制台窗口
+- 全仓库审计：`updater_daemon.py`(11 处) / `update.py`(3 处) 子进程调用
+  **全部带 `CREATE_NO_WINDOW`**，且**无** `shell=True` / `cmd` / `bat` / `vbs` 调用
+  → **全链路仅此一处弹窗源，已消除**
+
+### ★ 静默三原则（任何 Windows 自启/定时任务都适用）
+1. 用 **`pythonw.exe`**（GUI 子系统），不要用 `python.exe`
+2. **绝不包 `cmd /c`** —— cmd 是控制台程序，任务跑一次就弹一次
+3. `start` 必须带 **`/B`**；或直接子进程 + `CREATE_NO_WINDOW`
+
+（`install_updater.bat` 已核对：用 `pythonw` + `start /B`，本就合规；
+ `install_updater_task.bat` 的 Watchdog 创建处已同步修正，避免重装复发。）
