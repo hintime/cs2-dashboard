@@ -20,4 +20,4 @@ jobs:
       - name: Python lint（JSON 有效性 + 所有 HTML 结构 + 内联脚本括号配平）
         run: python lint.py
       - name: 内联 JS 语法检查（node vm.Script 编译，不执行）
-        run: node tools/check_inline_js.mjs
+        run: node scripts/check_inline_js.mjs
