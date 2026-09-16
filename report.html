@@ -11,7 +11,7 @@
 body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:1000px;margin:0 auto;padding:24px 16px 32px}
 h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sub{font-size:11px;color:var(--text3);margin-top:4px}
+.sub{font-size:12px;color:var(--text3);margin-top:4px}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
 .header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}
 .header .nav a:hover{text-decoration:underline}
@@ -19,21 +19,44 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
 .card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:12px;letter-spacing:.3px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:16px}
 .kpi{background:var(--surface2);border-radius:8px;padding:12px 12px;text-align:center}
-.kpi-l{font-size:10px;color:var(--text3);margin-bottom:4px}
+.kpi-l{font-size:12px;color:var(--text3);margin-bottom:4px}
 .kpi-v{font-size:20px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
 .kpi-v.rise{color:var(--rise)}.kpi-v.fall{color:var(--fall)}
 .kpi-v.blue{color:var(--blue)}.kpi-v.amber{color:var(--amber)}
-.kpi-sub{font-size:10px;color:var(--text4,#6b7280);margin-top:4px}
-.row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(55,65,81,.08);font-size:12px}
+.kpi-sub{font-size:12px;color:var(--text4,#6b7280);margin-top:4px}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(55,65,81,.08);font-size:12px}
 .row:last-child{border-bottom:none}
 .row .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)}
 .row .v{min-width:50px;text-align:right;font-weight:600;font-family:'DM Mono',monospace}
 .bar-wrap{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(55,65,81,.06)}
-.bar-label{font-size:11px;color:var(--text2);min-width:36px}
+.bar-label{font-size:12px;color:var(--text2);min-width:36px}
 .bar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
 .bar-fill{height:100%;border-radius:4px;transition:width .8s ease}
-.bar-val{font-size:10px;color:var(--text3);min-width:60px;text-align:right}
+.bar-val{font-size:12px;color:var(--text3);min-width:60px;text-align:right}
 .empty{text-align:center;padding:24px;color:var(--text3);font-size:12px}
+
+/* ══════ 板块优化 2026-09-16 ══════ */
+/* ① 交互反馈：列表行 / 条形行 / KPI / 卡片 统一的 hover 语言 */
+.row,.pair-row,.bar-wrap{border-radius:8px;transition:background .18s ease}
+.row:hover,.pair-row:hover,.bar-wrap:hover{background:rgba(96,165,250,.07)}
+.kpi{transition:transform .18s cubic-bezier(.16,1,.3,1),background .18s ease}
+.kpi:hover{transform:translateY(-2px);background:rgba(96,165,250,.08)}
+.card{transition:border-color .25s ease,box-shadow .25s ease}
+.card:hover{border-color:rgba(148,163,184,.45)}
+/* ② 可读性：数字更紧凑、空状态更清楚 */
+.kpi-v{letter-spacing:-.02em}
+.empty{padding:32px 16px;line-height:1.6}
+/* ③ 响应式：原先只有 padding，补齐真实适配 */
+@media(max-width:640px){
+  /* 涨跌排行等内联的双列网格 → 单列（不能改 DOM，只能覆盖） */
+  div[style*="grid-template-columns:1fr 1fr"],
+  div[style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
+  .row{flex-wrap:wrap;gap:4px}
+  .row .label{min-width:0}
+  .kpi-v{font-size:18px}
+  .card{padding:12px 16px}
+  .pair-row{gap:8px}
+}
 </style>
 </head>
 <body>
