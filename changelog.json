@@ -2,6 +2,24 @@
   {
     "date": "2026-09-16",
     "tag": "fix",
+    "title": "fix(ci): 检查脚本被自己的 .gitignore 挡住 —— 移到 scripts/ 并修正引用",
+    "desc": "fix(ci): 检查脚本被自己的 .gitignore 挡住 —— 移到 scripts/ 并修正引用"
+  },
+  {
+    "date": "2026-09-16",
+    "tag": "fix",
+    "title": "ci(lint): 防复发 —— 所有 HTML 的内联 JS 语法检查 + lint 改为 push 时触发",
+    "desc": "ci(lint): 防复发 —— 所有 HTML 的内联 JS 语法检查 + lint 改为 push 时触发"
+  },
+  {
+    "date": "2026-09-16",
+    "tag": "fix",
+    "title": "fix(report): 修复内联 JS 缺少 } —— 之前导致四个板块永远加载不出来",
+    "desc": "fix(report): 修复内联 JS 缺少 } —— 之前导致四个板块永远加载不出来"
+  },
+  {
+    "date": "2026-09-16",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-16 22:01",
     "desc": "wip: local snapshot 2026-09-16 22:01"
   },
@@ -100,17 +118,5 @@
     "tag": "fix",
     "title": "fix(daemon): 修复非 GBK 符号导致常驻进程静默退出 + 移除 git fetch",
     "desc": "fix(daemon): 修复非 GBK 符号导致常驻进程静默退出 + 移除 git fetch"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-16 14:26",
-    "desc": "wip: local snapshot 2026-09-16 14:26"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "docs: ROOT_FIX 补充根因(15) reflog 残留导致 fsck rc=2",
-    "desc": "docs: ROOT_FIX 补充根因(15) reflog 残留导致 fsck rc=2"
   }
 ]
