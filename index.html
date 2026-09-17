@@ -671,7 +671,13 @@ html { scroll-behavior: smooth; }
 }
 
 
-</style><!-- DEADCSS3 --><!-- DEADCSS2 --><!-- DEADCSS_REMOVED -->
+
+<style>
+.fc-chip{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;line-height:1.5;white-space:nowrap;
+  border:1px solid rgba(255,255,255,.12);margin-left:4px;vertical-align:middle;cursor:help}
+.fc-up{color:var(--fall);background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.28)}
+.fc-dn{color:var(--rise);background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.28)}
+</style></style><!-- DEADCSS3 --><!-- DEADCSS2 --><!-- DEADCSS_REMOVED -->
 <style>
 /* ── 可达性增强 a11y ── */
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
@@ -2369,6 +2375,8 @@ function renderAIRecommendations() {
     else loadAILessons(window._aiRecData);
     return;
   }
+  // Kronos 预测（实验性）：与 AI 精选并行加载，失败则静默不显示
+  try { if (!FC.loaded) { loadForecast().then(function () { if (window._aiRecData) renderAIRecBody(window._aiRecData); }); } } catch (e) {}
   fetch('ai_recommendations.json?' + now).then(function(r) {
     return r.ok ? r.json() : null;
   }).then(function(data) {
@@ -2387,6 +2395,54 @@ function renderAIRecommendations() {
 }
 
 // 追踪教训（评分权重反哺）——独立请求 + 缓存
+// ── Kronos 14 日预测（实验性）──
+// 只覆盖「推荐池前10 + AI 精选」的标的；由 update.py 在推荐板块更新时一并生成。
+// 定位：辅助方向参考，不作买卖依据（Kronos 是金融 K 线基础模型迁移，域外外推）。
+var FC = { map: {}, loaded: false };
+function loadForecast() {
+  var _now = Math.floor(Date.now() / 900000);
+  return fetch('ai_forecast.json?v=' + _now)
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .catch(function () { return null; })
+    .then(function (d) {
+      var m = {};
+      if (d && d.items) {
+        for (var i = 0; i < d.items.length; i++) {
+          var it = d.items[i];
+          if (it && it.hash_name) m[it.hash_name] = it;
+          if (it && it.name) m['n:' + it.name] = it;
+        }
+      }
+      FC.map = m; FC.meta = d; FC.loaded = true;
+      return m;
+    });
+}
+function fcOf(item) {
+  if (!item) return null;
+  var m = FC.map || {};
+  return (item.hash_name && m[item.hash_name]) || m['n:' + item.name] || null;
+}
+// 预测徽章（AI 精选卡片用）
+function fcChip(item) {
+  var f = fcOf(item);
+  if (!f || typeof f.change_pct !== 'number') return '';
+  var up = f.change_pct >= 0;
+  var cls = up ? 'fc-up' : 'fc-dn';
+  var arrow = up ? '▲' : '▼';
+  return '<span class="fc-chip ' + cls + '" title="Kronos 时序模型 ' + (FC.meta && FC.meta.days ? FC.meta.days : 14) +
+    ' 日预测：' + f.current + ' → ' + f.forecast + '（' + (up ? '+' : '') + f.change_pct + '%）· 实验性，仅方向参考">' +
+    arrow + ' ' + (up ? '+' : '') + f.change_pct + '%／' + (FC.meta && FC.meta.days ? FC.meta.days : 14) + '日</span>';
+}
+// 展开行用的一行说明
+function fcLine(item) {
+  var f = fcOf(item);
+  if (!f || typeof f.change_pct !== 'number') return '';
+  var up = f.change_pct >= 0;
+  return '<div class="bk-sub" style="margin-top:2px">Kronos ' + (FC.meta && FC.meta.days ? FC.meta.days : 14) +
+    '日预测：<b style="color:var(--' + (up ? 'rise' : 'fall') + ')">' + (up ? '+' : '') + f.change_pct + '%</b>' +
+    '（' + f.current + ' → ' + f.forecast + '）· <span style="opacity:.7">实验性，仅方向参考</span></div>';
+}
+
 function loadAILessons(data) {
   fetch('tracking_lessons.json?v=' + Date.now())
     .then(function(r) { return r.ok ? r.json() : null; })
@@ -2427,7 +2483,8 @@ function renderAIRecBody(data) {
       '<div class="aip-head"><span class="aip-rk">' + (rankIcons[i] || ('#' + (i + 1))) + '</span>' +
         '<span class="aip-nm">' + esc(p.name || '--') + '</span></div>' +
       '<div class="aip-prow"><span class="aip-price">' + (p.price !== undefined && p.price !== '' ? '¥' + esc(String(p.price)) : '—') + '</span>' +
-        (se ? '<span class="aip-sent ' + cls + '">' + esc(se) + '</span>' : '') + '</div>' +
+        (se ? '<span class="aip-sent ' + cls + '">' + esc(se) + '</span>' : '') +
+        (typeof fcChip === 'function' ? fcChip(p) : '') + '</div>' +
       '<div class="aip-sigs">' + aiPickSignals(p) + '</div>' +
     '</div>';
   }).join('');
@@ -2548,7 +2605,9 @@ window.aiSelectPick = function(i) {
   var icons = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
   detailEl.innerHTML = '<div class="dh"><span>▸ 展开详情</span><b>' + (icons[i] || '') + ' ' + esc(p.name || '') + '</b>' +
     (p.sentiment ? '<span class="rt-dim">' + esc(p.sentiment) + '</span>' : '') +
-    (p.price !== undefined && p.price !== '' ? '<span class="rt-dim">¥' + esc(String(p.price)) + '</span>' : '') + '</div>' +
+    (p.price !== undefined && p.price !== '' ? '<span class="rt-dim">¥' + esc(String(p.price)) + '</span>' : '') +
+    (typeof fcChip === 'function' ? fcChip(p) : '') + '</div>' +
+    (typeof fcLine === 'function' ? fcLine(p) : '') +
     '<div class="ai-grid"><div>' + left.join('') + '</div><div>' + mid + '</div><div>' + right.join('') + '</div></div>';
 };
 
@@ -3737,7 +3796,8 @@ function recBuildExpand(item, gi, aiReasonMap) {
   return '<tr class="rt-exp" style="display:none"><td colspan="15"><div class="rt-exgrid">' +
     '<div class="rt-excol"><div class="h">▸ 市场深度 · 在售 / 求购</div>' + d1.join('') + '</div>' +
     '<div class="rt-excol"><div class="h">▸ 评分构成 · 数据源</div>' + d2.join('') + '</div>' +
-    '<div class="rt-excol"><div class="h">▸ 推荐理由 / 风险 / 走势</div>' + d3 + '</div>' +
+    '<div class="rt-excol"><div class="h">▸ 推荐理由 / 风险 / 走势</div>' + d3 +
+    (typeof fcLine === 'function' ? fcLine(item) : '') + '</div>' +
     '</div></td></tr>';
 }
 

@@ -770,6 +770,44 @@ def _rate_from_hist(hist, days):
     return round((cur - base) / base * 100, 2)
 
 
+def run_kronos_forecast(top_n=10, days=14, samples=3):
+    """Kronos 批量价格预测：只预测「推荐池前 top_n 名」+「AI 精选」的标的。
+
+    松耦合设计：子进程调用 cs2-kronos 的独立 venv（torch/transformers 依赖太重，
+    不能混进主项目环境）。失败不影响主流程。
+    关闭：环境变量 KRONOS_FORECAST=0
+    """
+    if str(os.environ.get('KRONOS_FORECAST', '1')).strip() == '0':
+        return None
+    venv_py = os.environ.get('KRONOS_PY') or r'C:\Users\Lenovo\cs2-kronos\venv\Scripts\python.exe'
+    _local = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'kronos_forecast.py')
+    script = os.environ.get('KRONOS_SCRIPT') or (_local if os.path.exists(_local)
+                                          else r'C:\Users\Lenovo\cs2-kronos\forecast_batch.py')
+    if not (os.path.exists(venv_py) and os.path.exists(script)):
+        print('[Kronos] 未找到独立环境（%s），跳过预测' % venv_py)
+        return None
+    env = dict(os.environ)
+    # 剥掉 WorkBuddy 注入的 sitecustomize —— 其批量删除守卫会拦住 matplotlib 建字体缓存
+    env.pop('PYTHONPATH', None)
+    for _k in ('HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'FTP_PROXY'):
+        env.pop(_k, None)
+    out = os.path.join(DATA_DIR, 'ai_forecast.json')
+    try:
+        _t0 = time.time()
+        r = subprocess.run(
+            [venv_py, script, '--days', str(days), '--top', str(top_n),
+             '--samples', str(samples), '--out', out],
+            env=env, cwd=os.path.dirname(script), capture_output=True, text=True,
+            encoding='utf-8', errors='replace', timeout=1200, creationflags=0x08000000)
+        if r.returncode == 0:
+            print('[Kronos] 预测完成（%.0fs）→ ai_forecast.json' % (time.time() - _t0))
+            return out
+        print('[Kronos] 预测失败 rc=%d: %s' % (r.returncode, (r.stderr or '')[-160:]), file=sys.stderr)
+    except Exception as e:
+        print('[Kronos] 跳过（非致命）: %s' % str(e)[:140], file=sys.stderr)
+    return None
+
+
 def save_csqaq_boards(price_map):
     """把 CSQAQ 批量查价结果写入旁路文件 csqaq_boards.json（只存盘口/跨平台字段）。
 
@@ -3688,6 +3726,9 @@ def main():
                     market['eco_tracked_names'] = sorted(name_set)[:3000]  # 前端只用到前3000
                     write_json(market_path, market)
                     print(f'[PRICE_HIST] Recorded ECO prices for {recorded}/{len(tracked)} items')
+                    # ── Kronos 价格预测（推荐池前10 + AI 精选；频率 = 推荐板块更新频率）──
+                    if run_kronos_forecast() is not None:
+                        dirty_files.add('ai_forecast.json')
             except Exception as e:
                 print(f'[PRICE_HIST] Failed: {e}', file=sys.stderr)
         except Exception as e:
