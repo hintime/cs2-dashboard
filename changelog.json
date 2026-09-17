@@ -2,6 +2,24 @@
   {
     "date": "2026-09-17",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-17 17:15",
+    "desc": "wip: local snapshot 2026-09-17 17:15"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "fix(rec): 折线图去孤立尖刺 + 口径改为真实采样区间（原\"30日\"名不副实）",
+    "desc": "fix(rec): 折线图去孤立尖刺 + 口径改为真实采样区间（原\"30日\"名不副实）"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "fix(data,rec): 恢复 Steam 基准价/偏离 + 修掉 5 维空白与假字段",
+    "desc": "fix(data,rec): 恢复 Steam 基准价/偏离 + 修掉 5 维空白与假字段"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
     "title": "feat(ai): 推荐分析逻辑重写 v7（逐件独立生成 + 真实盘口驱动）",
     "desc": "feat(ai): 推荐分析逻辑重写 v7（逐件独立生成 + 真实盘口驱动）"
   },
@@ -100,23 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-16 21:29",
     "desc": "wip: local snapshot 2026-09-16 21:29"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "style(site): 第1步 —— 桌面子页面容器统一 1000px（只改 max-width）",
-    "desc": "style(site): 第1步 —— 桌面子页面容器统一 1000px（只改 max-width）"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "style(site): 容器宽度统一 + 手机端字号上调（只改 CSS 数值）",
-    "desc": "style(site): 容器宽度统一 + 手机端字号上调（只改 CSS 数值）"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "chore",
-    "title": "market index 2026-09-16 21:05",
-    "desc": "market index 2026-09-16 21:05"
   }
 ]
