@@ -716,6 +716,9 @@ def compute_alerts(steamdt_prices):
 
 # ═══════════════ RECOMMENDATIONS (复用缓存) ═══════════════
 _cached_eco_full = None
+# 推荐购买的在售量下限：低于此值不推荐（流动性差、出货难）。实测候选池中位在售量约 63 件，
+# 卡 100 件后仍有 1305 件候选（33.9%），池子够用。可用 REC_MIN_SELLING=0 关闭该门槛。
+REC_MIN_SELLING = int(os.environ.get('REC_MIN_SELLING') or '100')
 
 def fetch_eco_full():
     """Fetch full ECO price list (36k+ items) - 带缓存"""
@@ -767,6 +770,42 @@ def _rate_from_hist(hist, days):
     return round((cur - base) / base * 100, 2)
 
 
+def save_csqaq_boards(price_map):
+    """把 CSQAQ 批量查价结果写入旁路文件 csqaq_boards.json（只存盘口/跨平台字段）。
+
+    为什么单独存：eco_tracked.json 会被 prices 周期重写并清掉这些字段，
+    而盘口/Steam 价查一次成本较高（96 批），不该每 30 分钟重查。
+    """
+    if not price_map:
+        return 0
+    path = os.path.join(DATA_DIR, 'csqaq_boards.json')
+    boards = {}
+    try:
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                boards = json.load(f)
+        if not isinstance(boards, dict):
+            boards = {}
+    except Exception:
+        boards = {}
+    keys = ('buff_sell', 'buff_buy', 'buff_sell_num', 'buff_buy_num', 'buff_source',
+            'yyyp_sell', 'yyyp_sell_num', 'steam_sell', 'steam_sell_num', '_csqaq_buff')
+    n = 0
+    for hn, bp in price_map.items():
+        if not isinstance(bp, dict):
+            continue
+        rec = {k: bp.get(k, 0) for k in keys if bp.get(k, 0)}
+        if rec:
+            boards[hn] = rec
+            n += 1
+    try:
+        write_json(path, boards)
+        print('[CSQAQ] 盘口旁路已更新：%d 件（累计 %d 条）' % (n, len(boards)))
+    except Exception as e:
+        print('[CSQAQ] 盘口旁路写入失败: %s' % e, file=sys.stderr)
+    return n
+
+
 def generate_recommendations(alerts=None, steamdt_prices=None):
     """Dual-scoring recommendation engine.
     ECO score (0-100): supply/demand + valuation from eco_tracked.json
@@ -783,6 +822,26 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
     with open(tracked_path, 'r', encoding='utf-8') as f:
         tracked = json.load(f)
     print(f'[REC] Loaded {len(tracked)} items from eco_tracked.json')
+
+    # ── 盘口旁路文件 ──
+    # prices 周期（每 30 分钟）会用新的 ECO 拉取结果重写 eco_tracked.json，只保留价格，
+    # 会把 CSQAQ 查来的在售/求购量、悠悠盘口、Steam 价冲掉（2026-09-18 实测全池被清零）。
+    # 因此盘口数据另存 csqaq_boards.json，每次读取时合并进来 —— 主文件被重写也不影响。
+    _boards_path = os.path.join(DATA_DIR, 'csqaq_boards.json')
+    if os.path.exists(_boards_path):
+        try:
+            with open(_boards_path, 'r', encoding='utf-8') as f:
+                boards = json.load(f)
+            if isinstance(boards, dict) and boards:
+                _n = 0
+                for _it in tracked:
+                    _b = boards.get(_it.get('HashName', ''))
+                    if isinstance(_b, dict):
+                        _it.update(_b)
+                        _n += 1
+                print(f'[REC] 合并盘口旁路数据 {_n} 件（来自 csqaq_boards.json）')
+        except Exception as _be:
+            print(f'[REC] 读取盘口旁路失败: {_be}', file=sys.stderr)
 
     # 排除 StatTrak / Souvenir(纪念品) / BS(破损不堪/战痕累累) 等不想要的
     _EXCLUDE_PREFIXES = ('StatTrak™ ', 'StatTrak ', 'Souvenir ')
@@ -848,6 +907,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
 
         if price < 20:  # Skip items below ¥20 (filter cheap stickers/graffiti)
             continue
+        # 在售量下限：在售太少 → 流动性差、出货难 → 不进推荐池
+        if selling < REC_MIN_SELLING:
+            continue
 
         # ── 四源归一化：产出统一字段 + 可信溢价 ──
         # 就地回写 n_* 前缀字段，不污染原有字段，保证平滑接入。
@@ -886,12 +948,15 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             eco_raw += min(tight / 0.35, 1.0) * 25
             if tight >= 0.15:
                 eco_reasons.append('求购%d单/在售%d件' % (qg_total, selling))
-        # A3 稀缺度：ECO 在售量（对数刻度，越少越高）  满分 20
+        # A3 相对稀缺度：以「在售量下限」为 1.0、约 50 倍下限为 0 的对数刻度
+        # （原刻度是绝对的，卡 100 件下限后几乎全部归零、失去区分度）
         if selling > 0:
             eco_max += 20
-            eco_raw += max(0.0, 1 - _m.log10(max(selling, 1)) / 3.0) * 20
-            if selling <= 50:
-                eco_reasons.append('ECO在售仅%d件' % selling)
+            _lo = max(REC_MIN_SELLING, 1)
+            _ratio = max(selling, _lo) / float(_lo)
+            eco_raw += max(0.0, 1 - _m.log10(_ratio) / _m.log10(50.0)) * 20
+            if selling <= _lo * 1.5:
+                eco_reasons.append('ECO在售仅%d件（相对稀缺）' % selling)
         # A4 同口径估值折价：ECO 综合价 vs ECO 现价  满分 25
         if compre > 0 and price > 0:
             eco_max += 25
@@ -977,8 +1042,11 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
         _feats = []
         if (selling + qg_total) > 0 and qg_total / (selling + qg_total) >= 0.20:
             _feats.append('求购活跃')
-        if selling > 0 and selling <= 50:
-            _feats.append('在售稀缺')
+        # 卡了在售下限后「在售偏少」会条条命中、又变成模板 → 改为显示实际件数
+        if selling >= 500:
+            _feats.append('在售充裕·%d件' % selling)
+        elif selling > 0:
+            _feats.append('在售%d件' % selling)
         if isinstance(dev, (int, float)) and dev > 25:
             _feats.append('跨市场折价')
         if bsn > 0 and bbn > 0 and bbn / bsn >= 0.30:
