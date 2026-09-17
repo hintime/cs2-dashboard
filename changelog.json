@@ -2,6 +2,18 @@
   {
     "date": "2026-09-17",
     "tag": "fix",
+    "title": "feat(ai): 推荐分析逻辑重写 v7（逐件独立生成 + 真实盘口驱动）",
+    "desc": "feat(ai): 推荐分析逻辑重写 v7（逐件独立生成 + 真实盘口驱动）"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "chore",
+    "title": "market index 2026-09-17 16:37",
+    "desc": "market index 2026-09-17 16:37"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
     "title": "feat(rec): 推荐板块改版为「行情终端」+ AI 精选三段式",
     "desc": "feat(rec): 推荐板块改版为「行情终端」+ AI 精选三段式"
   },
@@ -106,17 +118,5 @@
     "tag": "chore",
     "title": "market index 2026-09-16 21:05",
     "desc": "market index 2026-09-16 21:05"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "fix(worker): 透传上游状态码 —— 不再把 404 包装成 200",
-    "desc": "fix(worker): 透传上游状态码 —— 不再把 404 包装成 200"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "chore(site): 把大体积数据与内部文档移出 git 索引（Pages legacy 模式下不再公开）",
-    "desc": "chore(site): 把大体积数据与内部文档移出 git 索引（Pages legacy 模式下不再公开）"
   }
 ]
