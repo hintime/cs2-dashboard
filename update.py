@@ -2144,7 +2144,15 @@ def _rec_sentiment_from_data(item, lv):
         pts += 1 if dev > 25 else (-1 if dev < -25 else 0)
     pts += 1 if tight >= 0.20 else (-1 if tight < 0.05 else 0)
     pts += 1 if r7 > 0 else (-1 if r7 < 0 else 0)
-    return {2: '看多', 1: '中性偏多', 0: '中性', -1: '中性偏空'}.get(pts, '看空')
+    if pts >= 2:
+        return '看多'
+    if pts == 1:
+        return '中性偏多'
+    if pts == 0:
+        return '中性'
+    if pts == -1:
+        return '中性偏空'
+    return '看空'
 
 
 def _rec_fix_sentiment(one, item, lv):
