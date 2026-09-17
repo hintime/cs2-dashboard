@@ -2,18 +2,8 @@
 # -*- coding: utf-8 -*-
 """Ollama 常驻启动器（无窗口）
 
-⚠️ 重要背景（2026-09-17 弹窗事故的根因，别再踩）：
-   Ollama 自带 GUI（`ollama app.exe`）会**自己拉起 serve 并独占 11434**。
-   若在它存活时又手动起一个 serve，GUI 抢不到端口就会**每秒重试一次**，
-   每次重试都拉起一个控制台进程 → **疯狂弹窗**。日志特征：
-       app.log:    msg="ollama exited" err="exit status 1"   （每秒一条）
-       server.log: Error: listen tcp 127.0.0.1:11434: bind: Only one usage of each socket address
-   因此现在是「二选一」：要么用 GUI，要么用本启动器。
-   本项目选择**用本启动器**（可控 env、可指定模型目录），并把 GUI 的登录自启
-   `Startup\Ollama.lnk` 改名为 `Ollama.lnk.disabled` 让位。
-
-用途：直接拉起 `ollama.exe serve` 并显式带上关键环境变量，规避 GUI 的两个问题
-      （① 与手动 serve 抢端口 → 弹窗；② 读不到 OLLAMA_MODELS → 模型列表为空）。
+用途：本机 Ollama 的 GUI 启动器出现过「误判已有实例 → 自己退出、serve 实际没起来」，
+      这里改为直接拉起 `ollama.exe serve` 并显式带上关键环境变量，规避该问题。
 
 关键环境变量（写死在此，避免依赖用户级变量是否生效）：
     OLLAMA_MODELS      模型目录（默认 E:\\Ollama\\models）
