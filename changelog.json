@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-09-17",
+    "tag": "chore",
+    "title": "market index 2026-09-17 22:55",
+    "desc": "market index 2026-09-17 22:55"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, rec_tracks.json, sectors.json 2026-09-17 22:55"
+  },
+  {
+    "date": "2026-09-17",
     "tag": "fix",
     "title": "feat(core): 评分核 v2 + 全池盘口回填 + 趋势/日线/AI 质量协同（回应「除了7 8 都做一下」）",
     "desc": "feat(core): 评分核 v2 + 全池盘口回填 + 趋势/日线/AI 质量协同（回应「除了7 8 都做一下」）"
@@ -100,11 +112,5 @@
     "tag": "style",
     "title": "子页面补全 favicon/description/OG/theme-color",
     "desc": "子页面补全 favicon/description/OG/theme-color"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "fix(index): 推荐板块优化——修 buyNumHtml undefined 脏文本 + 移动端单列 + 评分/",
-    "desc": "价透明 + 推荐卡a11y + AI随刷新更新"
   }
 ]
