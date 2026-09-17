@@ -2070,8 +2070,37 @@ _REC_ANGLE = {
 }
 
 
+_REC_SENTIMENTS = ['强烈看多', '看多', '中性偏多', '中性', '中性偏空', '看空', '强烈看空']
+
+
+def _rec_sentiment_from_data(item, lv):
+    """模型 sentiment 不合法时的兜底：按 Steam 偏离 / 买盘承接 / 7日趋势 三票打分"""
+    dev = item.get('n_dev_steam')
+    tight = lv.get('tight', 0) or 0
+    r7 = _rec_f(item.get('rate_7'))
+    pts = 0
+    if isinstance(dev, (int, float)):
+        pts += 1 if dev > 25 else (-1 if dev < -25 else 0)
+    pts += 1 if tight >= 0.20 else (-1 if tight < 0.05 else 0)
+    pts += 1 if r7 > 0 else (-1 if r7 < 0 else 0)
+    return {2: '看多', 1: '中性偏多', 0: '中性', -1: '中性偏空'}.get(pts, '看空')
+
+
+def _rec_fix_sentiment(one, item, lv):
+    """把 sentiment 归一到 7 个合法档位（实测本地 7B 会往里写策略整句）"""
+    raw = str(one.get('sentiment') or '').strip()
+    for s in _REC_SENTIMENTS:
+        if s in raw:
+            return s
+    fixed = _rec_sentiment_from_data(item, lv)
+    if raw:
+        print('[AI] sentiment %r 不合法 → 归一为 %s' % (raw[:20], fixed))
+    return fixed
+
+
 def _rec_write_one(item, lv, sigs, archetype, model, market_ctx, others, extra=''):
-    """单件独立调用：只喂这一件 → 机制上杜绝三条套同一模板"""
+    """单件独立调用：只喂这一件 → 机制上杜绝三条套同一模板
+    小模型（本地 7B）更服从**末尾**指令，因此把禁令与自检清单放在 prompt 最后。"""
     banned = '、'.join(_REC_BANNED)
     prompt = (
         '你是 CS2 饰品投资分析师。请只分析下面这 1 件标的，写出它自己的买入分析。\n\n'
@@ -2080,24 +2109,28 @@ def _rec_write_one(item, lv, sigs, archetype, model, market_ctx, others, extra='
         '【市场背景】\n' + market_ctx + '\n'
         + (('【本次已写的其他标的（措辞与结论都不得与它们重复）】\n' + others + '\n') if others else '')
         + (extra + '\n' if extra else '')
-        + '\n【硬性要求】\n'
-        '- 必须引用上面数据里的具体数字（在售件数/求购单数/求购价距售价/波动σ/入场区间等），至少 3 处。\n'
-        '- 严禁出现这些空话词：' + banned + '。\n'
+        + '\n【写作要求】\n'
+        '- reason 100-150字：核心逻辑 + 供需(引用在售/求购) + 溢价结构 + 流动性/变现(T+7锁定期最少7天)。\n'
+        '- risk 80-120字：只讲这件最致命的 2 个风险，各带数据。\n'
+        '- operation 80-120字：必须引用「引擎算好的参考价位」的入场区间/止盈/止损/仓位，'
+        '给出加仓与退出条件，持有周期 ≥7 天。\n'
+        '- price_zone 30-50字；platform_advice 20-40字；sentiment 1-2词；trend_signals 3-4项。\n'
+        '- 必须引用数据里的具体数字（在售件数/求购单数/求购价距售价/Steam偏离/波动σ/入场区间）至少 3 处。\n'
         '- 严禁用 ECO 售价去算任何"溢价率"；BUFF/悠悠 无挂单时不得用其快照价判断渠道。\n'
-        '- risk 必须讲这件最致命的 2 个风险，各带数据。\n'
-        '- operation 必须引用「引擎算好的参考价位」的入场区间/止盈/止损/仓位，给出加仓与退出条件，持有周期 ≥7 天。\n'
-        '- trend_signals 优先直接采用「该件可用信号」。\n'
-        '- 方向语义别写反：求购价低于售价是常态，负得越多＝买盘越弱；只有 -8% 以内才可称「承接强」。'
-        '禁止把 -15% 以上描述成「买盘兴趣浓厚／坚挺」。\n'
         '- 语气像实战顾问，句子自然，不要罗列标签词。\n\n'
         '【输出 JSON，仅这 7 个字段】\n'
-        '{"reason":"100-150字买入理由","risk":"80-120字风险评估","operation":"80-120字操作计划",'
-        '"price_zone":"30-50字入手区间与依据","sentiment":"1-2词(强烈看多/看多/中性偏多/中性/中性偏空/看空/强烈看空)",'
-        '"trend_signals":["","",""],"platform_advice":"20-40字平台建议"}'
+        '{"reason":"","risk":"","operation":"","price_zone":"","sentiment":"","trend_signals":["","",""],"platform_advice":""}\n\n'
+        '【最后自检——违反则重写（尤其重要）】\n'
+        '1. 全文禁止出现这些空话词：' + banned + '。\n'
+        '2. 禁止出现英文单词与夹杂词（平台名 BUFF / 悠悠 / Steam / ECO 除外）。'
+        '若想写"件数"就写"件"或"挂单"，不要写 piece / Engin / Buff 之类。\n'
+        '3. 每个字段都要写满规定字数，不要只写一句话就结束。\n'
+        '4. 只输出一个 JSON 对象，不要任何解释、不要 markdown 围栏。'
     )
     return _rec_safe_parse(_rec_chat(
         prompt, model,
-        '你是CS2饰品投资分析师。只返回JSON。严格基于输入数据，禁止编造数字，禁止套用固定句式。', 0.85),
+        '你是CS2饰品投资分析师。只返回JSON。严格基于输入数据，禁止编造数字，禁止套用固定句式。'
+        '禁止使用"价格波动""市场情绪""市场波动"这类空话词，禁止中英夹杂。', 0.85),
         want_key='reason')
 
 
@@ -2139,7 +2172,7 @@ def generate_ai_recommendations():
                     'operation': '入场 ¥%d–¥%d 分批建仓，止盈 +%.1f%%，止损 -%.1f%%，仓位 %d%%，持有 ≥7 天。'
                                  % (lv['zl'], lv['zh'], lv['tp'], lv['sl'], lv['pos']),
                     'price_zone': '参考区间 ¥%d–¥%d（引擎计算）' % (lv['zl'], lv['zh']),
-                    'sentiment': '中性偏多', 'trend_signals': sigs,
+                    'sentiment': _rec_sentiment_from_data(item, lv), 'trend_signals': sigs,
                     'platform_advice': _rec_fix_platform(item, lv)
                 }
             blob = str(one.get('risk', '')) + str(one.get('reason', ''))
@@ -2156,6 +2189,7 @@ def generate_ai_recommendations():
             one['rank'] = idx + 1
             one['name'] = item.get('name', '')
             one['archetype'] = arch
+            one['sentiment'] = _rec_fix_sentiment(one, item, lv)
             _fixed = _rec_fix_platform(item, lv)
             if str(one.get('platform_advice') or '').strip() != _fixed:
                 one['platform_advice'] = _fixed
@@ -2209,7 +2243,7 @@ def generate_ai_recommendations():
             banned_hits = sum(1 for p in plist for w in _REC_BANNED
                               if w in (str(p.get('risk', '')) + str(p.get('reason', '')) + str(p.get('operation', ''))))
             out['quality'] = {'max_pairwise_overlap': ds, 'template_risk': ds > 0.45,
-                              'model': model, 'picks': len(plist), 'banned_hits': banned_hits}
+                              'model': _ai_model_name(True, model), 'picks': len(plist), 'banned_hits': banned_hits}
             print('[AI] 差异化校验：最大两两重合率 %.2f%s，空话词残留 %d' % (ds, '（偏高）' if ds > 0.45 else '（通过）', banned_hits))
         try:
             eco_m, buff_m = _get_scoring_weights_from_lessons()
