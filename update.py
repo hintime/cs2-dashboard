@@ -134,61 +134,100 @@ if not GH_TOKEN and not os.environ.get('GITHUB_ACTIONS'):
 MAX_RETRIES = 3
 RETRY_DELAY = 2
 
-# ═══════════════ AI Provider 统一调度 ═══════════════
-def _ai_key():
-    """返回当前 provider 的 API key"""
-    return ZHIPU_KEY
+# ═══════════════ AI Provider 统一调度（zhipu 云 / ollama 本地）═══════════════
+# 分工（可用环境变量覆盖）：
+#   AI_PROVIDER_QUALITY  质量敏感任务（买入推荐、市场洞察）  默认取 AI_PROVIDER，再默认 zhipu
+#   AI_PROVIDER_FAST     高频低价值任务（持仓/日报/异动/抄底/新闻） 默认同上
+#   想让高频任务走本地：AI_PROVIDER_FAST=ollama（本地无需 key，离线免费）
+#   OLLAMA_HOST / OLLAMA_MODEL / OLLAMA_NUM_CTX / ZHIPU_MODEL 均可覆盖
+AI_PROVIDER_QUALITY = (os.environ.get('AI_PROVIDER_QUALITY') or os.environ.get('AI_PROVIDER') or 'zhipu')
+AI_PROVIDER_FAST = (os.environ.get('AI_PROVIDER_FAST') or os.environ.get('AI_PROVIDER') or 'zhipu')
+OLLAMA_HOST = (os.environ.get('OLLAMA_HOST') or 'http://127.0.0.1:11434').rstrip('/')
+OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL') or 'qwen2.5:7b-instruct'
+OLLAMA_NUM_CTX = int(os.environ.get('OLLAMA_NUM_CTX') or '8192')
+ZHIPU_MODEL = os.environ.get('ZHIPU_MODEL') or 'glm-4-flash'
 
-def _ai_endpoint():
-    """返回当前 provider 的 API endpoint"""
-    return 'https://open.bigmodel.cn/api/paas/v4/chat/completions' if AI_PROVIDER == 'deepseek' \
-        else 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 
-def _ai_model():
-    """返回当前 provider 的模型名"""
-    return 'glm-4-flash' if AI_PROVIDER == 'deepseek' else 'glm-4-flash'
+def _ai_provider(quality=False):
+    """按任务类别解析 provider：quality=True 质量敏感，False 高频低价值"""
+    p = (AI_PROVIDER_QUALITY if quality else AI_PROVIDER_FAST) or 'zhipu'
+    p = str(p).strip().lower()
+    return p if p in ('zhipu', 'ollama') else 'zhipu'
 
-def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False, tools=None, timeout=90):
-    """统一 AI 调用 — 自动切换 DeepSeek/Zhipu"""
-    key = _ai_key()
-    if not key:
-        print(f'[AI] No key for {AI_PROVIDER}, skip')
+
+def _ai_model_name(quality=False, model=None):
+    if model and ':' in str(model):
+        return model
+    return ZHIPU_MODEL if _ai_provider(quality) == 'zhipu' else OLLAMA_MODEL
+
+
+def _ai_provider_ready(quality=False):
+    """zhipu 需要 key；ollama 不需要（可达性由实际调用报错暴露）"""
+    return True if _ai_provider(quality) == 'ollama' else bool(ZHIPU_KEY)
+
+
+def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False,
+             quality=False, timeout=90, model=None):
+    """统一 AI 出口 — 按 provider 分流，返回纯文本；失败返回 None（调用方自行兜底）"""
+    prov = _ai_provider(quality)
+    if prov == 'zhipu' and not ZHIPU_KEY:
+        print('[AI] 智谱未配置 ZHIPU_KEY，跳过（可设 AI_PROVIDER_FAST=ollama 走本地）')
         return None
-    
-    body = {
-        'model': _ai_model(),
-        'messages': messages,
-        'max_tokens': max_tokens,
-        'temperature': temperature
-    }
-    if json_mode:
-        body['response_format'] = {'type': 'json_object'}
-    if tools:
-        body['tools'] = tools
-    
+    mdl = _ai_model_name(quality, model)
     for attempt in range(3):
         try:
-            data = json.dumps(body).encode('utf-8')
-            req = urllib.request.Request(_ai_endpoint(), data=data, headers={
-                'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'
-            })
+            if prov == 'ollama':
+                body = {
+                    'model': mdl, 'messages': messages, 'stream': False,
+                    'options': {'temperature': temperature,
+                                'num_ctx': OLLAMA_NUM_CTX,      # 默认 2048 会静默截断长 prompt，必须显式给
+                                'num_predict': max_tokens}
+                }
+                if json_mode:
+                    body['format'] = 'json'
+                req = urllib.request.Request(OLLAMA_HOST + '/api/chat',
+                    data=json.dumps(body, ensure_ascii=False).encode('utf-8'),
+                    headers={'Content-Type': 'application/json'})
+                resp = urllib.request.urlopen(req, timeout=timeout)
+                d = json.loads(resp.read().decode('utf-8', 'replace'))
+                return ((d.get('message') or {}).get('content') or '').strip()
+            body = {'model': mdl, 'messages': messages,
+                    'max_tokens': max_tokens, 'temperature': temperature}
+            if json_mode:
+                body['response_format'] = {'type': 'json_object'}
+            req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions',
+                data=json.dumps(body, ensure_ascii=False).encode('utf-8'),
+                headers={'Authorization': 'Bearer ' + ZHIPU_KEY, 'Content-Type': 'application/json'})
             resp = urllib.request.urlopen(req, timeout=timeout)
-            result = json.loads(resp.read().decode('utf-8'))
-            return result['choices'][0]['message'].get('content', '')
+            return json.loads(resp.read().decode('utf-8', 'replace'))['choices'][0]['message'].get('content', '')
         except urllib.error.HTTPError as e:
             if e.code == 429:
                 wait = (attempt + 1) * 10
-                print(f'[AI] {AI_PROVIDER} 429 rate limited, waiting {wait}s...')
+                print('[AI] %s 429 rate limited, waiting %ds...' % (prov, wait))
                 time.sleep(wait)
             else:
-                print(f'[AI] {AI_PROVIDER} HTTP {e.code}: {e}', file=sys.stderr)
-                if attempt == 2: return None
+                print('[AI] %s HTTP %d: %s' % (prov, e.code, str(e)[:120]), file=sys.stderr)
+                if attempt == 2:
+                    return None
                 time.sleep(3)
         except Exception as e:
-            print(f'[AI] {AI_PROVIDER} failed (attempt {attempt+1}): {e}', file=sys.stderr)
-            if attempt == 2: return None
+            print('[AI] %s failed (attempt %d, model=%s): %s' % (prov, attempt + 1, mdl, str(e)[:150]), file=sys.stderr)
+            if attempt == 2:
+                return None
             time.sleep(3)
     return None
+
+
+def _ai_post(payload, quality=False, timeout=90):
+    """传输层适配：按 provider 发送，回吐「智谱风格」dict，既有解析代码零改动"""
+    txt = _ai_call(payload.get('messages') or [],
+                   max_tokens=payload.get('max_tokens', 2048),
+                   temperature=payload.get('temperature', 0.5),
+                   json_mode=('response_format' in payload),
+                   quality=quality, timeout=timeout, model=payload.get('model'))
+    if txt is None:
+        raise RuntimeError('AI 调用失败（provider=%s）' % _ai_provider(quality))
+    return {'choices': [{'message': {'content': txt}}]}
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
@@ -1285,8 +1324,8 @@ def merge_buff_history_to_tracked():
 
 def generate_ai_analysis():
     """DeepSeek AI 全量持仓分析 — JSON结构化 + 批量单次调用"""
-    if not DEEPSEEK_KEY or DEEPSEEK_KEY == 'test_key':
-        print('[AI] No DeepSeek key, skip')
+    if not _ai_provider_ready(quality=False):
+        print('[AI] 无可用 AI provider（智谱无 key 且未启用本地），跳过持仓分析')
         return
     holdings = read_json(os.path.join(DATA_DIR, 'holdings.json'))
     items = holdings.get('items', []) if isinstance(holdings, dict) else holdings
@@ -1329,11 +1368,7 @@ def generate_ai_analysis():
             ],
             'response_format': {'type': 'json_object'},            'max_tokens': 4096, 'temperature': 0.3
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
-        })
-        resp = urllib.request.urlopen(req, timeout=120)
-        r = json.loads(resp.read().decode('utf-8'))
+        r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=120)
         raw = r['choices'][0]['message']['content']
         
         # ③ 解析 JSON 响应
@@ -1366,11 +1401,7 @@ def generate_ai_analysis():
                     ],
                     'response_format': {'type': 'json_object'},                    'max_tokens': 200, 'temperature': 0.3
                 }).encode('utf-8')
-                req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-                    'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
-                })
-                resp = urllib.request.urlopen(req, timeout=20)
-                rr = json.loads(resp.read().decode('utf-8'))
+                rr = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=20)
                 item_result = json.loads(rr['choices'][0]['message']['content'])
                 # 转为文本兼容旧格式
                 v = item_result.get('verdict',''); c = item_result.get('confidence',0)
@@ -1385,7 +1416,7 @@ def generate_ai_analysis():
 
 def generate_ai_daily_report():
     """AI 自动生成每日市场报告"""
-    if not DEEPSEEK_KEY: return
+    if not _ai_provider_ready(quality=False): return
     try:
         # 收集市场数据作为上下文
         scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
@@ -1403,11 +1434,7 @@ def generate_ai_daily_report():
             ],
             'max_tokens': 500, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
-        })
-        resp = urllib.request.urlopen(req, timeout=30)
-        r = json.loads(resp.read().decode('utf-8'))
+        r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=30)
         report = r['choices'][0]['message']['content']
         write_json(os.path.join(DATA_DIR, 'ai_daily_report.json'), {
             'date': time.strftime('%Y-%m-%d'),
@@ -1420,7 +1447,7 @@ def generate_ai_daily_report():
 
 def generate_ai_anomaly():
     """AI 解读异动饰品"""
-    if not DEEPSEEK_KEY: return
+    if not _ai_provider_ready(quality=False): return
     try:
         # 检查 fluctuation 数据
         bh = read_json(os.path.join(DATA_DIR, 'buff_history.json'))
@@ -1457,11 +1484,7 @@ def generate_ai_anomaly():
             ],
             'max_tokens': 2000, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
-        })
-        resp = urllib.request.urlopen(req, timeout=20)
-        r = json.loads(resp.read().decode('utf-8'))
+        r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=20)
         result = {'anomalies': [{'name': n, 'pct': round(pct, 1)} for n, pct, _, _ in top], 'analysis': r['choices'][0]['message']['content']}
         write_json(os.path.join(DATA_DIR, 'ai_anomaly.json'), result)
         print(f'[AI] Anomaly analysis done ({len(top)} items)')
@@ -1470,7 +1493,7 @@ def generate_ai_anomaly():
 
 def generate_ai_stock_picks():
     """AI 扫描全市场找低估品"""
-    if not DEEPSEEK_KEY: return
+    if not _ai_provider_ready(quality=False): return
     try:
         scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
         movers = scan.get('movers', {})
@@ -1487,11 +1510,7 @@ def generate_ai_stock_picks():
             'response_format': {'type': 'json_object'},
             'max_tokens': 1000, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
-        })
-        resp = urllib.request.urlopen(req, timeout=30)
-        r = json.loads(resp.read().decode('utf-8'))
+        r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=30)
         picks = json.loads(r['choices'][0]['message']['content'])
         write_json(os.path.join(DATA_DIR, 'ai_stock_picks.json'), picks)
         print(f'[AI] Stock picks: {len(picks.get("picks",[]))} candidates')
@@ -1500,7 +1519,7 @@ def generate_ai_stock_picks():
 
 def generate_ai_market_insight():
     """AI 全量市场洞察 — 一次调用，聚合摘要分析全量饰品"""
-    if not DEEPSEEK_KEY: return
+    if not _ai_provider_ready(quality=True): return
     try:
         scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
         if not scan: return
@@ -1527,11 +1546,7 @@ def generate_ai_market_insight():
             'messages': [{'role': 'system', 'content': '你是CS2市场分析师，回答一段150字分析。'}, {'role': 'user', 'content': prompt}],
             'max_tokens': 500, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
-        })
-        resp = urllib.request.urlopen(req, timeout=30)
-        r = json.loads(resp.read().decode('utf-8'))
+        r = _ai_post(json.loads(data.decode('utf-8')), quality=True, timeout=30)
         insight = r['choices'][0]['message']['content'].strip()
         # 如果返回的是 JSON 包装的，提取文本
         result = {'date': time.strftime('%Y-%m-%d %H:%M'), 'insight': insight,
@@ -1543,7 +1558,7 @@ def generate_ai_market_insight():
 
 def generate_ai_news_impact():
     """AI 空投监控 — 解读 CS2 最新公告对饰品市场的影响"""
-    if not DEEPSEEK_KEY: return
+    if not _ai_provider_ready(quality=False): return
     try:
         news_path = os.path.join(DATA_DIR, 'news.json')
         if not os.path.exists(news_path): return
@@ -1578,11 +1593,7 @@ def generate_ai_news_impact():
             'messages': [{'role': 'user', 'content': prompt}],
             'max_tokens': 2000, 'temperature': 0.5
         }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {DEEPSEEK_KEY}', 'Content-Type': 'application/json'
-        })
-        resp = urllib.request.urlopen(req, timeout=30)
-        r = json.loads(resp.read().decode('utf-8'))
+        r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=30)
         impact = r['choices'][0]['message']['content'].strip()
         result = {
             'date': time.strftime('%Y-%m-%d %H:%M'),
@@ -1897,16 +1908,11 @@ def _rec_chat(prompt, model, system=None, temperature=0.85, timeout=120, max_tok
     if system:
         msgs.append({'role': 'system', 'content': system})
     msgs.append({'role': 'user', 'content': prompt})
-    payload = json.dumps({
-        'model': model, 'messages': msgs,
-        'response_format': {'type': 'json_object'},
-        'max_tokens': max_tokens, 'temperature': temperature
-    }).encode('utf-8')
-    req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=payload, headers={
-        'Authorization': 'Bearer ' + ZHIPU_KEY, 'Content-Type': 'application/json'
-    })
-    resp = urllib.request.urlopen(req, timeout=timeout)
-    return json.loads(resp.read().decode('utf-8'))['choices'][0]['message']['content'].strip()
+    txt = _ai_call(msgs, max_tokens=max_tokens, temperature=temperature,
+                   json_mode=True, quality=True, timeout=timeout, model=model)
+    if txt is None:
+        raise RuntimeError('推荐 AI 调用失败（provider=%s）' % _ai_provider(True))
+    return txt
 
 
 def _rec_safe_parse(raw, want_key='picks'):
@@ -2032,7 +2038,7 @@ def generate_ai_recommendations():
             print('[AI] No recommendations to analyze')
             return
         cands = all_items[:12]
-        model = os.environ.get('AI_REC_MODEL', 'glm-4-flash')
+        model = os.environ.get('AI_REC_MODEL') or None   # 空则按 provider 选默认模型
         market_ctx = _rec_market_context(all_items)
 
         slots = _rec_select_slots(cands)
