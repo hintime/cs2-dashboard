@@ -766,6 +766,8 @@ html { scroll-behavior: smooth; }
   .mm-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:290}
   .mm-backdrop.open{display:block}
 }
+.rc-price-src{font-size:9px;color:var(--text3);font-style:normal;margin-left:4px;font-weight:600}
+@media(max-width:640px){#recGrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -3437,7 +3439,7 @@ function renderAllRecs() {
     return;
   }
 
-  // ── 构建AI推荐理由查找表（优先用DeepSeek生成的理由）──
+  // ── 构建AI推荐理由查找表（优先用智谱 GLM-4生成的理由）──
   var aiReasonMap = {};
   (window._aiRecommendations || {}).picks && (window._aiRecommendations.picks || []).forEach(function(p) {
     if (p.name) aiReasonMap[p.name] = { reason: p.reason || '', risk: p.risk || '', operation: p.operation || '' };
@@ -3447,7 +3449,7 @@ function renderAllRecs() {
   renderRecCompare(allItems);
   _recAllItems = allItems;
   // ── AI 推荐分析 ──
-  if (!renderAllRecs._aiRecLoaded) { renderAllRecs._aiRecLoaded = true; renderAIRecommendations(); }
+  renderAIRecommendations();
 
   const totalPages = Math.ceil(allItems.length / REC_PAGE_SIZE);
   const start = (recPage - 1) * REC_PAGE_SIZE;
@@ -3460,7 +3462,10 @@ function renderAllRecs() {
     const displayName = item.name || '--';
     const div = document.createElement('div');
     div.className = 'rec-card ' + (item.tag || 'eco');
+    div.setAttribute('role', 'button');
+    div.tabIndex = 0;
     div.onclick = function(){ window.showRecModal(item); };
+    div.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.showRecModal(item); } });
 
     // Channel tag
     const channel = item.tag || 'eco';
@@ -3470,7 +3475,8 @@ function renderAllRecs() {
 
     // Price - show the best available (price is BUFF, fallback to eco_price)
     let bestPrice = item.price > 0 ? item.price : (item.eco_price > 0 ? item.eco_price : 0);
-    let priceHtml = bestPrice > 0 ? '<div class="rc-price">¥' + bestPrice.toFixed(0) + '</div>' : '';
+    let priceSrc = item.price > 0 ? 'BUFF' : (item.eco_price > 0 ? 'ECO' : '');
+    let priceHtml = bestPrice > 0 ? '<div class="rc-price">¥' + bestPrice.toFixed(0) + (priceSrc ? ' <i class="rc-price-src">' + priceSrc + '</i>' : '') + '</div>' : '';
 
     // Rates as compact inline
     const rates = [];
@@ -3480,9 +3486,12 @@ function renderAllRecs() {
         rates.push('<span class="' + (val >= 0 ? 'r-up' : 'r-dn') + '">' + d + '日 ' + (val >= 0 ? '+' : '') + val.toFixed(1) + '%</span>');
       }
     });
-    var metaHtml = rates.length || buyNumHtml ? '<div class="rc-meta">' + rates.join('') + buyNumHtml + '</div>' : '';
+    // BUFF 求购数：必须在 metaHtml 之前计算，否则 var 提升使其为 undefined（曾导致线上渲染 "undefined" 且求购数不显示）
+    var buyNum = item.buff_buy_num || 0;
+    var buyNumHtml = buyNum > 0 ? '<span class="r-buy-num">📥 求购' + buyNum + '</span>' : '';
+    var metaHtml = rates.length || buyNum ? '<div class="rc-meta">' + rates.join('') + buyNumHtml + '</div>' : '';
 
-    // Reason - 优先用 DeepSeek AI 生成的5维度理由
+    // Reason - 优先用 智谱 GLM-4 AI 生成的5维度理由
     var aiMatch = aiReasonMap[item.name] || aiReasonMap[item.hash_name || ''] || {};
     var rawReason = aiMatch.reason || item._reason || '';
     var aiRisk = aiMatch.risk || '';
@@ -3504,9 +3513,6 @@ function renderAllRecs() {
       reasonHtml += '<div style="font-size:9px;color:#ef4444;opacity:.8;margin-top:2px">⚠ ' + esc(aiRisk.slice(0, 60)) + '</div>';
     }
 
-    // BUFF buy order count
-    var buyNum = item.buff_buy_num || 0;
-    var buyNumHtml = buyNum > 0 ? '<span class="r-buy-num">📥 求购' + buyNum + '</span>' : '';
 
     // ── 市场深度 ──
     var depthHtml = '';
@@ -3576,7 +3582,7 @@ function renderAllRecs() {
     var sColor = sNum >= 50 ? 'var(--amber)' : (sNum >= 35 ? 'var(--blue)' : 'var(--text3)');
     var rankCls = globalIdx === 0 ? 'rc-rank top1' : (globalIdx === 1 ? 'rc-rank top2' : (globalIdx === 2 ? 'rc-rank top3' : 'rc-rank'));
     var rankHtml = '<div class="' + rankCls + '">' + (globalIdx + 1) + '</div>';
-    var scoreHtml = '<div class="rc-score-wrap"><div class="rc-score-num">' + sNum.toFixed(1) + '<small>分</small></div>' +
+    var scoreHtml = '<div class="rc-score-wrap" title="综合评分 0–100，越高越优"><div class="rc-score-num">' + sNum.toFixed(1) + '<small>分</small></div>' +
       '<div class="rc-score-bar"><div class="rc-score-fill" style="width:' + Math.min(100, Math.max(0, sNum)).toFixed(0) + '%;background:' + sColor + '"></div></div></div>';
     var headHtml = '<div class="rc-head">' + rankHtml + scoreHtml + '</div>';
 
