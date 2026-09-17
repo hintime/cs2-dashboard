@@ -2,6 +2,24 @@
   {
     "date": "2026-09-17",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-17 17:46",
+    "desc": "wip: local snapshot 2026-09-17 17:46"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "feat(ai): 接入本地 Ollama（deepseek-r1:7b）+ 常驻/自启 + 6 个 JSON 解析容错",
+    "desc": "feat(ai): 接入本地 Ollama（deepseek-r1:7b）+ 常驻/自启 + 6 个 JSON 解析容错"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "feat(ai): AI 调用统一 provider 层（支持本地 Ollama）+ 修掉 6 个功能被空 key 挡死",
+    "desc": "feat(ai): AI 调用统一 provider 层（支持本地 Ollama）+ 修掉 6 个功能被空 key 挡死"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-17 17:15",
     "desc": "wip: local snapshot 2026-09-17 17:15"
   },
@@ -100,23 +118,5 @@
     "tag": "fix",
     "title": "fix(report): 修复内联 JS 缺少 } —— 之前导致四个板块永远加载不出来",
     "desc": "fix(report): 修复内联 JS 缺少 } —— 之前导致四个板块永远加载不出来"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-16 22:01",
-    "desc": "wip: local snapshot 2026-09-16 22:01"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "style(site): 第3步 —— 收敛间距与圆角（仅桌面端，手机端未动）",
-    "desc": "style(site): 第3步 —— 收敛间距与圆角（仅桌面端，手机端未动）"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-16 21:29",
-    "desc": "wip: local snapshot 2026-09-16 21:29"
   }
 ]
