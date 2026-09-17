@@ -150,6 +150,8 @@ OLLAMA_KEEP_ALIVE = os.environ.get('OLLAMA_KEEP_ALIVE_PARAM') or '10m'
 OLLAMA_TIMEOUT = int(os.environ.get('OLLAMA_TIMEOUT') or '600')      # 超时下限（秒）
 OLLAMA_REASON_HEADROOM = float(os.environ.get('OLLAMA_REASON_HEADROOM') or '2.5')
 ZHIPU_MODEL = os.environ.get('ZHIPU_MODEL') or 'glm-4-flash'
+# 本地 Ollama 必须绕开系统/沙箱代理 —— 代理对 127.0.0.1 可能返回 502 Bad Gateway
+_LOCAL_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
 def _ai_provider(quality=False):
@@ -227,15 +229,9 @@ def _ai_parse_json(text):
     return None
 
 
-def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False,
-             quality=False, timeout=90, model=None):
-    """统一 AI 出口 — 按 provider 分流，返回纯文本；失败返回 None（调用方自行兜底）"""
-    prov = _ai_provider(quality)
-    if prov == 'zhipu' and not ZHIPU_KEY:
-        print('[AI] 智谱未配置 ZHIPU_KEY，跳过（可设 AI_PROVIDER_FAST=ollama 走本地）')
-        return None
-    mdl = _ai_model_name(quality, model)
-    for attempt in range(3):
+def _ai_attempt(prov, mdl, messages, max_tokens, temperature, json_mode, timeout, tries=3):
+    """单一 provider 的带重试调用；成功返回文本，失败返回 None"""
+    for attempt in range(tries):
         try:
             if prov == 'ollama':
                 # 推理模型的思考 token 也要从 num_predict 里扣 → 留足余量，否则 JSON 会被截断
@@ -255,7 +251,7 @@ def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False,
                     data=json.dumps(body, ensure_ascii=False).encode('utf-8'),
                     headers={'Content-Type': 'application/json'})
                 # 本地推理慢（7B 首次调用实测 60s+）→ 用超时下限，别沿用云端的 20~45s
-                resp = urllib.request.urlopen(req, timeout=max(timeout, OLLAMA_TIMEOUT))
+                resp = _LOCAL_OPENER.open(req, timeout=max(timeout, OLLAMA_TIMEOUT))
                 d = json.loads(resp.read().decode('utf-8', 'replace'))
                 _c = _strip_think(((d.get('message') or {}).get('content') or '')).strip()
                 return _strip_fence(_c) if json_mode else _c
@@ -275,14 +271,45 @@ def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False,
                 time.sleep(wait)
             else:
                 print('[AI] %s HTTP %d: %s' % (prov, e.code, str(e)[:120]), file=sys.stderr)
-                if attempt == 2:
+                if attempt == tries - 1:
                     return None
                 time.sleep(3)
         except Exception as e:
-            print('[AI] %s failed (attempt %d, model=%s): %s' % (prov, attempt + 1, mdl, str(e)[:150]), file=sys.stderr)
-            if attempt == 2:
+            print('[AI] %s failed (attempt %d/%d, model=%s): %s'
+                  % (prov, attempt + 1, tries, mdl, str(e)[:150]), file=sys.stderr)
+            if attempt == tries - 1:
                 return None
             time.sleep(3)
+    return None
+
+
+def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False,
+             quality=False, timeout=90, model=None):
+    """统一 AI 出口 — 按 provider 分流，返回纯文本；失败返回 None。
+
+    兜底链（2026-09-17 新增）：本地 ollama 不可用时，若配了 ZHIPU_KEY 就自动降级到云端。
+    「本地优先、云端保底」——离线能跑，本地服务挂了也不至于让整条 AI 管线空转。
+    关掉兜底：环境变量 AI_FALLBACK_CLOUD=0
+    """
+    primary = _ai_provider(quality)
+    chain = [primary]
+    if (primary == 'ollama' and ZHIPU_KEY
+            and str(os.environ.get('AI_FALLBACK_CLOUD', '1')).strip() != '0'):
+        chain.append('zhipu')
+    for idx, prov in enumerate(chain):
+        if prov == 'zhipu' and not ZHIPU_KEY:
+            print('[AI] 智谱未配置 ZHIPU_KEY，跳过该兜底')
+            continue
+        if idx == 0:
+            mdl = _ai_model_name(quality, model)
+            tmo = timeout
+        else:
+            mdl = ZHIPU_MODEL
+            tmo = min(timeout, 120)      # 云端快，别沿用本地那 600s 的下限
+            print('[AI] %s 不可用 → 降级到 %s(%s) 兜底' % (primary, prov, mdl))
+        txt = _ai_attempt(prov, mdl, messages, max_tokens, temperature, json_mode, tmo)
+        if txt is not None:
+            return txt
     return None
 
 
