@@ -4,9 +4,17 @@
 <link rel="stylesheet" href="style.css">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="AlphaTrack · CS2 市场情报：实时追踪 CS2 饰品行情，多源数据智能推荐潜力饰品，管理你的持仓盈亏。">
+<meta property="og:title" content="AlphaTrack · CS2 市场情报">
+<meta property="og:description" content="实时追踪 CS2 饰品行情，智能推荐潜力饰品，管理持仓盈亏。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cs2wyx.asia/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#020617">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='%2360a5fa' stroke-width='2'/%3E%3Ctext x='20' y='27' font-size='22' text-anchor='middle' fill='%2360a5fa' font-family='Georgia,serif'%3E%CE%B1%3C/text%3E%3C/svg%3E">
 <link rel="dns-prefetch" href="//hintime.github.io">
 <title>AlphaTrack · CS2 市场情报</title>
-<style>@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+<style>
 :root,[data-theme="dark"]{
   --bg:#020617;--surface:rgba(15,23,42,.92);--surface2:rgba(30,41,59,.7);
   --border:rgba(51,65,85,.35);--border-hi:rgba(99,115,129,.5);
@@ -154,7 +162,7 @@ body::before{
   box-shadow:0 0 6px var(--blue);
 }
 @media(max-width:640px){
-  .quick-nav{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;justify-content:flex-start}
+  .quick-nav{flex-wrap:wrap;overflow:visible;-webkit-overflow-scrolling:touch;justify-content:flex-start}
   .nav-btn{flex-shrink:0;padding:6px 14px;font-size:13px}
   .sub-page{font-size:13px!important;padding:5px 11px!important}
   .quick-nav > span{flex-shrink:0}
@@ -769,7 +777,7 @@ html { scroll-behavior: smooth; }
   <div class="quick-nav" id="quickNav">
     <button class="nav-btn on" data-view="recPanel" onclick="switchView('recPanel')">✦ 推荐</button>
     <button class="nav-btn" data-view="holdingsPanel" onclick="switchView('holdingsPanel')">◈ 持仓</button>
-    <button class="nav-btn" data-view="scanPanel" onclick="switchView('scanPanel')">🌐 市场</button>
+    <button class="nav-btn" data-view="scanPanel" onclick="switchView('scanPanel')">🔍 扫描</button>
     <button class="nav-btn" data-view="newsSection" onclick="switchView('newsSection')">📰 资讯</button>
     <button class="nav-btn" data-view="changelogPanel" onclick="switchView('changelogPanel')" id="changelogNavBtn" style="display:none">📋 变动</button>
     <span style="width:2px;height:24px;background:var(--text3);border-radius:1px;margin:0 10px;opacity:.35"></span>
@@ -781,7 +789,7 @@ html { scroll-behavior: smooth; }
     <a href="tracking.html" class="nav-btn sub-page" style="text-decoration:none">◉ 追踪</a>
     <a href="changelog.html" class="nav-btn sub-page" style="text-decoration:none">📝 日志</a>
     <a href="report.html" class="nav-btn sub-page" style="text-decoration:none">📈 日报</a>
-    <a href="status.html" class="nav-btn sub-page" style="text-decoration:none">📡 状态</a>
+    <a href="status.html" class="nav-btn sub-page" style="text-decoration:none">ℹ️ 状态</a>
     </div>
     <div class="theme-picker" id="themePicker" onclick="event.stopPropagation()">
       <div class="theme-trigger" onclick="document.getElementById('themePicker').classList.toggle('open')" title="切换主题" style="cursor:pointer;display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);padding:5px 14px 5px 10px;border-radius:20px;font-size:11px;color:var(--text2);transition:all .25s;white-space:nowrap">
@@ -795,7 +803,7 @@ html { scroll-behavior: smooth; }
         <div onclick="applyTheme('purple');document.getElementById('themePicker').classList.remove('open')" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#a78bfa;flex-shrink:0"></span>💜 薄雾紫</div>
       </div>
     </div>
-    <style>@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+    <style>
 .theme-picker.open .theme-menu{display:block!important}
 
 </style>
@@ -818,23 +826,24 @@ html { scroll-behavior: smooth; }
          onmouseout="this.style.transform='';this.style.borderColor='';this.style.background=''">
       <div style="font-size:28px;margin-bottom:8px">📊</div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">全市场扫描</div>
-      <div style="font-size:10px;color:var(--text3)">武器·刀·手套·探员<br>实时价格追踪</div>
+      <div style="font-size:10px;color:var(--text3)">覆盖 4800+ 饰品<br>实时价格与涨跌幅</div>
     </div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px;transition:all .25s;cursor:default"
          onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='#f472b6';this.style.background='linear-gradient(135deg,rgba(244,114,182,.1),var(--surface2))'"
          onmouseout="this.style.transform='';this.style.borderColor='';this.style.background=''">
       <div style="font-size:28px;margin-bottom:8px">💡</div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">智能推荐</div>
-      <div style="font-size:10px;color:var(--text3)">多源数据评分<br>潜力饰品筛选</div>
+      <div style="font-size:10px;color:var(--text3)">多源交叉验证<br>挑出被低估的潜力款</div>
     </div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px;transition:all .25s;cursor:default"
          onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='#fb923c';this.style.background='linear-gradient(135deg,rgba(251,146,60,.1),var(--surface2))'"
          onmouseout="this.style.transform='';this.style.borderColor='';this.style.background=''">
       <div style="font-size:28px;margin-bottom:8px">📦</div>
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">持仓管理</div>
-      <div style="font-size:10px;color:var(--text3)">Steam库存导入<br>盈亏实时分析</div>
+      <div style="font-size:10px;color:var(--text3)">导入 Steam 库存<br>实时算成本与盈亏</div>
     </div>
   </div>
+  <p style="font-size:12px;color:var(--text3);margin-top:10px">数据每 30 分钟自动更新 · 完全免费</p>
 </div>
 
 <div id="mainContent" style="display:none">
@@ -1035,7 +1044,8 @@ html { scroll-behavior: smooth; }
         <div id="watchlistView"><span style="color:var(--text3);font-size:12px">暂无自选，在搜索框选物品后点 ⭐</span></div>
       </div>
     </div>
-    AlphaTrack · ECOSteam · CSQAQ · <span title="J/K 上下翻页 | G 首行 | / 搜索 | Enter 选中 | Esc 清空">⌨ J/K/G / Enter / Esc</span></div>
+    AlphaTrack · ECOSteam · CSQAQ · <span title="J/K 上下翻页 | G 首行 | / 搜索 | Enter 选中 | Esc 清空">⌨ J/K/G / Enter / Esc</span>
+    <div style="margin-top:8px;opacity:.65">数据来源 ECO · CSQAQ · SteamDT · BUFF ｜ 持仓与自选仅存于你的本地浏览器</div></div>
 
 <div class="modal-overlay" id="tokenModal">
     <h3>⚙️ GitHub 自动同步设置</h3>
