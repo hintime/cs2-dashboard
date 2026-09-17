@@ -2079,9 +2079,19 @@ def generate_ai_recommendations():
             _fixed = _rec_fix_platform(item, lv)
             if str(one.get('platform_advice') or '').strip() != _fixed:
                 one['platform_advice'] = _fixed
-            ts = one.get('trend_signals')
-            one['trend_signals'] = ([str(s) for s in ts if str(s).strip()][:4]
-                                    if isinstance(ts, list) and len(ts) >= 2 else sigs)
+            # 信号一律用引擎按真实数据算出的（模型给的常混入旧假溢价与引擎原判原文）
+            import re as _re2
+            _extra = []
+            if isinstance(one.get('trend_signals'), list):
+                for _s in one['trend_signals']:
+                    _s = str(_s).strip()
+                    if not _s or len(_s) > 24:
+                        continue
+                    if any(_bad in _s for _bad in ('ECO', 'vs', '综合', '溢价强劲', 'AI优选', '|')):
+                        continue
+                    if _re2.match(r'^[+\-\=]', _s) and _s not in sigs:
+                        _extra.append(_s)
+            one['trend_signals'] = (sigs + _extra)[:4]
             pr = one.get('price') or _rec_fuzzy_price(one['name'], cands)
             if pr:
                 one['price'] = pr

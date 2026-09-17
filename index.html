@@ -3650,7 +3650,7 @@ function recBuildRow(item, gi, zebra) {
     devHtml = '<span style="color:' + cl + ';font-weight:700" title="对比 Steam 独立市场常态比值 1.45，偏离 ' + (nd >= 0 ? '+' : '') + nd.toFixed(1) + '%">' + txt + '</span>';
   } else if ((item.n_steam || item.steam_sell) > 0) {
     devHtml = '<span class="rt-dim" title="已有多平台 Steam 价，但缺国内价，无法计算偏离">' + recMoney(item.n_steam || item.steam_sell, 0) + '</span>';
-  } else { devHtml = '<span class="rt-dim">—</span>'; }
+  } else { devHtml = '<span class="rt-dim" title="缺少 Steam 价或国内价，无法计算偏离度">无法计算</span>'; }
   // 走势（行内单线：ECO 优先，回退悠悠/BUFF）
   var line = (item.eco_history && item.eco_history.length >= 2) ? sparkline(item.eco_history, 'var(--blue)', 68, 18)
     : sparkline((item.yyyp_history && item.yyyp_history.length >= 2) ? item.yyyp_history : (item.multi_history || []), 'var(--amber)', 68, 18);
@@ -3666,7 +3666,7 @@ function recBuildRow(item, gi, zebra) {
     '<td>' + (item.eco_price > 0 ? recMoney(item.eco_price, 2) : '<span class="rt-dim">—</span>') + '</td>' +
     '<td>' + (item.buff_sell > 0 ? recMoney(item.buff_sell, 2) + (item.buff_buy > 0 ? '<span class="rt-sub">求 ' + recMoney(item.buff_buy, 2) + '</span>' : '') : '<span class="rt-dim">—</span>') + '</td>' +
     '<td>' + (item.yyyp_sell > 0 ? recMoney(item.yyyp_sell, 2) : '<span class="rt-dim">—</span>') + '</td>' +
-    '<td style="color:#8b9dc3">' + ((item.n_steam || item.steam_sell) > 0 ? recMoney(item.n_steam || item.steam_sell, 2) : '<span class="rt-dim">—</span>') + '</td>' +
+    '<td style="color:#8b9dc3">' + ((item.n_steam || item.steam_sell) > 0 ? recMoney(item.n_steam || item.steam_sell, 2) : '<span class="rt-dim" title="数据源未返回 Steam 独立市场价（基准价覆盖率不足）">无数据</span>') + '</td>' +
     '<td>' + devHtml + '</td>' +
     '<td>' + recPct(item.rate_1) + '</td>' +
     '<td>' + recPct(item.rate_7) + '</td>' +
@@ -3685,17 +3685,35 @@ function recBuildExpand(item, gi, aiReasonMap) {
   if (item.yyyp_sell > 0) d1.push('<div class="ln"><span class="e2">悠悠</span> <b>' + recMoney(item.yyyp_sell, 2) + '</b>' + (item.yyyp_sell_num > 0 ? ' 在售 ▲' + item.yyyp_sell_num : '') + '</div>');
   var st = item.n_steam || item.steam_sell || 0;
   if (st > 0) d1.push('<div class="ln"><span class="e3">Steam</span> <b>' + recMoney(st, 2) + '</b> · 独立市场基准（常态比 1.45）</div>');
+  else d1.push('<div class="ln"><span class="e3">Steam</span> <span class="rt-dim">无数据（缺独立市场基准，溢价与偏离不可评估）</span></div>');
   if (!d1.length) d1.push('<div class="ln">暂无平台深度数据</div>');
 
-  var d2 = [], dims = item.fp_dims;
-  if (dims && typeof dims === 'object') {
-    [['discount', '跨平台折价', 25], ['depth', '买卖盘强度', 20], ['scarcity', '稀缺性', 20], ['trend', '趋势健康度', 20], ['liquidity', '流动性', 15]].forEach(function(d) {
-      if (dims[d[0]] === undefined) return;
-      var v = Number(dims[d[0]]) || 0, mx = d[2], pc = Math.min(100, Math.max(0, v / mx * 100));
-      d2.push('<div class="rt-dimrow"><span class="dn2">' + d[1] + '</span><span class="dbar"><i style="width:' + pc.toFixed(0) + '%"></i></span><span class="dv">' + v.toFixed(1) + '/' + mx + '</span></div>');
-    });
+  // 评分构成（真实字段：eco_score / buff_score / score）+ 多源覆盖率
+  // ⚠ 2026-09-17：原版读 item.fp_dims（FirePulse 遗留字段，数据里出现 0 次）→ 永远显示"无评分维度数据"。
+  var d2 = [];
+  function _num(v) { var f = parseFloat(v); return isFinite(f) ? f : null; }
+  [['ECO 分', _num(item.eco_score)], ['BUFF 分', _num(item.buff_score)], ['综合分', _num(item.score)]].forEach(function(p) {
+    if (p[1] === null) return;
+    var pc = Math.min(100, Math.max(0, p[1]));
+    d2.push('<div class="rt-dimrow"><span class="dn2">' + p[0] + '</span><span class="dbar"><i style="width:' + pc.toFixed(0) + '%"></i></span><span class="dv">' + p[1].toFixed(1) + '</span></div>');
+  });
+  var _cov = _num(item.n_cov);
+  if (_cov !== null && _cov > 0) {
+    d2.push('<div class="rt-dimrow"><span class="dn2">多源覆盖</span><span class="dbar"><i style="width:' + Math.min(100, _cov * 100).toFixed(0) + '%;background:var(--amber)"></i></span><span class="dv">' + (_cov * 100).toFixed(0) + '%</span></div>');
   }
-  if (!d2.length) d2.push('<div class="ln">无评分维度数据</div>');
+  if (!d2.length) d2.push('<div class="ln">该件缺评分构成数据</div>');
+  // 数据源与跨市场信号（真实字段）
+  var _meta = [];
+  if (item.n_ref_src) _meta.push('基准源 ' + esc(item.n_ref_src) + ((_num(item.n_ref) || 0) > 0 ? '（¥' + Number(item.n_ref).toFixed(2) + '）' : ''));
+  var _dev = _num(item.n_dev_steam);
+  if (_dev !== null) _meta.push('Steam 偏离 ' + (_dev >= 0 ? '+' : '') + _dev.toFixed(1) + '%');
+  var _pb = _num(item.n_premium_buff);
+  if (_pb !== null) _meta.push('BUFF 溢价 ' + _pb.toFixed(1) + '%');
+  var _py = _num(item.n_premium_yyyp);
+  if (_py !== null) _meta.push('悠悠溢价 ' + _py.toFixed(1) + '%');
+  if (_meta.length) d2.push('<div class="ln" style="margin-top:5px">' + _meta.join(' · ') + '</div>');
+  var _warn = item.n_warn;
+  if (_warn && _warn.length) d2.push('<div class="ln" style="color:#fbbf24">⚠ ' + esc(String(_warn[0]).slice(0, 60)) + '</div>');
 
   var m = aiReasonMap[item.name] || aiReasonMap[item.hash_name] || {};
   var raw = m.reason || item._reason || '';
@@ -3718,7 +3736,7 @@ function recBuildExpand(item, gi, aiReasonMap) {
 
   return '<tr class="rt-exp" style="display:none"><td colspan="15"><div class="rt-exgrid">' +
     '<div class="rt-excol"><div class="h">▸ 市场深度 · 在售 / 求购</div>' + d1.join('') + '</div>' +
-    '<div class="rt-excol"><div class="h">▸ 综合评分 5 维度</div>' + d2.join('') + '</div>' +
+    '<div class="rt-excol"><div class="h">▸ 评分构成 · 数据源</div>' + d2.join('') + '</div>' +
     '<div class="rt-excol"><div class="h">▸ 推荐理由 / 风险 / 走势</div>' + d3 + '</div>' +
     '</div></td></tr>';
 }
@@ -3857,19 +3875,16 @@ function renderRecCompare(items) {
   if (!cnt) { bar.style.display = 'none'; return; }
 
   var scoreSum = 0, scoreN = 0, hi = 0;          // 平均评分 / 高分占比
-  var fpN = 0, fpDiscSum = 0, fpDiscUp = 0;      // FirePulse 覆盖 / 跨平台折价
+  var covN = 0, covSum = 0;                      // 多源覆盖率（n_cov，真实字段）
   var supSum = 0, supN = 0;                      // 平均存世量
   var rarity = {};                               // 稀有度分布
   var weekSum = 0, weekUp = 0, weekN = 0;        // 周涨跌结构
   items.forEach(function(r) {
     var sc = r.score;
     if (typeof sc === 'number' && sc > 0) { scoreSum += sc; scoreN++; if (sc >= 60) hi++; }
-    var fp = r.fp_current_price, eco = r.eco_price;
-    if (typeof fp === 'number' && fp > 0 && typeof eco === 'number' && eco > 0) {
-      var d = (fp - eco) / eco * 100;
-      fpN++; fpDiscSum += d; if (d > 0) fpDiscUp++;
-    }
-    var sup = r.fp_total_supply;
+    var cv = r.n_cov;
+    if (typeof cv === 'number' && cv > 0) { covN++; covSum += cv; }
+    var sup = r.eco_selling;   // ECO 在售量（≈存世量的可用代理）
     if (typeof sup === 'number' && sup > 0) { supSum += sup; supN++; }
     if (r.fp_rarity) rarity[r.fp_rarity] = (rarity[r.fp_rarity] || 0) + 1;
     var wk = r.fp_week_ratio;
@@ -3887,8 +3902,8 @@ function renderRecCompare(items) {
     chips.push('<span class="rcq-chip"><b class="rcq-hi">' + avgScore + '</b> 均分</span>');
     chips.push('<span class="rcq-chip"><b>' + hi + '</b> 只 ≥60分</span>');
   }
-  if (fpN) chips.push('<span class="rcq-chip">FirePulse 覆盖 <b>' + fpN + '/' + cnt + '</b></span>');
-  if (avgSup !== null) chips.push('<span class="rcq-chip">均存世 <b>' + avgSup.toLocaleString() + '</b></span>');
+  if (covN) chips.push('<span class="rcq-chip">多源覆盖 <b>' + Math.round(covSum / covN * 100) + '%</b></span>');
+  if (avgSup !== null) chips.push('<span class="rcq-chip">均挂单 <b>' + avgSup.toLocaleString() + '</b> 件</span>');
   if (weekRate !== null && weekN >= cnt / 2) chips.push('<span class="rcq-chip">周线上涨 <b class="rcq-up">' + weekRate + '%</b></span>');
 
   // 稀有度分布（按数量降序，只显示前 4 档）
@@ -3902,7 +3917,7 @@ function renderRecCompare(items) {
     '<div class="rcq">' +
       '<div class="rcq-head">' +
         '<span class="rcq-title">推荐池质量</span>' +
-        '<span class="rcq-sub">数据源 FirePulse · ECO · BUFF</span>' +
+        '<span class="rcq-sub">数据源 ECO · CSQAQ · SteamDT</span>' +
       '</div>' +
       '<div class="rcq-chips">' + chips.join('') + '</div>' +
       (rarHtml ? '<div class="rcq-rars">' + rarHtml + '</div>' : '') +
@@ -4999,29 +5014,39 @@ window.CAT_LABELS = CAT_LABELS;
     });
     if(rates.length) body.innerHTML += '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">' + rates.join(' · ') + '</div>';
 
-    // ══ 综合评分（统一体系）══
-    // 旧版同时展示「综合分 / ECO分 / BUFF分」三套数字且互相矛盾（40.3 vs 12.7/20.0 vs 文本里的"综合36"），
-    // 这是"看不懂"的主因。现统一为单一分数：优先 FirePulse 100 分制，无则回退旧综合分。
-    var fpScore = typeof item.fp_score === 'number' ? item.fp_score : (typeof item.score === 'number' ? item.score : null);
+    // ══ 综合评分 · 评分构成（真实字段）══
+    // ⚠ 2026-09-17：原版展示的是 item.fp_dims（FirePulse 遗留字段，数据里出现 0 次）→ 维度永久空白。
+    //   数据里真实存在的是 eco_score / buff_score / score / n_cov（多源覆盖率）/ n_ref+n_ref_src /
+    //   n_dev_steam / n_premium_buff / n_premium_yyyp，改为直接展示这些。
+    var fpScore = (typeof item.score === 'number' && item.score > 0) ? item.score : null;
     if (fpScore !== null) {
       var sClr = fpScore >= 50 ? 'var(--amber)' : (fpScore >= 35 ? 'var(--blue)' : 'var(--text2)');
-      var isFP = (typeof item.fp_score === 'number');
+      var covN2 = (typeof item.n_cov === 'number' && item.n_cov > 0) ? Math.round(item.n_cov * 100) : null;
       var scoreBlock = '<div class="rm-sec">综合评分</div>'
         + '<div class="rm-score-row"><span class="rm-score-big" style="color:' + sClr + '">' + fpScore.toFixed(1) + '</span>'
         + '<span style="font-size:12px;color:var(--text3)">/ 100 分</span>'
-        + (isFP ? '<span style="font-size:11px;color:#a78bfa;margin-left:6px">FirePulse 多平台评分</span>' : '') + '</div>'
+        + (covN2 !== null ? '<span style="font-size:11px;color:#a78bfa;margin-left:6px">多源覆盖 ' + covN2 + '%</span>' : '') + '</div>'
         + '<div class="rm-dim-bar" style="height:4px"><div class="rm-dim-fill" style="width:' + Math.min(100, Math.max(0, fpScore)).toFixed(0) + '%;background:' + sClr + '"></div></div>';
-      var dims = item.fp_dims;
-      if (dims && typeof dims === 'object') {
-        var dOrder = [['discount', '跨平台折价', 25], ['depth', '买卖盘强度', 20], ['scarcity', '稀缺性', 20], ['trend', '趋势健康度', 20], ['liquidity', '流动性', 15]];
-        var dHtml = dOrder.filter(function(d) { return dims[d[0]] !== undefined; }).map(function(d) {
-          var v = Number(dims[d[0]]) || 0, mx = d[2], pc = Math.min(100, Math.max(0, v / mx * 100));
-          return '<div class="rm-dim"><div class="rm-dim-l">' + d[1] + '</div>'
-            + '<div class="rm-dim-v">' + v.toFixed(1) + '<span style="font-size:9px;color:var(--text3)">/' + mx + '</span></div>'
-            + '<div class="rm-dim-bar"><div class="rm-dim-fill" style="width:' + pc.toFixed(0) + '%;background:' + sClr + '"></div></div></div>';
-        }).join('');
-        if (dHtml) scoreBlock += '<div class="rm-dims">' + dHtml + '</div>';
-      }
+      var _dd = [
+        ['ECO 分', item.eco_score, 'var(--blue)'],
+        ['BUFF 分', item.buff_score, 'var(--rise)'],
+        ['综合分', item.score, sClr],
+        ['多源覆盖', covN2, 'var(--amber)']
+      ];
+      var dHtml = _dd.filter(function(d) { return typeof d[1] === 'number' && isFinite(d[1]); }).map(function(d) {
+        var v = d[1], pc = Math.min(100, Math.max(0, v));
+        return '<div class="rm-dim"><div class="rm-dim-l">' + d[0] + '</div>'
+          + '<div class="rm-dim-v">' + v.toFixed(1) + (d[0] === '多源覆盖' ? '<span style="font-size:9px;color:var(--text3)">%</span>' : '') + '</div>'
+          + '<div class="rm-dim-bar"><div class="rm-dim-fill" style="width:' + pc.toFixed(0) + '%;background:' + d[2] + '"></div></div></div>';
+      }).join('');
+      if (dHtml) scoreBlock += '<div class="rm-dims">' + dHtml + '</div>';
+      var _mm = [];
+      if (item.n_ref_src) _mm.push('基准源 ' + esc(String(item.n_ref_src)) + ((item.n_ref > 0) ? '（¥' + Number(item.n_ref).toFixed(2) + '）' : ''));
+      if (typeof item.n_dev_steam === 'number' && isFinite(item.n_dev_steam)) _mm.push('Steam 偏离 ' + (item.n_dev_steam >= 0 ? '+' : '') + item.n_dev_steam.toFixed(1) + '%');
+      if (typeof item.n_premium_buff === 'number' && isFinite(item.n_premium_buff)) _mm.push('BUFF 溢价 ' + item.n_premium_buff.toFixed(1) + '%');
+      if (typeof item.n_premium_yyyp === 'number' && isFinite(item.n_premium_yyyp)) _mm.push('悠悠溢价 ' + item.n_premium_yyyp.toFixed(1) + '%');
+      if (_mm.length) scoreBlock += '<div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.6">' + _mm.join(' · ') + '</div>';
+      if (item.n_warn && item.n_warn.length) scoreBlock += '<div style="font-size:11px;color:#fbbf24;margin-top:4px">⚠ ' + esc(String(item.n_warn[0]).slice(0, 60)) + '</div>';
       body.innerHTML += scoreBlock;
     }
     // 推荐理由 - split into readable sections
