@@ -768,6 +768,112 @@ html { scroll-behavior: smooth; }
 }
 .rc-price-src{font-size:9px;color:var(--text3);font-style:normal;margin-left:4px;font-weight:600}
 @media(max-width:640px){#recGrid{grid-template-columns:1fr}}
+/* ══════════ 推荐板块 · 行情终端（v2 2026-09-17）══════════ */
+.rt-tools{display:flex;align-items:center;gap:8px;margin:0 0 10px;flex-wrap:wrap}
+.rt-lb{font-size:10px;color:var(--text3)}
+.rt-chip{font-size:10.5px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:3px 11px;cursor:pointer;transition:all .18s;user-select:none;display:inline-block}
+.rt-chip:hover{border-color:rgba(96,165,250,.45);color:var(--text)}
+.rt-chip.on{background:rgba(96,165,250,.14);border-color:rgba(96,165,250,.5);color:var(--blue);font-weight:600}
+.rt-sp{flex:1}
+.rt-cnt{font-size:10px;color:var(--text3)}
+.rt-tblwrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:rgba(13,17,23,.35)}
+.rt-tbl{width:100%;min-width:1150px;border-collapse:separate;border-spacing:0;font-size:11.5px;font-variant-numeric:tabular-nums}
+.rt-tbl thead th{font-size:10px;font-weight:600;color:var(--text3);text-align:right;padding:9px 9px;background:rgba(13,17,23,.7);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:2}
+.rt-tbl thead th.l{text-align:left}
+.rt-tbl thead th.srt{color:var(--blue);cursor:pointer}
+.rt-tbl thead th .ar{font-size:8px;margin-left:2px}
+.rt-tbl tbody td{padding:9px;border-bottom:1px solid rgba(55,65,81,.22);text-align:right;white-space:nowrap;vertical-align:middle;transition:background .15s}
+.rt-tbl tbody td.l{text-align:left}
+.rt-row{cursor:pointer}
+.rt-row:hover td{background:rgba(96,165,250,.06)}
+.rt-row:hover td:first-child{box-shadow:inset 3px 0 0 var(--blue)}
+.rt-row.z td{background:rgba(255,255,255,.012)}
+.rt-rk{display:inline-flex;width:22px;height:22px;border-radius:6px;background:rgba(96,165,250,.12);color:var(--blue);font-size:11px;font-weight:800;align-items:center;justify-content:center}
+.rt-rk.t1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1c1917}
+.rt-rk.t2{background:linear-gradient(135deg,#cbd5e1,#94a3b8);color:#1c1917}
+.rt-rk.t3{background:linear-gradient(135deg,#d97706,#b45309);color:#fff}
+.rt-nm{font-weight:700;font-size:12px;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rt-tags{margin-top:3px;display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.rt-rare{font-size:8.5px;color:#a78bfa;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.2);padding:0 5px;border-radius:4px}
+.rt-aib{font-size:8.5px;color:var(--fall);background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.2);padding:0 5px;border-radius:4px}
+.rt-ch{font-size:8.5px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:0 5px;border-radius:4px}
+.rt-buyq{font-size:8.5px;color:var(--text3)}
+.rt-scw{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end;width:100%}
+.rt-scb{width:38px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;flex:none}
+.rt-scb i{display:block;height:100%;border-radius:2px}
+.rt-src{display:block;font-size:8.5px;color:var(--text3);margin-top:1px;font-weight:400}
+.rt-sub{display:block;font-size:9px;color:var(--text3);margin-top:1px;font-weight:400}
+.rt-pc{color:var(--text);font-weight:600}
+.rt-dim{color:var(--text3)}
+.rt-sig{display:inline-flex;align-items:center;justify-content:center;min-width:62px;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:6px}
+.rt-sig.buy{color:var(--fall);background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3)}
+.rt-sig.watch{color:var(--amber);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3)}
+.rt-sig.avoid{color:var(--rise);background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3)}
+.rt-exp td{background:rgba(13,17,23,.62);border-bottom:1px solid var(--border);padding:12px 14px 14px;text-align:left;white-space:normal}
+.rt-exgrid{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:16px}
+.rt-excol{border-left:2px solid rgba(96,165,250,.28);padding-left:11px}
+.rt-excol .h{font-size:9.5px;font-weight:700;color:var(--blue);letter-spacing:.4px;margin-bottom:6px}
+.rt-excol .ln{font-size:10px;color:var(--text3);line-height:1.85}
+.rt-excol .ln b{color:var(--text);font-weight:600}
+.rt-excol .e1{color:var(--blue)}.rt-excol .e2{color:var(--amber)}.rt-excol .e3{color:#8b9dc3}
+.rt-dimrow{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:9.5px}
+.rt-dimrow .dn2{width:64px;color:var(--text3);flex:none}
+.rt-dimrow .dbar{flex:1;height:4px;background:rgba(55,65,81,.45);border-radius:2px;overflow:hidden}
+.rt-dimrow .dbar i{display:block;height:100%;background:var(--blue);border-radius:2px}
+.rt-dimrow .dv{width:44px;text-align:right;color:var(--text2);flex:none}
+.rt-reason{font-size:10px;color:var(--text2);line-height:1.7;border-left:2px solid rgba(96,165,250,.35);padding-left:9px}
+.rt-risk{font-size:9.5px;color:#f87171;margin-top:6px;background:rgba(239,68,68,.06);border-radius:0 6px 6px 0;border-left:2px solid rgba(239,68,68,.35);padding:4px 9px}
+.rt-sparks{display:flex;gap:18px;align-items:flex-end;margin-top:8px}
+.rt-sparks .lbl2{font-size:8.5px;margin-bottom:2px}
+.rt-hint{margin-top:8px;font-size:9.5px;color:var(--text3);text-align:right}
+/* ══ AI 精选模块（v2）══ */
+.ai-sec{margin-bottom:12px;border:1px solid rgba(168,85,247,.25);border-radius:12px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(34,197,94,.04));overflow:hidden}
+.ai-head{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid rgba(168,85,247,.14);flex-wrap:wrap}
+.ai-ttl{font-size:13.5px;font-weight:800;background:linear-gradient(135deg,#c084fc,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.ai-bd{font-size:9px;background:rgba(96,165,250,.15);color:#60a5fa;padding:1px 6px;border-radius:4px;font-weight:600;white-space:nowrap}
+.ai-date{font-size:10px;color:var(--text3)}
+.ai-sum{font-size:11px;color:var(--text2);flex:1;min-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-sum b{color:#c084fc;font-weight:600}
+.ai-more{font-size:10px;color:var(--blue);white-space:nowrap;cursor:pointer}
+.ai-picks{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:10px 14px}
+.aip{background:rgba(13,17,23,.55);border:1px solid var(--border);border-radius:9px;padding:8px 10px;cursor:pointer;transition:border-color .18s,background .18s}
+.aip:hover{border-color:rgba(96,165,250,.45)}
+.aip.sel{border-color:rgba(96,165,250,.6);background:rgba(96,165,250,.07)}
+.aip-head{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.aip-rk{font-size:12px;flex:none}
+.aip-nm{font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.aip-prow{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.aip-price{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.aip-sent{font-size:9px;font-weight:700;padding:1px 6px;border-radius:5px;white-space:nowrap}
+.s-strong{color:#22c55e;background:rgba(34,197,94,.12)}
+.s-bull{color:#4ade80;background:rgba(74,222,128,.12)}
+.s-neutral{color:#94a3b8;background:rgba(148,163,184,.12)}
+.s-bear{color:#f59e0b;background:rgba(245,158,11,.12)}
+.s-sbear{color:#ef4444;background:rgba(239,68,68,.12)}
+.aip-sigs{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.aip-sigs .sg{font-size:8.5px;padding:1px 5px;border-radius:4px;border:1px solid;white-space:nowrap}
+.aip-sigs .sg.p{color:var(--fall);border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.06)}
+.aip-sigs .sg.n{color:var(--rise);border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.06)}
+.aip-sigs .sg.e{color:var(--text2);border-color:var(--border)}
+.ai-detail{margin:0 14px 12px;background:rgba(13,17,23,.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;text-align:left}
+.ai-detail .dh{font-size:10.5px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ai-detail .dh b{color:var(--text);font-size:12px}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.ai-row{font-size:10px;color:var(--text3);line-height:1.75;text-align:left}
+.ai-row i{font-style:normal;display:block;font-size:9.5px;font-weight:700;color:var(--blue);margin-bottom:2px;letter-spacing:.3px}
+.ai-row .txt{color:var(--text2)}
+.ai-row.warn{background:rgba(239,68,68,.06);border-left:2px solid rgba(239,68,68,.35);border-radius:0 6px 6px 0;padding:5px 9px;color:#f87171}
+.ai-row.plan{background:rgba(34,197,94,.06);border-left:2px solid rgba(34,197,94,.35);border-radius:0 6px 6px 0;padding:5px 9px;color:#86efac}
+.ai-foot{display:flex;gap:14px;flex-wrap:wrap;padding:8px 14px;border-top:1px solid rgba(168,85,247,.14);font-size:9.5px;color:var(--text3);background:rgba(13,17,23,.35);align-items:center}
+.ai-foot b{color:var(--text2);font-weight:600}
+.ai-foot .lk{color:var(--blue)}
+.ai-foot details summary{color:var(--blue);cursor:pointer}
+@media(max-width:900px){
+  .ai-picks{grid-template-columns:repeat(2,1fr)}
+  .rt-exgrid{grid-template-columns:1fr}
+  .ai-grid{grid-template-columns:1fr}
+  .rt-tbl{min-width:1050px}
+}
 </style>
 </head>
 <body>
@@ -948,18 +1054,50 @@ html { scroll-behavior: smooth; }
       <span id="recUpdateTime" style="font-size:10px;color:var(--text3)"></span>
     </div>
     <div id="recContent" style="padding:12px 16px">
-      <div id="recCompareBar" style="margin-bottom:14px;display:none"></div>
-      <div id="aiRecBanner" style="display:none;margin-bottom:14px;padding:14px 18px;background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(34,197,94,.06));border:1px solid rgba(168,85,247,.25);border-radius:12px;position:relative;overflow:hidden">
-        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:radial-gradient(circle,rgba(168,85,247,.15),transparent 70%);pointer-events:none"></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <span style="font-size:14px;font-weight:700;background:linear-gradient(135deg,#c084fc,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent">🤖 AI 推荐精选</span>
-          <span style="font-size:9px;background:rgba(96,165,250,.15);color:#60a5fa;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px">智谱 GLM-4</span>
-          <span id="aiRecDate" style="font-size:10px;color:var(--text3)"></span>
+      <div id="recCompareBar" style="margin-bottom:12px;display:none"></div>
+
+      <!-- ══ AI 精选（五强行 + 展开详情 + 底部元信息，2026-09-17 改版）══ -->
+      <div id="aiRecBanner" class="ai-sec" style="display:none">
+        <div class="ai-head">
+          <span class="ai-ttl">🤖 AI 推荐精选</span>
+          <span class="ai-bd">智谱 GLM-4</span>
+          <span id="aiRecDate" class="ai-date"></span>
+          <span id="aiRecSummary" class="ai-sum"></span>
+          <span id="aiRecMore" class="ai-more">收起详情 ▴</span>
         </div>
-        <div id="aiRecPicks" style="display:flex;flex-direction:column;gap:8px"></div>
-        <div id="aiRecStrategy" style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(168,85,247,.15);font-size:11px;color:var(--text2);line-height:1.5"></div>
+        <div id="aiRecPicks" class="ai-picks"></div>
+        <div id="aiRecDetail" class="ai-detail"></div>
+        <div id="aiRecStrategy" class="ai-foot"></div>
       </div>
-      <div id="recGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px"></div>
+
+      <!-- ══ 排序工具条 ══ -->
+      <div class="rt-tools">
+        <span class="rt-lb">排序</span>
+        <span class="rt-chip on" data-rsort="score">评分 ↓</span>
+        <span class="rt-chip" data-rsort="rate_7">7日涨跌</span>
+        <span class="rt-chip" data-rsort="n_dev_steam">Steam偏离</span>
+        <span class="rt-chip" data-rsort="fp_total_supply">存世量</span>
+        <span class="rt-sp"></span>
+        <span class="rt-cnt" id="recCount"></span>
+      </div>
+
+      <!-- ══ 行情终端表格 ══ -->
+      <div class="rt-tblwrap">
+        <table class="rt-tbl">
+          <thead>
+            <tr>
+              <th class="l">排名</th><th class="l">品种</th>
+              <th class="srt" id="rth-score">评分 <span class="ar">▼</span></th>
+              <th>当前价</th><th>ECO</th><th>BUFF / 求购</th><th>悠悠</th><th>Steam</th>
+              <th>Steam偏离</th><th>1日</th><th>7日</th><th>30日</th><th>存世量</th>
+              <th class="l">走势</th><th>信号</th>
+            </tr>
+          </thead>
+          <tbody id="recGrid"></tbody>
+        </table>
+      </div>
+      <div class="rt-hint">悬停行高亮 · 点击行展开「深度 / 评分5维度 / 理由+走势」 · 工具条可排序 · AI 精选卡片点击切换详情</div>
+      <div id="recPager" class="rec-pager"></div>
     </div>
   </div>
 
@@ -2282,192 +2420,201 @@ function renderAIRecommendations() {
   var picksEl = document.getElementById('aiRecPicks');
   var strategyEl = document.getElementById('aiRecStrategy');
   var dateEl = document.getElementById('aiRecDate');
+  var sumEl = document.getElementById('aiRecSummary');
+  var detailEl = document.getElementById('aiRecDetail');
+  var moreEl = document.getElementById('aiRecMore');
   if (!banner || !picksEl) return;
-  fetch('ai_recommendations.json?' + Date.now()).then(function(r) {
+  var now = Date.now();
+  // ── 5 分钟内存缓存：翻页/排序/重绘不再重复请求 ──
+  if (window._aiRecData && window._aiRecDataAt && (now - window._aiRecDataAt) < 300000) {
+    renderAIRecBody(window._aiRecData);
+    if (window._aiRecLessonsAt && (now - window._aiRecLessonsAt) < 300000) renderAILessons(window._aiRecLessons, window._aiRecData);
+    else loadAILessons(window._aiRecData);
+    return;
+  }
+  fetch('ai_recommendations.json?' + now).then(function(r) {
     return r.ok ? r.json() : null;
   }).then(function(data) {
     if (!data || !data.picks || !data.picks.length) {
       banner.style.display = 'none';
       return;
     }
-    // 保存到全局供 renderAllRecs 使用
-    window._aiRecommendations = data;
-    var picks = data.picks.slice(0, 5);
-    dateEl.textContent = data.date || '';
-    banner.style.display = '';
-    // 渲染 picks
-    var rankColors = ['#fbbf24','#c0c0c0','#cd853f','var(--text3)','var(--text3)'];
-    var rankIcons = ['🥇','🥈','🥉','4️⃣','5️⃣'];
-    picksEl.innerHTML = picks.map(function(p, i) {
-      var r = p.reason || '';
-      var k = p.risk || '';
-      var op = p.operation || '';
-      var pz = p.price_zone || '';
-      var se = p.sentiment || '';
-      var ts = p.trend_signals || [];
-      var pa = p.platform_advice || '';
-      var id = 'aiPick' + i;
-      
-      // ── 信号条 (从 trend_signals 或 reason 提取) ──
-      var signals = [];
-      if (Array.isArray(ts) && ts.length) {
-        ts.forEach(function(s) { signals.push(s); });
-      }
-      if (!signals.length) {
-        // fallback: 从 reason 提取
-        if (/供不应求|供<求|卖方市场/.test(r)) signals.push('+卖方市场');
-        if (/供大于求|供>求|买方市场/.test(r)) signals.push('-买方市场');
-        var pm = r.match(/溢价(\d+[\d.]*%)/); if (pm) { var pv=parseFloat(pm[1]); signals.push((pv<6?'+':'=')+'溢价'+pm[1]); }
-        if (/流动性优良/.test(r)) signals.push('=流动性优良');
-        if (/稀缺|仅\d+件/.test(r)) signals.push('+稀缺品');
-      }
-      if (!signals.length) signals.push('=AI精选');
-      if (signals.length > 4) signals = signals.slice(0, 4);
-      
-      var signalHtml = signals.map(function(s) {
-        var prefix = s.charAt(0);
-        var label = (prefix === '+' || prefix === '-' || prefix === '=') ? s.slice(1) : s;
-        var cls = prefix === '+' ? 'positive' : prefix === '-' ? 'negative' : 'neutral';
-        var icon = prefix === '+' ? '↑' : prefix === '-' ? '↓' : '—';
-        var color = cls === 'positive' ? 'var(--fall)' : cls === 'negative' ? 'var(--rise)' : 'var(--text2)';
-        return '<span class="ai-signal-tag ' + cls + '" style="border-color:' + color + ';color:' + color + '">' + icon + ' ' + esc(label) + '</span>';
-      }).join('');
-      
-      // ── 简要描述 ──
-      var brief = r.replace(/[，,。.].*/, '').slice(0, 50);
-      if (brief.length >= 45) brief += '…';
-      
-      // ── 研判颜色 ──
-      var sentColors = {'强烈看多':'#22c55e','看多':'#4ade80','中性偏多':'#a3e635','中性':'#94a3b8','中性偏空':'#f59e0b','看空':'#f97316','强烈看空':'#ef4444'};
-      var sentColor = sentColors[se] || 'var(--text2)';
-      
-      // ── 构建展开面板 (分层信息架构) ──
-      var bodyHtml = '';
-      
-      // 第一层: 价格评估 + 综合研判
-      bodyHtml += '<div class="ai-pick-row2">';
-      bodyHtml += '<div class="ai-pick-price-panel">';
-      bodyHtml += '<div style="font-size:9px;color:var(--text3);margin-bottom:2px">价格评估</div>';
-      bodyHtml += '<div style="display:flex;align-items:baseline;gap:8px">';
-      bodyHtml += '<span style="font-size:16px;font-weight:700;color:var(--text)">¥' + esc(p.price||'?') + '</span>';
-      if (se) bodyHtml += '<span style="font-size:10px;padding:1px 6px;border-radius:3px;background:' + sentColor + '15;color:' + sentColor + ';font-weight:600">' + esc(se) + '</span>';
-      bodyHtml += '</div></div>';
-      bodyHtml += '<div class="ai-pick-signal-panel">';
-      bodyHtml += '<div style="font-size:9px;color:var(--text3);margin-bottom:2px">关键信号</div>';
-      bodyHtml += '<div class="ai-signal-list">' + signalHtml + '</div>';
-      bodyHtml += '</div></div>';
-      
-      // 第二层: 入手区间
-      if (pz) {
-        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">🎯 推荐入手价格区间</div>';
-        bodyHtml += '<div style="font-size:10px;color:#60a5fa;line-height:1.6;padding:6px 10px;background:rgba(96,165,250,.06);border-radius:6px;border-left:2px solid rgba(96,165,250,.3)">' + esc(pz) + '</div></div>';
-      }
-      
-      // 第三层: 平台建议
-      if (pa) {
-        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">🏪 平台建议</div>';
-        bodyHtml += '<div style="font-size:10px;color:#a78bfa;line-height:1.6;padding:6px 10px;background:rgba(167,139,250,.06);border-radius:6px">' + esc(pa) + '</div></div>';
-      }
-      
-      // 第四层: 买入理由
-      bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">📊 买入理由</div>';
-      bodyHtml += '<div style="font-size:10px;color:var(--text2);line-height:1.7;padding:6px 10px">' + esc(r) + '</div></div>';
-      
-      // 第五层: 风险评估
-      if (k) {
-        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">⚠️ 风险评估</div>';
-        bodyHtml += '<div style="font-size:10px;color:#ef4444;line-height:1.6;padding:6px 10px;background:rgba(239,68,68,.06);border-radius:6px;border-left:2px solid rgba(239,68,68,.3)">' + esc(k) + '</div></div>';
-      }
-      
-      // 第六层: 操作计划
-      if (op) {
-        bodyHtml += '<div class="ai-pick-section"><div class="ai-pick-section-title">🎯 操作计划</div>';
-        bodyHtml += '<div class="ai-pick-op">' + esc(op) + '</div></div>';
-      }
-      
-      var rankEmoji = ['🥇','🥈','🥉'][i] || '#'+(i+1);
-      return '<div class="ai-pick-card" id="' + id + '" onclick="var c=document.getElementById(\'' + id + '\');c.classList.toggle(\'open\')">' +
-        '<div class="ai-pick-head">' +
-          '<span class="ai-pick-rank">' + rankEmoji + '</span>' +
-          '<span class="ai-pick-name" title="' + esc(p.name||'') + '">' + esc(p.name||'') + '</span>' +
-          '<span class="ai-pick-brief">' + esc(brief) + '</span>' +
-          '<span class="ai-pick-arrow">▼</span>' +
-        '</div>' +
-        '<div class="ai-pick-body">' + bodyHtml + '</div>' +
-      '</div>';
-    }).join('');
-    // 策略和总览
-    var parts = [];
-    if (data.summary) parts.push('<span style="color:#c084fc;font-weight:600">📋 ' + esc(data.summary) + '</span>');
-    if (data.strategy) parts.push('<span style="color:var(--text2)">💡 ' + esc(data.strategy) + '</span>');
-    // 推理过程
-    if (data.reasoning) {
-      parts.push('<details style="font-size:10px;color:var(--text3);cursor:pointer"><summary style="color:#60a5fa">🧠 推理过程</summary><div style="margin-top:4px;padding:6px 8px;background:rgba(96,165,250,.04);border-radius:6px;line-height:1.6">' + esc(data.reasoning) + '</div></details>');
-    }
-    // 自我批判
-    if (data.self_critique) {
-      parts.push('<div style="font-size:10px;color:#fbbf24;margin-top:4px;padding:4px 8px;background:rgba(251,191,36,.06);border-radius:4px">⚠️ 自检: ' + esc(data.self_critique) + '</div>');
-    }
-    strategyEl.innerHTML = parts.join(' · ');
-    
-    // ④ 显示追踪教训反哺的评分权重调整
-    var showLessons = function(lessons) {
-      var latest = (lessons && lessons.analysis_history && lessons.analysis_history.length)
-        ? lessons.analysis_history[lessons.analysis_history.length - 1] : null;
-      var sf = latest ? latest.scoring_feedback || {} : {};
-      var lessonsList = lessons ? lessons.lessons || [] : [];
-      
-      // 优先用 ai_recommendations 里的 scoring_weights（后端已算好）
-      var sw = data.scoring_weights;
-      var adjHtml = '';
-      if (sw || sf.eco_weight_advice || sf.buff_weight_advice) {
-        adjHtml += '<div style="display:flex;gap:10px;align-items:center;font-size:10px;margin-bottom:6px">';
-        adjHtml += '<span style="color:var(--text3)">📊 评分权重(AI调整):</span>';
-        var ecoV = sw ? sw.eco : (sf.eco_weight_advice||'不变');
-        var buffV = sw ? sw.buff : (sf.buff_weight_advice||'不变');
-        adjHtml += '<span style="color:' + (String(ecoV).indexOf('-')>=0?'var(--fall)':'var(--rise)') + '">ECO ' + (ecoV>0?'+':'') + ecoV + '%</span>';
-        adjHtml += '<span style="color:' + (String(buffV).indexOf('+')>=0?'var(--fall)':'var(--rise)') + '">BUFF ' + (buffV>0?'+':'') + buffV + '%</span>';
-        adjHtml += '<span style="color:var(--text3)">| 溢价: ' + esc(sf.premium_threshold_advice||'?') + '</span>';
-        adjHtml += '</div>';
-      }
-      
-      // 最新教训摘要
-      if (lessonsList.length) {
-        adjHtml += '<div style="font-size:9px;color:var(--text3);line-height:1.5">';
-        adjHtml += '🧠 ' + lessonsList.slice(0, 2).map(function(l) { return esc(l.lesson).slice(0, 35) + (l.confirmed>=3?' ✓':'') ; }).join(' · ');
-        adjHtml += '</div>';
-      }
-      
-      // 推荐理由优化方向（从 reason_analysis）
-      if (latest && latest.reason_analysis) {
-        var ra = latest.reason_analysis;
-        if (ra.right_reasons || ra.wrong_reasons) {
-          adjHtml += '<div style="font-size:9px;color:var(--text2);line-height:1.5;margin-top:4px">';
-          adjHtml += '💬 理由优化: ';
-          if (ra.right_reasons) adjHtml += '<span style="color:var(--fall)">✅' + esc(ra.right_reasons).slice(0, 40) + '</span> ';
-          if (ra.wrong_reasons) adjHtml += '<span style="color:var(--rise)">❌' + esc(ra.wrong_reasons).slice(0, 40) + '</span>';
-          adjHtml += '</div>';
-        }
-      }
-      
-      if (adjHtml) {
-        strategyEl.innerHTML += '<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,.06);border-radius:8px;border-left:2px solid rgba(251,191,36,.3)">' + adjHtml + '</div>';
-      }
-    };
-    
-    // 如果 ai_recommendations 已有 scoring_weights，直接显示
-    if (data.scoring_weights) {
-      showLessons(null);
-    }
-    // 否则从 tracking_lessons.json 获取
-    fetch('tracking_lessons.json?v=' + Date.now())
-      .then(function(r) { return r.ok ? r.json() : null; })
-      .catch(function() { return null; })
-      .then(showLessons);
+    window._aiRecData = data;
+    window._aiRecDataAt = Date.now();
+    renderAIRecBody(data);
+    if (window._aiRecLessonsAt && (Date.now() - window._aiRecLessonsAt) < 300000) renderAILessons(window._aiRecLessons, data);
+    else loadAILessons(data);
   }).catch(function() {
     banner.style.display = 'none';
   });
 }
+
+// 追踪教训（评分权重反哺）——独立请求 + 缓存
+function loadAILessons(data) {
+  fetch('tracking_lessons.json?v=' + Date.now())
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .catch(function() { return null; })
+    .then(function(ls) {
+      window._aiRecLessons = ls;
+      window._aiRecLessonsAt = Date.now();
+      renderAILessons(ls, data);
+    });
+}
+
+// ── AI 精选主体渲染（纯渲染，不请求）──
+function renderAIRecBody(data) {
+  var banner = document.getElementById('aiRecBanner');
+  var picksEl = document.getElementById('aiRecPicks');
+  var strategyEl = document.getElementById('aiRecStrategy');
+  var dateEl = document.getElementById('aiRecDate');
+  var sumEl = document.getElementById('aiRecSummary');
+  var detailEl = document.getElementById('aiRecDetail');
+  var moreEl = document.getElementById('aiRecMore');
+  if (!banner || !picksEl) return;
+  var picks = data.picks.slice(0, 5);
+  window._aiPicks = picks;
+  if (dateEl) dateEl.textContent = data.date || '';
+  if (sumEl) {
+    if (data.summary) sumEl.innerHTML = '<b>📋 策略：</b>' + esc(data.summary);
+    else if (data.strategy) sumEl.innerHTML = '<b>💡 策略：</b>' + esc(data.strategy);
+    else sumEl.innerHTML = '';
+    sumEl.title = [data.summary, data.strategy].filter(Boolean).join(' ｜ ');
+  }
+  banner.style.display = '';
+
+  var rankIcons = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+  picksEl.innerHTML = picks.map(function(p, i) {
+    var se = p.sentiment || '';
+    var cls = AI_SENT_CLS[se] || 's-neutral';
+    return '<div class="aip' + (i === 0 ? ' sel' : '') + '" data-i="' + i + '" role="button" tabindex="0" title="' + esc(p.name || '') + '">' +
+      '<div class="aip-head"><span class="aip-rk">' + (rankIcons[i] || ('#' + (i + 1))) + '</span>' +
+        '<span class="aip-nm">' + esc(p.name || '--') + '</span></div>' +
+      '<div class="aip-prow"><span class="aip-price">' + (p.price !== undefined && p.price !== '' ? '¥' + esc(String(p.price)) : '—') + '</span>' +
+        (se ? '<span class="aip-sent ' + cls + '">' + esc(se) + '</span>' : '') + '</div>' +
+      '<div class="aip-sigs">' + aiPickSignals(p) + '</div>' +
+    '</div>';
+  }).join('');
+  picksEl.querySelectorAll('.aip').forEach(function(el) {
+    var idx = parseInt(el.getAttribute('data-i'), 10);
+    el.addEventListener('click', function() { window.aiSelectPick(idx); });
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.aiSelectPick(idx); }
+    });
+  });
+  window.aiSelectPick(0);
+
+  if (moreEl && !moreEl._bound) {
+    moreEl._bound = 1;
+    moreEl.addEventListener('click', function() {
+      if (!detailEl) return;
+      var show = detailEl.style.display !== 'none';
+      detailEl.style.display = show ? 'none' : '';
+      moreEl.textContent = show ? '展开详情 ▾' : '收起详情 ▴';
+    });
+  }
+
+  // 底部元信息：策略 / 推理过程 / 自检 / 教训（占位）
+  var foot = [];
+  if (data.strategy) foot.push('<span>💡 ' + esc(data.strategy) + '</span>');
+  if (data.reasoning) {
+    foot.push('<details><summary>🧠 推理过程</summary><div style="margin-top:4px;padding:6px 8px;background:rgba(96,165,250,.04);border-radius:6px;line-height:1.6;color:var(--text2)">' + esc(data.reasoning) + '</div></details>');
+  }
+  if (data.self_critique) foot.push('<span>⚠️ 自检：<b>' + esc(data.self_critique) + '</b></span>');
+  foot.push('<div id="aiRecLessons" style="width:100%"></div>');
+  strategyEl.innerHTML = foot.join('');
+  if (data.scoring_weights) renderAILessons(null, data);
+}
+
+// ── 评分权重 / 教训反哺（原逻辑保留）──
+function renderAILessons(lessons, data) {
+  var box = document.getElementById('aiRecLessons');
+  if (!box) return;
+  var latest = (lessons && lessons.analysis_history && lessons.analysis_history.length)
+    ? lessons.analysis_history[lessons.analysis_history.length - 1] : null;
+  var sf = latest ? latest.scoring_feedback || {} : {};
+  var lessonsList = lessons ? lessons.lessons || [] : [];
+  var sw = data ? data.scoring_weights : null;
+  var adjHtml = '';
+  if (sw || sf.eco_weight_advice || sf.buff_weight_advice) {
+    adjHtml += '<div style="display:flex;gap:10px;align-items:center;font-size:10px;margin-bottom:6px;flex-wrap:wrap">';
+    adjHtml += '<span style="color:var(--text3)">📊 评分权重(AI调整):</span>';
+    var ecoV = sw ? sw.eco : (sf.eco_weight_advice || '不变');
+    var buffV = sw ? sw.buff : (sf.buff_weight_advice || '不变');
+    adjHtml += '<span style="color:' + (String(ecoV).indexOf('-') >= 0 ? 'var(--fall)' : 'var(--rise)') + '">ECO ' + (ecoV > 0 ? '+' : '') + ecoV + '%</span>';
+    adjHtml += '<span style="color:' + (String(buffV).indexOf('+') >= 0 ? 'var(--fall)' : 'var(--rise)') + '">BUFF ' + (buffV > 0 ? '+' : '') + buffV + '%</span>';
+    adjHtml += '<span style="color:var(--text3)">| 溢价: ' + esc(sf.premium_threshold_advice || '?') + '</span>';
+    adjHtml += '</div>';
+  }
+  if (lessonsList.length) {
+    adjHtml += '<div style="font-size:9px;color:var(--text3);line-height:1.5">';
+    adjHtml += '🧠 ' + lessonsList.slice(0, 2).map(function(l) { return esc(l.lesson).slice(0, 35) + (l.confirmed >= 3 ? ' ✓' : ''); }).join(' · ');
+    adjHtml += '</div>';
+  }
+  if (latest && latest.reason_analysis) {
+    var ra = latest.reason_analysis;
+    if (ra.right_reasons || ra.wrong_reasons) {
+      adjHtml += '<div style="font-size:9px;color:var(--text2);line-height:1.5;margin-top:4px">';
+      adjHtml += '💬 理由优化: ';
+      if (ra.right_reasons) adjHtml += '<span style="color:var(--fall)">✅' + esc(ra.right_reasons).slice(0, 40) + '</span> ';
+      if (ra.wrong_reasons) adjHtml += '<span style="color:var(--rise)">❌' + esc(ra.wrong_reasons).slice(0, 40) + '</span>';
+      adjHtml += '</div>';
+    }
+  }
+  box.innerHTML = adjHtml
+    ? '<div style="margin-top:8px;padding:8px 10px;background:rgba(251,191,36,.06);border-radius:8px;border-left:2px solid rgba(251,191,36,.3)">' + adjHtml + '</div>'
+    : '';
+}
+
+// ── AI 研判色阶 + 信号标签（沿用原口径）──
+var AI_SENT_CLS = { '强烈看多': 's-strong', '看多': 's-bull', '中性偏多': 's-neutral', '中性': 's-neutral', '中性偏空': 's-bear', '看空': 's-bear', '强烈看空': 's-sbear' };
+function aiPickSignals(p) {
+  var r = p.reason || '';
+  var signals = [];
+  if (Array.isArray(p.trend_signals) && p.trend_signals.length) {
+    signals = p.trend_signals.slice(0);
+  } else {
+    if (/供不应求|供<求|卖方市场/.test(r)) signals.push('+卖方市场');
+    if (/供大于求|供>求|买方市场/.test(r)) signals.push('-买方市场');
+    var pm = r.match(/溢价(\d+[\d.]*%)/);
+    if (pm) { var pv = parseFloat(pm[1]); signals.push((pv < 6 ? '+' : '=') + '溢价' + pm[1]); }
+    if (/流动性优良/.test(r)) signals.push('=流动性优良');
+    if (/稀缺|仅\d+件/.test(r)) signals.push('+稀缺品');
+  }
+  if (!signals.length) signals.push('=AI精选');
+  return signals.slice(0, 4).map(function(s) {
+    var pre = s.charAt(0);
+    var cls = pre === '+' ? 'p' : (pre === '-' ? 'n' : 'e');
+    var icon = pre === '+' ? '↑' : (pre === '-' ? '↓' : '—');
+    var label = (pre === '+' || pre === '-' || pre === '=') ? s.slice(1) : s;
+    return '<span class="sg ' + cls + '">' + icon + ' ' + esc(label) + '</span>';
+  }).join('');
+}
+// 选中 AI 精选条目 → 下方展开该条全字段
+window.aiSelectPick = function(i) {
+  var picks = window._aiPicks || [];
+  var p = picks[i];
+  var detailEl = document.getElementById('aiRecDetail');
+  if (!detailEl) return;
+  document.querySelectorAll('#aiRecPicks .aip').forEach(function(el) {
+    el.classList.toggle('sel', parseInt(el.getAttribute('data-i'), 10) === i);
+  });
+  if (!p) { detailEl.innerHTML = ''; return; }
+  var left = [];
+  if (p.price_zone) left.push('<div class="ai-row" style="margin-bottom:8px"><i>🎯 推荐入手价格区间</i><span class="txt">' + esc(p.price_zone) + '</span></div>');
+  if (p.platform_advice) left.push('<div class="ai-row"><i>🏪 平台建议</i><span class="txt">' + esc(p.platform_advice) + '</span></div>');
+  if (!left.length) left.push('<div class="ai-row"><span class="txt">暂无补充信息</span></div>');
+  var mid = '<div class="ai-row"><i>📊 买入理由</i><span class="txt">' + esc(p.reason || '暂无') + '</span></div>';
+  var right = [];
+  if (p.risk) right.push('<div class="ai-row warn" style="margin-bottom:8px"><i style="color:#f87171">⚠️ 风险评估</i>' + esc(p.risk) + '</div>');
+  if (p.operation) right.push('<div class="ai-row plan"><i style="color:#86efac">🎯 操作计划</i>' + esc(p.operation) + '</div>');
+  if (!right.length) right.push('<div class="ai-row"><span class="txt">无风险/操作提示</span></div>');
+  var icons = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+  detailEl.innerHTML = '<div class="dh"><span>▸ 展开详情</span><b>' + (icons[i] || '') + ' ' + esc(p.name || '') + '</b>' +
+    (p.sentiment ? '<span class="rt-dim">' + esc(p.sentiment) + '</span>' : '') +
+    (p.price !== undefined && p.price !== '' ? '<span class="rt-dim">¥' + esc(String(p.price)) + '</span>' : '') + '</div>' +
+    '<div class="ai-grid"><div>' + left.join('') + '</div><div>' + mid + '</div><div>' + right.join('') + '</div></div>';
+};
+
 // ── 填充表格 AI 徽章 ──
 function populateAIBadges() {
   var badges = document.querySelectorAll('.ai-badge-inline');
@@ -3428,224 +3575,247 @@ window.showPriceChart = async function(itemName, curPrice) {
   }
 }
 
+// ═══════════════ 推荐 · 行情终端渲染（v2 2026-09-17）═══════════════
+// 口径不变：后端 recommendations.all 已按 _score 预排序；此处仅渲染 + 客户端排序。
+var _recSortKey = 'score', _recSortDesc = true, _recSortedItems = [];
+var REC_SORT_FIELDS = {
+  score: function(it){ return typeof it.score === 'number' ? it.score : -1; },
+  rate_7: function(it){ return typeof it.rate_7 === 'number' ? it.rate_7 : -1e9; },
+  n_dev_steam: function(it){ return typeof it.n_dev_steam === 'number' ? it.n_dev_steam : -1e9; },
+  fp_total_supply: function(it){ return parseFloat(it.fp_total_supply) || -1; }
+};
+var REC_SORT_LABELS = { score:'评分', rate_7:'7日涨跌', n_dev_steam:'Steam偏离', fp_total_supply:'存世量' };
+
+window.recSortBy = function(key) {
+  if (_recSortKey === key) { _recSortDesc = !_recSortDesc; } else { _recSortKey = key; _recSortDesc = true; }
+  document.querySelectorAll('.rt-chip[data-rsort]').forEach(function(c) {
+    var k = c.getAttribute('data-rsort');
+    c.classList.toggle('on', k === key);
+    c.textContent = REC_SORT_LABELS[k] + (k === key ? (_recSortDesc ? ' ↓' : ' ↑') : '');
+  });
+  var th = document.getElementById('rth-score');
+  if (th) th.innerHTML = '评分 <span class="ar">' + (_recSortKey === 'score' ? (_recSortDesc ? '▼' : '▲') : '') + '</span>';
+  recPage = 1;
+  renderAllRecs();
+};
+
+function recChannelLabel(ch) { return (window.CHANNEL_LABELS && window.CHANNEL_LABELS[ch]) || ch || ''; }
+function recScoreColor(s) { return s >= 50 ? 'var(--amber)' : (s >= 35 ? 'var(--blue)' : 'var(--text3)'); }
+function recMoney(v, d) { var n = Number(v); if (!isFinite(n)) return '—'; return '¥' + n.toLocaleString('zh-CN', { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); }
+function recPct(v) {
+  if (typeof v !== 'number' || !isFinite(v) || v === 0) return '<span class="rt-dim">—</span>';
+  return '<span style="color:' + (v >= 0 ? 'var(--rise)' : 'var(--fall)') + '">' + (v > 0 ? '+' : '\u2212') + Math.abs(v).toFixed(1) + '%</span>';
+}
+// 信号推导（纯展示层，基于现有字段，不新增/不改动数据）
+function recSignal(item) {
+  var sc = typeof item.score === 'number' ? item.score : 0;
+  var dev = item.n_dev_steam;
+  var r7 = typeof item.rate_7 === 'number' ? item.rate_7 : 0;
+  var r30 = typeof item.rate_30 === 'number' ? item.rate_30 : 0;
+  var buy = item.buff_buy_num || 0, sell = item.buff_sell_num || 0;
+  var s = (dev < -25) || (dev < 0 && sell > 0 && buy > 0 && sell / buy > 8);
+  if (s) return { cls: 'avoid', txt: '避雷', conf: Math.max(50, 100 - Math.round(sc)) };
+  if (sc >= 55 && (dev > 25 || (r7 > 0 && r30 > 0))) return { cls: 'buy', txt: '买入', conf: Math.min(95, Math.round(sc) + 10) };
+  return { cls: 'watch', txt: '观望', conf: Math.max(40, Math.round(sc)) };
+}
+
+function recBuildRow(item, gi, zebra) {
+  var nm = item.name || '--';
+  var channel = item.tag || 'eco';
+  var sNum = typeof item.score === 'number' ? item.score : 0;
+  var rankCls = gi === 0 ? 'rt-rk t1' : (gi === 1 ? 'rt-rk t2' : (gi === 2 ? 'rt-rk t3' : 'rt-rk'));
+  // 价格（BUFF 优先，回退 ECO）
+  var bestPrice = item.price > 0 ? item.price : (item.eco_price > 0 ? item.eco_price : 0);
+  var priceSrc = item.price > 0 ? (item.buff_source || 'BUFF') : (item.eco_price > 0 ? 'ECO' : '');
+  // AI 操作建议徽章
+  var ai = window._aiAnalysis || {};
+  var aiData = ai[nm] || ai[item._hash || ''] || null;
+  var aiBadge = '';
+  if (aiData) {
+    var v = typeof aiData === 'object' ? (aiData.verdict || '') : ((String(aiData).match(/操作建议[:：]\s*(\S+)/) || [])[1] || '');
+    if (v) aiBadge = '<span class="rt-aib">🤖 ' + esc(v) + '</span>';
+  }
+  var rare = item.fp_rarity ? '<span class="rt-rare">' + esc(String(item.fp_rarity)) + '</span>' : '';
+  var chTag = channel ? '<span class="rt-ch">' + esc(recChannelLabel(channel)) + '</span>' : '';
+  var buyNum = item.buff_buy_num || 0;
+  // 存世量
+  var sup = parseFloat(item.fp_total_supply);
+  var supTxt = sup > 0 ? (sup >= 10000 ? (sup / 10000).toFixed(1) + '万' : Math.round(sup).toLocaleString('zh-CN')) : '—';
+  // Steam 偏离（唯一的真·跨市场信号）
+  var nd = item.n_dev_steam, devHtml;
+  if (typeof nd === 'number' && isFinite(nd)) {
+    var a = Math.abs(nd);
+    var txt = nd < -25 ? ('异常便宜 −' + a.toFixed(0) + '%') : (nd > 25 ? ('异常贵 +' + a.toFixed(0) + '%') : '正常');
+    var cl = nd < -25 ? 'var(--fall)' : (nd > 25 ? 'var(--rise)' : 'var(--text3)');
+    devHtml = '<span style="color:' + cl + ';font-weight:700" title="对比 Steam 独立市场常态比值 1.45，偏离 ' + (nd >= 0 ? '+' : '') + nd.toFixed(1) + '%">' + txt + '</span>';
+  } else if ((item.n_steam || item.steam_sell) > 0) {
+    devHtml = '<span class="rt-dim" title="已有多平台 Steam 价，但缺国内价，无法计算偏离">' + recMoney(item.n_steam || item.steam_sell, 0) + '</span>';
+  } else { devHtml = '<span class="rt-dim">—</span>'; }
+  // 走势（行内单线：ECO 优先，回退悠悠/BUFF）
+  var line = (item.eco_history && item.eco_history.length >= 2) ? sparkline(item.eco_history, 'var(--blue)', 68, 18)
+    : sparkline((item.yyyp_history && item.yyyp_history.length >= 2) ? item.yyyp_history : (item.multi_history || []), 'var(--amber)', 68, 18);
+  var sig = recSignal(item);
+
+  return '<tr class="rt-row' + (zebra ? ' z' : '') + '" data-gi="' + gi + '" role="button" tabindex="0" aria-expanded="false">' +
+    '<td class="l"><span class="' + rankCls + '">' + (gi + 1) + '</span></td>' +
+    '<td class="l"><div class="rt-nm" title="' + esc(nm) + '">' + esc(nm) + '</div>' +
+      '<div class="rt-tags">' + chTag + rare + aiBadge + (buyNum > 0 ? '<span class="rt-buyq">📥' + buyNum + '</span>' : '') + '</div></td>' +
+    '<td><span class="rt-scw"><b style="color:' + recScoreColor(sNum) + '">' + sNum.toFixed(1) + '</b>' +
+      '<span class="rt-scb"><i style="width:' + Math.min(100, Math.max(0, sNum)).toFixed(0) + '%;background:' + recScoreColor(sNum) + '"></i></span></span></td>' +
+    '<td class="rt-pc">' + (bestPrice > 0 ? recMoney(bestPrice, 0) : '—') + (priceSrc ? '<span class="rt-src">' + esc(priceSrc) + '</span>' : '') + '</td>' +
+    '<td>' + (item.eco_price > 0 ? recMoney(item.eco_price, 2) : '<span class="rt-dim">—</span>') + '</td>' +
+    '<td>' + (item.buff_sell > 0 ? recMoney(item.buff_sell, 2) + (item.buff_buy > 0 ? '<span class="rt-sub">求 ' + recMoney(item.buff_buy, 2) + '</span>' : '') : '<span class="rt-dim">—</span>') + '</td>' +
+    '<td>' + (item.yyyp_sell > 0 ? recMoney(item.yyyp_sell, 2) : '<span class="rt-dim">—</span>') + '</td>' +
+    '<td style="color:#8b9dc3">' + ((item.n_steam || item.steam_sell) > 0 ? recMoney(item.n_steam || item.steam_sell, 2) : '<span class="rt-dim">—</span>') + '</td>' +
+    '<td>' + devHtml + '</td>' +
+    '<td>' + recPct(item.rate_1) + '</td>' +
+    '<td>' + recPct(item.rate_7) + '</td>' +
+    '<td>' + recPct(item.rate_30) + '</td>' +
+    '<td>' + supTxt + '</td>' +
+    '<td class="l">' + line + '</td>' +
+    '<td><span class="rt-sig ' + sig.cls + '">' + sig.txt + ' ' + sig.conf + '</span></td>' +
+  '</tr>';
+}
+
+function recBuildExpand(item, gi, aiReasonMap) {
+  var src = item.buff_source || 'BUFF';
+  var d1 = [];
+  if (item.eco_price > 0) d1.push('<div class="ln"><span class="e1">ECO</span> <b>' + recMoney(item.eco_price, 2) + '</b>' + (item.eco_selling > 0 ? ' 在售 ▲' + item.eco_selling : '') + '</div>');
+  if (item.buff_sell > 0) d1.push('<div class="ln"><span class="e1">' + esc(src) + '</span> <b>' + recMoney(item.buff_sell, 2) + '</b>' + (item.buff_buy > 0 ? ' 求购 <b>' + recMoney(item.buff_buy, 2) + '</b>' : '') + ' · 在售 ▲' + (item.buff_sell_num || 0) + ' 求购 ▼' + (item.buff_buy_num || 0) + '</div>');
+  if (item.yyyp_sell > 0) d1.push('<div class="ln"><span class="e2">悠悠</span> <b>' + recMoney(item.yyyp_sell, 2) + '</b>' + (item.yyyp_sell_num > 0 ? ' 在售 ▲' + item.yyyp_sell_num : '') + '</div>');
+  var st = item.n_steam || item.steam_sell || 0;
+  if (st > 0) d1.push('<div class="ln"><span class="e3">Steam</span> <b>' + recMoney(st, 2) + '</b> · 独立市场基准（常态比 1.45）</div>');
+  if (!d1.length) d1.push('<div class="ln">暂无平台深度数据</div>');
+
+  var d2 = [], dims = item.fp_dims;
+  if (dims && typeof dims === 'object') {
+    [['discount', '跨平台折价', 25], ['depth', '买卖盘强度', 20], ['scarcity', '稀缺性', 20], ['trend', '趋势健康度', 20], ['liquidity', '流动性', 15]].forEach(function(d) {
+      if (dims[d[0]] === undefined) return;
+      var v = Number(dims[d[0]]) || 0, mx = d[2], pc = Math.min(100, Math.max(0, v / mx * 100));
+      d2.push('<div class="rt-dimrow"><span class="dn2">' + d[1] + '</span><span class="dbar"><i style="width:' + pc.toFixed(0) + '%"></i></span><span class="dv">' + v.toFixed(1) + '/' + mx + '</span></div>');
+    });
+  }
+  if (!d2.length) d2.push('<div class="ln">无评分维度数据</div>');
+
+  var m = aiReasonMap[item.name] || aiReasonMap[item.hash_name] || {};
+  var raw = m.reason || item._reason || '';
+  var p = raw.indexOf('| ');
+  var reason = p >= 0 ? raw.substring(p + 2) : raw;
+  var pts = raw.match(/[❶❷❸❹❺][^❶❷❸❹❺]*/g);
+  if (pts && pts.length >= 3) reason = pts.slice(0, 3).map(function(d) { return d.trim().replace(/^[❶❷❸❹❺]\s*/, '').replace(/[「」]/g, '').slice(0, 40); }).join(' · ');
+  var d3 = '<div class="rt-reason">' + esc(reason || '暂无推荐理由') + '</div>';
+  if (m.risk) d3 += '<div class="rt-risk">⚠ ' + esc(String(m.risk).slice(0, 90)) + '</div>';
+  var eSvg = sparkline(item.eco_history || [], 'var(--blue)', 118, 22);
+  var altHist = (item.yyyp_history && item.yyyp_history.length) ? item.yyyp_history : (item.multi_history || []);
+  var aSvg = sparkline(altHist, 'var(--amber)', 118, 22);
+  if (eSvg || aSvg) {
+    d3 += '<div class="rt-sparks">' +
+      (eSvg ? '<div><div class="lbl2" style="color:var(--blue)">ECO 30日</div>' + eSvg + '</div>' : '') +
+      (aSvg ? '<div><div class="lbl2" style="color:var(--amber)">' + ((item.yyyp_history && item.yyyp_history.length) ? '悠悠' : 'BUFF') + ' 30日</div>' + aSvg + '</div>' : '') +
+      '</div>';
+  }
+  d3 += '<div style="margin-top:8px"><span class="rt-chip rt-open" data-gi="' + gi + '">查看完整详情 →</span></div>';
+
+  return '<tr class="rt-exp" style="display:none"><td colspan="15"><div class="rt-exgrid">' +
+    '<div class="rt-excol"><div class="h">▸ 市场深度 · 在售 / 求购</div>' + d1.join('') + '</div>' +
+    '<div class="rt-excol"><div class="h">▸ 综合评分 5 维度</div>' + d2.join('') + '</div>' +
+    '<div class="rt-excol"><div class="h">▸ 推荐理由 / 风险 / 走势</div>' + d3 + '</div>' +
+    '</div></td></tr>';
+}
+
 function renderAllRecs() {
   const grid = DOM.recGrid;
   if (!grid) return;
 
-  // Use pre-sorted top-30 from backend (already sorted by _score)
   const allItems = (recData.all || []).slice();
   if (!allItems.length) {
-    grid.innerHTML = '<div class="no-data"><div class="icon">🧠</div>暂无推荐<br><span style="font-size:11px">数据更新后自动生成</span></div>';
+    grid.innerHTML = '<tr><td colspan="15" style="text-align:center;padding:36px 0;color:var(--text3)"><div style="font-size:26px">🧠</div>暂无推荐<br><span style="font-size:11px">数据更新后自动生成</span></td></tr>';
+    var pz = document.getElementById('recPager'); if (pz) pz.innerHTML = '';
+    var cz = document.getElementById('recCount'); if (cz) cz.textContent = '';
     return;
   }
 
-  // ── 构建AI推荐理由查找表（优先用智谱 GLM-4生成的理由）──
+  // ── AI 推荐理由查找表（智谱 GLM-4）──
   var aiReasonMap = {};
-  (window._aiRecommendations || {}).picks && (window._aiRecommendations.picks || []).forEach(function(p) {
+  ((window._aiRecommendations || {}).picks || []).forEach(function(p) {
     if (p.name) aiReasonMap[p.name] = { reason: p.reason || '', risk: p.risk || '', operation: p.operation || '' };
   });
 
-  // ── 推荐策略对比（ECO vs BUFF）──
   renderRecCompare(allItems);
   _recAllItems = allItems;
-  // ── AI 推荐分析 ──
   renderAIRecommendations();
 
-  const totalPages = Math.ceil(allItems.length / REC_PAGE_SIZE);
-  const start = (recPage - 1) * REC_PAGE_SIZE;
-  const pageItems = allItems.slice(start, start + REC_PAGE_SIZE);
-
-  const frag = document.createDocumentFragment();
-
-  pageItems.forEach((item, idx) => {
-    const globalIdx = start + idx;          // 全局排名（跨分页连续）
-    const displayName = item.name || '--';
-    const div = document.createElement('div');
-    div.className = 'rec-card ' + (item.tag || 'eco');
-    div.setAttribute('role', 'button');
-    div.tabIndex = 0;
-    div.onclick = function(){ window.showRecModal(item); };
-    div.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.showRecModal(item); } });
-
-    // Channel tag
-    const channel = item.tag || 'eco';
-    const score = typeof item.score === 'number' ? item.score.toFixed(1) : '';
-    const chLabel = (CHANNEL_LABELS[channel] || channel) + (score ? ' · ' + score + '分' : '');
-    const tagHtml = '<div class="rc-tag">' + chLabel + '</div>';
-
-    // Price - show the best available (price is BUFF, fallback to eco_price)
-    let bestPrice = item.price > 0 ? item.price : (item.eco_price > 0 ? item.eco_price : 0);
-    let priceSrc = item.price > 0 ? 'BUFF' : (item.eco_price > 0 ? 'ECO' : '');
-    let priceHtml = bestPrice > 0 ? '<div class="rc-price">¥' + bestPrice.toFixed(0) + (priceSrc ? ' <i class="rc-price-src">' + priceSrc + '</i>' : '') + '</div>' : '';
-
-    // Rates as compact inline
-    const rates = [];
-    [1, 7, 30].forEach(function(d) {
-      var key = 'rate_' + d, val = item[key];
-      if (val !== undefined && val !== 0) {
-        rates.push('<span class="' + (val >= 0 ? 'r-up' : 'r-dn') + '">' + d + '日 ' + (val >= 0 ? '+' : '') + val.toFixed(1) + '%</span>');
-      }
-    });
-    // BUFF 求购数：必须在 metaHtml 之前计算，否则 var 提升使其为 undefined（曾导致线上渲染 "undefined" 且求购数不显示）
-    var buyNum = item.buff_buy_num || 0;
-    var buyNumHtml = buyNum > 0 ? '<span class="r-buy-num">📥 求购' + buyNum + '</span>' : '';
-    var metaHtml = rates.length || buyNum ? '<div class="rc-meta">' + rates.join('') + buyNumHtml + '</div>' : '';
-
-    // Reason - 优先用 智谱 GLM-4 AI 生成的5维度理由
-    var aiMatch = aiReasonMap[item.name] || aiReasonMap[item.hash_name || ''] || {};
-    var rawReason = aiMatch.reason || item._reason || '';
-    var aiRisk = aiMatch.risk || '';
-    var parts = rawReason.indexOf('| ');
-    var cleanReason = parts >= 0 ? rawReason.substring(parts + 2) : rawReason;
-    // 解析5维度为简洁版（取前3点）
-    var dimPoints = rawReason.match(/[❶❷❸❹❺][^❶❷❸❹❺]*/g);
-    var compactReason = '';
-    if (dimPoints && dimPoints.length >= 3) {
-      compactReason = dimPoints.slice(0, 3).map(function(d) {
-        return d.trim().replace(/^[❶❷❸❹❺]\s*/,'').replace(/[「」]/g,'').slice(0, 40);
-      }).join(' · ');
-    } else {
-      compactReason = cleanReason;
-    }
-    var reasonHtml = compactReason ? '<div class="rc-reason">' + esc(compactReason) + '</div>' : '';
-    // AI风险提示（简略版）
-    if (aiRisk && compactReason) {
-      reasonHtml += '<div style="font-size:9px;color:#ef4444;opacity:.8;margin-top:2px">⚠ ' + esc(aiRisk.slice(0, 60)) + '</div>';
-    }
-
-
-    // ── 市场深度 ──
-    var depthHtml = '';
-    var ecoPrice = item.eco_price || 0;
-    var ecoSellNum = item.eco_selling || 0;
-    var ecoBuyNum = item.eco_qg_total || 0;
-    var buffPrice = item.buff_sell || 0;
-    var buffBuyPrice = item.buff_buy || 0;
-    var buffSellNum = item.buff_sell_num || 0;
-    var buffBuyNum = item.buff_buy_num || 0;
-    if (ecoPrice > 0 || buffPrice > 0) {
-      depthHtml = '<div class="rc-depth">';
-      if (ecoPrice > 0) {
-        depthHtml += '<span class="r-depth-eco">ECO <span class="r-dp-sell">¥' + ecoPrice.toFixed(2) + '</span>';
-        if (ecoSellNum > 0) depthHtml += ' <span class="r-dp-num">▲' + ecoSellNum + '</span>';
-        depthHtml += '</span>';
-      }
-      if (buffPrice > 0) {
-        if (ecoPrice > 0) depthHtml += ' ';
-        var buffSource = item.buff_source || 'BUFF';
-        depthHtml += '<span class="r-depth-buff">' + buffSource + ' <span class="r-dp-sell">¥' + buffPrice.toFixed(2) + '</span><sup style="font-size:8px;color:var(--rise);margin-left:2px">实时</sup>';
-        if (buffBuyPrice > 0) depthHtml += ' 求购<span class="r-dp-buy">¥' + buffBuyPrice.toFixed(2) + '</span>';
-        if (buffSellNum > 0) depthHtml += ' <span class="r-dp-num">▲' + buffSellNum + '</span>';
-        if (buffBuyNum > 0) depthHtml += ' <span class="r-dp-num">▼' + buffBuyNum + '</span>';
-        depthHtml += '</span>';
-      }
-      // 悠悠有品
-      var yyypPrice = item.yyyp_sell || 0;
-      var yyypSellNum = item.yyyp_sell_num || 0;
-      if (yyypPrice > 0) {
-        if (ecoPrice > 0 || buffPrice > 0) depthHtml += ' ';
-        depthHtml += '<span style="color:var(--amber);font-size:10px">悠悠 <span class="r-dp-sell">¥' + yyypPrice.toFixed(2) + '</span><sup style="font-size:8px;color:var(--rise);margin-left:2px">实时</sup>';
-        if (yyypSellNum > 0) depthHtml += ' <span class="r-dp-num">▲' + yyypSellNum + '</span>';
-        depthHtml += '</span>';
-      }
-      // Steam 社区市场（独立市场基准，与 BUFF/悠悠 非同源，天然贵约 45%）
-      var steamPrice = item.n_steam || item.steam_sell || 0;
-      if (steamPrice > 0) {
-        if (ecoPrice > 0 || buffPrice > 0 || yyypPrice > 0) depthHtml += ' ';
-        depthHtml += '<span style="color:#8b9dc3;font-size:10px" title="Steam 社区市场，独立于国内平台；含 15% 抽成，天然比国内贵约 45%">Steam <span class="r-dp-sell">¥' + steamPrice.toFixed(2) + '</span></span>';
-      }
-      depthHtml += '</div>';
-    }
-
-    // Sparkline chart: 优先悠悠折线图，没有就用BUFF多平台
-    var ecoHist = item.eco_history || [];
-    var yyypHist = item.yyyp_history || [];
-    var multiHist = item.multi_history || [];
-    var altHist = yyypHist.length > 0 ? yyypHist : multiHist;
-    var ecoSvg = sparkline(ecoHist, 'var(--blue)');
-    var altSvg = sparkline(altHist, 'var(--amber)');
-    var chartHtml = (ecoSvg || altSvg) ? '<div class="rc-chart">' + ecoSvg + altSvg + '</div>' : '';
-
-    // ── AI 分析标签 ──
-    var ai = window._aiAnalysis || {};
-    var aiBadge = '';
-    var aiData = ai[displayName] || ai[item._hash || ''] || null;
-    if (aiData) {
-      var v = typeof aiData === 'object' ? (aiData.verdict||'') : ((aiData.match(/操作建议[:：]\s*(\S+)/)||[])[1]||'');
-      if (v) {
-        var vc = v.includes('减仓')||v.includes('卖出') ? 'var(--rise)' : v.includes('持有')||v.includes('加仓') ? 'var(--fall)' : 'var(--amber)';
-        aiBadge = '<span style="display:inline-block;margin-left:6px;font-size:9px;padding:1px 7px;border-radius:8px;color:'+vc+';background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.2);font-weight:600;vertical-align:middle">🤖 '+v+'</span>';
-      }
-    }
-    // ══ 改版头部：排名徽章 + 评分(含 100 分制进度条) ══
-    var sNum = typeof item.score === 'number' ? item.score : 0;
-    var sColor = sNum >= 50 ? 'var(--amber)' : (sNum >= 35 ? 'var(--blue)' : 'var(--text3)');
-    var rankCls = globalIdx === 0 ? 'rc-rank top1' : (globalIdx === 1 ? 'rc-rank top2' : (globalIdx === 2 ? 'rc-rank top3' : 'rc-rank'));
-    var rankHtml = '<div class="' + rankCls + '">' + (globalIdx + 1) + '</div>';
-    var scoreHtml = '<div class="rc-score-wrap" title="综合评分 0–100，越高越优"><div class="rc-score-num">' + sNum.toFixed(1) + '<small>分</small></div>' +
-      '<div class="rc-score-bar"><div class="rc-score-fill" style="width:' + Math.min(100, Math.max(0, sNum)).toFixed(0) + '%;background:' + sColor + '"></div></div></div>';
-    var headHtml = '<div class="rc-head">' + rankHtml + scoreHtml + '</div>';
-
-    // ══ 月涨跌（价格行右侧）══
-    var _mr = parseFloat(item.fp_month_ratio);
-    var trendHtml = '';
-    if (!isNaN(_mr)) {
-      var mrCls = _mr >= 0 ? 'var(--rise)' : 'var(--fall)';
-      trendHtml = '<span class="rc-trend" style="color:' + mrCls + '">' + (_mr >= 0 ? '+' : '') + _mr.toFixed(1) + '% 月</span>';
-    }
-
-    // ══ FirePulse 数据行：存世量 / 平台覆盖 / 跨市场偏离 ══
-    var fpParts = [];
-    var _sup = parseFloat(item.fp_total_supply);
-    if (_sup > 0) fpParts.push('<span><i>存世</i> <b>' + (_sup >= 10000 ? (_sup / 10000).toFixed(1) + '万' : Math.round(_sup)) + '</b></span>');
-    var _pc = parseInt(item.fp_platform_count, 10);
-    if (_pc > 0) fpParts.push('<span><i>平台</i> <b>' + _pc + '</b></span>');
-
-    // ── 跨市场偏离度（唯一的真·跨市场信号）──
-    //   Steam 社区市场与 BUFF 非同源，含 15% 抽成 + 美元计价，天然贵约 45%。
-    //   所以看绝对值没意义，要看「偏离常态比值多少」：
-    //     |dev| ≤ 25%  → 正常结构价差，不是信号
-    //     dev < -25%   → Steam 相对异常便宜（跨境价差机会）
-    //     dev > +25%   → Steam 异常贵（国内买更划算）
-    //   ⚠ 旧版这里拿 igxe/yyyp/eco_platform 跟 buff_sell 比"价差" —— ECO 是低端档位价、
-    //     悠悠与 BUFF 同源，算出来的数字毫无交易意义，已移除。
-    var nd = item.n_dev_steam;
-    if (typeof nd === 'number' && isFinite(nd)) {
-      var ndAbs = Math.abs(nd), ndTxt, ndCls;
-      if (nd < -25) { ndTxt = '异常便宜' + ndAbs.toFixed(0) + '%'; ndCls = 'var(--fall)'; }
-      else if (nd > 25) { ndTxt = '异常贵' + ndAbs.toFixed(0) + '%'; ndCls = 'var(--rise)'; }
-      else { ndTxt = '正常'; ndCls = 'var(--text3)'; }
-      fpParts.push('<span title="对比 Steam 独立市场的常态比值 1.45，偏离 ' + (nd >= 0 ? '+' : '') + nd.toFixed(1) + '%"><i>Steam偏离</i> <b style="color:' + ndCls + '">' + ndTxt + '</b></span>');
-    } else if (item.n_steam > 0) {
-      fpParts.push('<span title="已有 Steam 价但缺国内价，无法计算偏离"><i>Steam</i> <b>¥' + Number(item.n_steam).toFixed(0) + '</b></span>');
-    }
-    var fpHtml = fpParts.length ? '<div class="rc-fp">' + fpParts.join('') + '</div>' : '';
-
-    // 稀有度徽章（跟在名称后）
-    var rareBadge = item.fp_rarity ? ' <span class="rc-rare">' + esc(String(item.fp_rarity)) + '</span>' : '';
-
-    div.innerHTML = headHtml
-      + '<div class="rc-name" title="' + esc(displayName) + '">' + esc(displayName) + aiBadge + rareBadge + '</div>'
-      + '<div class="rc-price-row">' + priceHtml + trendHtml + '</div>'
-      + chartHtml + fpHtml + depthHtml + metaHtml + reasonHtml;
-    frag.appendChild(div);
+  // ── 客户端排序（默认保持后端评分序）──
+  var keyFn = REC_SORT_FIELDS[_recSortKey] || REC_SORT_FIELDS.score;
+  var sorted = allItems.slice().sort(function(a, b) {
+    var va = keyFn(a), vb = keyFn(b);
+    return _recSortDesc ? (vb - va) : (va - vb);
   });
-  grid.innerHTML = '';
-  grid.appendChild(frag);
+  _recSortedItems = sorted;
 
-  // Pagination controls (DOM listeners, not inline onclick - IIFE compatible)
+  var totalPages = Math.ceil(sorted.length / REC_PAGE_SIZE);
+  if (recPage > totalPages) recPage = Math.max(1, totalPages);
+  var start = (recPage - 1) * REC_PAGE_SIZE;
+  var pageItems = sorted.slice(start, start + REC_PAGE_SIZE);
+
+  var rows = [];
+  pageItems.forEach(function(item, idx) {
+    var gi = start + idx;                    // 全局排名（与当前排序一致）
+    rows.push(recBuildRow(item, gi, idx % 2 === 1));
+    rows.push(recBuildExpand(item, gi, aiReasonMap));
+  });
+  grid.innerHTML = rows.join('');
+
+  // 行交互：点击/回车展开；展开区内「查看完整详情」打开原详情弹窗
+  grid.querySelectorAll('.rt-row').forEach(function(tr) {
+    var toggle = function() {
+      var nx = tr.nextElementSibling;
+      if (!nx || !nx.classList.contains('rt-exp')) return;
+      var show = nx.style.display === 'none';
+      nx.style.display = show ? '' : 'none';
+      tr.setAttribute('aria-expanded', show ? 'true' : 'false');
+    };
+    tr.addEventListener('click', toggle);
+    tr.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+  });
+  grid.querySelectorAll('.rt-open').forEach(function(b) {
+    b.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var gi = parseInt(b.getAttribute('data-gi'), 10);
+      var it = _recSortedItems[gi];
+      if (it && window.showRecModal) window.showRecModal(it);
+    });
+  });
+
+  // 计数
+  var cntEl = document.getElementById('recCount');
+  if (cntEl) cntEl.textContent = '共 ' + sorted.length + ' 条 · 本页 ' + pageItems.length + ' 条 · 按「' + (REC_SORT_LABELS[_recSortKey] || '评分') + '」排序';
+
+  // 排序控件绑定（仅一次）
+  if (!window._recSortBound) {
+    window._recSortBound = 1;
+    document.querySelectorAll('.rt-chip[data-rsort]').forEach(function(c) {
+      c.addEventListener('click', function() { window.recSortBy(c.getAttribute('data-rsort')); });
+    });
+    var th = document.getElementById('rth-score');
+    if (th) th.addEventListener('click', function() { window.recSortBy('score'); });
+  }
+
+  // ── 分页器 ──
   var rc = document.getElementById('recContent');
   var pager = document.getElementById('recPager');
   if (!pager) {
     pager = document.createElement('div');
     pager.id = 'recPager';
     pager.className = 'rec-pager';
-    rc.appendChild(pager);
+    if (rc) rc.appendChild(pager);
   }
   pager.innerHTML = '';
   var pageInfo = document.createElement('span');
   pageInfo.className = 'rec-page-info';
-  pageInfo.textContent = totalPages > 1 ? '第' + recPage + '/' + totalPages + '页 共' + allItems.length + '条' : '共' + allItems.length + '条推荐';
+  pageInfo.textContent = totalPages > 1 ? '第' + recPage + '/' + totalPages + '页 共' + sorted.length + '条' : '共' + sorted.length + '条推荐';
   pager.appendChild(pageInfo);
 
   if (totalPages > 1) {
@@ -3660,15 +3830,14 @@ function renderAllRecs() {
     var startPage = Math.max(1, recPage - Math.floor(maxVisible / 2));
     var endPage = Math.min(totalPages, startPage + maxVisible - 1);
     startPage = Math.max(1, endPage - maxVisible + 1);
-
-    for (var p = startPage; p <= endPage; p++) {
+    for (var p2 = startPage; p2 <= endPage; p2++) {
       (function(pageNum) {
         var btn = document.createElement('button');
         btn.className = 'rec-page-num' + (pageNum === recPage ? ' active' : '');
         btn.textContent = pageNum;
         btn.addEventListener('click', function() { goRecPage(pageNum); });
         pager.appendChild(btn);
-      })(p);
+      })(p2);
     }
 
     var nextBtn = document.createElement('button');
