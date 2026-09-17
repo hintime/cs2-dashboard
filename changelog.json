@@ -1,5 +1,29 @@
 [
   {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "feat(index): 前端体验增强——a11y焦点环/减弱动效/提亮灰字 + 落地页推荐示例卡 + 关于弹窗 + 移",
+    "desc": "端底部Tab Bar"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "style(index): 审计修复 P1/P2 安全项——SEO/分享卡/图标 + 字体去墙外依赖 + 移动导航换行",
+    "desc": "命名去重 + 落地页文案/信任页脚"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "style(index): 首页板块优化——辅助文字 10/11px→12px（34 处）+ 列表行 padding",
+    "desc": "style(index): 首页板块优化——辅助文字 10/11px→12px（34 处）+ 列表行 padding"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "style(site): 板块优化铺开 —— tracking/backtest/fluctuation/changel",
+    "desc": "g/revenue"
+  },
+  {
     "date": "2026-09-16",
     "tag": "fix",
     "title": "fix(ci): 检查脚本被自己的 .gitignore 挡住 —— 移到 scripts/ 并修正引用",
@@ -88,35 +112,5 @@
     "tag": "chore",
     "title": "market index 2026-09-16 19:04",
     "desc": "market index 2026-09-16 19:04"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "chore",
-    "title": "market index 2026-09-16 17:04",
-    "desc": "market index 2026-09-16 17:04"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "chore",
-    "title": "update ai_recommendations.json, changelog.json, correlation_",
-    "desc": "ata.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, rec_tracks.json, sectors.json 2026-09-16 17:04"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "fix(scheduler): 计划任务不再弹黑窗口 —— 去掉 cmd /c，直调 pythonw",
-    "desc": "fix(scheduler): 计划任务不再弹黑窗口 —— 去掉 cmd /c，直调 pythonw"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "chore",
-    "title": "market index 2026-09-16 14:40",
-    "desc": "market index 2026-09-16 14:40"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "fix(daemon): 修复非 GBK 符号导致常驻进程静默退出 + 移除 git fetch",
-    "desc": "fix(daemon): 修复非 GBK 符号导致常驻进程静默退出 + 移除 git fetch"
   }
 ]
