@@ -3458,6 +3458,37 @@ window.sparkline = function sparkline(prices, color, w, h) {
   return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" style="vertical-align:middle"><path d="' + d + '" stroke="' + color + '" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/></svg>';
 }
 
+// ── 去孤立尖刺后再画（真实采样里的瞬时异常挂单价会把整条曲线压平）──
+// 只替换「左右邻居彼此接近、而自己离二者中点很远」的单点；真实的价格跳变（连续多点）不动。
+window.sparklineClean = function(prices, color, w, h) {
+  if (!prices || prices.length < 3) return window.sparkline(prices, color, w, h);
+  var sorted = prices.slice().sort(function(a, b) { return a - b; });
+  var m = Math.floor(sorted.length / 2);
+  var med = sorted.length % 2 ? sorted[m] : (sorted[m - 1] + sorted[m]) / 2;
+  var thr = Math.max(med * 0.08, 0.5);
+  var out = prices.slice();
+  for (var i = 1; i < prices.length - 1; i++) {
+    var mid = (prices[i - 1] + prices[i + 1]) / 2;
+    if (Math.abs(prices[i - 1] - prices[i + 1]) <= thr && Math.abs(prices[i] - mid) > thr) out[i] = mid;
+  }
+  return window.sparkline(out, color, w, h);
+};
+
+// ── 折线图口径说明（替代名不副实的"30日"）──
+// ⚠ 后端取的是 price_history.db 的「最近 60 个采样点」，实测约 3~4 次/天，
+//   即 ≈15~20 天，不是 30 天。这里按真实数据给出采样次数 / 日期区间 / 变动次数。
+window.sparklineInfo = function(prices, ts, compact) {
+  if (!prices || prices.length < 2) return '';
+  var uniq = {}, n = 0;
+  for (var i = 0; i < prices.length; i++) { if (!uniq[prices[i]]) { uniq[prices[i]] = 1; n++; } }
+  if (compact) return prices.length + '次·变动' + n + '次';
+  var span = '';
+  if (ts && ts.length === prices.length && ts[0] && ts[prices.length - 1]) {
+    span = ' · ' + String(ts[0]).slice(5, 10) + '~' + String(ts[prices.length - 1]).slice(5, 10);
+  }
+  return '近' + prices.length + '次采样' + span + ' · 变动' + n + '次' + (n <= 2 ? '（价格长期未变）' : '');
+};
+
 // ── 价格走势图弹窗 ──
 window.showPriceChart = async function(itemName, curPrice) {
   var overlay = document.createElement('div');
@@ -3652,8 +3683,20 @@ function recBuildRow(item, gi, zebra) {
     devHtml = '<span class="rt-dim" title="已有多平台 Steam 价，但缺国内价，无法计算偏离">' + recMoney(item.n_steam || item.steam_sell, 0) + '</span>';
   } else { devHtml = '<span class="rt-dim" title="缺少 Steam 价或国内价，无法计算偏离度">无法计算</span>'; }
   // 走势（行内单线：ECO 优先，回退悠悠/BUFF）
-  var line = (item.eco_history && item.eco_history.length >= 2) ? sparkline(item.eco_history, 'var(--blue)', 68, 18)
-    : sparkline((item.yyyp_history && item.yyyp_history.length >= 2) ? item.yyyp_history : (item.multi_history || []), 'var(--amber)', 68, 18);
+  // 走势：去孤立尖刺后绘制；口径标注为真实采样次数（原写死"30日"不准确）
+  var _useEco = !!(item.eco_history && item.eco_history.length >= 2);
+  var _lineArr = _useEco ? item.eco_history
+    : ((item.yyyp_history && item.yyyp_history.length >= 2) ? item.yyyp_history : (item.multi_history || []));
+  var _lineTs = _useEco ? (item.eco_history_ts || null)
+    : ((item.yyyp_history && item.yyyp_history.length >= 2) ? (item.yyyp_history_ts || null) : (item.multi_history_ts || null));
+  var _lineColor = _useEco ? 'var(--blue)' : 'var(--amber)';
+  var _lineFull = (typeof window.sparklineInfo === 'function') ? window.sparklineInfo(_lineArr, _lineTs) : '';
+  var _lineShort = (typeof window.sparklineInfo === 'function') ? window.sparklineInfo(_lineArr, _lineTs, true) : '';
+  var line = (typeof window.sparklineClean === 'function')
+    ? window.sparklineClean(_lineArr, _lineColor, 68, 18)
+    : sparkline(_lineArr, _lineColor, 68, 18);
+  var lineCell = (line ? line : '<span class="rt-dim">无数据</span>')
+    + (_lineShort ? '<div style="font-size:8px;color:var(--text3);line-height:1.3;margin-top:1px" title="' + _lineFull + '">' + _lineShort + '</div>' : '');
   var sig = recSignal(item);
 
   return '<tr class="rt-row' + (zebra ? ' z' : '') + '" data-gi="' + gi + '" role="button" tabindex="0" aria-expanded="false">' +
@@ -3672,7 +3715,7 @@ function recBuildRow(item, gi, zebra) {
     '<td>' + recPct(item.rate_7) + '</td>' +
     '<td>' + recPct(item.rate_30) + '</td>' +
     '<td>' + supTxt + '</td>' +
-    '<td class="l">' + line + '</td>' +
+    '<td class="l">' + lineCell + '</td>' +
     '<td><span class="rt-sig ' + sig.cls + '">' + sig.txt + ' ' + sig.conf + '</span></td>' +
   '</tr>';
 }
@@ -3723,13 +3766,21 @@ function recBuildExpand(item, gi, aiReasonMap) {
   if (pts && pts.length >= 3) reason = pts.slice(0, 3).map(function(d) { return d.trim().replace(/^[❶❷❸❹❺]\s*/, '').replace(/[「」]/g, '').slice(0, 40); }).join(' · ');
   var d3 = '<div class="rt-reason">' + esc(reason || '暂无推荐理由') + '</div>';
   if (m.risk) d3 += '<div class="rt-risk">⚠ ' + esc(String(m.risk).slice(0, 90)) + '</div>';
-  var eSvg = sparkline(item.eco_history || [], 'var(--blue)', 118, 22);
+  var eSvg = (typeof window.sparklineClean === 'function')
+    ? window.sparklineClean(item.eco_history || [], 'var(--blue)', 118, 22)
+    : sparkline(item.eco_history || [], 'var(--blue)', 118, 22);
+  var _eInfo = (typeof window.sparklineInfo === 'function') ? window.sparklineInfo(item.eco_history || [], item.eco_history_ts) : '';
   var altHist = (item.yyyp_history && item.yyyp_history.length) ? item.yyyp_history : (item.multi_history || []);
-  var aSvg = sparkline(altHist, 'var(--amber)', 118, 22);
+  var aSvg = (typeof window.sparklineClean === 'function')
+    ? window.sparklineClean(altHist, 'var(--amber)', 118, 22)
+    : sparkline(altHist, 'var(--amber)', 118, 22);
+  var _aTs = (item.yyyp_history && item.yyyp_history.length) ? (item.yyyp_history_ts || null) : (item.multi_history_ts || null);
+  var _aInfo = (typeof window.sparklineInfo === 'function') ? window.sparklineInfo(altHist, _aTs) : '';
+  var _aName = (item.yyyp_history && item.yyyp_history.length) ? '悠悠' : 'BUFF';
   if (eSvg || aSvg) {
     d3 += '<div class="rt-sparks">' +
-      (eSvg ? '<div><div class="lbl2" style="color:var(--blue)">ECO 30日</div>' + eSvg + '</div>' : '') +
-      (aSvg ? '<div><div class="lbl2" style="color:var(--amber)">' + ((item.yyyp_history && item.yyyp_history.length) ? '悠悠' : 'BUFF') + ' 30日</div>' + aSvg + '</div>' : '') +
+      (eSvg ? '<div><div class="lbl2" style="color:var(--blue)">ECO · ' + _eInfo + '</div>' + eSvg + '</div>' : '') +
+      (aSvg ? '<div><div class="lbl2" style="color:var(--amber)">' + _aName + ' · ' + _aInfo + '</div>' + aSvg + '</div>' : '') +
       '</div>';
   }
   d3 += '<div style="margin-top:8px"><span class="rt-chip rt-open" data-gi="' + gi + '">查看完整详情 →</span></div>';
@@ -5111,12 +5162,16 @@ window.CAT_LABELS = CAT_LABELS;
       });
     }
     if (modalEco.length >= 2 || modalAlt.length >= 2 || modalSteam.length >= 2) {
-      var ecoSvg = window.sparkline(modalEco, 'var(--blue)', 240, 40);
-      var altSvg = window.sparkline(modalAlt, altColor, 240, 40);
-      var steamSvg = window.sparkline(modalSteam, '#8b9dc3', 240, 40);
-      body.innerHTML += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-top:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:6px">价格走势</div><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">' +
-        (ecoSvg ? '<div><div style="font-size:9px;color:var(--blue);margin-bottom:2px">ECO价格</div>' + ecoSvg + '</div>' : '') +
-        (altSvg ? '<div><div style="font-size:9px;color:' + altColor + ';margin-bottom:2px">' + altLabel + '</div>' + altSvg + '</div>' : '') +
+      var _cl = (typeof window.sparklineClean === 'function') ? window.sparklineClean : window.sparkline;
+      var ecoSvg = _cl(modalEco, 'var(--blue)', 240, 40);
+      var altSvg = _cl(modalAlt, altColor, 240, 40);
+      var steamSvg = _cl(modalSteam, '#8b9dc3', 240, 40);
+      var _mInfo = (typeof window.sparklineInfo === 'function') ? window.sparklineInfo : function() { return ''; };
+      var _ecoInfo = _mInfo(modalEco, item.eco_history_ts);
+      var _altInfo = _mInfo(modalAlt, (item.yyyp_history && item.yyyp_history.length) ? item.yyyp_history_ts : item.multi_history_ts);
+      body.innerHTML += '<div style="background:var(--surface2);border-radius:8px;padding:10px 12px;margin-top:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:6px">价格走势 <span style="opacity:.8">（去孤立尖刺 · 口径为真实采样点，非固定天数）</span></div><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">' +
+        (ecoSvg ? '<div><div style="font-size:9px;color:var(--blue);margin-bottom:2px">ECO · ' + _ecoInfo + '</div>' + ecoSvg + '</div>' : '') +
+        (altSvg ? '<div><div style="font-size:9px;color:' + altColor + ';margin-bottom:2px">' + altLabel + ' · ' + _altInfo + '</div>' + altSvg + '</div>' : '') +
         (steamSvg ? '<div title="Steam 社区市场，独立市场基准"><div style="font-size:9px;color:#8b9dc3;margin-bottom:2px">Steam</div>' + steamSvg + '</div>' : '') +
         '</div></div>';
     }

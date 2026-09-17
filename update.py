@@ -3280,15 +3280,20 @@ def main():
                         hn = r.get('hash_name', '')
                         if not hn: continue
                         try:
+                            # 同时注入时间戳：前端折线图要显示真实采样区间
+                            # （取的是「最近 60 个采样点」，实测约 3~4 次/天，≠30 天）
                             history = price_db.get_history(hn, channel='eco')
                             if history:
                                 r['eco_history'] = [h['price'] for h in history[-60:]]
+                                r['eco_history_ts'] = [h.get('ts', '') for h in history[-60:]]
                             history = price_db.get_history(hn, channel='buff')
                             if history:
                                 r['multi_history'] = [h['price'] for h in history[-60:]]
+                                r['multi_history_ts'] = [h.get('ts', '') for h in history[-60:]]
                             history = price_db.get_history(hn, channel='yy')
                             if history:
                                 r['yyyp_history'] = [h['price'] for h in history[-60:]]
+                                r['yyyp_history_ts'] = [h.get('ts', '') for h in history[-60:]]
                         except Exception as _e:
                             print(f'[WARN] 注入悠悠历史失败: {_e}', file=sys.stderr)
                     # Re-write market.json with history injected
