@@ -31,3 +31,27 @@
    - 低 LR（1e-5 ~ 5e-5）、1-3 epoch、带验证集早停
    - **必须用 eval_forecast.py 台架证明改进**（MAE / 方向命中同时不退化）才采用
 4. 评估脚本：`C:\Users\Lenovo\cs2-kronos\eval_forecast.py`（可重复运行，产物 outputs/kronos_eval.csv）
+
+## 数据积累路线（2026-09-18 决策）
+
+### 就绪度检查
+- 新增 `C:\Users\Lenovo\cs2-kronos\kronos_data_readiness.py`：只读 `price_history.db`(eco 通道)，
+  量化「每标点数 / 跨度 / 周度多空方向 / 到 1000 点还需多久」，产物 `readiness_report.json`。
+- **实测（2026-09-18）**：5223 标的 / 548873 点；每标点数中位 **118**、p10 59、p90 118、最大 118；
+  跨度 90 天；周度方向 **涨 5 / 跌 5**（多空已兼具，单一区间风险解除）；
+  按当前「每日约 1 次落库」节奏，到 1000 点/标的要求 **672 天** —— 自然攒不可行。
+
+### 瓶颈与决策
+- **唯一瓶颈 = 采集频率**（点数），区间多空已满足。
+- 根因：价格历史记录块挂在 `all`/`market` 模式，而 daemon 只排了 `all`(6h) 且 `market` 没排 →
+  实际约每天 1 次落库。
+- **决策（义轩拍板：每 3-6 小时落价）**：新增独立 `history` 模式 ——
+  - `update.py history`：重新批量抓 ECO 现价（fetch_eco_prices，约 4791 件/53 批并发，10-30s）→
+    落 `price_history.db`(eco 通道) → trim_old_data(365)。**不动 prices 周期、不写 market.json、不 push**。
+  - `updater_daemon.py`：新增 `HISTORY_INTERVAL = 4h` 调度 + `--once history` + 状态显示。
+  - 注意：ECO 仅约 **500 件**有活跃在售价（其余无在售挂单），故微调对象实质是这 ~500 件可交易标的。
+
+### 触发微调的硬指标（届时用 eval_forecast.py 验证）
+- 每标点数 >= **512**（填满一个 Kronos 上下文窗口，越多越好）
+- 周度方向同时含涨/跌（已满足）
+- 跑 `eval_forecast.py` 证明 微调后 MAE / 方向命中 同时不退化于零样本，才采用

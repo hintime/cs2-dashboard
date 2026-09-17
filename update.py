@@ -3242,6 +3242,45 @@ def main():
 
     print(f'=== CS2 Dashboard Update ({mode}) ===')
 
+    # ── 独立价格历史记录器（history 模式）──
+    # 供后续 Kronos 微调积累长序列（目标每标的 >=1000 点，覆盖 512 步上下文）。
+    # 设计：只重新抓 ECO 现价 + 落 SQLite，**不动 prices 周期**、不写 market.json、不 push。
+    # 频率由 updater_daemon.py 的 HISTORY_INTERVAL 控制（默认 4 小时）。
+    # 关键：落库节奏是微调数据量的唯一瓶颈（实测每标的仅 ~118 点，按每日 1 次需 672 天才到 1000）。
+    if mode == 'history':
+        try:
+            import price_db
+            _seed_db_if_needed(price_db)
+            # 追踪标的：优先 eco_tracked.json，回退 market.json 推荐
+            hn_list = []
+            tp = os.path.join(DATA_DIR, 'eco_tracked.json')
+            if os.path.exists(tp):
+                for it in (read_json(tp) or []):
+                    hn = it.get('HashName', '') or ''
+                    if hn:
+                        hn_list.append(hn)
+            if not hn_list:
+                mp = os.path.join(DATA_DIR, 'market.json')
+                if os.path.exists(mp):
+                    for r in (read_json(mp) or {}).get('recommendations', {}).get('all', []):
+                        hn = r.get('hash_name', '') or ''
+                        if hn:
+                            hn_list.append(hn)
+            hn_list = list(dict.fromkeys(hn_list))
+            if not hn_list:
+                print('[HISTORY] 无追踪标的，跳过'); return
+            print(f'[HISTORY] 重新抓取 {len(hn_list)} 件 ECO 现价...')
+            prices = fetch_eco_prices(hn_list)
+            now = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
+            records = [(hn, 'eco', now, p) for hn, p in prices.items() if p > 0]
+            written = price_db.record_batch(records)
+            keep = int(os.environ.get('PRICE_HIST_KEEP_DAYS') or '365')
+            price_db.trim_old_data(keep)
+            print(f'[HISTORY] 落库 {written} 条（{len(records)} 件有价），保留 {keep} 天')
+        except Exception as e:
+            print(f'[HISTORY] 失败: {e}', file=sys.stderr)
+        return
+
     # ── Update ECO prices → holdings.json ──
     if mode in ('all', 'prices'):
         holdings_path = os.path.join(DATA_DIR, 'holdings.json')

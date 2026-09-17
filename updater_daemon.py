@@ -319,6 +319,7 @@ if not os.path.exists(PYTHON):
 PRICES_INTERVAL = 30 * 60      # 30 分钟：价格线（SKIP_AI=1，不调大模型）
 ALL_INTERVAL = 6 * 60 * 60     # 6 小时：全量 + AI 深度分析
 INDEX_INTERVAL = 2 * 60 * 60   # 2 小时：行情指数（原 update-index.yml，只改 index 两节）
+HISTORY_INTERVAL = 4 * 60 * 60  # 4 小时：独立价格历史记录（供 Kronos 微调积累长序列，不动 prices 周期）
 
 # CREATE_NO_WINDOW 已上移到模块前部（见 _TOKEN_SRC 附近），此处不再重复定义。
 
@@ -652,8 +653,9 @@ def main_loop():
     log("CS2 本机更新调度器启动  PID=%d" % os.getpid())
     log("仓库: %s" % REPO)
     log("Python: %s" % PYTHON)
-    log("周期: prices 每 %d 分钟 / index 每 %d 小时 / all 每 %d 小时" % (
-        PRICES_INTERVAL // 60, INDEX_INTERVAL // 3600, ALL_INTERVAL // 3600))
+    log("周期: prices 每 %d 分钟 / index 每 %d 小时 / all 每 %d 小时 / history 每 %d 小时" % (
+        PRICES_INTERVAL // 60, INDEX_INTERVAL // 3600, ALL_INTERVAL // 3600,
+        HISTORY_INTERVAL // 3600))
 
     st = load_state()
     now0 = time.time()
@@ -661,13 +663,14 @@ def main_loop():
     last_prices = st.get("last_prices_ts", 0.0)
     last_all = st.get("last_all_ts", now0 - ALL_INTERVAL + 20 * 60)      # 首次 20 分钟后
     last_index = st.get("last_index_ts", now0 - INDEX_INTERVAL + 10 * 60)  # 首次 10 分钟后
+    last_history = st.get("last_history_ts", now0 - HISTORY_INTERVAL + 5 * 60)  # 首次 5 分钟后
 
     log("上次 prices: %s" % (datetime.fromtimestamp(last_prices).strftime("%Y-%m-%d %H:%M")
                             if last_prices else "从未"))
     log("上次 index : %s" % datetime.fromtimestamp(last_index).strftime("%Y-%m-%d %H:%M"))
     log("上次 all   : %s" % datetime.fromtimestamp(last_all).strftime("%Y-%m-%d %H:%M"))
 
-    fails = {"prices": 0, "index": 0, "all": 0}
+    fails = {"prices": 0, "index": 0, "all": 0, "history": 0}
 
     try:
         while True:
@@ -689,6 +692,15 @@ def main_loop():
                 st["fails_index"] = fails["index"]
                 save_state(st)
 
+            # ---- history（独立价格历史记录，供 Kronos 微调）----
+            if time.time() - last_history >= HISTORY_INTERVAL:
+                ok, _ = run_update("history")
+                last_history = time.time()
+                st["last_history_ts"] = last_history
+                fails["history"] = 0 if ok else fails.get("history", 0) + 1
+                st["fails_history"] = fails["history"]
+                save_state(st)
+
             # ---- prices（最高频）----
             if time.time() - last_prices >= PRICES_INTERVAL:
                 ok, _ = run_update("prices")
@@ -702,7 +714,8 @@ def main_loop():
             t = time.time()
             nxt = min(last_prices + PRICES_INTERVAL - t,
                       last_index + INDEX_INTERVAL - t,
-                      last_all + ALL_INTERVAL - t)
+                      last_all + ALL_INTERVAL - t,
+                      last_history + HISTORY_INTERVAL - t)
             wait = min(max(30, nxt), 300)
             log("下次检查 %.0f 秒后 (prices %.0f 分 / index %.0f 分 / all %.0f 分)" % (
                 wait,
@@ -731,7 +744,8 @@ def show_status():
     print()
     for key, label in [("last_prices_ts", "上次 prices"),
                        ("last_index_ts", "上次 index"),
-                       ("last_all_ts", "上次 all")]:
+                       ("last_all_ts", "上次 all"),
+                       ("last_history_ts", "上次 history")]:
         ts = st.get(key)
         if ts:
             dt = datetime.fromtimestamp(ts)
@@ -739,8 +753,9 @@ def show_status():
             print("  %-12s %s  (%.0f 分钟前)" % (label, dt.strftime("%Y-%m-%d %H:%M:%S"), ago))
         else:
             print("  %-12s 从未运行" % label)
-    print("  连续失败     prices=%d  index=%d  all=%d" % (
-        st.get("fails_prices", 0), st.get("fails_index", 0), st.get("fails_all", 0)))
+    print("  连续失败     prices=%d  index=%d  all=%d  history=%d" % (
+        st.get("fails_prices", 0), st.get("fails_index", 0), st.get("fails_all", 0),
+        st.get("fails_history", 0)))
     print()
     # 锁状态
     if os.path.exists(LOCKFILE):
@@ -801,7 +816,7 @@ def watchdog():
 
 def main():
     ap = argparse.ArgumentParser(description="CS2 看板本机定时更新调度器")
-    ap.add_argument("--once", choices=["prices", "index", "all"], help="只执行一次指定模式")
+    ap.add_argument("--once", choices=["prices", "index", "all", "history"], help="只执行一次指定模式")
     ap.add_argument("--status", action="store_true", help="显示状态")
     ap.add_argument("--watchdog", action="store_true",
                     help="巡检：进程不在则拉起（供计划任务调用）")
