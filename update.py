@@ -994,7 +994,10 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
         dev = item.get('n_dev_steam')
         if isinstance(dev, (int, float)):
             buff_max += 20
-            buff_raw += min(max(dev, 0) / 40.0, 1.0) * 20
+            # 正负对称：dev=0 → 中立 0.5，dev=±40 → 0/1。
+            # 原来 dev<=0 时得 0 分，导致「有 Steam 数据但不便宜」的标的比「完全没 Steam 数据」
+            # 的标的分数更低（缺数据时该维度不参与、不拉低均值）→ 变相惩罚数据更全的标的。
+            buff_raw += min(max((dev + 40.0) / 80.0, 0.0), 1.0) * 20
             if abs(dev) > 25:
                 buff_reasons.append('Steam偏离%+.0f%%' % dev)
 
