@@ -2,6 +2,12 @@
   {
     "date": "2026-09-17",
     "tag": "fix",
+    "title": "feat(core): 评分核 v2 + 全池盘口回填 + 趋势/日线/AI 质量协同（回应「除了7 8 都做一下」）",
+    "desc": "feat(core): 评分核 v2 + 全池盘口回填 + 趋势/日线/AI 质量协同（回应「除了7 8 都做一下」）"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-17 18:50",
     "desc": "wip: local snapshot 2026-09-17 18:50"
   },
@@ -112,11 +118,5 @@
     "tag": "chore",
     "title": "update ai_recommendations.json, changelog.json, correlation_",
     "desc": "ata.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, news.json, rec_tracks.json, sectors.json 2026-09-17 14:37"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "feat(index): 前端体验增强——a11y焦点环/减弱动效/提亮灰字 + 落地页推荐示例卡 + 关于弹窗 + 移",
-    "desc": "端底部Tab Bar"
   }
 ]
