@@ -3626,7 +3626,7 @@ function recBuildRow(item, gi, zebra) {
   var rankCls = gi === 0 ? 'rt-rk t1' : (gi === 1 ? 'rt-rk t2' : (gi === 2 ? 'rt-rk t3' : 'rt-rk'));
   // 价格（BUFF 优先，回退 ECO）
   var bestPrice = item.price > 0 ? item.price : (item.eco_price > 0 ? item.eco_price : 0);
-  var priceSrc = item.price > 0 ? (item.buff_source || 'BUFF') : (item.eco_price > 0 ? 'ECO' : '');
+  var priceSrc = (item.price > 0 && item.eco_price > 0 && Math.abs(item.price - item.eco_price) < 0.5) ? 'ECO参考' : (item.price > 0 ? (item.buff_source || 'BUFF') : (item.eco_price > 0 ? 'ECO' : ''));
   // AI 操作建议徽章
   var ai = window._aiAnalysis || {};
   var aiData = ai[nm] || ai[item._hash || ''] || null;

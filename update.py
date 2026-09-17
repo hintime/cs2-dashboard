@@ -1670,16 +1670,18 @@ def _get_reason_enhancements():
         print(f'[WARN] 构造推荐理由(旧路径)失败: {_e}', file=sys.stderr)
         return None
 
-# ═══════════════ AI 推荐（v6：原型选品 + 逐件独立生成 + 只用已验证口径）2026-09-17 ═══════════════
-# v5 已解决「三条雷同」：Python 按原型各选 1 件 + 每件单独一次 AI 调用 → 两两重合率 0.75→0.29。
-# v6 修口径错误：v5 里用「BUFF/悠悠 相对 ECO 的溢价」当论据，而 ECO 是**低位档参考价**，
-#   据此算出的溢价被系统性放大（+125%/+654%），属已知假指标 → 全部剔除。
-#   改用站点已验证的三个真信号：① Steam 独立市场偏离(n_dev_steam, 常态比1.45, ±25%) 
-#   ② 深度比(求购/在售) ③ 存世量/波动率/趋势；平台间只保留 BUFF↔悠悠 同源比价。
-#   并在 prompt 里明令：禁止用 ECO 计算任何溢价率。
+# ═══════════════ AI 推荐（v7：只用真实可用盘口 + 原型选品 + 逐件独立生成）2026-09-17 ═══════════════
+# 排查发现推荐池数据退化：30 条 score 全为 48.0、tag_label 全同一句、
+#   n_steam/n_dev_steam/n_premium_buff/n_premium_yyyp/n_ref_src 全为空、BUFF/悠悠 在售与求购均为 0，
+#   而 _reason 里的「BUFF溢价53%」是相对 ECO（低位档）算的假指标。
+#   → 每件的输入几乎一样，模型无料可差异化，只能换数字（这就是"文案都一样"的根因）。
+# 真实可用字段：price(=eco_price)、eco_selling(在售)、eco_qg_total(求购单)、eco_qg_price(求购价)、
+#   eco_history(走势)、n_cov。因此 v7 的原型改为这三个可算的盘口结构：
+#   ① 供给稀缺(在售少) ② 买盘坚挺(求购价贴近/高于售价) ③ 求购活跃(求购单占比高)
+#   并彻底剔除 ECO 溢价类假指标。
 
-_REC_BANNED = ['价格波动', '投资需谨慎', '值得关注', '市场情绪', '合理区间', '波动风险', '潜力巨大', '市场波动']
-_REC_ARCH_ORDER = ['跨市场折价', '供需错配', '稀缺溢价']
+_REC_BANNED = ['价格波动', '投资需谨慎', '值得关注', '市场情绪', '合理区间', '波动风险', '潜力巨大', '市场波动', '溢价强劲']
+_REC_ARCH_ORDER = ['供给稀缺', '买盘承接', '求购活跃']
 
 
 def _rec_f(v, d=0.0):
@@ -1702,56 +1704,65 @@ def _fmt_pct(v):
     return '%+.1f%%' % f
 
 
-def _rec_levels(item):
-    """按该件自身数据推导确定性价位/仓位（保证各条建议不雷同）"""
+def _rec_book(item):
+    """真实盘口（ECO 口径；BUFF/悠悠 无挂单数据时不可用）"""
     price = _rec_f(item.get('price'))
-    buy = _rec_f(item.get('buff_buy'))
+    sell = _rec_f(item.get('eco_selling'))
+    qg = _rec_f(item.get('eco_qg_total'))
+    qgp = _rec_f(item.get('eco_qg_price'))
+    cushion = ((qgp / price - 1) * 100.0) if (qgp > 0 and price > 0) else None
+    tight = (qg / (sell + qg)) if (sell + qg) > 0 else 0.0
+    return dict(price=price, sell=sell, qg=qg, qgp=qgp, cushion=cushion, tight=tight)
+
+
+def _rec_levels(item):
+    """确定性价位/仓位（由该件自身数据推导）"""
+    price = _rec_f(item.get('price'))
+    bk = _rec_book(item)
     hist = [x for x in (item.get('eco_history') or []) if _rec_f(x) > 0]
     if len(hist) < 3:
         hist = [x for x in (item.get('multi_history') or []) if _rec_f(x) > 0]
-    lo = min(hist) if hist else 0.0
     vol = 0.0
     if len(hist) >= 4:
         mu = sum(hist) / len(hist)
         if mu > 0:
             var = sum((x - mu) ** 2 for x in hist) / len(hist)
             vol = (var ** 0.5) / mu * 100.0
-    zl = (buy * 1.02) if buy > 0 else (price * 0.97)
+    # 入场下沿：求购价上浮2%（有买盘托底）；否则现价-3%
+    zl = (bk['qgp'] * 1.02) if bk['qgp'] > 0 else (price * 0.97)
     zh = price * 0.99
     if price > 0 and zl >= zh:
         zl, zh = price * 0.95, price * 0.99
     tp = min(25.0, max(8.0, round(vol * 1.6, 1)))
     sl = min(15.0, max(5.0, round(vol * 0.9, 1)))
-    bsell = _rec_f(item.get('buff_sell_num'))
-    bbuy = _rec_f(item.get('buff_buy_num'))
-    ratio = (bbuy / bsell) if bsell > 0 else 0.0
-    if price >= 3000 or ratio < 0.05:
+    # 仓位：买盘越弱/单价越高，仓位越小
+    if price >= 3000 or bk['tight'] < 0.05:
         pos = 5
-    elif ratio >= 0.30:
+    elif bk['tight'] >= 0.25:
         pos = 15
     else:
         pos = 10
-    return dict(price=price, buy=buy, lo=lo, vol=round(vol, 1), zl=round(zl), zh=round(zh),
-                tp=tp, sl=sl, pos=pos, ratio=round(ratio, 2))
+    return dict(price=price, vol=round(vol, 1), zl=round(zl), zh=round(zh), tp=tp, sl=sl, pos=pos,
+                tight=round(bk['tight'], 3), cushion=bk['cushion'], sell=bk['sell'], qg=bk['qg'], qgp=bk['qgp'])
 
 
 def _rec_signals(item, lv):
-    """该件独有的关键信号——只用站点已验证口径（不含 ECO 溢价这类假指标）"""
+    """该件独有的关键信号（只用 ECO 真实盘口 + 走势，不含假指标）"""
     sigs = []
-    dev = item.get('n_dev_steam')
-    if isinstance(dev, (int, float)) and abs(dev) > 25:
-        sigs.append(('+' if dev > 0 else '-') + ('国内相对Steam偏离%+.0f%%' % dev))
-    if lv['ratio'] >= 0.30:
-        sigs.append('+求购旺盛·深度比%.2f' % lv['ratio'])
-    elif lv['ratio'] > 0:
-        sigs.append('=深度均衡·深度比%.2f' % lv['ratio'])
-    else:
-        sigs.append('-承接稀薄·深度比%.2f' % lv['ratio'])
-    if _rec_f(item.get('buff_buy_num')) <= 0:
-        sigs.append('-求购数据缺失')
-    sup = _rec_f(item.get('fp_total_supply'))
-    if sup > 0:
-        sigs.append(('+稀缺·存世%d' % int(sup)) if sup < 5000 else ('=存世%.1f万' % (sup / 10000)))
+    sell, qg = lv['sell'], lv['qg']
+    if sell > 0 and qg > 0:
+        sigs.append(('+' if lv['tight'] >= 0.15 else '=') + '买卖盘%d求购/%d在售' % (qg, sell))
+    elif sell > 0:
+        sigs.append('-仅%d在售·无求购挂单' % sell)
+    elif qg > 0:
+        sigs.append('+%d求购·无在售' % qg)
+    if lv['cushion'] is not None:
+        c = lv['cushion']
+        sigs.append(('+' if c >= -6 else ('-' if c <= -15 else '=')) + '求购价距售价%+.1f%%' % c)
+    if sell and sell <= 20:
+        sigs.append('+在售稀少·%d件' % sell)
+    elif sell >= 60:
+        sigs.append('-在售偏多·%d件' % sell)
     if lv['vol'] >= 6:
         sigs.append('-波动大σ%.1f%%' % lv['vol'])
     elif 0 < lv['vol'] <= 2.5:
@@ -1762,10 +1773,9 @@ def _rec_signals(item, lv):
         sigs.append('+7日/30日双升')
     elif r7 < 0 and r30 < 0:
         sigs.append('-7日/30日双降')
-    b = _rec_f(item.get('buff_sell'))
-    y = _rec_f(item.get('yyyp_sell'))
-    if b > 0 and y > 0 and abs(b - y) / max(b, y) > 0.03:
-        sigs.append('=BUFF/悠悠价差%.0f元' % abs(b - y))
+    dev = item.get('n_dev_steam')
+    if isinstance(dev, (int, float)) and abs(dev) > 25:
+        sigs.append(('+' if dev > 0 else '-') + '国内相对Steam偏离%+.0f%%' % dev)
     seen, out = set(), []
     for s in sigs:
         if s not in seen:
@@ -1775,7 +1785,7 @@ def _rec_signals(item, lv):
 
 
 def _rec_diff_score(picks):
-    """跨条目差异度：两两 2-gram 最大重合率（越小越好；>0.45 视为同构）"""
+    """两两 2-gram 最大重合率（越小越好）"""
     def grams(s):
         s = ''.join(ch for ch in s if ch.strip())
         return set(s[i:i + 2] for i in range(len(s) - 1))
@@ -1790,107 +1800,68 @@ def _rec_diff_score(picks):
     return round(worst, 3)
 
 
-def _rec_arch_scores(cands):
-    """三个原型的池内相对排名（0-1）。折价修复改用 Steam 偏离（已验证口径）"""
-    def ranks(vals):
-        n = len(vals)
-        order = sorted(range(n), key=lambda i: vals[i])
-        out = [0.0] * n
-        for pos, idx in enumerate(order):
-            out[idx] = (pos + 1) / n if n else 0.0
-        return out
-    disc, mism, scarc = [], [], []
-    for it in cands:
-        lv = _rec_levels(it)
-        dev = it.get('n_dev_steam')
-        d = max(0.0, float(dev)) if isinstance(dev, (int, float)) else 0.0
-        disc.append(d)
-        mism.append(lv['ratio'])
-        sup = _rec_f(it.get('fp_total_supply'))
-        scarc.append((1.0 / sup) if sup > 0 else 0.0)
-    return {'跨市场折价': ranks(disc), '供需错配': ranks(mism), '稀缺溢价': ranks(scarc)}
-
-
 def _rec_select_slots(cands):
-    """按原型各选 1 件（结构上保证三条不同）"""
+    """三个原型各选 1 件（全部基于 ECO 真实盘口，结构上保证三条不同）"""
     if not cands:
         return []
-    sc = _rec_arch_scores(cands)
+    lvs = [_rec_levels(it) for it in cands]
+    dims = {
+        _REC_ARCH_ORDER[0]: [-(lv['sell'] or 9999) for lv in lvs],           # 在售越少越好
+        _REC_ARCH_ORDER[1]: [-(lv['cushion'] if lv['cushion'] is not None else -99) for lv in lvs],  # 求购价越贴近售价越好
+        _REC_ARCH_ORDER[2]: [lv['tight'] for lv in lvs],                     # 求购单占比越高越好
+    }
     chosen, used = [], set()
     for arch in _REC_ARCH_ORDER:
-        arr = sc[arch]
-        # 「跨市场折价」必须以 Steam 价为前提，否则该原型不成立
-        basis = [i for i in range(len(cands)) if i not in used
-                 and (arch != _REC_ARCH_ORDER[0] or isinstance(cands[i].get('n_dev_steam'), (int, float)))]
+        arr = dims[arch]
+        basis = [i for i in range(len(cands)) if i not in used]
         if not basis:
-            basis = [i for i in range(len(cands)) if i not in used]
-        best_i, best_v = -1, -1.0
-        for i in basis:
-            v = arr[i] + _rec_f(cands[i].get('score')) / 1000.0
-            if v > best_v:
-                best_v, best_i = v, i
-        if best_i >= 0:
-            used.add(best_i)
-            it = cands[best_i]
-            lv = _rec_levels(it)
-            label = arch
-            if arch == _REC_ARCH_ORDER[0] and not isinstance(it.get('n_dev_steam'), (int, float)):
-                label = '相对低估'   # 无 Steam 价时不谈跨市场，改谈同源平台比价
-            chosen.append((label, it, lv, _rec_signals(it, lv)))
-    if len(chosen) < min(3, len(cands)):
-        for i in range(len(cands)):
-            if i in used:
-                continue
-            it = cands[i]
-            lv = _rec_levels(it)
-            chosen.append((_REC_ARCH_ORDER[0], it, lv, _rec_signals(it, lv)))
-            used.add(i)
-            if len(chosen) >= min(3, len(cands)):
-                break
+            break
+        best_i = max(basis, key=lambda i: arr[i])
+        used.add(best_i)
+        it = cands[best_i]
+        lv = lvs[best_i]
+        chosen.append((arch, it, lv, _rec_signals(it, lv)))
     return chosen
 
 
 def _rec_item_block(item, lv, sigs):
-    """单件数据块（喂给逐件生成；只用已验证口径）"""
-    eco = _rec_f(item.get('eco_price'))
-    buff = _rec_f(item.get('buff_sell'))
-    yyyp = _rec_f(item.get('yyyp_sell'))
+    """单件数据块（只用真实可用口径）"""
+    bk = _rec_book(item)
     steam = _rec_f(item.get('n_steam')) or _rec_f(item.get('steam_sell'))
-    sup = _rec_f(item.get('fp_total_supply'))
-    sup_txt = ('%.1f万' % (sup / 10000)) if sup >= 10000 else ('%d' % int(sup) if sup > 0 else '未知')
+    b = _rec_f(item.get('buff_sell'))
+    bn = _rec_f(item.get('buff_sell_num'))
+    y = _rec_f(item.get('yyyp_sell'))
+    yn = _rec_f(item.get('yyyp_sell_num'))
     dev = item.get('n_dev_steam')
-    _has_dev = isinstance(dev, (int, float))
-    dev_txt = ('%+.0f%%' % dev) if _has_dev else '无 Steam 价 —— 本件不可用跨市场折价逻辑，禁止声称存在跨市场价差'
-    spread_txt = ('¥%.1f' % abs(buff - yyyp)) if (buff > 0 and yyyp > 0) else '—'
+    dev_txt = ('%+.0f%%' % dev) if isinstance(dev, (int, float)) else '无数据（本件不可谈跨市场）'
     return (
-        '名称: %s\n品类: %s | 评级: %s | 现价: ¥%.0f (%s) | 综合评分: %.1f | 策略标签: %s\n'
-        'BUFF ¥%.1f → 悠悠 ¥%.1f（同源平台，价差 %s，仅作比价）| Steam 独立市场 %s\n'
-        'Steam 偏离度: %s（基准=Steam/BUFF 常态比 1.45；>+25%% 表示 Steam 异常贵、国内更划算；<-25%% 表示 Steam 异常便宜）\n'
-        '深度: 在售 ECO %d / BUFF %d / 悠悠 %d ; BUFF 求购 %d | 深度比(求购/在售) %.2f\n'
-        '存世: %s | 平台覆盖: %s\n'
-        '趋势: 1日%s 7日%s 30日%s 月%s | 历史波动σ=%.1f%%\n'
+        '名称: %s\n品类: %s | 评级: %s | 综合评分: %.1f\n'
+        'ECO 盘口（唯一有效盘口）: 售价 ¥%.2f · 在售 %d 件 · 求购 %d 单 @ ¥%.2f → 求购价距售价 %s，求购单占比 %.0f%%\n'
+        'BUFF 快照: %s | 悠悠 快照: %s\n'
+        'Steam 独立市场: %s · Steam 偏离度: %s（基准=常态比 1.45）\n'
+        '走势: 1日%s 7日%s 30日%s 月%s | 历史波动σ=%.1f%%\n'
         '引擎算好的参考价位: 入场 ¥%d–¥%d · 止盈 +%.1f%% · 止损 -%.1f%% · 建议仓位 %d%%\n'
-        '该件可用信号: %s\n引擎原判理由: %s\n'
-        '⚠ ECO 价 ¥%.1f 是低位参考档，不代表成交价，禁止用它计算任何溢价率。'
+        '该件可用信号: %s\n引擎原判(已清洗假溢价): %s\n'
+        '⚠ 注意：BUFF/悠悠 无挂单数据时，其快照价不可用于判断买卖渠道；ECO 是低价档参考盘，禁止用它算"溢价率"。'
         % (item.get('name', '?'),
-           item.get('fp_category') or item.get('category') or '—',
-           item.get('fp_rarity') or item.get('rarity') or '—',
-           lv['price'], (item.get('buff_source') or 'BUFF'),
-           _rec_f(item.get('score')), item.get('tag_label') or item.get('tag') or '—',
-           buff, yyyp, spread_txt, (('¥%.1f' % steam) if steam > 0 else '无数据'),
+           item.get('fp_category') or item.get('_cat') or '—',
+           item.get('fp_rarity') or '—',
+           _rec_f(item.get('score')),
+           bk['price'], int(bk['sell']), int(bk['qg']), bk['qgp'],
+           (('%+.1f%%' % bk['cushion']) + '（负值越大＝买盘出价越低、承接越弱；-8% 以内才算强承接）') if bk['cushion'] is not None else '无求购价',
+           bk['tight'] * 100,
+           ('¥%.2f（在售%d件）' % (b, int(bn))) if b > 0 else '无数据',
+           ('¥%.2f（在售%d件）' % (y, int(yn))) if y > 0 else '无数据',
+           ('¥%.2f' % steam) if steam > 0 else '无数据',
            dev_txt,
-           int(_rec_f(item.get('eco_selling'))), int(_rec_f(item.get('buff_sell_num'))),
-           int(_rec_f(item.get('yyyp_sell_num'))), int(_rec_f(item.get('buff_buy_num'))), lv['ratio'],
-           sup_txt, item.get('fp_platform_count') or '—',
            _fmt_pct(item.get('rate_1')), _fmt_pct(item.get('rate_7')),
            _fmt_pct(item.get('rate_30')), _fmt_pct(item.get('fp_month_ratio')), lv['vol'],
            lv['zl'], lv['zh'], lv['tp'], lv['sl'], lv['pos'],
-           ' '.join(sigs), _rec_clean_reason(item.get('_reason'))[:70], eco)
+           ' '.join(sigs), _rec_clean_reason(item.get('_reason'))[:70])
     )
 
 
 def _rec_market_context(all_items):
-    """拼市场背景（新闻/洞察/扫描/价格区间）"""
     parts = []
     for fn, key, label in (('ai_news_impact.json', 'impact', '市场新闻'),
                            ('ai_market_insight.json', 'insight', '市场洞察')):
@@ -1922,7 +1893,6 @@ def _rec_market_context(all_items):
 
 
 def _rec_chat(prompt, model, system=None, temperature=0.85, timeout=120, max_tokens=2000):
-    """调用智谱 GLM（统一出口）"""
     msgs = []
     if system:
         msgs.append({'role': 'system', 'content': system})
@@ -1936,8 +1906,7 @@ def _rec_chat(prompt, model, system=None, temperature=0.85, timeout=120, max_tok
         'Authorization': 'Bearer ' + ZHIPU_KEY, 'Content-Type': 'application/json'
     })
     resp = urllib.request.urlopen(req, timeout=timeout)
-    r = json.loads(resp.read().decode('utf-8'))
-    return r['choices'][0]['message']['content'].strip()
+    return json.loads(resp.read().decode('utf-8'))['choices'][0]['message']['content'].strip()
 
 
 def _rec_safe_parse(raw, want_key='picks'):
@@ -1966,7 +1935,6 @@ def _rec_safe_parse(raw, want_key='picks'):
 
 
 def _rec_fuzzy_price(name, cands):
-    """价格回填：模型常省略「(久经沙场)」等后缀 → 归一化前缀匹配"""
     def norm(s):
         s = str(s or '')
         for ch in '（）()|｜·、,， ':
@@ -1987,45 +1955,43 @@ def _rec_fuzzy_price(name, cands):
 
 
 def _rec_clean_reason(txt):
-    """清洗引擎原判里的假指标（ECO 口径溢价），避免回流进 prompt"""
+    """清洗引擎原判里的假指标（ECO 口径溢价）与自检噪声"""
     import re as _re
     txt = _re.sub(r'(?:BUFF|悠悠|ECO)?\s*溢价\s*[+-]?\d+(?:\.\d+)?%', '', str(txt or ''))
+    txt = _re.sub(r'\[AI建议\][^|]*', '', txt)
     txt = _re.sub(r'[|｜]\s*(?=[|｜])', '', txt)
     return txt.strip(' |｜')
 
 
 def _rec_fix_platform(item, lv):
-    """平台建议由数据确定性生成——模型经常把「更贵的平台」写成买入平台"""
+    """平台建议由数据确定性生成（模型容易把方向写反；无挂单时不可建议套利）"""
     b = _rec_f(item.get('buff_sell'))
+    bn = _rec_f(item.get('buff_sell_num'))
     y = _rec_f(item.get('yyyp_sell'))
-    buy = _rec_f(item.get('buff_buy'))
-    if b > 0 and y > 0:
-        if abs(b - y) < 1:
-            t = 'BUFF ¥%.0f 与 悠悠 ¥%.0f 基本同价，按手续费择低买入' % (b, y)
-        else:
-            if b < y:
-                t = '买入走 BUFF（¥%.0f，比悠悠低 ¥%.0f）· 卖出/挂单走 悠悠（¥%.0f）· 价差 ¥%.0f' % (b, y - b, y, y - b)
-            else:
-                t = '买入走 悠悠（¥%.0f，比BUFF低 ¥%.0f）· 卖出/挂单走 BUFF（¥%.0f）· 价差 ¥%.0f' % (y, b - y, b, b - y)
-        if buy > 0:
-            t += ' · BUFF 求购 ¥%.0f 可作安全垫' % buy
-        return t + '（同源平台，价差小属正常，勿当套利信号）'
-    if b > 0 or y > 0:
-        who, p = ('BUFF', b) if b > 0 else ('悠悠', y)
-        return '仅 %s 有报价 ¥%.0f，另一平台无挂单，暂不具备跨平台套利条件' % (who, p)
-    return '各平台均无有效报价，暂不建议参与'
+    yn = _rec_f(item.get('yyyp_sell_num'))
+    if bn > 0 and yn > 0:
+        if b < y:
+            return '买入走 BUFF（¥%.0f，比悠悠低 ¥%.0f）· 卖出/挂单走 悠悠（¥%.0f）' % (b, y - b, y)
+        return '买入走 悠悠（¥%.0f，比BUFF低 ¥%.0f）· 卖出/挂单走 BUFF（¥%.0f）' % (y, b - y, b)
+    if bn > 0 or yn > 0:
+        who, p = ('BUFF', b) if bn > 0 else ('悠悠', y)
+        return '仅 %s 有在售挂单（¥%.0f），另一平台无挂单，暂不具备跨平台套利条件' % (who, p)
+    # 两平台都无挂单 → 只能基于 ECO 盘口（在售/求购）给建议
+    if lv['qgp'] > 0 and lv['sell'] > 0:
+        return 'BUFF/悠悠 均无在售挂单（快照价不可用）；按 ECO 盘口操作：靠近求购价 ¥%.0f 挂单接货，参考在售 %d 件择机出货' % (
+            lv['qgp'], int(lv['sell']))
+    return '各平台均无在售挂单数据，暂不具备下单条件；等盘口恢复再评估'
 
 
 _REC_ANGLE = {
-    '相对低估': '围绕「该件在 BUFF↔悠悠 同源平台中报价相对更低、存在比价空间」来论证。本件无 Steam 价，禁止提 Steam 与跨市场。',
-    '跨市场折价': '围绕「国内平台价格相对 Steam 独立市场被结构性低估（看 Steam 偏离度），存在价差修复空间」来论证。',
-    '供需错配': '围绕「在售与求购结构失衡、卖压有承接」来论证（求购为 0 时必须如实说明缺少承接盘）。',
-    '稀缺溢价': '围绕「存世量/稀有度带来的稀缺溢价」来论证。'
+    '供给稀缺': '围绕「ECO 在售挂单稀少、可流通货源紧」来论证，用「在售 N 件」这个数字说话。',
+    '买盘承接': '围绕「求购价与售价的差距」来论证：差距越小，说明买盘越愿意按现价接货，承接越强；差距大则说明买盘出价低、承接弱。',
+    '求购活跃': '围绕「求购单数在盘口中的占比高、需求端活跃」来论证，用「N 求购 / M 在售」这个比例说话。',
 }
 
 
 def _rec_write_one(item, lv, sigs, archetype, model, market_ctx, others, extra=''):
-    """单件独立调用：只喂这一件 → 从机制上杜绝三条串成同一套模板"""
+    """单件独立调用：只喂这一件 → 机制上杜绝三条套同一模板"""
     banned = '、'.join(_REC_BANNED)
     prompt = (
         '你是 CS2 饰品投资分析师。请只分析下面这 1 件标的，写出它自己的买入分析。\n\n'
@@ -2035,27 +2001,28 @@ def _rec_write_one(item, lv, sigs, archetype, model, market_ctx, others, extra='
         + (('【本次已写的其他标的（措辞与结论都不得与它们重复）】\n' + others + '\n') if others else '')
         + (extra + '\n' if extra else '')
         + '\n【硬性要求】\n'
-        '- 必须引用数据里的具体数字（在售/求购/深度比/Steam偏离/存世/波动σ/入场区间等），至少 3 处。\n'
+        '- 必须引用上面数据里的具体数字（在售件数/求购单数/求购价距售价/波动σ/入场区间等），至少 3 处。\n'
         '- 严禁出现这些空话词：' + banned + '。\n'
-        '- 严禁用 ECO 价算溢价率（它是低位参考档）。平台之间只可引用 BUFF↔悠悠 的实际价差。\n'
-        '- 若该件「Steam 独立市场」显示无数据，禁止声称跨市场价差、也禁止说「Steam 偏离为 0」；'
-        '请改用 BUFF↔悠悠 价差与买卖盘深度论证。\n'
-        '- risk 必须讲这件最致命的 2 个风险，各带数据，不得泛泛而谈。\n'
+        '- 严禁用 ECO 售价去算任何"溢价率"；BUFF/悠悠 无挂单时不得用其快照价判断渠道。\n'
+        '- risk 必须讲这件最致命的 2 个风险，各带数据。\n'
         '- operation 必须引用「引擎算好的参考价位」的入场区间/止盈/止损/仓位，给出加仓与退出条件，持有周期 ≥7 天。\n'
-        '- trend_signals 优先直接采用「该件可用信号」，可再补 1 条。\n'
+        '- trend_signals 优先直接采用「该件可用信号」。\n'
+        '- 方向语义别写反：求购价低于售价是常态，负得越多＝买盘越弱；只有 -8% 以内才可称「承接强」。'
+        '禁止把 -15% 以上描述成「买盘兴趣浓厚／坚挺」。\n'
         '- 语气像实战顾问，句子自然，不要罗列标签词。\n\n'
         '【输出 JSON，仅这 7 个字段】\n'
         '{"reason":"100-150字买入理由","risk":"80-120字风险评估","operation":"80-120字操作计划",'
         '"price_zone":"30-50字入手区间与依据","sentiment":"1-2词(强烈看多/看多/中性偏多/中性/中性偏空/看空/强烈看空)",'
-        '"trend_signals":["","",""],"platform_advice":"20-40字平台买卖建议(含价差金额)"}'
+        '"trend_signals":["","",""],"platform_advice":"20-40字平台建议"}'
     )
-    raw = _rec_chat(prompt, model,
-                    '你是CS2饰品投资分析师。只返回JSON。严格基于输入数据，禁止编造数字，禁止套用固定句式。', 0.85)
-    return _rec_safe_parse(raw, want_key='reason')
+    return _rec_safe_parse(_rec_chat(
+        prompt, model,
+        '你是CS2饰品投资分析师。只返回JSON。严格基于输入数据，禁止编造数字，禁止套用固定句式。', 0.85),
+        want_key='reason')
 
 
 def generate_ai_recommendations():
-    """AI 购买推荐分析 v6 — 原型选品 + 逐件独立生成 + 只用已验证口径 + 空话重写"""
+    """AI 购买推荐分析 v7 — 真实盘口驱动 + 原型选品 + 逐件独立生成"""
     if not ZHIPU_KEY:
         return
     try:
@@ -2083,11 +2050,13 @@ def generate_ai_recommendations():
                 print('[AI] 第%d件生成失败: %s' % (idx + 1, _e))
             if not one or not one.get('reason'):
                 one = {
-                    'reason': '该件由引擎按%s原型选出：评分%.1f，在售%d件、求购%d，入场参考¥%d–¥%d。'
-                              % (arch, _rec_f(item.get('score')), int(_rec_f(item.get('buff_sell_num'))),
-                                 int(_rec_f(item.get('buff_buy_num'))), lv['zl'], lv['zh']),
+                    'reason': '引擎按「%s」原型选出该件：售价 ¥%.0f，在售 %d 件，求购 %d 单 @ ¥%.0f，'
+                              '求购价距售价 %s；入场参考 ¥%d–¥%d。'
+                              % (arch, lv['price'], int(lv['sell']), int(lv['qg']), lv['qgp'],
+                                 ('%+.1f%%' % lv['cushion']) if lv['cushion'] is not None else '未知',
+                                 lv['zl'], lv['zh']),
                     'risk': '规则化推荐缺少模型二次校验，须按纪律执行止损 -%.1f%%。' % lv['sl'],
-                    'operation': '入场¥%d–¥%d 分批建仓，止盈 +%.1f%%，止损 -%.1f%%，仓位 %d%%，持有≥7天。'
+                    'operation': '入场 ¥%d–¥%d 分批建仓，止盈 +%.1f%%，止损 -%.1f%%，仓位 %d%%，持有 ≥7 天。'
                                  % (lv['zl'], lv['zh'], lv['tp'], lv['sl'], lv['pos']),
                     'price_zone': '参考区间 ¥%d–¥%d（引擎计算）' % (lv['zl'], lv['zh']),
                     'sentiment': '中性偏多', 'trend_signals': sigs,
@@ -2109,17 +2078,15 @@ def generate_ai_recommendations():
             one['archetype'] = arch
             _fixed = _rec_fix_platform(item, lv)
             if str(one.get('platform_advice') or '').strip() != _fixed:
-                one['platform_advice'] = _fixed   # 平台买卖方向由数据决定，避免模型写反
+                one['platform_advice'] = _fixed
             ts = one.get('trend_signals')
-            if not isinstance(ts, list) or len(ts) < 2:
-                one['trend_signals'] = sigs
-            else:
-                one['trend_signals'] = [str(s) for s in ts if str(s).strip()][:4]
+            one['trend_signals'] = ([str(s) for s in ts if str(s).strip()][:4]
+                                    if isinstance(ts, list) and len(ts) >= 2 else sigs)
             pr = one.get('price') or _rec_fuzzy_price(one['name'], cands)
             if pr:
                 one['price'] = pr
             plist.append(one)
-            others_txt += ('- %s（角度:%s）风险要点: %s\n' % (one['name'], arch, str(one.get('risk', ''))[:60]))
+            others_txt += '- %s（角度:%s）风险要点: %s\n' % (one['name'], arch, str(one.get('risk', ''))[:60])
 
         head = {'reasoning': '', 'strategy': '', 'summary': '', 'self_critique': ''}
         try:
@@ -2130,8 +2097,8 @@ def generate_ai_recommendations():
             hp = hp_body % (len(plist), '/'.join(p.get('archetype', '') for p in plist),
                             '\n'.join('- %s(%s): %s' % (p['name'], p.get('archetype', ''), str(p.get('reason', ''))[:60]) for p in plist),
                             market_ctx)
-            raw = _rec_chat(hp, model, '你是CS2饰品投资分析师。只返回JSON对象。', 0.7, 90, 1200)
-            got = _rec_safe_parse(raw, want_key='reasoning') or {}
+            got = _rec_safe_parse(_rec_chat(hp, model, '你是CS2饰品投资分析师。只返回JSON对象。', 0.7, 90, 1200),
+                                  want_key='reasoning') or {}
             for k in head:
                 if got.get(k):
                     head[k] = str(got[k])
@@ -2141,9 +2108,9 @@ def generate_ai_recommendations():
             head['strategy'] = '按「%s」三条主线分散配置，单件仓位不超过 15%%，锁定 7 天后按止盈止损执行。' % (
                 '/'.join(p.get('archetype', '') for p in plist))
         if not head['summary']:
-            head['summary'] = '本次从 %d 件候选中按跨市场折价/供需错配/稀缺溢价三条主线各选 1 件。' % len(cands)
+            head['summary'] = '本次从 %d 件候选中按供给稀缺/买盘坚挺/求购活跃三条盘口主线各选 1 件。' % len(cands)
         if not head['self_critique']:
-            head['self_critique'] = '若大盘整体转弱，三条逻辑可能同时失效；求购数据缺失的标的判断最不牢靠。'
+            head['self_critique'] = '本池 BUFF/悠悠 盘口与 Steam 数据缺失，判断只基于 ECO 单一盘口，结论鲁棒性有限。'
 
         out = {'picks': plist, 'date': time.strftime('%Y-%m-%d %H:%M'), 'total_candidates': len(cands)}
         out.update(head)
@@ -2161,7 +2128,7 @@ def generate_ai_recommendations():
         except Exception as _e:
             print('[WARN] 写 AI 推荐前处理失败: %s' % _e, file=sys.stderr)
         write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), out)
-        print('[AI] Recommendations: %d picks generated (v6)' % len(plist))
+        print('[AI] Recommendations: %d picks generated (v7)' % len(plist))
     except Exception as e:
         print('[AI] Recommendations failed: %s' % e)
 
