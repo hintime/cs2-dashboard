@@ -5,22 +5,22 @@
     "change": -0.21,
     "change_pct": -0.03,
     "max": 802.98,
-    "min": 802.74,
-    "change_days": -1,
-    "latest_time": "2026-09-18 00:20"
+    "min": 802.64,
+    "change_days": -2,
+    "latest_time": "2026-09-18 01:00"
   },
   "trade": {
-    "today_amount": 226348.98,
-    "yesterday_amount": 63615096.94,
-    "today_volume": 16369,
-    "yesterday_volume": 1363560,
-    "amount_mom": -0.09,
-    "volume_mom": -14.24
+    "today_amount": 716910.73,
+    "yesterday_amount": 65439237.89,
+    "today_volume": 30886,
+    "yesterday_volume": 1370665,
+    "amount_mom": -7.37,
+    "volume_mom": 1.56
   },
   "updown": {
-    "up": 1580,
-    "flat": 2005,
-    "down": 3909
+    "up": 645,
+    "flat": 6094,
+    "down": 755
   },
   "greedy": {
     "value": 37.12,
@@ -28,7 +28,6 @@
     "change": "-0.2"
   },
   "trend_24h": [
-    809.68,
     809.6,
     809.59,
     809.44,
@@ -51,8 +50,9 @@
     803.05,
     803.13,
     802.95,
+    802.76,
     802.74
   ],
-  "updated": "2026-09-17T16:31:39Z",
+  "updated": "2026-09-17T17:03:12Z",
   "source": "firepulse"
 }
