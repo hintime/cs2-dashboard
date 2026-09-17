@@ -145,6 +145,10 @@ AI_PROVIDER_FAST = (os.environ.get('AI_PROVIDER_FAST') or os.environ.get('AI_PRO
 OLLAMA_HOST = (os.environ.get('OLLAMA_HOST') or 'http://127.0.0.1:11434').rstrip('/')
 OLLAMA_MODEL = os.environ.get('OLLAMA_MODEL') or 'qwen2.5:7b-instruct'
 OLLAMA_NUM_CTX = int(os.environ.get('OLLAMA_NUM_CTX') or '8192')
+# 本地推理慢，且用户全局可能设了 OLLAMA_KEEP_ALIVE=0（每次调用都重载模型）→ 请求级覆盖
+OLLAMA_KEEP_ALIVE = os.environ.get('OLLAMA_KEEP_ALIVE_PARAM') or '10m'
+OLLAMA_TIMEOUT = int(os.environ.get('OLLAMA_TIMEOUT') or '600')      # 超时下限（秒）
+OLLAMA_REASON_HEADROOM = float(os.environ.get('OLLAMA_REASON_HEADROOM') or '2.5')
 ZHIPU_MODEL = os.environ.get('ZHIPU_MODEL') or 'glm-4-flash'
 
 
@@ -166,6 +170,63 @@ def _ai_provider_ready(quality=False):
     return True if _ai_provider(quality) == 'ollama' else bool(ZHIPU_KEY)
 
 
+def _is_reasoning_model(name):
+    """推理模型（R1 / reasoner 等）会先产出思考 token，需为 num_predict 留余量"""
+    n = str(name or '').lower()
+    return any(k in n for k in ('r1', 'reason', 'thinking', 'qwq', 'o1'))
+
+
+def _strip_think(t):
+    """剥掉思考块：① <think>…</think> 成对块 ② DeepSeek-R1 专有 \uFF5C 竖线标记
+    ③ 残留的“结束标记” → 丢弃它之前的全部内容（不同模型结束符不同，统一兜底）"""
+    if not t:
+        return t
+    import re as _re
+    t = _re.sub(r'<(think|thinking|reasoning)>[\s\S]*?</\1>', '', t, flags=_re.I)
+    t = _re.sub(r'<[\uFF5C|]begin[^>]*thinking[\uFF5C|]>[\s\S]*?<[\uFF5C|]end[^>]*thinking[\uFF5C|]>', '', t)
+    ends = list(_re.finditer(r'</(?:think|thinking|reason|reasoning)>|<[\uFF5C|]end[^>]*thinking[\uFF5C|]>', t, _re.I))
+    if ends:
+        t = t[ends[-1].end():]
+    return t
+
+
+def _strip_fence(t):
+    """剥掉 markdown 代码围栏 —— 实测 deepseek-r1 即使在 format=json 下也会把 JSON 包进围栏"""
+    if not t:
+        return t
+    s = t.strip()
+    if s.startswith('```'):
+        nl = s.find('\n')
+        if nl > 0:
+            s = s[nl + 1:]
+        s = s.rstrip()
+        if s.endswith('```'):
+            s = s[:-3]
+    return s.strip()
+
+
+def _ai_parse_json(text):
+    """容错解析 AI 输出的 JSON：直接 → 去围栏 → 截取首个 { 到末个 } / [ 到末个 ]"""
+    if not text:
+        return None
+    t = _strip_think(text).strip()
+    if not t:
+        return None
+    for cand in (t, _strip_fence(t)):
+        try:
+            return json.loads(cand)
+        except Exception:
+            pass
+    for a, b in (('{', '}'), ('[', ']')):
+        i, j = t.find(a), t.rfind(b)
+        if 0 <= i < j:
+            try:
+                return json.loads(t[i:j + 1])
+            except Exception:
+                pass
+    return None
+
+
 def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False,
              quality=False, timeout=90, model=None):
     """统一 AI 出口 — 按 provider 分流，返回纯文本；失败返回 None（调用方自行兜底）"""
@@ -177,20 +238,27 @@ def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False,
     for attempt in range(3):
         try:
             if prov == 'ollama':
+                # 推理模型的思考 token 也要从 num_predict 里扣 → 留足余量，否则 JSON 会被截断
+                npred = max_tokens
+                if _is_reasoning_model(mdl):
+                    npred = min(16384, int(max_tokens * OLLAMA_REASON_HEADROOM) + 1024)
                 body = {
                     'model': mdl, 'messages': messages, 'stream': False,
+                    'keep_alive': OLLAMA_KEEP_ALIVE,   # 覆盖用户全局的 OLLAMA_KEEP_ALIVE=0
                     'options': {'temperature': temperature,
                                 'num_ctx': OLLAMA_NUM_CTX,      # 默认 2048 会静默截断长 prompt，必须显式给
-                                'num_predict': max_tokens}
+                                'num_predict': npred}
                 }
                 if json_mode:
                     body['format'] = 'json'
                 req = urllib.request.Request(OLLAMA_HOST + '/api/chat',
                     data=json.dumps(body, ensure_ascii=False).encode('utf-8'),
                     headers={'Content-Type': 'application/json'})
-                resp = urllib.request.urlopen(req, timeout=timeout)
+                # 本地推理慢（7B 首次调用实测 60s+）→ 用超时下限，别沿用云端的 20~45s
+                resp = urllib.request.urlopen(req, timeout=max(timeout, OLLAMA_TIMEOUT))
                 d = json.loads(resp.read().decode('utf-8', 'replace'))
-                return ((d.get('message') or {}).get('content') or '').strip()
+                _c = _strip_think(((d.get('message') or {}).get('content') or '')).strip()
+                return _strip_fence(_c) if json_mode else _c
             body = {'model': mdl, 'messages': messages,
                     'max_tokens': max_tokens, 'temperature': temperature}
             if json_mode:
@@ -1371,8 +1439,10 @@ def generate_ai_analysis():
         r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=120)
         raw = r['choices'][0]['message']['content']
         
-        # ③ 解析 JSON 响应
-        parsed = json.loads(raw)
+        # ③ 解析 JSON 响应（本地模型可能带 markdown 围栏 → 容错解析）
+        parsed = _ai_parse_json(raw)
+        if not parsed:
+            raise ValueError('批量分析未返回可解析 JSON')
         results = parsed.get('items', {})
         summary = parsed.get('summary', '')
         if summary:
@@ -1402,7 +1472,9 @@ def generate_ai_analysis():
                     'response_format': {'type': 'json_object'},                    'max_tokens': 200, 'temperature': 0.3
                 }).encode('utf-8')
                 rr = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=20)
-                item_result = json.loads(rr['choices'][0]['message']['content'])
+                item_result = _ai_parse_json(rr['choices'][0]['message']['content'])
+                if not item_result:
+                    raise ValueError('未返回可解析 JSON')
                 # 转为文本兼容旧格式
                 v = item_result.get('verdict',''); c = item_result.get('confidence',0)
                 rsn = item_result.get('reason',''); risk = item_result.get('risk','')
@@ -1511,7 +1583,9 @@ def generate_ai_stock_picks():
             'max_tokens': 1000, 'temperature': 0.5
         }).encode('utf-8')
         r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=30)
-        picks = json.loads(r['choices'][0]['message']['content'])
+        picks = _ai_parse_json(r['choices'][0]['message']['content'])
+        if not picks:
+            raise ValueError('未返回可解析 JSON')
         write_json(os.path.join(DATA_DIR, 'ai_stock_picks.json'), picks)
         print(f'[AI] Stock picks: {len(picks.get("picks",[]))} candidates')
     except Exception as e:
