@@ -2,6 +2,30 @@
   {
     "date": "2026-09-17",
     "tag": "fix",
+    "title": "feat(ai): 云端兜底 + Ollama 自愈守护（回应「两家能否一起用 / 连不上能不能重试」）",
+    "desc": "feat(ai): 云端兜底 + Ollama 自愈守护（回应「两家能否一起用 / 连不上能不能重试」）"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "chore(ai): 全量本地化收尾——质量敏感任务（推荐/市场洞察）确认走 Ollama",
+    "desc": "chore(ai): 全量本地化收尾——质量敏感任务（推荐/市场洞察）确认走 Ollama"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "fix(ops): 修掉 Ollama 与 GUI 抢端口导致的每秒弹窗 + 明确唯一服务归属",
+    "desc": "fix(ops): 修掉 Ollama 与 GUI 抢端口导致的每秒弹窗 + 明确唯一服务归属"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
+    "title": "feat(ai): 全量切本地 Ollama（含推荐/洞察）+ sentiment 归一化护栏",
+    "desc": "feat(ai): 全量切本地 Ollama（含推荐/洞察）+ sentiment 归一化护栏"
+  },
+  {
+    "date": "2026-09-17",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-17 17:46",
     "desc": "wip: local snapshot 2026-09-17 17:46"
   },
@@ -94,29 +118,5 @@
     "tag": "fix",
     "title": "style(index): 首页板块优化——辅助文字 10/11px→12px（34 处）+ 列表行 padding",
     "desc": "style(index): 首页板块优化——辅助文字 10/11px→12px（34 处）+ 列表行 padding"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "style(site): 板块优化铺开 —— tracking/backtest/fluctuation/changel",
-    "desc": "g/revenue"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "fix(ci): 检查脚本被自己的 .gitignore 挡住 —— 移到 scripts/ 并修正引用",
-    "desc": "fix(ci): 检查脚本被自己的 .gitignore 挡住 —— 移到 scripts/ 并修正引用"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "ci(lint): 防复发 —— 所有 HTML 的内联 JS 语法检查 + lint 改为 push 时触发",
-    "desc": "ci(lint): 防复发 —— 所有 HTML 的内联 JS 语法检查 + lint 改为 push 时触发"
-  },
-  {
-    "date": "2026-09-16",
-    "tag": "fix",
-    "title": "fix(report): 修复内联 JS 缺少 } —— 之前导致四个板块永远加载不出来",
-    "desc": "fix(report): 修复内联 JS 缺少 } —— 之前导致四个板块永远加载不出来"
   }
 ]
