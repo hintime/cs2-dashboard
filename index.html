@@ -178,13 +178,10 @@ body::before{
   .container{padding:14px 10px 24px}
   .panel-head{padding:12px 14px}
   .panel-head h2{font-size:14px}
-  .rec-card{padding:14px 16px}
-  .rc-price{font-size:20px}
   .row-analysis-inner{grid-template-columns:1fr!important;padding:8px 12px 10px}
   .item-name{font-size:12px!important}
   .wear-tag{font-size:12px!important;padding:1px 5px}
   .cost-val{font-size:12px!important}
-  .rc-meta{font-size:13px}
   .header h1{font-size:16px}
   .header .sub{font-size:13px}
 }
@@ -351,63 +348,9 @@ body::before{
   .kpi-card{padding:12px 13px}
   .kpi-card .k-value{font-size:17px}
 }
-
-/* ══════════ RECOMMENDATION CARDS ══════════ */
-.rec-card{
-  display:flex;flex-direction:column;background:linear-gradient(135deg,var(--surface),var(--surface2));
-  border-radius:var(--radius-sm);padding:16px 24px;cursor:pointer;
-  transition:all .3s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden;
-  border:1px solid var(--border);gap:8px;
-  box-shadow:0 2px 12px rgba(0,0,0,.15);
-}
-.rec-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.02),transparent)}
-.rec-card:hover{
-  transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.35),0 0 0 1px var(--accent);
-  border-color:var(--accent);
-}
-.rec-card:active{transform:translateY(-2px);transition-duration:.1s}
-.rec-card.eco{border-left:4px solid var(--blue);background:linear-gradient(135deg,var(--glow-blue),var(--surface))}
-.rec-card.buff{border-left:4px solid var(--rise);background:linear-gradient(135deg,var(--glow-rise),var(--surface))}
-
-.rc-tag{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:4px 8px;border-radius:4px;margin-bottom:4px;width:fit-content}
-.rec-card.eco .rc-tag{background:rgba(96,165,250,.15);color:var(--blue)}
-.rec-card.buff .rc-tag{background:rgba(248,113,113,.15);color:var(--rise)}
-/* FirePulse 多平台评分（2026-09-14 新评分系统产出的卡片）*/
-.rec-card.firepulse{border-left:4px solid #a78bfa;background:linear-gradient(135deg,rgba(167,139,250,.09),var(--surface))}
-.rec-card.firepulse .rc-tag{background:rgba(167,139,250,.15);color:#a78bfa}
-
-.rc-name{font-size:15px;font-weight:600;color:var(--text);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:24px}
-.rc-price{font-size:26px;font-weight:800;font-family:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;color:var(--text);letter-spacing:-.02em}
-.rc-meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--text3);margin-top:4px}
-.rc-meta .r-up{color:var(--rise);font-weight:600}
-.rc-meta .r-dn{color:var(--fall);font-weight:600}
-.rc-meta .r-buy-num{color:var(--blue);font-weight:600}
-/* ── 推荐卡片市场深度 ── */
-.rc-depth{font-size:12px;line-height:1.6;padding:4px 12px 0;color:var(--text2)}
-.rc-depth .r-depth-eco{color:var(--blue)}
-.rc-depth .r-depth-buff{color:var(--rise)}
-.rc-depth .r-dp-sell{font-weight:600;color:var(--text)}
-.rc-depth .r-dp-buy{font-weight:600;color:var(--fall)}
-.rc-depth .r-dp-num{font-size:9px;margin-left:4px}
-.rc-reason{font-size:12px;color:var(--text2);line-height:1.5;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-
-/* ── 2026-09-14 推荐卡片改版：排名 / 评分进度条 / FirePulse 数据行 ── */
-.rc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
-.rc-rank{width:22px;height:22px;flex:0 0 22px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-family:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
 .rc-rank.top1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1200;border-color:transparent;box-shadow:0 2px 8px rgba(251,191,36,.35)}
 .rc-rank.top2{background:linear-gradient(135deg,#e2e8f0,#94a3b8);color:#111820;border-color:transparent}
 .rc-rank.top3{background:linear-gradient(135deg,#d97706,#b45309);color:#1a1000;border-color:transparent}
-.rc-score-wrap{text-align:right;line-height:1.15}
-.rc-score-num{font-size:17px;font-weight:800;font-family:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;color:var(--text);letter-spacing:-.02em}
-.rc-score-num small{font-size:9px;color:var(--text3);font-weight:600;margin-left:4px}
-.rc-score-bar{height:3px;border-radius:4px;background:var(--surface2);overflow:hidden;margin-top:4px;width:70px;margin-left:auto}
-.rc-score-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.16,1,.3,1)}
-.rc-price-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
-.rc-trend{font-size:11px;font-weight:700;font-family:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
-.rc-fp{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:12px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
-.rc-fp i{font-style:normal;opacity:.75}
-.rc-fp b{font-weight:700;color:var(--text2);font-family:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
-.rc-rare{display:inline-block;font-size:9px;padding:4px 4px;border-radius:4px;background:rgba(167,139,250,.14);color:#a78bfa;border:1px solid rgba(167,139,250,.22);font-weight:700;vertical-align:middle}
 
 /* ── 推荐详情弹窗改版（2026-09-14）：平台在售行 + 异常挂单标记 ── */
 .rm-plats{display:flex;flex-direction:column;gap:4px;margin:12px 0}
@@ -426,9 +369,6 @@ body::before{
 .rm-dim-v{font-size:13px;font-weight:800;font-family:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace}
 .rm-dim-bar{height:3px;border-radius:4px;background:var(--border);margin-top:4px;overflow:hidden}
 .rm-dim-fill{height:100%;border-radius:4px}
-
-.rc-chart{display:flex;gap:4px;align-items:center;margin-top:4px;height:32px}
-.rc-chart svg{flex:1;height:100%}
 
 /* ── 推荐池质量概览 ── */
 .rcq{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px}
@@ -478,8 +418,6 @@ body::before{
 .analysis-card .ac-reason{font-size:12px;color:var(--text2);background:var(--surface);border-radius:4px;padding:8px 8px;line-height:1.5;border-left:3px solid var(--border-hi);margin-top:4px}
 .analysis-card .ac-reason.buy{border-left-color:var(--rise)}
 .analysis-card .ac-reason.sell{border-left-color:var(--fall)}
-.rec-card.eco{border-left:3px solid var(--blue);background:linear-gradient(135deg,var(--glow-blue),var(--surface))}
-.rec-card.buff{border-left:3px solid var(--rise);background:linear-gradient(135deg,var(--glow-rise),var(--surface))}
 .r-channel{font-size:10px;font-weight:700;padding:4px 8px;border-radius:4px;display:inline-block;margin-bottom:4px;background:rgba(96,165,250,.15);color:var(--blue)}
 .r-channel.buff-mode{background:rgba(248,113,113,.15);color:var(--rise)}
 .a-rank{position:absolute;bottom:8px;right:10px;font-size:10px;color:var(--text3);font-family:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;opacity:.5}
@@ -733,7 +671,7 @@ html { scroll-behavior: smooth; }
 }
 
 
-</style>
+</style><!-- DEADCSS3 --><!-- DEADCSS2 --><!-- DEADCSS_REMOVED -->
 <style>
 /* ── 可达性增强 a11y ── */
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
@@ -766,7 +704,6 @@ html { scroll-behavior: smooth; }
   .mm-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:290}
   .mm-backdrop.open{display:block}
 }
-.rc-price-src{font-size:9px;color:var(--text3);font-style:normal;margin-left:4px;font-weight:600}
 @media(max-width:640px){#recGrid{grid-template-columns:1fr}}
 /* ══════════ 推荐板块 · 行情终端（v2 2026-09-17）══════════ */
 .rt-tools{display:flex;align-items:center;gap:8px;margin:0 0 10px;flex-wrap:wrap}
@@ -3477,16 +3414,16 @@ window.sparklineClean = function(prices, color, w, h) {
 // ── 折线图口径说明（替代名不副实的"30日"）──
 // ⚠ 后端取的是 price_history.db 的「最近 60 个采样点」，实测约 3~4 次/天，
 //   即 ≈15~20 天，不是 30 天。这里按真实数据给出采样次数 / 日期区间 / 变动次数。
-window.sparklineInfo = function(prices, ts, compact) {
+window.sparklineInfo = function(prices, ts, compact, prefix) {
   if (!prices || prices.length < 2) return '';
   var uniq = {}, n = 0;
   for (var i = 0; i < prices.length; i++) { if (!uniq[prices[i]]) { uniq[prices[i]] = 1; n++; } }
-  if (compact) return prices.length + '次·变动' + n + '次';
+  if (compact) return (prefix ? prefix : prices.length + '次') + '·变动' + n + '次';
   var span = '';
   if (ts && ts.length === prices.length && ts[0] && ts[prices.length - 1]) {
     span = ' · ' + String(ts[0]).slice(5, 10) + '~' + String(ts[prices.length - 1]).slice(5, 10);
   }
-  return '近' + prices.length + '次采样' + span + ' · 变动' + n + '次' + (n <= 2 ? '（价格长期未变）' : '');
+  return (prefix ? prefix : '近' + prices.length + '次采样') + span + ' · 变动' + n + '次' + (n <= 2 ? '（价格长期未变）' : '');
 };
 
 // ── 价格走势图弹窗 ──
@@ -3683,15 +3620,22 @@ function recBuildRow(item, gi, zebra) {
     devHtml = '<span class="rt-dim" title="已有多平台 Steam 价，但缺国内价，无法计算偏离">' + recMoney(item.n_steam || item.steam_sell, 0) + '</span>';
   } else { devHtml = '<span class="rt-dim" title="缺少 Steam 价或国内价，无法计算偏离度">无法计算</span>'; }
   // 走势（行内单线：ECO 优先，回退悠悠/BUFF）
-  // 走势：去孤立尖刺后绘制；口径标注为真实采样次数（原写死"30日"不准确）
+  // 走势：优先「按天聚合」序列 → 「近30日」才名副其实；无日线则退回原始采样点
+  var _dArr = item.eco_daily, _dTs = item.eco_daily_ts;
+  var _dailyOk = !!(_dArr && _dArr.length >= 3);
   var _useEco = !!(item.eco_history && item.eco_history.length >= 2);
-  var _lineArr = _useEco ? item.eco_history
-    : ((item.yyyp_history && item.yyyp_history.length >= 2) ? item.yyyp_history : (item.multi_history || []));
-  var _lineTs = _useEco ? (item.eco_history_ts || null)
-    : ((item.yyyp_history && item.yyyp_history.length >= 2) ? (item.yyyp_history_ts || null) : (item.multi_history_ts || null));
-  var _lineColor = _useEco ? 'var(--blue)' : 'var(--amber)';
-  var _lineFull = (typeof window.sparklineInfo === 'function') ? window.sparklineInfo(_lineArr, _lineTs) : '';
-  var _lineShort = (typeof window.sparklineInfo === 'function') ? window.sparklineInfo(_lineArr, _lineTs, true) : '';
+  var _lineArr = _dailyOk ? _dArr
+    : (_useEco ? item.eco_history
+      : ((item.yyyp_history && item.yyyp_history.length >= 2) ? item.yyyp_history : (item.multi_history || [])));
+  var _lineTs = _dailyOk ? (_dTs || null)
+    : (_useEco ? (item.eco_history_ts || null)
+      : ((item.yyyp_history && item.yyyp_history.length >= 2) ? (item.yyyp_history_ts || null) : (item.multi_history_ts || null)));
+  var _linePre = _dailyOk ? ('近' + _dArr.length + '日·日均') : null;
+  var _lineColor = (_dailyOk || _useEco) ? 'var(--blue)' : 'var(--amber)';
+  var _lineFull = (typeof window.sparklineInfo === 'function') ? window.sparklineInfo(_lineArr, _lineTs, false, _linePre) : '';
+  var _lineShort = (typeof window.sparklineInfo === 'function')
+    ? (_dailyOk ? (_dArr.length + '日·日均') : window.sparklineInfo(_lineArr, _lineTs, true))
+    : '';
   var line = (typeof window.sparklineClean === 'function')
     ? window.sparklineClean(_lineArr, _lineColor, 68, 18)
     : sparkline(_lineArr, _lineColor, 68, 18);
@@ -3766,10 +3710,15 @@ function recBuildExpand(item, gi, aiReasonMap) {
   if (pts && pts.length >= 3) reason = pts.slice(0, 3).map(function(d) { return d.trim().replace(/^[❶❷❸❹❺]\s*/, '').replace(/[「」]/g, '').slice(0, 40); }).join(' · ');
   var d3 = '<div class="rt-reason">' + esc(reason || '暂无推荐理由') + '</div>';
   if (m.risk) d3 += '<div class="rt-risk">⚠ ' + esc(String(m.risk).slice(0, 90)) + '</div>';
+  var _eDaily = !!(item.eco_daily && item.eco_daily.length >= 3);
+  var _eArr = _eDaily ? item.eco_daily : (item.eco_history || []);
+  var _eTss = _eDaily ? (item.eco_daily_ts || null) : item.eco_history_ts;
   var eSvg = (typeof window.sparklineClean === 'function')
-    ? window.sparklineClean(item.eco_history || [], 'var(--blue)', 118, 22)
-    : sparkline(item.eco_history || [], 'var(--blue)', 118, 22);
-  var _eInfo = (typeof window.sparklineInfo === 'function') ? window.sparklineInfo(item.eco_history || [], item.eco_history_ts) : '';
+    ? window.sparklineClean(_eArr, 'var(--blue)', 118, 22)
+    : sparkline(_eArr, 'var(--blue)', 118, 22);
+  var _eInfo = (typeof window.sparklineInfo === 'function')
+    ? window.sparklineInfo(_eArr, _eTss, false, _eDaily ? ('近' + _eArr.length + '日·日均') : null)
+    : '';
   var altHist = (item.yyyp_history && item.yyyp_history.length) ? item.yyyp_history : (item.multi_history || []);
   var aSvg = (typeof window.sparklineClean === 'function')
     ? window.sparklineClean(altHist, 'var(--amber)', 118, 22)

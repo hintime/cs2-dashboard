@@ -284,16 +284,17 @@ def _ai_attempt(prov, mdl, messages, max_tokens, temperature, json_mode, timeout
 
 
 def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False,
-             quality=False, timeout=90, model=None):
+             quality=False, timeout=90, model=None, provider=None):
     """统一 AI 出口 — 按 provider 分流，返回纯文本；失败返回 None。
 
     兜底链（2026-09-17 新增）：本地 ollama 不可用时，若配了 ZHIPU_KEY 就自动降级到云端。
     「本地优先、云端保底」——离线能跑，本地服务挂了也不至于让整条 AI 管线空转。
     关掉兜底：环境变量 AI_FALLBACK_CLOUD=0
     """
-    primary = _ai_provider(quality)
+    # provider 显式指定时只走它（用于「强制云端复核」这类场景），不挂兜底链
+    primary = (provider or _ai_provider(quality))
     chain = [primary]
-    if (primary == 'ollama' and ZHIPU_KEY
+    if (not provider and primary == 'ollama' and ZHIPU_KEY
             and str(os.environ.get('AI_FALLBACK_CLOUD', '1')).strip() != '0'):
         chain.append('zhipu')
     for idx, prov in enumerate(chain):
@@ -301,7 +302,10 @@ def _ai_call(messages, max_tokens=2048, temperature=0.5, json_mode=False,
             print('[AI] 智谱未配置 ZHIPU_KEY，跳过该兜底')
             continue
         if idx == 0:
-            mdl = _ai_model_name(quality, model)
+            if provider:
+                mdl = model or (ZHIPU_MODEL if prov == 'zhipu' else OLLAMA_MODEL)
+            else:
+                mdl = _ai_model_name(quality, model)
             tmo = timeout
         else:
             mdl = ZHIPU_MODEL
@@ -731,6 +735,38 @@ def fetch_eco_full():
     _cached_eco_full = result.get('ResultData') or []
     return _cached_eco_full
 
+def _rate_from_hist(hist, days):
+    """从 price_history 序列算「相对 N 天前」的涨跌幅(%)。
+    hist: [{'ts','price'}] 按时间升序。窗口内没有更早的采样点则返回 None（不硬凑）。"""
+    if not hist or len(hist) < 2:
+        return None
+    import datetime as _dt
+    def _p(ts):
+        try:
+            return _dt.datetime.fromisoformat(str(ts)[:19])
+        except Exception:
+            return None
+    last_t = _p(hist[-1].get('ts'))
+    if last_t is None:
+        return None
+    cutoff = last_t - _dt.timedelta(days=days)
+    base = None
+    for h in hist:
+        t = _p(h.get('ts'))
+        if t is None:
+            continue
+        if t <= cutoff:
+            base = h.get('price')
+        else:
+            break
+    if not base or base <= 0:
+        return None
+    cur = hist[-1].get('price') or 0
+    if cur <= 0:
+        return None
+    return round((cur - base) / base * 100, 2)
+
+
 def generate_recommendations(alerts=None, steamdt_prices=None):
     """Dual-scoring recommendation engine.
     ECO score (0-100): supply/demand + valuation from eco_tracked.json
@@ -774,6 +810,17 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             }
     print(f'[REC] BUFF prices available for {len(buff_map)} items')
 
+    # 稀有度映射：CSQAQ 排行榜返回 rarity_localized_name（ECO 侧没有该字段）
+    # 没有该数据时 rarity_map 为空，前端只是不显示稀有度小标 —— 不虚构。
+    rarity_map = {}
+    try:
+        for _a in (alerts or []):
+            _n, _r = _a.get('name'), _a.get('rarity')
+            if _n and _r:
+                rarity_map[_n] = _r
+    except Exception:
+        pass
+
     # ── 接入归一化层（四源统一 + 交叉验证）──
     # normalize.py 把 ECO / SteamDT / CSQAQ / FirePulse 四个来源归一成统一字段，
     # 并算出真正可信的 ref_price（独立市场基准）与跨平台溢价。
@@ -787,6 +834,8 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
         print(f'[REC] normalize.py 加载失败，退回原始逻辑: {_ne}', file=sys.stderr)
 
     all_recs = []
+    # 追踪教训权重：整轮只算一次（原实现放在循环内，4500 条 → 4500 次读文件）
+    eco_mult, buff_mult = _get_scoring_weights_from_lessons()
 
     for item in tracked:
         hn = item.get('HashName', '')
@@ -809,189 +858,171 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             except Exception as _ne:
                 n_meta = None
 
-        # ══════════ ECO Score (0-100): supply/demand + valuation ══════════
-        eco_score = 0.0
+        # ══════════ 评分 v2（2026-09-17 重写）══════════
+        # 旧版三个致命问题（实测导致全池 score 恒为 48.0、tag_label 全同一句）：
+        #   ① 加分项用的是「BUFF/悠悠 相对 ECO 的溢价」——而 ECO 是**低位档参考价**，
+        #      该溢价被系统性放大，每条都打满固定分（30+10=40 ×1.2 = 48.0）；
+        #   ② final = max(eco, buff) 直接把 ECO 维度抹掉，分数由单一维度决定；
+        #   ③ 无盘口数据时（bsn=0）后续分项全跳过，分数结构更固定。
+        # 新版：每个维度只用**已验证口径**，各维度先归一化到 0-1 再按权重平均 →
+        #       分数天然散开；缺数据的维度不参与（不虚增也不虚减）。
+        import math as _m
+
+        # ── 维度 A：ECO 盘口（求购强度 / 求购占比 / 稀缺度 / 同口径估值）──
+        eco_raw = eco_max = 0.0
         eco_reasons = []
-
-        # 1. Undervaluation: MarketComprePrice >> Price (35 pts max)
-        if compre > 0 and price > 0:
-            underval_pct = (compre - price) / price * 100
-            if underval_pct > 5:  # Require >5% gap
-                uv = min(underval_pct * 0.7, 35)
-                eco_score += uv
-                if uv > 7:
-                    eco_reasons.append('ECO低估{}% (综合{:.0f} vs 现价{:.0f})'.format(
-                        round(underval_pct), compre, price))
-
-        # 2. Scarcity: buy/sell ratio (20 pts max, logarithmic to prevent domination by stickers)
-        if selling > 0 and qg_total > 0:
-            import math
-            ratio = qg_total / selling
-            if ratio > 0.05:
-                sc = min(math.log(ratio + 1) * 10, 20)
-                eco_score += sc
-                if sc > 5:
-                    eco_reasons.append('稀缺求/售比{:.0%} (求{} 售{})'.format(ratio, qg_total, selling))
-
-        # 3. Demand strength: buy price vs sell price (15 pts max)
+        # A1 求购强度：求购价 / 售价（越贴近 1 越强）  满分 30
         if qg_max > 0 and price > 0:
-            demand = qg_max / price
-            if demand > 0.5:
-                dm = min(demand * 15, 15)
-                eco_score += dm
-                if dm > 5:
-                    eco_reasons.append('求购活跃 出价{:.0f} vs 售价{:.0f}'.format(qg_max, price))
+            eco_max += 30
+            r_q = min(qg_max / price, 1.0)
+            v = max(0.0, (r_q - 0.75) / 0.25) * 30
+            eco_raw += v
+            if v >= 12:
+                eco_reasons.append('求购价¥%.0f 达售价%.0f%%' % (qg_max, r_q * 100))
+        # A2 求购单占比：求购 / (在售+求购)  满分 25
+        if (selling + qg_total) > 0:
+            eco_max += 25
+            tight = qg_total / (selling + qg_total)
+            eco_raw += min(tight / 0.35, 1.0) * 25
+            if tight >= 0.15:
+                eco_reasons.append('求购%d单/在售%d件' % (qg_total, selling))
+        # A3 稀缺度：ECO 在售量（对数刻度，越少越高）  满分 20
+        if selling > 0:
+            eco_max += 20
+            eco_raw += max(0.0, 1 - _m.log10(max(selling, 1)) / 3.0) * 20
+            if selling <= 50:
+                eco_reasons.append('ECO在售仅%d件' % selling)
+        # A4 同口径估值折价：ECO 综合价 vs ECO 现价  满分 25
+        if compre > 0 and price > 0:
+            eco_max += 25
+            d_val = (compre - price) / price * 100
+            eco_raw += min(max(d_val, 0) / 15.0, 1.0) * 25
+            if d_val >= 8:
+                eco_reasons.append('ECO综合价高于现价%.0f%%(¥%.0f vs ¥%.0f)' % (d_val, compre, price))
 
-        # ══════════ BUFF Score (0-100): price premium + order book ══════════
-        buff_score = 0.0
+        # ── 维度 B：BUFF 真实盘口 + 跨市场偏离 ──
+        buff_raw = buff_max = 0.0
         buff_reasons = []
-        bd = buff_map.get(hn, {})
-        if bd:
-            bs = bd.get('buff_sell', 0) or 0
-            bb = bd.get('buff_buy', 0) or 0
-            bsn = bd.get('buff_sell_num', 0) or 0
-            bbn = bd.get('buff_buy_num', 0) or 0
+        bd = buff_map.get(hn, {}) or {}
+        bs = bd.get('buff_sell', 0) or 0
+        bb = bd.get('buff_buy', 0) or 0
+        bsn = bd.get('buff_sell_num', 0) or 0
+        bbn = bd.get('buff_buy_num', 0) or 0
+        # B1 买卖盘强度：求购单 / 在售单  满分 35
+        if bsn > 0 and bbn > 0:
+            buff_max += 35
+            r_bs = bbn / bsn
+            buff_raw += min(r_bs / 0.5, 1.0) * 35
+            buff_reasons.append('BUFF买%d单/卖%d单' % (bbn, bsn))
+        # B2 在售深度：以约 100 件为最佳（太少难出货，太多说明泛滥）  满分 20
+        if bsn > 0:
+            buff_max += 20
+            buff_raw += max(0.0, 1 - abs(_m.log10(max(bsn, 1)) - 2) / 2.0) * 20
+        # B3 买盘贴价：求购价 / 在售价  满分 25
+        if bb > 0 and bs > 0:
+            buff_max += 25
+            r_bb = bb / bs
+            buff_raw += max(0.0, (r_bb - 0.8) / 0.2) * 25
+            if r_bb >= 0.9:
+                buff_reasons.append('BUFF求购价达卖价%.0f%%' % (r_bb * 100))
+        # B4 跨市场偏离（Steam 独立市场；dev>0 = Steam 异常贵 → 国内更划算）  满分 20
+        dev = item.get('n_dev_steam')
+        if isinstance(dev, (int, float)):
+            buff_max += 20
+            buff_raw += min(max(dev, 0) / 40.0, 1.0) * 20
+            if abs(dev) > 25:
+                buff_reasons.append('Steam偏离%+.0f%%' % dev)
 
-            # 1. BUFF premium over ECO price (30 pts max)
-            if bs > 0 and price > 0:
-                premium = (bs - price) / price * 100
-                if premium > 3:
-                    pr = min(premium * 0.7, 30)
-                    buff_score += pr
-                    if pr > 7:
-                        buff_reasons.append('BUFF溢价{}% ({:.0f} vs ECO{:.0f})'.format(
-                            round(premium), bs, price))
-
-            # 2. BUFF buy/sell ratio (15 pts max)
-            if bsn > 0 and bbn > 0:
-                b_ratio = bbn / bsn
-                if b_ratio > 0.05:
-                    br = min(b_ratio * 15, 15)
-                    buff_score += br
-                    if br > 5:
-                        buff_reasons.append('BUFF买/卖比{:.0%} (买{} 卖{})'.format(b_ratio, bbn, bsn))
-
-            # 3. BUFF liquidity depth (10 pts max)
-            if bsn > 0:
-                liq = min(bsn / 500 * 10, 10)
-                buff_score += liq
-
-            # 4. BUFF buy power (bonus 5 pts)
-            if bsn > 0 and bbn > 0:
-                bp = min(bbn / (bsn + bbn) * 5, 5)
-                buff_score += bp
-
-        # ══════════ 悠悠有品 Score (bonus, 20 pts max) ══════════
+        # ── 维度 C：悠悠有品真实盘口（缺数据则不参与）──
         yyyp_sell = item.get('yyyp_sell', 0) or 0
         yyyp_sell_num = item.get('yyyp_sell_num', 0) or 0
-        # 悠悠在售少于40件 → 不推荐
-        if yyyp_sell_num > 0 and yyyp_sell_num < 40:
+        y_raw = y_max = 0.0
+        y_reasons = []
+        if yyyp_sell_num > 0:
+            y_max += 20
+            y_raw += max(0.0, 1 - min(yyyp_sell_num, 500) / 500.0) * 20
+            if yyyp_sell_num < 50:
+                y_reasons.append('悠悠在售仅%d件' % yyyp_sell_num)
+
+        # ── 组合：按可用维度归一化后加权平均（0-100）──
+        # 追踪教训给出的权重改为「维度权重」使用（旧版是全局乘数，对每条一样＝没作用）
+        # 权重在循环外算一次（原来这里每条都重读 tracking_lessons.json）
+        parts = []
+        if eco_max > 0:
+            parts.append((eco_raw / eco_max, 0.50 * eco_mult))
+        if buff_max > 0:
+            parts.append((buff_raw / buff_max, 0.35 * buff_mult))
+        if y_max > 0:
+            parts.append((y_raw / y_max, 0.15))
+        if not parts:
             continue
-        if yyyp_sell > 0:
-            # 5. 悠悠价格 vs ECO价格 (10 pts max)
-            yyyp_premium = (yyyp_sell - price) / price * 100 if price > 0 else 0
-            if yyyp_premium > 2:
-                yp = min(yyyp_premium * 0.5, 10)
-                buff_score += yp
-                if yp > 4:
-                    buff_reasons.append('悠悠溢价{}% ({:.0f} vs ECO{:.0f})'.format(
-                        round(yyyp_premium, 1), yyyp_sell, price))
-
-            # 6. 悠悠在售深度 (10 pts max) — 在售少说明稀缺
-            if yyyp_sell_num > 0:
-                scarce = min(max(0, (500 - yyyp_sell_num) / 500 * 10), 10)
-                if scarce > 2:
-                    buff_score += scarce
-                    if scarce > 5:
-                        buff_reasons.append('悠悠在售仅{}件'.format(yyyp_sell_num))
-
-        # ══════════ Combined ══════════
-        # 应用AI追踪教训的评分权重调整
-        eco_mult, buff_mult = _get_scoring_weights_from_lessons()
-        final_score = max(eco_score * eco_mult, buff_score * buff_mult)
+        final_score = round(sum(v * w for v, w in parts) / sum(w for _, w in parts) * 100, 1)
+        # eco_score / buff_score 保持字段名（前端「评分构成」与 AI 都在用），统一为 0-100 归一值
+        eco_score = round(eco_raw / eco_max * 100, 1) if eco_max else 0.0
+        buff_score = round(buff_raw / buff_max * 100, 1) if buff_max else 0.0
+        yyyp_score = round(y_raw / y_max * 100, 1) if y_max else 0.0
 
         if final_score < 25:
             continue
 
-        # Primary source determines category tag and reason
+        # ── 主导维度 → tag（前端契约：tag ∈ {eco, buff}）──
         if buff_score > eco_score and buff_reasons:
             tag = 'buff'
-            tag_label = '多平台信号'
-            signal_desc = '多平台热度高'
             primary_reasons = buff_reasons + eco_reasons[:1]
         else:
             tag = 'eco'
-            tag_label = 'ECO信号'
-            signal_desc = 'ECO供需失衡'
             primary_reasons = eco_reasons + buff_reasons[:1]
 
-        # ── Build rich actionable reason ──
-        combined_reason = ' | '.join(primary_reasons[:3]) if primary_reasons else ''
-        
-        # ── 注入追踪教训信号（反哺推荐理由）──
+        # ── 特征标签（替代旧版恒定的「多平台信号 ✓溢价强劲·AI优选」）──
+        _feats = []
+        if (selling + qg_total) > 0 and qg_total / (selling + qg_total) >= 0.20:
+            _feats.append('求购活跃')
+        if selling > 0 and selling <= 50:
+            _feats.append('在售稀缺')
+        if isinstance(dev, (int, float)) and dev > 25:
+            _feats.append('跨市场折价')
+        if bsn > 0 and bbn > 0 and bbn / bsn >= 0.30:
+            _feats.append('买盘强劲')
+        if bsn >= 300:
+            _feats.append('流动性充足')
+        if yyyp_sell_num > 0 and yyyp_sell_num < 50:
+            _feats.append('悠悠稀缺')
+        if not _feats:
+            _feats.append('多平台信号' if tag == 'buff' else 'ECO供需')
+        display_tag = '·'.join(_feats[:3])
+        if final_score >= 60:
+            display_tag += ' · 优选'
+        elif final_score >= 45:
+            display_tag += ' · 可考虑'
+        tag_label = display_tag
         lesson_signal = ''
-        reason_enhance = _get_reason_enhancements()  # 从追踪分析获取理由优化建议
-        
-        if tag == 'eco':
-            # 教训: ECO信号溢价低/负→容易失败，需标注风险
-            if buff_score < 5 or (bs > 0 and price > 0 and (bs - price) / price * 100 < 3):
-                lesson_signal = ' ⚠溢价不足·待观察'
-            elif eco_score > 30:
-                lesson_signal = ' 供需位高·但需关注溢价'
-        elif tag == 'buff':
-            # 教训: 多平台信号+高溢价→成功率更高
-            if bs > 0 and price > 0:
-                premium = (bs - price) / price * 100
-                if premium > 15:
-                    lesson_signal = ' ✓溢价强劲·AI优选'
-                elif premium > 5:
-                    lesson_signal = ' 溢价适中·可考虑'
-        
-        # Apply lesson signals to tag
-        display_tag = tag_label + lesson_signal
-        
-        # Build operation advice
-        if tag == 'eco':
-            # ECO signal: suggest buying at bid price
-            suggest_bid = int(qg_max) if qg_max > 0 else int(price * 0.9)
-            buy_advice_parts = []
-            if selling > 0 and qg_total > 0:
-                ratio = qg_total / selling
-                if ratio > 3:
-                    buy_advice_parts.append('需求旺盛，建议挂求购价¥{}买入'.format(suggest_bid))
-                elif ratio > 1:
-                    buy_advice_parts.append('供需偏紧，可挂求购价¥{}建仓'.format(suggest_bid))
-                else:
-                    buy_advice_parts.append('供需平衡，建议分批挂单买入')
-            if compre > price:
-                underval_pct = (compre - price) / price * 100
-                if underval_pct > 10:
-                    buy_advice_parts.append('综合评估价¥{:.0f}明显高于现价，性价比较高'.format(compre))
-            if not buy_advice_parts:
-                buy_advice_parts.append('建议分仓操作，单品种不超过10%仓位')
-            # 教训反哺：ECO信号若无溢价支撑，标注风险
-            if tag == 'eco' and buff_score < 5:
-                buy_advice_parts.append('⚠ 纯ECO信号·缺乏多平台溢价验证')
-            buy_advice = ' | '.join(buy_advice_parts[:2])
-        else:
-            # BUFF/multi-platform signal (T+7 market, no arbitrage possible)
-            buy_advice_parts = []
-            if bs > 0 and price > 0:
-                diff = (bs - price) / price * 100
-                if diff > 5:
-                    buy_advice_parts.append('多平台溢价{:.1f}%，市场热度较高'.format(abs(diff)))
-                elif diff < -5:
-                    buy_advice_parts.append('多平台折价{:.1f}%，ECO价格偏高需谨慎'.format(abs(diff)))
-                else:
-                    buy_advice_parts.append('多平台与ECO价差{:.1f}%，价格趋近合理'.format(abs(diff)))
-            if bsn > 0:
-                buy_advice_parts.append('多平台在售{}件，流动性{}'.format(bsn, '充裕' if bsn > 100 else '一般'))
-            if not buy_advice_parts:
-                buy_advice_parts.append('建议结合ECO供需数据综合判断')
-            buy_advice = ' | '.join(buy_advice_parts[:2])
 
-        reason = '{} | ECO分{:.0f}/BUFF分{:.0f}→综合{:.0f} | {} | 💡 {} | 建议分仓操作,单品<10%{}'.format(
-            display_tag, eco_score, buff_score, final_score, combined_reason, buy_advice, lesson_signal.replace(' ✓', ''))
+        # ── 操作建议（同样剔除"相对 ECO 的溢价"这套假口径）──
+        buy_advice_parts = []
+        if (selling + qg_total) > 0:
+            r_adv = qg_total / (selling + qg_total)
+            bid = int(qg_max) if qg_max > 0 else int(price * 0.9)
+            if r_adv >= 0.30:
+                buy_advice_parts.append('买盘活跃，可挂求购价¥%d接货' % bid)
+            elif r_adv >= 0.10:
+                buy_advice_parts.append('供需偏紧，分批挂单建仓')
+            else:
+                buy_advice_parts.append('承接一般，建议小仓位试探')
+        if isinstance(dev, (int, float)) and abs(dev) > 25:
+            buy_advice_parts.append('Steam偏离%+.0f%%（国内%s）' % (dev, '更划算' if dev > 0 else '相对偏贵'))
+        if bsn > 0:
+            buy_advice_parts.append('BUFF在售%d件' % bsn)
+        if not buy_advice_parts:
+            buy_advice_parts.append('数据有限，建议小仓位试水')
+        buy_advice = ' | '.join(buy_advice_parts[:2])
+
+        # ── 理由一句话 + 教训钩子（这两个定义原本在被替换的区段内，这里补回）──
+        combined_reason = ' | '.join(primary_reasons[:3]) if primary_reasons else ''
+        reason_enhance = _get_reason_enhancements()
+
+        reason = '{} | 综合{:.0f}(ECO{:.0f}/BUFF{:.0f}/悠悠{:.0f}) | {} | 💡 {} | 建议分仓操作,单品<10%'.format(
+            display_tag, final_score, eco_score, buff_score, yyyp_score, combined_reason, buy_advice)
+
         
         # 理由增强：根据追踪教训追加优化提示
         if reason_enhance:
@@ -1021,6 +1052,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'platforms': bd.get('platforms', {}),
             'yyyp_sell': item.get('yyyp_sell', 0) or 0,
             'yyyp_sell_num': item.get('yyyp_sell_num', 0) or 0,
+            # 存世量代理（ECO 在售总数）与稀有度（E:\ 无该源时为空）
+            'n_supply': item.get('n_supply') or item.get('SellingTotal') or 0,
+            'fp_rarity': rarity_map.get(gn, '') or '',
             # ── 归一化层产出的统一字段（前端「数据来源」小标用）──
             'n_ref': item.get('n_ref', 0),
             'n_ref_src': item.get('n_ref_src', ''),
@@ -2125,6 +2159,94 @@ def _rec_fix_sentiment(one, item, lv):
     return fixed
 
 
+def _rec_text_of(p):
+    """取一条 pick 的全部正文（用于质量检查）"""
+    return ''.join(str(p.get(k) or '') for k in
+                   ('reason', 'risk', 'operation', 'price_zone', 'platform_advice'))
+
+
+# 合法英文白名单（平台名 / 常见枪械与系列代号）——只用于「中英夹杂」检测，避免误报
+_REC_EN_OK = ('BUFF', 'STEAM', 'ECO', 'STATTRAK', 'T+7', 'AI', 'MW', 'FN', 'FT', 'WW', 'BS')
+
+
+def _rec_english_hits(txt):
+    """检测非白名单的英文单词（本地小模型容易出现「这件 Buff 类品」这类夹杂）"""
+    import re as _re
+    bad = []
+    for w in _re.findall(r'[A-Za-z][A-Za-z\-]{1,}', txt or ''):
+        u = w.upper().replace('-', '')
+        if any(u.startswith(k.replace('-', '')) for k in _REC_EN_OK):
+            continue
+        if w in bad:
+            continue
+        bad.append(w)
+    return bad
+
+
+def _rec_cloud_review(plist, market_ctx):
+    """质量协同（#6）：把本地生成的 3 条交给云端做一次「审校+改写」。
+
+    现实取舍：本地 7B 结构稳（字段/sentiment/重合率由代码保证），但文案常有空话词、
+    中英夹杂与自相矛盾。这里用**一次**云端调用统一审校（只有 1 次，成本可忽略）。
+    返回改写后的 picks（不可用时返回 None，调用方保留本地版本）。
+    关闭：环境变量 AI_REC_REVIEW_CLOUD=0
+    """
+    if str(os.environ.get('AI_REC_REVIEW_CLOUD', '1')).strip() == '0':
+        return None
+    if not ZHIPU_KEY:
+        return None
+    if not plist:
+        return None
+    banned = '、'.join(_REC_BANNED)
+
+    def _brief(p):
+        return ('【%s】角度:%s\n  理由: %s\n  风险: %s\n  操作: %s\n  区间: %s\n  平台: %s'
+                % (p.get('name'), p.get('archetype'), p.get('reason'), p.get('risk'),
+                   p.get('operation'), p.get('price_zone'), p.get('platform_advice')))
+
+    prompt = (
+        '你是资深中文财经编辑，负责**审校**下面 3 条 CS2 饰品买入分析（由本地小模型起草）。\n\n'
+        '【待审校内容】\n' + '\n\n'.join(_brief(p) for p in plist) + '\n\n'
+        '【市场背景】\n' + (market_ctx or '') + '\n'
+        '【审校要求】\n'
+        '1. 禁用这些空话词：' + banned + '。命中就改写成本文数据支撑的具体表述。\n'
+        '2. 清除中英夹杂：除平台名 BUFF/悠悠/Steam/ECO 与饰品本身的英文型号外，正文用中文。\n'
+        '3. 修掉自相矛盾或逻辑不通的句子（例：「在售件数较多，只有16件」）。\n'
+        '4. 保持原意与原有的数字（不得编造新数字、不得改动入场区间/止盈/止损/仓位）。\n'
+        '5. 三条之间继续保证措辞不雷同；每段长度与原段相当（理由 100-150 字 / 风险 80-120 字 / 操作 80-120 字）。\n'
+        '6. 只输出 JSON：{"picks":[{"name":"与输入完全一致","reason":"","risk":"","operation":"",'
+        '"price_zone":"","platform_advice":""}]}（不要输出其他字段）'
+    )
+    try:
+        txt = _ai_call([{'role': 'system', 'content': '你是中文财经编辑，只输出 JSON。'},
+                        {'role': 'user', 'content': prompt}],
+                       max_tokens=2600, temperature=0.3, json_mode=True,
+                       quality=True, timeout=120, provider='zhipu')
+        got = _ai_parse_json(txt)
+        if not got or not got.get('picks'):
+            print('[AI] 云端审校未返回可用 JSON，保留本地版本')
+            return None
+        by_name = {}
+        for p in got['picks']:
+            if p.get('name'):
+                by_name[str(p['name'])] = p
+        merged = 0
+        for p in plist:
+            src = by_name.get(str(p.get('name')))
+            if not src:
+                continue
+            for k in ('reason', 'risk', 'operation', 'price_zone', 'platform_advice'):
+                v = str(src.get(k) or '').strip()
+                if v and v != str(p.get(k) or ''):
+                    p[k] = v
+                    merged += 1
+        print('[AI] 云端审校完成（改写 %d 处文本），model=%s' % (merged, ZHIPU_MODEL))
+        return plist
+    except Exception as e:
+        print('[AI] 云端审校失败（保留本地版本）: %s' % str(e)[:120], file=sys.stderr)
+        return None
+
+
 def _rec_write_one(item, lv, sigs, archetype, model, market_ctx, others, extra=''):
     """单件独立调用：只喂这一件 → 机制上杜绝三条套同一模板
     小模型（本地 7B）更服从**末尾**指令，因此把禁令与自检清单放在 prompt 最后。"""
@@ -2202,15 +2324,23 @@ def generate_ai_recommendations():
                     'sentiment': _rec_sentiment_from_data(item, lv), 'trend_signals': sigs,
                     'platform_advice': _rec_fix_platform(item, lv)
                 }
-            blob = str(one.get('risk', '')) + str(one.get('reason', ''))
+            # 质量门：空话词（禁用清单）+ 中英夹杂（白名单外英文单词）
+            blob = _rec_text_of(one)
             hits = [w for w in _REC_BANNED if w in blob]
-            if hits:
+            en_hits = _rec_english_hits(blob)
+            _need_fix = (len(hits) >= 2) or (bool(hits) and bool(en_hits))
+            if _need_fix:
                 try:
+                    _why = []
+                    if hits:
+                        _why.append('被禁用的空话词（' + '、'.join(hits) + '）')
+                    if en_hits:
+                        _why.append('中英夹杂（' + '、'.join(en_hits[:5]) + '）')
                     fix = _rec_write_one(item, lv, sigs, arch, model, market_ctx, others_txt,
-                                         extra='注意：上一次输出出现了被禁用的空话词（' + '、'.join(hits) + '），本次务必改写成带具体数据的表述。')
+                                         extra='注意：上一次输出出现了 ' + ' 与 '.join(_why) + '，本次务必改写成纯中文、带具体数据的表述。')
                     if fix and fix.get('reason'):
                         one = fix
-                        print('[AI] 第%d件命中空话词 %s → 已重写' % (idx + 1, '、'.join(hits)))
+                        print('[AI] 第%d件命中 %s → 已重写' % (idx + 1, ' / '.join(_why)))
                 except Exception as _e:
                     print('[AI] 第%d件重写失败: %s' % (idx + 1, _e))
             one['rank'] = idx + 1
@@ -2238,6 +2368,20 @@ def generate_ai_recommendations():
                 one['price'] = pr
             plist.append(one)
             others_txt += '- %s（角度:%s）风险要点: %s\n' % (one['name'], arch, str(one.get('risk', ''))[:60])
+
+        # ── 质量协同（#6）：本地起草 → 云端审校一次（可 AI_REC_REVIEW_CLOUD=0 关闭）──
+        try:
+            _before = sum(1 for p in plist for w in _REC_BANNED if w in _rec_text_of(p))
+            _before_en = sum(len(_rec_english_hits(_rec_text_of(p))) for p in plist)
+            _rev = _rec_cloud_review(plist, market_ctx)
+            if _rev is not None:
+                _after = sum(1 for p in plist for w in _REC_BANNED if w in _rec_text_of(p))
+                _after_en = sum(len(_rec_english_hits(_rec_text_of(p))) for p in plist)
+                print('[AI] 审校前后：空话词 %d→%d，中英夹杂 %d→%d' % (_before, _after, _before_en, _after_en))
+            else:
+                print('[AI] 跳过云端审校（本地版本保留）；空话词 %d / 中英夹杂 %d' % (_before, _before_en))
+        except Exception as _re2:
+            print('[AI] 云端审校异常（保留本地版本）: %s' % str(_re2)[:120], file=sys.stderr)
 
         head = {'reasoning': '', 'strategy': '', 'summary': '', 'self_critique': ''}
         try:
@@ -2267,10 +2411,12 @@ def generate_ai_recommendations():
         out.update(head)
         ds = _rec_diff_score(plist) if len(plist) > 1 else None
         if ds is not None:
-            banned_hits = sum(1 for p in plist for w in _REC_BANNED
-                              if w in (str(p.get('risk', '')) + str(p.get('reason', '')) + str(p.get('operation', ''))))
+            banned_hits = sum(1 for p in plist for w in _REC_BANNED if w in _rec_text_of(p))
+            en_hits_total = sum(len(_rec_english_hits(_rec_text_of(p))) for p in plist)
             out['quality'] = {'max_pairwise_overlap': ds, 'template_risk': ds > 0.45,
-                              'model': _ai_model_name(True, model), 'picks': len(plist), 'banned_hits': banned_hits}
+                              'model': _ai_model_name(True, model), 'picks': len(plist), 'banned_hits': banned_hits,
+                              'en_hits': en_hits_total,
+                              'reviewed_by_cloud': str(os.environ.get('AI_REC_REVIEW_CLOUD', '1')).strip() != '0'}
             print('[AI] 差异化校验：最大两两重合率 %.2f%s，空话词残留 %d' % (ds, '（偏高）' if ds > 0.45 else '（通过）', banned_hits))
         try:
             eco_m, buff_m = _get_scoring_weights_from_lessons()
@@ -3427,6 +3573,20 @@ def main():
                             if history:
                                 r['eco_history'] = [h['price'] for h in history[-60:]]
                                 r['eco_history_ts'] = [h.get('ts', '') for h in history[-60:]]
+                                # 趋势涨跌：同一份历史算 1/7/30 日
+                                # （这两个字段以前从未被写入 → 前端「1日/7日/30日」恒为「—」）
+                                for _d, _k in ((1, 'rate_1'), (7, 'rate_7'), (30, 'rate_30')):
+                                    _v = _rate_from_hist(history, _d)
+                                    if _v is not None:
+                                        r[_k] = _v
+                                # 日线（按天聚合）：让「近30日」这个说法名副其实
+                                try:
+                                    _dd = price_db.get_daily_averages(hn, channel='eco', days=30)
+                                    if _dd and len(_dd) >= 3:
+                                        r['eco_daily'] = [x['avg'] for x in _dd]
+                                        r['eco_daily_ts'] = [x['day'] for x in _dd]
+                                except Exception:
+                                    pass
                             history = price_db.get_history(hn, channel='buff')
                             if history:
                                 r['multi_history'] = [h['price'] for h in history[-60:]]
@@ -3703,16 +3863,22 @@ def main():
     # ═══════════════ AI 分析（限流保护：每次调用间隔≥8秒） ═══════════════
     _last_ai_call = [0]  # mutable for closure
     
+    _ai_stats = []   # 各阶段耗时/结果，最后写 ai_meta.json
+
     def _ai_call_with_rate_limit(func, name):
-        """AI 调用限流保护：确保两次调用间隔 >= 8 秒，遇到 429 重试 3 次"""
+        """AI 调用限流保护：确保两次调用间隔 >= 8 秒，遇到 429 重试 3 次；并记录阶段耗时"""
+        _q = name in ('Market insight', 'Recommendations')
         elapsed = time.time() - _last_ai_call[0]
         if elapsed < 8:
             wait = 8 - elapsed
             print(f'[AI] Rate limit wait {wait:.0f}s...')
             time.sleep(wait)
         for attempt in range(3):
+            _t0 = time.time()
             try:
                 func()
+                _ai_stats.append({'stage': name, 'sec': round(time.time() - _t0, 1), 'ok': True,
+                                  'provider': _ai_provider(_q), 'model': _ai_model_name(_q)})
                 _last_ai_call[0] = time.time()
                 return
             except urllib.error.HTTPError as e:
@@ -3724,6 +3890,8 @@ def main():
                     raise
             except Exception as e:
                 print(f'[AI] {name} failed (non-fatal): {e}', file=sys.stderr)
+                _ai_stats.append({'stage': name, 'sec': round(time.time() - _t0, 1), 'ok': False,
+                                  'err': str(e)[:120], 'provider': _ai_provider(_q)})
                 _last_ai_call[0] = time.time()
                 return
         print(f'[AI] {name} failed after 3 retries (rate limit)', file=sys.stderr)
@@ -3742,6 +3910,26 @@ def main():
         _ai_call_with_rate_limit(generate_ai_market_insight, 'Market insight')
         _ai_call_with_rate_limit(generate_ai_news_impact, 'News impact')
         _ai_call_with_rate_limit(generate_ai_recommendations, 'Recommendations')
+        # ── 阶段耗时汇总（便于观察本地化后的周期变化）──
+        try:
+            _used = round(sum(x['sec'] for x in _ai_stats), 1)
+            _okc = sum(1 for x in _ai_stats if x.get('ok'))
+            write_json(os.path.join(DATA_DIR, 'ai_meta.json'), {
+                'date': time.strftime('%Y-%m-%d %H:%M'),
+                'total_sec': _used,
+                'ok': _okc,
+                'failed': len(_ai_stats) - _okc,
+                'provider_fast': _ai_provider(False),
+                'provider_quality': _ai_provider(True),
+                'quality_model': _ai_model_name(True),
+                'cloud_fallback': str(os.environ.get('AI_FALLBACK_CLOUD', '1')).strip() != '0',
+                'stages': _ai_stats,
+            })
+            print('[AI] 阶段耗时 %.0fs（成功 %d/%d）: %s' % (
+                _used, _okc, len(_ai_stats),
+                ' | '.join('%s %.0fs%s' % (x['stage'], x['sec'], '' if x.get('ok') else '✗') for x in _ai_stats)))
+        except Exception as _ae:
+            print('[AI] 写 ai_meta.json 失败: %s' % _ae, file=sys.stderr)
 
         # ── 追踪AI分析：深度分析推荐涨跌根因 + 提炼教训（数据量>=3条时）──
         try:

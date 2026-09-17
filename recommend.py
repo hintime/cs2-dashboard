@@ -180,19 +180,52 @@ def fetch_csqaq_batch_prices(hash_names):
     batch_size = 50
     batches = [hash_names[i:i+batch_size] for i in range(0, len(hash_names), batch_size)]
     total_batches = len(batches)
+    auth_fail = 0          # 401 次数（鉴权失败：token 失效，或服务端过载时误报）
+    other_fail = 0
     for bi, batch in enumerate(batches):
-        try:
-            _parse_response(
-                http_post_raw('https://api.csqaq.com/api/v1/goods/getPriceByMarketHashName',
-                              {'marketHashNameList': batch},
-                              headers={'ApiToken': CSQ_KEY}, timeout=30),
-                result)
-        except Exception as e:
-            print(f'  [CSQAQ] Batch {bi+1}/{total_batches} error: {e}', file=sys.stderr)
-        # 批次间延迟，避免触发限流
+        got = False
+        for retry in range(3):
+            try:
+                _parse_response(
+                    http_post_raw('https://api.csqaq.com/api/v1/goods/getPriceByMarketHashName',
+                                  {'marketHashNameList': batch},
+                                  headers={'ApiToken': CSQ_KEY}, timeout=30),
+                    result)
+                got = True
+                break
+            except urllib.error.HTTPError as e:
+                if e.code == 401:
+                    # 2026-09-17 事故：某次全量运行 96/96 批全 401（key 实测有效，属服务端临时故障），
+                    # 当时静默跳过 → 整条 Steam 基准价链为空。现在必须显式告警 + 退避重试。
+                    if retry < 2:
+                        wait = 5 * (retry + 1)
+                        print(f'  [CSQAQ] Batch {bi+1}/{total_batches} 401，{wait}s 后重试（{retry+1}/2）...')
+                        time.sleep(wait)
+                        continue
+                    auth_fail += 1
+                    print(f'  [CSQAQ] ✗ Batch {bi+1}/{total_batches} 401 鉴权失败'
+                          f'（token 失效或服务端限流）', file=sys.stderr)
+                    break
+                other_fail += 1
+                print(f'  [CSQAQ] Batch {bi+1}/{total_batches} HTTP {e.code}', file=sys.stderr)
+                break
+            except Exception as e:
+                other_fail += 1
+                print(f'  [CSQAQ] Batch {bi+1}/{total_batches} error: {e}', file=sys.stderr)
+                break
+        # 连续 401 且一条都没成功 → 提前中止，别把 96 批全打完（既浪费也加深限流）
+        if auth_fail >= 3 and len(result) == 0:
+            print(f'[CSQAQ] ⚠️ 连续 {auth_fail} 批 401 → 提前中止全量查价')
+            print('[CSQAQ] 本次不覆盖任何已有数据（旧值保留）；请检查 CSQ_API_TOKEN 或稍后重试',
+                  file=sys.stderr)
+            break
         if bi < total_batches - 1:
             time.sleep(0.5)
-    print(f'[CSQAQ] Batches: {len(result)}/{len(hash_names)} items ({total_batches} batches)')
+    print(f'[CSQAQ] Batches: {len(result)}/{len(hash_names)} items '
+          f'({total_batches} batches, 401={auth_fail}, other_fail={other_fail})')
+    if auth_fail and len(result) == 0:
+        print('[CSQAQ] ⚠️ 本次全量查价无任何数据（可能 token 失效 / 服务端故障 / IP 限流）',
+              file=sys.stderr)
     return result
 
 # ═══════════════ FETCH ECO FULL LIST ═══════════════
