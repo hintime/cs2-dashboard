@@ -1670,243 +1670,500 @@ def _get_reason_enhancements():
         print(f'[WARN] 构造推荐理由(旧路径)失败: {_e}', file=sys.stderr)
         return None
 
+# ═══════════════ AI 推荐（v6：原型选品 + 逐件独立生成 + 只用已验证口径）2026-09-17 ═══════════════
+# v5 已解决「三条雷同」：Python 按原型各选 1 件 + 每件单独一次 AI 调用 → 两两重合率 0.75→0.29。
+# v6 修口径错误：v5 里用「BUFF/悠悠 相对 ECO 的溢价」当论据，而 ECO 是**低位档参考价**，
+#   据此算出的溢价被系统性放大（+125%/+654%），属已知假指标 → 全部剔除。
+#   改用站点已验证的三个真信号：① Steam 独立市场偏离(n_dev_steam, 常态比1.45, ±25%) 
+#   ② 深度比(求购/在售) ③ 存世量/波动率/趋势；平台间只保留 BUFF↔悠悠 同源比价。
+#   并在 prompt 里明令：禁止用 ECO 计算任何溢价率。
+
+_REC_BANNED = ['价格波动', '投资需谨慎', '值得关注', '市场情绪', '合理区间', '波动风险', '潜力巨大', '市场波动']
+_REC_ARCH_ORDER = ['跨市场折价', '供需错配', '稀缺溢价']
+
+
+def _rec_f(v, d=0.0):
+    try:
+        f = float(v)
+        if f != f or f in (float('inf'), float('-inf')):
+            return d
+        return f
+    except Exception:
+        return d
+
+
+def _fmt_pct(v):
+    try:
+        f = float(v)
+    except Exception:
+        return '—'
+    if f != f:
+        return '—'
+    return '%+.1f%%' % f
+
+
+def _rec_levels(item):
+    """按该件自身数据推导确定性价位/仓位（保证各条建议不雷同）"""
+    price = _rec_f(item.get('price'))
+    buy = _rec_f(item.get('buff_buy'))
+    hist = [x for x in (item.get('eco_history') or []) if _rec_f(x) > 0]
+    if len(hist) < 3:
+        hist = [x for x in (item.get('multi_history') or []) if _rec_f(x) > 0]
+    lo = min(hist) if hist else 0.0
+    vol = 0.0
+    if len(hist) >= 4:
+        mu = sum(hist) / len(hist)
+        if mu > 0:
+            var = sum((x - mu) ** 2 for x in hist) / len(hist)
+            vol = (var ** 0.5) / mu * 100.0
+    zl = (buy * 1.02) if buy > 0 else (price * 0.97)
+    zh = price * 0.99
+    if price > 0 and zl >= zh:
+        zl, zh = price * 0.95, price * 0.99
+    tp = min(25.0, max(8.0, round(vol * 1.6, 1)))
+    sl = min(15.0, max(5.0, round(vol * 0.9, 1)))
+    bsell = _rec_f(item.get('buff_sell_num'))
+    bbuy = _rec_f(item.get('buff_buy_num'))
+    ratio = (bbuy / bsell) if bsell > 0 else 0.0
+    if price >= 3000 or ratio < 0.05:
+        pos = 5
+    elif ratio >= 0.30:
+        pos = 15
+    else:
+        pos = 10
+    return dict(price=price, buy=buy, lo=lo, vol=round(vol, 1), zl=round(zl), zh=round(zh),
+                tp=tp, sl=sl, pos=pos, ratio=round(ratio, 2))
+
+
+def _rec_signals(item, lv):
+    """该件独有的关键信号——只用站点已验证口径（不含 ECO 溢价这类假指标）"""
+    sigs = []
+    dev = item.get('n_dev_steam')
+    if isinstance(dev, (int, float)) and abs(dev) > 25:
+        sigs.append(('+' if dev > 0 else '-') + ('国内相对Steam偏离%+.0f%%' % dev))
+    if lv['ratio'] >= 0.30:
+        sigs.append('+求购旺盛·深度比%.2f' % lv['ratio'])
+    elif lv['ratio'] > 0:
+        sigs.append('=深度均衡·深度比%.2f' % lv['ratio'])
+    else:
+        sigs.append('-承接稀薄·深度比%.2f' % lv['ratio'])
+    if _rec_f(item.get('buff_buy_num')) <= 0:
+        sigs.append('-求购数据缺失')
+    sup = _rec_f(item.get('fp_total_supply'))
+    if sup > 0:
+        sigs.append(('+稀缺·存世%d' % int(sup)) if sup < 5000 else ('=存世%.1f万' % (sup / 10000)))
+    if lv['vol'] >= 6:
+        sigs.append('-波动大σ%.1f%%' % lv['vol'])
+    elif 0 < lv['vol'] <= 2.5:
+        sigs.append('=波动温和σ%.1f%%' % lv['vol'])
+    r7 = _rec_f(item.get('rate_7'))
+    r30 = _rec_f(item.get('rate_30'))
+    if r7 > 0 and r30 > 0:
+        sigs.append('+7日/30日双升')
+    elif r7 < 0 and r30 < 0:
+        sigs.append('-7日/30日双降')
+    b = _rec_f(item.get('buff_sell'))
+    y = _rec_f(item.get('yyyp_sell'))
+    if b > 0 and y > 0 and abs(b - y) / max(b, y) > 0.03:
+        sigs.append('=BUFF/悠悠价差%.0f元' % abs(b - y))
+    seen, out = set(), []
+    for s in sigs:
+        if s not in seen:
+            seen.add(s)
+            out.append(s)
+    return out[:4]
+
+
+def _rec_diff_score(picks):
+    """跨条目差异度：两两 2-gram 最大重合率（越小越好；>0.45 视为同构）"""
+    def grams(s):
+        s = ''.join(ch for ch in s if ch.strip())
+        return set(s[i:i + 2] for i in range(len(s) - 1))
+    gs = [grams(str((p.get('reason') or '') + (p.get('risk') or '') + (p.get('operation') or ''))) for p in picks]
+    worst = 0.0
+    for i in range(len(gs)):
+        for j in range(i + 1, len(gs)):
+            a, b = gs[i], gs[j]
+            if not a or not b:
+                continue
+            worst = max(worst, len(a & b) / len(a | b))
+    return round(worst, 3)
+
+
+def _rec_arch_scores(cands):
+    """三个原型的池内相对排名（0-1）。折价修复改用 Steam 偏离（已验证口径）"""
+    def ranks(vals):
+        n = len(vals)
+        order = sorted(range(n), key=lambda i: vals[i])
+        out = [0.0] * n
+        for pos, idx in enumerate(order):
+            out[idx] = (pos + 1) / n if n else 0.0
+        return out
+    disc, mism, scarc = [], [], []
+    for it in cands:
+        lv = _rec_levels(it)
+        dev = it.get('n_dev_steam')
+        d = max(0.0, float(dev)) if isinstance(dev, (int, float)) else 0.0
+        disc.append(d)
+        mism.append(lv['ratio'])
+        sup = _rec_f(it.get('fp_total_supply'))
+        scarc.append((1.0 / sup) if sup > 0 else 0.0)
+    return {'跨市场折价': ranks(disc), '供需错配': ranks(mism), '稀缺溢价': ranks(scarc)}
+
+
+def _rec_select_slots(cands):
+    """按原型各选 1 件（结构上保证三条不同）"""
+    if not cands:
+        return []
+    sc = _rec_arch_scores(cands)
+    chosen, used = [], set()
+    for arch in _REC_ARCH_ORDER:
+        arr = sc[arch]
+        # 「跨市场折价」必须以 Steam 价为前提，否则该原型不成立
+        basis = [i for i in range(len(cands)) if i not in used
+                 and (arch != _REC_ARCH_ORDER[0] or isinstance(cands[i].get('n_dev_steam'), (int, float)))]
+        if not basis:
+            basis = [i for i in range(len(cands)) if i not in used]
+        best_i, best_v = -1, -1.0
+        for i in basis:
+            v = arr[i] + _rec_f(cands[i].get('score')) / 1000.0
+            if v > best_v:
+                best_v, best_i = v, i
+        if best_i >= 0:
+            used.add(best_i)
+            it = cands[best_i]
+            lv = _rec_levels(it)
+            label = arch
+            if arch == _REC_ARCH_ORDER[0] and not isinstance(it.get('n_dev_steam'), (int, float)):
+                label = '相对低估'   # 无 Steam 价时不谈跨市场，改谈同源平台比价
+            chosen.append((label, it, lv, _rec_signals(it, lv)))
+    if len(chosen) < min(3, len(cands)):
+        for i in range(len(cands)):
+            if i in used:
+                continue
+            it = cands[i]
+            lv = _rec_levels(it)
+            chosen.append((_REC_ARCH_ORDER[0], it, lv, _rec_signals(it, lv)))
+            used.add(i)
+            if len(chosen) >= min(3, len(cands)):
+                break
+    return chosen
+
+
+def _rec_item_block(item, lv, sigs):
+    """单件数据块（喂给逐件生成；只用已验证口径）"""
+    eco = _rec_f(item.get('eco_price'))
+    buff = _rec_f(item.get('buff_sell'))
+    yyyp = _rec_f(item.get('yyyp_sell'))
+    steam = _rec_f(item.get('n_steam')) or _rec_f(item.get('steam_sell'))
+    sup = _rec_f(item.get('fp_total_supply'))
+    sup_txt = ('%.1f万' % (sup / 10000)) if sup >= 10000 else ('%d' % int(sup) if sup > 0 else '未知')
+    dev = item.get('n_dev_steam')
+    _has_dev = isinstance(dev, (int, float))
+    dev_txt = ('%+.0f%%' % dev) if _has_dev else '无 Steam 价 —— 本件不可用跨市场折价逻辑，禁止声称存在跨市场价差'
+    spread_txt = ('¥%.1f' % abs(buff - yyyp)) if (buff > 0 and yyyp > 0) else '—'
+    return (
+        '名称: %s\n品类: %s | 评级: %s | 现价: ¥%.0f (%s) | 综合评分: %.1f | 策略标签: %s\n'
+        'BUFF ¥%.1f → 悠悠 ¥%.1f（同源平台，价差 %s，仅作比价）| Steam 独立市场 %s\n'
+        'Steam 偏离度: %s（基准=Steam/BUFF 常态比 1.45；>+25%% 表示 Steam 异常贵、国内更划算；<-25%% 表示 Steam 异常便宜）\n'
+        '深度: 在售 ECO %d / BUFF %d / 悠悠 %d ; BUFF 求购 %d | 深度比(求购/在售) %.2f\n'
+        '存世: %s | 平台覆盖: %s\n'
+        '趋势: 1日%s 7日%s 30日%s 月%s | 历史波动σ=%.1f%%\n'
+        '引擎算好的参考价位: 入场 ¥%d–¥%d · 止盈 +%.1f%% · 止损 -%.1f%% · 建议仓位 %d%%\n'
+        '该件可用信号: %s\n引擎原判理由: %s\n'
+        '⚠ ECO 价 ¥%.1f 是低位参考档，不代表成交价，禁止用它计算任何溢价率。'
+        % (item.get('name', '?'),
+           item.get('fp_category') or item.get('category') or '—',
+           item.get('fp_rarity') or item.get('rarity') or '—',
+           lv['price'], (item.get('buff_source') or 'BUFF'),
+           _rec_f(item.get('score')), item.get('tag_label') or item.get('tag') or '—',
+           buff, yyyp, spread_txt, (('¥%.1f' % steam) if steam > 0 else '无数据'),
+           dev_txt,
+           int(_rec_f(item.get('eco_selling'))), int(_rec_f(item.get('buff_sell_num'))),
+           int(_rec_f(item.get('yyyp_sell_num'))), int(_rec_f(item.get('buff_buy_num'))), lv['ratio'],
+           sup_txt, item.get('fp_platform_count') or '—',
+           _fmt_pct(item.get('rate_1')), _fmt_pct(item.get('rate_7')),
+           _fmt_pct(item.get('rate_30')), _fmt_pct(item.get('fp_month_ratio')), lv['vol'],
+           lv['zl'], lv['zh'], lv['tp'], lv['sl'], lv['pos'],
+           ' '.join(sigs), _rec_clean_reason(item.get('_reason'))[:70], eco)
+    )
+
+
+def _rec_market_context(all_items):
+    """拼市场背景（新闻/洞察/扫描/价格区间）"""
+    parts = []
+    for fn, key, label in (('ai_news_impact.json', 'impact', '市场新闻'),
+                           ('ai_market_insight.json', 'insight', '市场洞察')):
+        try:
+            d = read_json(os.path.join(DATA_DIR, fn))
+            if d and d.get(key):
+                parts.append('%s: %s' % (label, str(d[key])[:150]))
+        except Exception:
+            pass
+    try:
+        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
+        if scan:
+            parts.append('全市场: %s件·均价¥%.0f·追踪%s件' % (
+                scan.get('total', '?'), _rec_f(scan.get('avg_p')), scan.get('tracked', '?')))
+            movers = scan.get('movers', {}) or {}
+            g = (movers.get('gainers') or [])[:3]
+            l = (movers.get('losers') or [])[:3]
+            if g:
+                parts.append('领涨: ' + ', '.join((x.get('n', '?')[:12] + '%+d%%' % _rec_f(x.get('r7'))) for x in g))
+            if l:
+                parts.append('领跌: ' + ', '.join((x.get('n', '?')[:12] + '%+d%%' % _rec_f(x.get('r7'))) for x in l))
+    except Exception:
+        pass
+    prices = [_rec_f(it.get('price')) for it in all_items[:50] if _rec_f(it.get('price')) > 0]
+    if prices:
+        parts.append('候选价格区间: ¥%.0f~¥%.0f·中位¥%.0f' % (
+            min(prices), max(prices), sorted(prices)[len(prices) // 2]))
+    return ('\n'.join(parts) + '\n') if parts else '（无外部市场信息，仅依据候选池数据判断）\n'
+
+
+def _rec_chat(prompt, model, system=None, temperature=0.85, timeout=120, max_tokens=2000):
+    """调用智谱 GLM（统一出口）"""
+    msgs = []
+    if system:
+        msgs.append({'role': 'system', 'content': system})
+    msgs.append({'role': 'user', 'content': prompt})
+    payload = json.dumps({
+        'model': model, 'messages': msgs,
+        'response_format': {'type': 'json_object'},
+        'max_tokens': max_tokens, 'temperature': temperature
+    }).encode('utf-8')
+    req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=payload, headers={
+        'Authorization': 'Bearer ' + ZHIPU_KEY, 'Content-Type': 'application/json'
+    })
+    resp = urllib.request.urlopen(req, timeout=timeout)
+    r = json.loads(resp.read().decode('utf-8'))
+    return r['choices'][0]['message']['content'].strip()
+
+
+def _rec_safe_parse(raw, want_key='picks'):
+    import re
+    try:
+        o = json.loads(raw)
+        if o.get(want_key) is not None:
+            return o
+    except Exception:
+        pass
+    m = re.search(r'```(?:json)?\s*([\s\S]*?)```', raw)
+    if m:
+        try:
+            o = json.loads(m.group(1))
+            if o.get(want_key) is not None:
+                return o
+        except Exception:
+            pass
+    m = re.search(r'\{[\s\S]*\}', raw)
+    if m:
+        try:
+            return json.loads(m.group())
+        except Exception:
+            pass
+    return None
+
+
+def _rec_fuzzy_price(name, cands):
+    """价格回填：模型常省略「(久经沙场)」等后缀 → 归一化前缀匹配"""
+    def norm(s):
+        s = str(s or '')
+        for ch in '（）()|｜·、,， ':
+            s = s.replace(ch, '')
+        return s.lower()
+    n = norm(name)
+    if not n:
+        return None
+    best, best_len = None, -1
+    for c in cands:
+        cn = norm(c.get('name'))
+        if not cn:
+            continue
+        if cn == n or cn.startswith(n) or n.startswith(cn):
+            if len(cn) > best_len:
+                best, best_len = c, len(cn)
+    return round(_rec_f(best.get('price'))) if best is not None else None
+
+
+def _rec_clean_reason(txt):
+    """清洗引擎原判里的假指标（ECO 口径溢价），避免回流进 prompt"""
+    import re as _re
+    txt = _re.sub(r'(?:BUFF|悠悠|ECO)?\s*溢价\s*[+-]?\d+(?:\.\d+)?%', '', str(txt or ''))
+    txt = _re.sub(r'[|｜]\s*(?=[|｜])', '', txt)
+    return txt.strip(' |｜')
+
+
+def _rec_fix_platform(item, lv):
+    """平台建议由数据确定性生成——模型经常把「更贵的平台」写成买入平台"""
+    b = _rec_f(item.get('buff_sell'))
+    y = _rec_f(item.get('yyyp_sell'))
+    buy = _rec_f(item.get('buff_buy'))
+    if b > 0 and y > 0:
+        if abs(b - y) < 1:
+            t = 'BUFF ¥%.0f 与 悠悠 ¥%.0f 基本同价，按手续费择低买入' % (b, y)
+        else:
+            if b < y:
+                t = '买入走 BUFF（¥%.0f，比悠悠低 ¥%.0f）· 卖出/挂单走 悠悠（¥%.0f）· 价差 ¥%.0f' % (b, y - b, y, y - b)
+            else:
+                t = '买入走 悠悠（¥%.0f，比BUFF低 ¥%.0f）· 卖出/挂单走 BUFF（¥%.0f）· 价差 ¥%.0f' % (y, b - y, b, b - y)
+        if buy > 0:
+            t += ' · BUFF 求购 ¥%.0f 可作安全垫' % buy
+        return t + '（同源平台，价差小属正常，勿当套利信号）'
+    if b > 0 or y > 0:
+        who, p = ('BUFF', b) if b > 0 else ('悠悠', y)
+        return '仅 %s 有报价 ¥%.0f，另一平台无挂单，暂不具备跨平台套利条件' % (who, p)
+    return '各平台均无有效报价，暂不建议参与'
+
+
+_REC_ANGLE = {
+    '相对低估': '围绕「该件在 BUFF↔悠悠 同源平台中报价相对更低、存在比价空间」来论证。本件无 Steam 价，禁止提 Steam 与跨市场。',
+    '跨市场折价': '围绕「国内平台价格相对 Steam 独立市场被结构性低估（看 Steam 偏离度），存在价差修复空间」来论证。',
+    '供需错配': '围绕「在售与求购结构失衡、卖压有承接」来论证（求购为 0 时必须如实说明缺少承接盘）。',
+    '稀缺溢价': '围绕「存世量/稀有度带来的稀缺溢价」来论证。'
+}
+
+
+def _rec_write_one(item, lv, sigs, archetype, model, market_ctx, others, extra=''):
+    """单件独立调用：只喂这一件 → 从机制上杜绝三条串成同一套模板"""
+    banned = '、'.join(_REC_BANNED)
+    prompt = (
+        '你是 CS2 饰品投资分析师。请只分析下面这 1 件标的，写出它自己的买入分析。\n\n'
+        '【这件标的数据】\n' + _rec_item_block(item, lv, sigs) + '\n\n'
+        '【本次指定的分析角度】' + archetype + '——' + _REC_ANGLE.get(archetype, '围绕该件最突出的数据特征来论证。') + '\n\n'
+        '【市场背景】\n' + market_ctx + '\n'
+        + (('【本次已写的其他标的（措辞与结论都不得与它们重复）】\n' + others + '\n') if others else '')
+        + (extra + '\n' if extra else '')
+        + '\n【硬性要求】\n'
+        '- 必须引用数据里的具体数字（在售/求购/深度比/Steam偏离/存世/波动σ/入场区间等），至少 3 处。\n'
+        '- 严禁出现这些空话词：' + banned + '。\n'
+        '- 严禁用 ECO 价算溢价率（它是低位参考档）。平台之间只可引用 BUFF↔悠悠 的实际价差。\n'
+        '- 若该件「Steam 独立市场」显示无数据，禁止声称跨市场价差、也禁止说「Steam 偏离为 0」；'
+        '请改用 BUFF↔悠悠 价差与买卖盘深度论证。\n'
+        '- risk 必须讲这件最致命的 2 个风险，各带数据，不得泛泛而谈。\n'
+        '- operation 必须引用「引擎算好的参考价位」的入场区间/止盈/止损/仓位，给出加仓与退出条件，持有周期 ≥7 天。\n'
+        '- trend_signals 优先直接采用「该件可用信号」，可再补 1 条。\n'
+        '- 语气像实战顾问，句子自然，不要罗列标签词。\n\n'
+        '【输出 JSON，仅这 7 个字段】\n'
+        '{"reason":"100-150字买入理由","risk":"80-120字风险评估","operation":"80-120字操作计划",'
+        '"price_zone":"30-50字入手区间与依据","sentiment":"1-2词(强烈看多/看多/中性偏多/中性/中性偏空/看空/强烈看空)",'
+        '"trend_signals":["","",""],"platform_advice":"20-40字平台买卖建议(含价差金额)"}'
+    )
+    raw = _rec_chat(prompt, model,
+                    '你是CS2饰品投资分析师。只返回JSON。严格基于输入数据，禁止编造数字，禁止套用固定句式。', 0.85)
+    return _rec_safe_parse(raw, want_key='reason')
+
+
 def generate_ai_recommendations():
-    """AI 购买推荐分析 — 综合评分+多维度数据，给出最优购买建议"""
-    if not ZHIPU_KEY: return
+    """AI 购买推荐分析 v6 — 原型选品 + 逐件独立生成 + 只用已验证口径 + 空话重写"""
+    if not ZHIPU_KEY:
+        return
     try:
         market = read_json(os.path.join(DATA_DIR, 'market.json'))
-        recs = market.get('recommendations', {})
-        all_items = recs.get('all', [])
+        all_items = (market.get('recommendations', {}) or {}).get('all', [])
         if not all_items:
             print('[AI] No recommendations to analyze')
             return
-        # 取 Top 20 条给 AI 分析
-        candidates = all_items[:20]
-        lines = []
-        for i, item in enumerate(candidates):
-            name = item.get('name', '?')
-            price = item.get('price', 0)
-            score = item.get('score', 0)
-            tag = item.get('tag_label', item.get('tag', ''))
-            reason = item.get('_reason', '')[:80]
-            eco_price = item.get('eco_price', 0)
-            buff_sell = item.get('buff_sell', 0)
-            yyyp_sell = item.get('yyyp_sell', 0)
-            eco_sell = item.get('eco_selling', 0)
-            buff_sell_num = item.get('buff_sell_num', 0)
-            buff_buy_num = item.get('buff_buy_num', 0)
-            yyyp_sell_num = item.get('yyyp_sell_num', 0)
-            # 溢价率
-            premium = ''
-            if eco_price > 0 and buff_sell > 0:
-                prem = (buff_sell - eco_price) / eco_price * 100
-                if abs(prem) > 3:
-                    premium = f'BUFF溢价{prem:+.0f}%'
-            if eco_price > 0 and yyyp_sell > 0:
-                yprem = (yyyp_sell - eco_price) / eco_price * 100
-                if abs(yprem) > 3:
-                    premium += f' 悠悠溢价{yprem:+.0f}%'
-            # 短期趋势（从历史价格推算）
-            trend_7d = ''
-            eh = item.get('eco_history', [])
-            if len(eh) >= 2 and eh[-2] > 0:
-                chg7 = (eh[-1] - eh[-2]) / eh[-2] * 100
-                if abs(chg7) > 1:
-                    trend_7d = f'7日{"+" if chg7>0 else ""}{chg7:.0f}%'
-            mh = item.get('multi_history', [])
-            if len(mh) >= 2 and mh[-2] > 0 and not trend_7d:
-                chg7 = (mh[-1] - mh[-2]) / mh[-2] * 100
-                if abs(chg7) > 1:
-                    trend_7d = f'7日{"+" if chg7>0 else ""}{chg7:.0f}%'
-            # 平台价差（用于跨平台套利建议）
-            spread = ''
-            if buff_sell > 0 and yyyp_sell > 0:
-                sp = abs(buff_sell - yyyp_sell)
-                if sp > 0:
-                    cheaper = 'BUFF' if buff_sell < yyyp_sell else '悠悠'
-                    spread = f'平台价差{sp:.0f}元({cheaper}更便宜)'
-            lines.append(
-                f'#{i+1} {name} | ¥{price:.0f} | 评分{score:.1f} | 策略:{tag} | '
-                f'ECO在售{eco_sell}/BUFF在售{buff_sell_num}/悠悠在售{yyyp_sell_num} | '
-                f'BUFF求购{buff_buy_num} | {premium} | {trend_7d} | {spread} | {reason}'
-            )
-        candidates_text = '\n'.join(lines)
-        # 读取多维市场上下文
-        context_parts = []
-        # 新闻+洞察
-        news = read_json(os.path.join(DATA_DIR, 'ai_news_impact.json'))
-        insight = read_json(os.path.join(DATA_DIR, 'ai_market_insight.json'))
-        if news and news.get('impact'):
-            context_parts.append(f'市场新闻: {news["impact"][:150]}')
-        if insight and insight.get('insight'):
-            context_parts.append(f'市场洞察: {insight["insight"][:200]}')
-        # 全市场扫描数据
-        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
-        if scan:
-            context_parts.append(f'全市场概况: {scan.get("total","?")}件标的·均价¥{scan.get("avg_p",0):.0f}·追踪{scan.get("tracked","?")}件')
-            movers = scan.get('movers', {})
-            gainers = movers.get('gainers', [])[:3]
-            losers = movers.get('losers', [])[:3]
-            if gainers:
-                context_parts.append(f'领涨: {", ".join(g.get("n","?")[:12]+"+"+str(g.get("r7",0))+"%" for g in gainers[:3])}')
-            if losers:
-                context_parts.append(f'领跌: {", ".join(l.get("n","?")[:12]+str(l.get("r7",0))+"%" for l in losers[:3])}')
-        # 价格分布区间
-        prices = [it.get('price', 0) for it in all_items[:50] if it.get('price', 0) > 0]
-        if prices:
-            context_parts.append(f'候选价格区间: ¥{min(prices):.0f}~¥{max(prices):.0f}·中位¥{sorted(prices)[len(prices)//2]:.0f}')
-        
-        context = '\n'.join(f'【{p}】' if i == 0 else p for i, p in enumerate(context_parts)) + '\n' if context_parts else ''
-        
-        prompt = (
-            f'你是CS2饰品投资分析师，拥有深度推理能力。请按以下步骤系统分析：\n\n'
-            f'第一步：解读市场环境。{context}\n'
-            f'第二步：逐件评估候选。共{len(candidates)}件：\n{candidates_text}\n'
-            f'{_get_tracking_feedback()}\n'
-            f'第三步：交叉比对，选出最优3-5个买入目标。\n\n'
-            f'【数据验证铁律——理由必须基于输入数据，严禁编造】\n'
-            f'- 供需判断: 在售量>求购量→供大于求(买方市场)；在售量<求购量→供不应求(卖方市场)\n'
-            f'- 如果求购=0，写「求购数据缺失·仅参考在售」不能写供<求\n'
-            f'- 流动性: 在售<100→优良; 100-500→一般; >500→充裕但竞争大; >1000→需要价格优势\n'
-            f'- 溢价率: 用候选数据中的具体数字，不要自己编\n'
-            f'- T+7锁定期: 变现周期=7天缓冲+上述销售时间，不能写「1天变现」\n'
-            f'- 操作建议: 目标价/止损价必须基于当前价的合理百分比，不要写脱离数据的数字\n'
-            f'- ⚠️ 持有周期硬性规则: T+7锁定期意味着最短持有7天！任何「持有X天」的X必须≥7，禁止「持有3-5天」「持有3-7天」等\n\n'
-            f'要求: 每选一个都要说明【为什么选它而不是排名相邻的】，指出最大优势和最大隐患。\n\n'
-            f'【输出JSON——6个字段各司其职】\n{{'
-            f'"reasoning":"你的完整推理过程(100-150字,分析步骤+选择逻辑+交叉比对)",'
-            f'"picks":[{{"rank":1,"name":"饰品名",'
-            f'"reason":"买入理由(100-150字)","risk":"风险评估(80-120字)","operation":"操作计划(80-120字)",'
-            f'"price_zone":"推荐入手区间","sentiment":"综合研判","trend_signals":["信号1","信号2","信号3"],"platform_advice":"最佳买卖平台"'
-            f'}}],'
-            f'"strategy":"整体策略建议(50-80字)","summary":"总结(50-80字)","self_critique":"自我批判(50字,风险盲区)"'
-            f'}}\n\n'
-            f'字段职责详解(每个字段独立写，内容不重复):\n'
-            f'【reason=买入理由 100-150字】\n'
-            f'- 评分位次+策略标签+与邻位的对比优势\n'
-            f'- 供需判断(在售XX/求购XX→供<求或供>求，明确买卖方市场)\n'
-            f'- 平台溢价情况(BUFF溢价X%·悠悠溢价X%)\n'
-            f'- 流动性评级+变现周期(T+7锁定+销售天)\n'
-            f'格式: 用逗号分隔，自然流畅\n\n'
-            f'【risk=风险评估 80-120字】\n'
-            f'- 2-3个具体风险点，每个引用数据支撑\n'
-            f'- 格式: 「最大优势是...，最大隐患是...」\n\n'
-            f'【operation=操作计划 80-120字】\n'
-            f'- 挂单价/分批策略/仓位%/止盈目标(+X%)/止损(-X%)/持有周期/退出条件\n'
-            f'⚠️ 持有周期硬约束: CS2所有饰品买入后T+7锁定不可交易，持有周期最少7天，禁止写「3-5天」「3-7天」等<7天的周期\n\n'
-            f'【price_zone=推荐入手价格区间 30-50字】\n'
-            f'- 格式: 「保守区间¥XX-¥XX·依据: 距求购价X%安全垫·距近期低点X%」\n'
-            f'- 区间下沿=求购价上浮2-5%，上沿=当前价下浮0-3%\n\n'
-            f'【sentiment=综合研判 1-2个词】\n'
-            f'- 选项: 强烈看多/看多/中性偏多/中性/中性偏空/看空/强烈看空\n'
-            f'- 综合供需、溢价、趋势、流动性判断\n\n'
-            f'【trend_signals=关键信号 数组3件】\n'
-            f'- 每个信号格式: 「+信号描述」(正面)「-信号描述」(负面)「=信号描述」(中性)\n'
-            f'- 从数据中提取: 如「+7日涨8%」「-溢价超10%」「=流动性优良」\n\n'
-            f'【platform_advice=平台套利建议 20-40字】\n'
-            f'- 格式: 「买:BUFF/悠悠(因为价更低)·卖:BUFF/悠悠(因为价更高)·价差X元」\n'
-            f'- 基于候选数据中BUFF售/悠悠售的实际价格\n\n'
-            f'禁区: 价格波动/关注市场/科隆/溢价合理/性能/稳定/新手/玩家/高手/适合新生/稀缺求\n'
-            f'市场规则: CS2饰品买入后T+7锁定(7天不可交易)·BUFF/悠悠有品手续费1-5%·考虑锁定期后的价格风险'
-        )
-        data = json.dumps({
-            'model': 'glm-4-flash',
-            'messages': [
-                {'role': 'system', 'content': '你是CS2饰品投资分析师。只返回JSON。必须严格基于输入数据推理，禁止编造任何数字或判断。供需关系必须由在售数和求购数的大小决定。'},
-                {'role': 'user', 'content': prompt}
-            ],
-            'response_format': {'type': 'json_object'},
-            'max_tokens': 8000, 'temperature': 0.3
-        }).encode('utf-8')
-        req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=data, headers={
-            'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
-        })
-        resp = urllib.request.urlopen(req, timeout=90)
-        r = json.loads(resp.read().decode('utf-8'))
-        content = r['choices'][0]['message']['content'].strip()
-        print(f'[AI] Recommendations → output={len(content)}chars')
-        
-        # ── 鲁棒 JSON 解析 ──
-        def safe_parse_json(raw):
-            """多策略解析 AI 返回的 JSON，防止格式异常"""
-            # 策略1: 直接解析
+        cands = all_items[:12]
+        model = os.environ.get('AI_REC_MODEL', 'glm-4-flash')
+        market_ctx = _rec_market_context(all_items)
+
+        slots = _rec_select_slots(cands)
+        if not slots:
+            print('[AI] No slots selected')
+            return
+        print('[AI] 原型选品: ' + ' | '.join('%s→%s' % (a, it.get('name', '?')) for a, it, _, _ in slots))
+
+        plist, others_txt = [], ''
+        for idx, (arch, item, lv, sigs) in enumerate(slots):
+            one = None
             try:
-                result = json.loads(raw)
-                if result.get('picks'): return result
-            except: pass
-            # 策略2: 去除 markdown 代码块
-            import re
-            m = re.search(r'```(?:json)?\s*([\s\S]*?)```', raw)
-            if m:
+                one = _rec_write_one(item, lv, sigs, arch, model, market_ctx, others_txt)
+            except Exception as _e:
+                print('[AI] 第%d件生成失败: %s' % (idx + 1, _e))
+            if not one or not one.get('reason'):
+                one = {
+                    'reason': '该件由引擎按%s原型选出：评分%.1f，在售%d件、求购%d，入场参考¥%d–¥%d。'
+                              % (arch, _rec_f(item.get('score')), int(_rec_f(item.get('buff_sell_num'))),
+                                 int(_rec_f(item.get('buff_buy_num'))), lv['zl'], lv['zh']),
+                    'risk': '规则化推荐缺少模型二次校验，须按纪律执行止损 -%.1f%%。' % lv['sl'],
+                    'operation': '入场¥%d–¥%d 分批建仓，止盈 +%.1f%%，止损 -%.1f%%，仓位 %d%%，持有≥7天。'
+                                 % (lv['zl'], lv['zh'], lv['tp'], lv['sl'], lv['pos']),
+                    'price_zone': '参考区间 ¥%d–¥%d（引擎计算）' % (lv['zl'], lv['zh']),
+                    'sentiment': '中性偏多', 'trend_signals': sigs,
+                    'platform_advice': _rec_fix_platform(item, lv)
+                }
+            blob = str(one.get('risk', '')) + str(one.get('reason', ''))
+            hits = [w for w in _REC_BANNED if w in blob]
+            if hits:
                 try:
-                    result = json.loads(m.group(1))
-                    if result.get('picks'): return result
-                except: pass
-            # 策略3: 尝试找 JSON 对象
-            m = re.search(r'\{[\s\S]*"picks"[\s\S]*\}', raw)
-            if m:
-                try:
-                    result = json.loads(m.group())
-                    if result.get('picks'): return result
-                except: pass
-            return None
-        
-        parsed = safe_parse_json(content)
-        if not parsed or not parsed.get('picks'):
-            # 重试：简化 prompt 兜底
-            print('[AI] JSON parse failed, retrying with simplified prompt...')
-            retry_data = json.dumps({
-                'model': 'glm-4-flash',
-                'messages': [
-                    {'role': 'system', 'content': '你是CS2投资分析师。只输出JSON对象。字段: reason=买入理由, risk=风险评估, operation=操作计划, price_zone=入手区间, sentiment=综合研判, trend_signals=[3个信号], platform_advice=平台建议。格式: {"picks":[{"rank":1,"name":"","reason":"","risk":"","operation":"","price_zone":"","sentiment":"","trend_signals":[],"platform_advice":""}],"strategy":"","summary":""}'},
-                    {'role': 'user', 'content': f'从以下候选中选3个最优买入:\n{candidates_text[:2000]}\n记住:只输出JSON。'}
-                ],
-                'response_format': {'type': 'json_object'},
-                'max_tokens': 8000, 'temperature': 0.3
-            }).encode('utf-8')
-            retry_req = urllib.request.Request('https://open.bigmodel.cn/api/paas/v4/chat/completions', data=retry_data, headers={
-                'Authorization': f'Bearer {ZHIPU_KEY}', 'Content-Type': 'application/json'
-            })
-            retry_resp = urllib.request.urlopen(retry_req, timeout=45)
-            retry_r = json.loads(retry_resp.read().decode('utf-8'))
-            retry_content = retry_r['choices'][0]['message']['content'].strip()
-            parsed = safe_parse_json(retry_content)
-        
-        if not parsed or not parsed.get('picks'):
-            # 最终兜底：按评分取 Top3
-            print('[AI] All parsing failed, using score-based fallback')
-            top3 = sorted(candidates, key=lambda x: x.get('score', 0), reverse=True)[:3]
-            picks = {
-                'picks': [{'rank': i+1, 'name': c.get('name',''), 'reason': f'综合评分{c.get("score",0):.1f}，多平台信号',
-                           'risk': '数据驱动推荐，已验证'} for i, c in enumerate(top3)],
-                'strategy': '按评分优选，关注流动性',
-                'summary': f'从{len(candidates)}候选智能筛选',
-            }
-        else:
-            picks = parsed
-        picks['date'] = time.strftime('%Y-%m-%d %H:%M')
-        picks['total_candidates'] = len(candidates)
-        # 注入 price（从候选数据匹配），供前端价格评估面板使用
-        for p in picks.get('picks', []):
-            if not p.get('price'):
-                for c in candidates:
-                    if c.get('name', '') == p.get('name', ''):
-                        p['price'] = round(c.get('price', 0))
-                        break
-        # 注入当前评分权重（来自追踪教训）
+                    fix = _rec_write_one(item, lv, sigs, arch, model, market_ctx, others_txt,
+                                         extra='注意：上一次输出出现了被禁用的空话词（' + '、'.join(hits) + '），本次务必改写成带具体数据的表述。')
+                    if fix and fix.get('reason'):
+                        one = fix
+                        print('[AI] 第%d件命中空话词 %s → 已重写' % (idx + 1, '、'.join(hits)))
+                except Exception as _e:
+                    print('[AI] 第%d件重写失败: %s' % (idx + 1, _e))
+            one['rank'] = idx + 1
+            one['name'] = item.get('name', '')
+            one['archetype'] = arch
+            _fixed = _rec_fix_platform(item, lv)
+            if str(one.get('platform_advice') or '').strip() != _fixed:
+                one['platform_advice'] = _fixed   # 平台买卖方向由数据决定，避免模型写反
+            ts = one.get('trend_signals')
+            if not isinstance(ts, list) or len(ts) < 2:
+                one['trend_signals'] = sigs
+            else:
+                one['trend_signals'] = [str(s) for s in ts if str(s).strip()][:4]
+            pr = one.get('price') or _rec_fuzzy_price(one['name'], cands)
+            if pr:
+                one['price'] = pr
+            plist.append(one)
+            others_txt += ('- %s（角度:%s）风险要点: %s\n' % (one['name'], arch, str(one.get('risk', ''))[:60]))
+
+        head = {'reasoning': '', 'strategy': '', 'summary': '', 'self_critique': ''}
+        try:
+            hp_body = ('下面是你刚为今日选出的 %d 件标的（角度: %s）：\n%s\n\n市场背景：\n%s\n'
+                       '请输出整体结论 JSON：{"reasoning":"120-160字：市场判断 + 为什么是这3件 + 为什么不是第4名",'
+                       '"strategy":"50-80字整体策略","summary":"50-80字总结","self_critique":"50字：本次判断最可能错在哪"}\n'
+                       '禁止出现这些空话词：' + '、'.join(_REC_BANNED))
+            hp = hp_body % (len(plist), '/'.join(p.get('archetype', '') for p in plist),
+                            '\n'.join('- %s(%s): %s' % (p['name'], p.get('archetype', ''), str(p.get('reason', ''))[:60]) for p in plist),
+                            market_ctx)
+            raw = _rec_chat(hp, model, '你是CS2饰品投资分析师。只返回JSON对象。', 0.7, 90, 1200)
+            got = _rec_safe_parse(raw, want_key='reasoning') or {}
+            for k in head:
+                if got.get(k):
+                    head[k] = str(got[k])
+        except Exception as _e:
+            print('[AI] 整体结论生成失败（用兜底）: %s' % _e)
+        if not head['strategy']:
+            head['strategy'] = '按「%s」三条主线分散配置，单件仓位不超过 15%%，锁定 7 天后按止盈止损执行。' % (
+                '/'.join(p.get('archetype', '') for p in plist))
+        if not head['summary']:
+            head['summary'] = '本次从 %d 件候选中按跨市场折价/供需错配/稀缺溢价三条主线各选 1 件。' % len(cands)
+        if not head['self_critique']:
+            head['self_critique'] = '若大盘整体转弱，三条逻辑可能同时失效；求购数据缺失的标的判断最不牢靠。'
+
+        out = {'picks': plist, 'date': time.strftime('%Y-%m-%d %H:%M'), 'total_candidates': len(cands)}
+        out.update(head)
+        ds = _rec_diff_score(plist) if len(plist) > 1 else None
+        if ds is not None:
+            banned_hits = sum(1 for p in plist for w in _REC_BANNED
+                              if w in (str(p.get('risk', '')) + str(p.get('reason', '')) + str(p.get('operation', ''))))
+            out['quality'] = {'max_pairwise_overlap': ds, 'template_risk': ds > 0.45,
+                              'model': model, 'picks': len(plist), 'banned_hits': banned_hits}
+            print('[AI] 差异化校验：最大两两重合率 %.2f%s，空话词残留 %d' % (ds, '（偏高）' if ds > 0.45 else '（通过）', banned_hits))
         try:
             eco_m, buff_m = _get_scoring_weights_from_lessons()
             if eco_m != 1.0 or buff_m != 1.0:
-                picks['scoring_weights'] = {
-                    'eco': round((eco_m - 1) * 100),
-                    'buff': round((buff_m - 1) * 100)
-                }
+                out['scoring_weights'] = {'eco': round((eco_m - 1) * 100), 'buff': round((buff_m - 1) * 100)}
         except Exception as _e:
-            print(f'[WARN] 写 AI 推荐前处理失败: {_e}', file=sys.stderr)
-        write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), picks)
-        print(f'[AI] Recommendations: {len(picks.get("picks",[]))} picks generated')
+            print('[WARN] 写 AI 推荐前处理失败: %s' % _e, file=sys.stderr)
+        write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), out)
+        print('[AI] Recommendations: %d picks generated (v6)' % len(plist))
     except Exception as e:
-        print(f'[AI] Recommendations failed: {e}')
+        print('[AI] Recommendations failed: %s' % e)
 
 # ═══════════════ PUSH (single atomic commit) ═══════════════
 def sync_changelog():
