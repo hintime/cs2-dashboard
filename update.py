@@ -3678,7 +3678,9 @@ def main():
                     written = price_db.record_batch(records)
                     print(f'[PRICE_HIST] SQLite: {written} records for {recorded}/{len(tracked)} items')
                     # 定期修剪旧数据（保留90天）
-                    price_db.trim_old_data(90)
+                    # 保留期：默认从 90 天放宽到 365 天 —— 更长历史是后续微调 Kronos 的前提
+                    # （实测每个标的只有约 51 根日线，不足以支撑时序基础模型的领域自适应）
+                    price_db.trim_old_data(int(os.environ.get('PRICE_HIST_KEEP_DAYS') or '365'))
                     # Inject price history from SQLite into rec items
                     for r in recs.get('all', []):
                         hn = r.get('hash_name', '')
