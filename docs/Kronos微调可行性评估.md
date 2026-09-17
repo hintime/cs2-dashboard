@@ -48,8 +48,20 @@
 - **决策（义轩拍板：每 3-6 小时落价）**：新增独立 `history` 模式 ——
   - `update.py history`：重新批量抓 ECO 现价（fetch_eco_prices，约 4791 件/53 批并发，10-30s）→
     落 `price_history.db`(eco 通道) → trim_old_data(365)。**不动 prices 周期、不写 market.json、不 push**。
-  - `updater_daemon.py`：新增 `HISTORY_INTERVAL = 4h` 调度 + `--once history` + 状态显示。
+  - `updater_daemon.py`：新增 `HISTORY_INTERVAL` 调度（**默认 3h，可用环境变量 HISTORY_INTERVAL(秒) 压到 1h/2h**）+ `--once history` + 状态显示。
   - 注意：ECO 仅约 **500 件**有活跃在售价（其余无在售挂单），故微调对象实质是这 ~500 件可交易标的。
+
+### 加速积累（2026-09-18 晚）
+- **覆盖从 500 件 → ~5000+ 件**：`history` 模式在抓完 ECO 后，额外从 `eco_tracked.json` 缓存的
+  `buff_sell`/`yyyp_sell` 落 **buff/yy 通道**（零额外 API 成本）。实测单跑落库 **9973 条**
+  （eco 500 / buff 4745 / yy 4728）。buff/yy 是 CN 主交易场，流动性更好，更适合做域适应训练样本。
+- **数据库迁 E 盘**：原 `C:\Users\Lenovo\cs2-runner-local\price_history.db`（362MB+，只增不减）迁到
+  `E:\cs2-data\price_history.db`（sqlite 在线 backup，行数一致校验 1606941=1606941）。
+  `price_db.py` / `kronos_forecast.py` / `kronos_data_readiness.py` 的 DB 路径改为
+  **环境变量 `PRICE_HIST_DB` 可覆盖、默认 E 盘**；`updater_daemon.py` 仓库探测仍靠脚本完整度命中主仓库
+  （库已不在仓库目录，但 cs2-runner-local 凭全脚本仍胜出）。
+- 现节奏：buff/yy ~5000 件每 ~4h（history 4h + all/market 6h 叠加）落点 → 约 **85 天**到 512 点/标；
+  eco ~500 件每 4h → 约 **4 个月**到 512 点/标。届时即可进微调阶段。
 
 ### 触发微调的硬指标（届时用 eval_forecast.py 验证）
 - 每标点数 >= **512**（填满一个 Kronos 上下文窗口，越多越好）

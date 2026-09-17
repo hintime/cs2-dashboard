@@ -25,7 +25,9 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 
 KRONOS = os.environ.get('KRONOS_HOME') or r'C:\Users\Lenovo\cs2-kronos'
 REPO = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(REPO, 'price_history.db')
+# 价格历史库已迁 E 盘（与 price_db.py 保持一致）：默认 E:\cs2-data\price_history.db，
+# 可用 PRICE_HIST_DB 覆盖。
+DB = os.environ.get('PRICE_HIST_DB') or os.path.join(r'E:\cs2-data', 'price_history.db')
 
 sys.path.insert(0, KRONOS)
 os.chdir(KRONOS)

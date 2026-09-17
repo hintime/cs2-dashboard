@@ -7,7 +7,12 @@
 """
 import sqlite3, json, os, time, sys
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'price_history.db')
+# 价格历史库默认迁到 E 盘（C 盘空间紧张；362MB+ 且只增不减）。
+# 可用环境变量 PRICE_HIST_DB 覆盖（如仍想留在仓库内则设回仓库路径）。
+# 2026-09-18 迁移：原 C:\Users\Lenovo\cs2-runner-local\price_history.db
+#   → E:\cs2-data\price_history.db（sqlite 在线 backup，行数一致校验通过）。
+DB_PATH = os.environ.get('PRICE_HIST_DB') or os.path.join(r'E:\cs2-data', 'price_history.db')
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 def _now():
     return time.strftime('%Y-%m-%dT%H:%M', time.gmtime())

@@ -319,7 +319,7 @@ if not os.path.exists(PYTHON):
 PRICES_INTERVAL = 30 * 60      # 30 分钟：价格线（SKIP_AI=1，不调大模型）
 ALL_INTERVAL = 6 * 60 * 60     # 6 小时：全量 + AI 深度分析
 INDEX_INTERVAL = 2 * 60 * 60   # 2 小时：行情指数（原 update-index.yml，只改 index 两节）
-HISTORY_INTERVAL = 4 * 60 * 60  # 4 小时：独立价格历史记录（供 Kronos 微调积累长序列，不动 prices 周期）
+HISTORY_INTERVAL = int(os.environ.get('HISTORY_INTERVAL') or 3 * 60 * 60)  # 默认 3h；可用环境变量 HISTORY_INTERVAL(秒) 压到 1h/2h 加速积累（不动 prices 周期）
 
 # CREATE_NO_WINDOW 已上移到模块前部（见 _TOKEN_SRC 附近），此处不再重复定义。
 

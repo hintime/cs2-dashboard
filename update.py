@@ -3243,17 +3243,19 @@ def main():
     print(f'=== CS2 Dashboard Update ({mode}) ===')
 
     # ── 独立价格历史记录器（history 模式）──
-    # 供后续 Kronos 微调积累长序列（目标每标的 >=1000 点，覆盖 512 步上下文）。
-    # 设计：只重新抓 ECO 现价 + 落 SQLite，**不动 prices 周期**、不写 market.json、不 push。
-    # 频率由 updater_daemon.py 的 HISTORY_INTERVAL 控制（默认 4 小时）。
-    # 关键：落库节奏是微调数据量的唯一瓶颈（实测每标的仅 ~118 点，按每日 1 次需 672 天才到 1000）。
+    # 供后续 Kronos 微调积累长序列（目标每标的 >=512 点，填满 512 步上下文）。
+    # 设计：重新抓 ECO 现价落 eco 通道 + 从 eco_tracked.json 缓存落 buff/yy 通道，
+    #       **不动 prices 周期**、不写 market.json、不 push。
+    # 频率由 updater_daemon.py 的 HISTORY_INTERVAL 控制（默认 3 小时，可用环境变量压到 1h/2h）。
+    # 覆盖：eco 仅 ~500 件活跃在售；buff/yy 借 eco_tracked.json 缓存覆盖 5000+ 件（零额外 API 成本）。
     if mode == 'history':
         try:
             import price_db
             _seed_db_if_needed(price_db)
-            # 追踪标的：优先 eco_tracked.json，回退 market.json 推荐
-            hn_list = []
+            now = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
+            # 1) 重新抓 ECO 现价（活跃在售 ~500 件）→ eco 通道
             tp = os.path.join(DATA_DIR, 'eco_tracked.json')
+            hn_list = []
             if os.path.exists(tp):
                 for it in (read_json(tp) or []):
                     hn = it.get('HashName', '') or ''
@@ -3267,16 +3269,31 @@ def main():
                         if hn:
                             hn_list.append(hn)
             hn_list = list(dict.fromkeys(hn_list))
-            if not hn_list:
-                print('[HISTORY] 无追踪标的，跳过'); return
-            print(f'[HISTORY] 重新抓取 {len(hn_list)} 件 ECO 现价...')
-            prices = fetch_eco_prices(hn_list)
-            now = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
-            records = [(hn, 'eco', now, p) for hn, p in prices.items() if p > 0]
-            written = price_db.record_batch(records)
+            records = []
+            if hn_list:
+                print(f'[HISTORY] 重新抓取 {len(hn_list)} 件 ECO 现价...')
+                prices = fetch_eco_prices(hn_list)
+                for hn, p in prices.items():
+                    if p > 0:
+                        records.append((hn, 'eco', now, p))
+            eco_n = len(records)
+            # 2) 从 eco_tracked.json 缓存落 buff/yy（覆盖 5000+ 件，零额外 API 成本）
+            buff_n = yy_n = 0
+            if os.path.exists(tp):
+                for it in (read_json(tp) or []):
+                    hn = it.get('HashName', '') or ''
+                    if not hn:
+                        continue
+                    bp = float(it.get('buff_sell', 0) or 0)
+                    if bp > 0:
+                        records.append((hn, 'buff', now, bp)); buff_n += 1
+                    yp = float(it.get('yyyp_sell', 0) or 0)
+                    if yp > 0:
+                        records.append((hn, 'yy', now, yp)); yy_n += 1
+            written = price_db.record_batch(records) if records else 0
             keep = int(os.environ.get('PRICE_HIST_KEEP_DAYS') or '365')
             price_db.trim_old_data(keep)
-            print(f'[HISTORY] 落库 {written} 条（{len(records)} 件有价），保留 {keep} 天')
+            print(f'[HISTORY] 落库 {written} 条（eco {eco_n} / buff {buff_n} / yy {yy_n}），保留 {keep} 天')
         except Exception as e:
             print(f'[HISTORY] 失败: {e}', file=sys.stderr)
         return
