@@ -1333,21 +1333,32 @@ def fetch_steamdt_prices(hash_names, verbose=True):
                 time.sleep(65.0)  # 遵守1次/分钟限制（加5秒缓冲）
             body = _json.dumps({'marketHashNames': batch}).encode('utf-8')
             try:
-                resp = http_post_raw(
-                    'https://open.steamdt.com/open/cs2/v1/price/batch',
-                    body,
-                    headers={'Authorization': f'Bearer {STEAM_KEY}', 'Content-Type': 'application/json'},
-                    timeout=30,
-                )
-                result = _json.loads(resp)
+                result = None
+                # ⚠ 2026-09-18（依官方文档 6369437）：批量接口限「每分钟 1 次」，
+                #   撞限流 errorCode=4005 时原来只打印一次 → 整个池子拿不到买盘。
+                #   改为等 60s 重试（最多 3 次），把限流当"稍后再来"而不是"放弃"。
+                for _attempt in range(3):
+                    try:
+                        resp = http_post_raw(
+                            'https://open.steamdt.com/open/cs2/v1/price/batch',
+                            body,
+                            headers={'Authorization': f'Bearer {STEAM_KEY}', 'Content-Type': 'application/json'},
+                            timeout=30,
+                        )
+                        result = _json.loads(resp)
+                    except Exception as _be:
+                        result = None
+                        if verbose:
+                            print('[SteamDT] batch %d 请求异常: %s' % (batch_idx + 1, str(_be)[:100]), file=sys.stderr)
+                    if result and result.get('success'):
+                        break
+                    if verbose or _attempt == 0:
+                        print('[SteamDT] batch %d 失败 errorCode=%s msg=%s → 等 60s 重试 (%d/3)'
+                              % (batch_idx + 1, (result or {}).get('errorCode'),
+                                 (result or {}).get('errorMsg'), _attempt + 1), file=sys.stderr)
+                    time.sleep(60.0)
                 batch_saved = 0
-                if not result.get('success'):
-                    # ⚠ 2026-09-18：配额耗尽(4005)/鉴权失败原来**静默跳过** ——
-                    #   实测导致「全池 4779 件一件没拿到买盘」却毫无提示。
-                    if verbose or batch_idx == 0:
-                        print('[SteamDT] batch 失败: errorCode=%s msg=%s'
-                              % (result.get('errorCode'), result.get('errorMsg')), file=sys.stderr)
-                if result.get('success'):
+                if result and result.get('success'):
                     for item_data in result.get('data', []):
                         hn = item_data.get('marketHashName', '')
                         if hn and item_data.get('dataList'):
@@ -3677,6 +3688,13 @@ def main():
                             _is_cand = False
                         (_cand if _is_cand else _rest).append(_h)
                     all_hn = _cand + _rest
+                    # ⚠ 2026-09-18：批量接口限「每分钟 1 次、单次≤100 件」→ 全池 4779 件需 48 批≈52 分钟，
+                    #   期间任何并发调用都会撞 4005。改为默认只取候选池优先的前 N 件（约 14 分钟）。
+                    _cap = int(os.environ.get('STEAMDT_MAX_ITEMS') or '1400')
+                    if len(all_hn) > _cap:
+                        print('[SteamDT] 批量限速 1次/分(≤100件) → 本轮取前 %d 件（候选池优先），其余下轮补 '
+                              '（STEAMDT_MAX_ITEMS 可调）' % _cap)
+                        all_hn = all_hn[:_cap]
                     print('[SteamDT] Fetching multi-platform prices for %d tracked items (候选池优先 %d 件)...'
                           % (len(all_hn), len(_cand)))
                     full_prices = fetch_steamdt_prices(all_hn, verbose=False)
