@@ -834,7 +834,9 @@ def save_csqaq_boards(price_map):
             continue
         rec = {k: bp.get(k, 0) for k in keys if bp.get(k, 0)}
         if rec:
-            boards[hn] = rec
+            # ⚠ 2026-09-18：原来整条替换（boards[hn]=rec）→ 后跑的 CSQAQ（只有卖侧）
+            #   会把先前 SteamDT 写入的买盘字段覆盖掉。改为逐键合并，保两源并集。
+            boards.setdefault(hn, {}).update(rec)
             n += 1
     try:
         write_json(path, boards)
@@ -971,116 +973,111 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
         #       分数天然散开；缺数据的维度不参与（不虚增也不虚减）。
         import math as _m
 
-        # ── 维度 A：ECO 盘口（求购强度 / 求购占比 / 稀缺度 / 同口径估值）──
-        eco_raw = eco_max = 0.0
+        # ── 维度 A：ECO 盘口（固定满分，缺子项按中性 0.5 计）──
+        import math as _m
         eco_reasons = []
-        # A1 求购强度：求购价 / 售价（越贴近 1 越强）  满分 30
-        if qg_max > 0 and price > 0:
-            eco_max += 30
-            r_q = min(qg_max / price, 1.0)
-            v = max(0.0, (r_q - 0.75) / 0.25) * 30
-            eco_raw += v
-            if v >= 12:
-                eco_reasons.append('求购价¥%.0f 达售价%.0f%%' % (qg_max, r_q * 100))
-        # A2 求购单占比：求购 / (在售+求购)  满分 25
+        # A1 求购强度（30 分权重）：求购价/售价，0.75→0、1.0→满
+        r_q = min(qg_max / price, 1.0) if (qg_max > 0 and price > 0) else None
+        a1 = max(0.0, (r_q - 0.75) / 0.25) if r_q is not None else 0.5
+        if r_q is not None and a1 * 30 >= 12:
+            eco_reasons.append('求购价¥%.0f 达售价%.0f%%' % (qg_max, r_q * 100))
+        # A2 求购单占比（25 分权重）
         if (selling + qg_total) > 0:
-            eco_max += 25
             tight = qg_total / (selling + qg_total)
-            eco_raw += min(tight / 0.35, 1.0) * 25
+            a2 = min(tight / 0.35, 1.0)
             if tight >= 0.15:
                 eco_reasons.append('求购%d单/在售%d件' % (qg_total, selling))
-        # A3 相对稀缺度：以「在售量下限」为 1.0、约 50 倍下限为 0 的对数刻度
-        # （原刻度是绝对的，卡 100 件下限后几乎全部归零、失去区分度）
+        else:
+            a2 = 0.5
+        # A3 相对稀缺度（20 分权重）：以下限为 1.0、约 50 倍下限为 0 的对数刻度
         if selling > 0:
-            eco_max += 20
             _lo = max(REC_MIN_SELLING, 1)
-            _ratio = max(selling, _lo) / float(_lo)
-            eco_raw += max(0.0, 1 - _m.log10(_ratio) / _m.log10(50.0)) * 20
+            a3 = max(0.0, 1 - _m.log10(max(selling, _lo) / float(_lo)) / _m.log10(50.0))
             if selling <= _lo * 1.5:
                 eco_reasons.append('ECO在售仅%d件（相对稀缺）' % selling)
-        # A4 同口径估值折价：ECO 综合价 vs ECO 现价  满分 25
+        else:
+            a3 = 0.5
+        # A4 同口径估值折价（25 分权重）
         if compre > 0 and price > 0:
-            eco_max += 25
             d_val = (compre - price) / price * 100
-            eco_raw += min(max(d_val, 0) / 15.0, 1.0) * 25
+            a4 = min(max(d_val, 0) / 15.0, 1.0)
             if d_val >= 8:
                 eco_reasons.append('ECO综合价高于现价%.0f%%(¥%.0f vs ¥%.0f)' % (d_val, compre, price))
+        else:
+            a4 = 0.5
+        eco_score_val = (a1 * 30 + a2 * 25 + a3 * 20 + a4 * 25) / 100.0
+        eco_missing = ((1 if r_q is None else 0) + (1 if (selling + qg_total) <= 0 else 0)
+                       + (1 if selling <= 0 else 0) + (1 if (compre <= 0 or price <= 0) else 0))
 
-        # ── 维度 B：BUFF 真实盘口 + 跨市场偏离 ──
-        buff_raw = buff_max = 0.0
+        # ── 维度 B：BUFF 盘口（固定满分；买盘缺失时 B1/B3 记中性 0.5，不虚增也不虚减）──
         buff_reasons = []
         bd = buff_map.get(hn, {}) or {}
         bs = bd.get('buff_sell', 0) or 0
         bb = bd.get('buff_buy', 0) or 0
         bsn = bd.get('buff_sell_num', 0) or 0
         bbn = bd.get('buff_buy_num', 0) or 0
-        # B1 买卖盘强度：求购单 / 在售单  满分 35
+        # B1 买卖盘强度（35 分权重）— 需买盘数据（当前全池缺失 → 恒中性）
         if bsn > 0 and bbn > 0:
-            buff_max += 35
-            r_bs = bbn / bsn
-            buff_raw += min(r_bs / 0.5, 1.0) * 35
+            b1 = min((bbn / bsn) / 0.5, 1.0)
             buff_reasons.append('BUFF买%d单/卖%d单' % (bbn, bsn))
-        # B2 在售深度：以约 100 件为最佳（太少难出货，太多说明泛滥）  满分 20
-        if bsn > 0:
-            buff_max += 20
-            buff_raw += max(0.0, 1 - abs(_m.log10(max(bsn, 1)) - 2) / 2.0) * 20
-        # B3 买盘贴价：求购价 / 在售价  满分 25
+        else:
+            b1 = 0.5
+        # B2 在售深度（20 分权重）：约 100 件最佳
+        b2 = max(0.0, 1 - abs(_m.log10(max(bsn, 1)) - 2) / 2.0) if bsn > 0 else 0.5
+        # B3 买盘贴价（25 分权重）— 需买盘数据
         if bb > 0 and bs > 0:
-            buff_max += 25
             r_bb = bb / bs
-            buff_raw += max(0.0, (r_bb - 0.8) / 0.2) * 25
+            b3 = max(0.0, (r_bb - 0.8) / 0.2)
             if r_bb >= 0.9:
                 buff_reasons.append('BUFF求购价达卖价%.0f%%' % (r_bb * 100))
-        # B4 跨市场偏离（Steam 独立市场；dev>0 = Steam 异常贵 → 国内更划算）  满分 20
+        else:
+            b3 = 0.5
+        # B4 跨市场偏离（20 分权重）：dev=0 中立 0.5、±40 → 0/1
         dev = item.get('n_dev_steam')
         if isinstance(dev, (int, float)):
-            buff_max += 20
-            # 正负对称：dev=0 → 中立 0.5，dev=±40 → 0/1。
-            # 原来 dev<=0 时得 0 分，导致「有 Steam 数据但不便宜」的标的比「完全没 Steam 数据」
-            # 的标的分数更低（缺数据时该维度不参与、不拉低均值）→ 变相惩罚数据更全的标的。
-            buff_raw += min(max((dev + 40.0) / 80.0, 0.0), 1.0) * 20
+            b4 = min(max((dev + 40.0) / 80.0, 0.0), 1.0)
             if abs(dev) > 25:
                 buff_reasons.append('Steam偏离%+.0f%%' % dev)
+        else:
+            b4 = 0.5
+        buff_score_val = (b1 * 35 + b2 * 20 + b3 * 25 + b4 * 20) / 100.0
+        buff_missing = ((0 if (bsn > 0 and bbn > 0) else 1) + (0 if bsn > 0 else 1)
+                        + (0 if (bb > 0 and bs > 0) else 1) + (0 if isinstance(dev, (int, float)) else 1))
 
-        # ── 维度 C：悠悠有品真实盘口（缺数据则不参与）──
+        # ── 维度 C：悠悠有品（固定满分 20；缺数据记中性）──
         yyyp_sell = item.get('yyyp_sell', 0) or 0
         yyyp_sell_num = item.get('yyyp_sell_num', 0) or 0
-        y_raw = y_max = 0.0
         y_reasons = []
         if yyyp_sell_num > 0:
-            y_max += 20
-            y_raw += max(0.0, 1 - min(yyyp_sell_num, 500) / 500.0) * 20
+            y_val = max(0.0, 1 - min(yyyp_sell_num, 500) / 500.0)
             if yyyp_sell_num < 50:
                 y_reasons.append('悠悠在售仅%d件' % yyyp_sell_num)
+        else:
+            y_val = 0.5
+        y_missing = 0 if yyyp_sell_num > 0 else 1
 
-        # ── 组合：按可用维度归一化后加权平均（0-100）──
-        # 追踪教训给出的权重改为「维度权重」使用（旧版是全局乘数，对每条一样＝没作用）
-        # 权重在循环外算一次（原来这里每条都重读 tracking_lessons.json）
-        parts = []
-        if eco_max > 0:
-            parts.append((eco_raw / eco_max, 0.50 * eco_mult))
-        if buff_max > 0:
-            parts.append((buff_raw / buff_max, 0.35 * buff_mult))
-        if y_max > 0:
-            parts.append((y_raw / y_max, 0.15))
-        if not parts:
-            continue
-        final_score = round(sum(v * w for v, w in parts) / sum(w for _, w in parts) * 100, 1)
+        # 维度权重（缺子项已在维度内按中性计，故此处不再需要"缺维度不参与"）
+        _W = (('eco', 0.50 * eco_mult), ('buff', 0.35 * buff_mult), ('yy', 0.15))
+        _vals = {'eco': eco_score_val, 'buff': buff_score_val, 'yy': y_val}
+        final_score = round(sum(v * w for (k, w), v in zip(_W, _vals.values()))
+                            / sum(w for _, w in _W) * 100, 1)
         # eco_score / buff_score 保持字段名（前端「评分构成」与 AI 都在用），统一为 0-100 归一值
-        eco_score = round(eco_raw / eco_max * 100, 1) if eco_max else 0.0
-        buff_score = round(buff_raw / buff_max * 100, 1) if buff_max else 0.0
-        yyyp_score = round(y_raw / y_max * 100, 1) if y_max else 0.0
+        eco_score = round(eco_score_val * 100, 1)
+        buff_score = round(buff_score_val * 100, 1)
+        yyyp_score = round(y_val * 100, 1)
 
         if final_score < 25:
             continue
 
         # ── 主导维度 → tag（前端契约：tag ∈ {eco, buff}）──
-        if buff_score > eco_score and buff_reasons:
+        # ⚠ 2026-09-18：原来还要求 buff_reasons 非空，导致「买盘数据缺失 → 理由为空 →
+        #   tag 恒为 eco」（前端 buff 分组事实消失，实测 30/30 全 eco）。改为纯按维度得分判定。
+        if buff_score > eco_score:
             tag = 'buff'
-            primary_reasons = buff_reasons + eco_reasons[:1]
+            primary_reasons = (buff_reasons + eco_reasons[:1]) or eco_reasons
         else:
             tag = 'eco'
-            primary_reasons = eco_reasons + buff_reasons[:1]
+            primary_reasons = (eco_reasons + buff_reasons[:1]) or buff_reasons
 
         # ── 特征标签（替代旧版恒定的「多平台信号 ✓溢价强劲·AI优选」）──
         _feats = []
@@ -1178,6 +1175,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'n_premium_buff': item.get('n_premium_buff'),
             'n_premium_yyyp': item.get('n_premium_yyyp'),
             'n_cov': item.get('n_cov', 0),
+            # 数据缺口（2026-09-18 新增）：各维度缺失的子项数（0=完整）
+            'data_gaps': [k for k, n in (('eco', eco_missing), ('buff', buff_missing),
+                                         ('yy', y_missing)) if n > 0],
             'n_warn': item.get('n_warn', []),
             '_reason': reason,
             '_cat': tag,
@@ -1341,6 +1341,12 @@ def fetch_steamdt_prices(hash_names, verbose=True):
                 )
                 result = _json.loads(resp)
                 batch_saved = 0
+                if not result.get('success'):
+                    # ⚠ 2026-09-18：配额耗尽(4005)/鉴权失败原来**静默跳过** ——
+                    #   实测导致「全池 4779 件一件没拿到买盘」却毫无提示。
+                    if verbose or batch_idx == 0:
+                        print('[SteamDT] batch 失败: errorCode=%s msg=%s'
+                              % (result.get('errorCode'), result.get('errorMsg')), file=sys.stderr)
                 if result.get('success'):
                     for item_data in result.get('data', []):
                         hn = item_data.get('marketHashName', '')
@@ -1867,6 +1873,11 @@ def _get_scoring_weights_from_lessons():
     """
     try:
         import json, os
+        # ⚠ 2026-09-18：lessons 权重（eco×0.8/buff×1.2）由 AI 叙述生成、**无实测依据**
+        #   （记分卡显示"稀缺"类信号实测为负贡献）→ 默认中性；dims 样本够了再按实测标定。
+        #   启用：REC_USE_LESSON_WEIGHTS=1
+        if str(os.environ.get('REC_USE_LESSON_WEIGHTS', '0')).strip() != '1':
+            return 1.0, 1.0
         lessons_path = os.path.join(DATA_DIR, 'tracking_lessons.json')
         if not os.path.exists(lessons_path):
             return 1.0, 1.0
@@ -3652,8 +3663,22 @@ def main():
             if os.path.exists(tracked_path) and STEAM_KEY:
                 tracked = read_json(tracked_path)
                 if isinstance(tracked, list) and len(tracked) > len(buff_prices):
-                    all_hn = [it['HashName'] for it in tracked if it.get('HashName')]
-                    print(f'[SteamDT] Fetching multi-platform prices for {len(all_hn)} tracked items...')
+                    # ⚠ 2026-09-18：SteamDT batch 配额有限（实测已 4005 耗尽），
+                    #   改为「推荐候选池优先」排序 → 配额先保证会进推荐的标的拿到买卖盘。
+                    _cand, _rest = [], []
+                    for it in tracked:
+                        _h = it.get('HashName', '')
+                        if not _h:
+                            continue
+                        try:
+                            _is_cand = (float(it.get('Price') or 0) >= 20
+                                        and int(it.get('SellingTotal') or 0) >= REC_MIN_SELLING)
+                        except Exception:
+                            _is_cand = False
+                        (_cand if _is_cand else _rest).append(_h)
+                    all_hn = _cand + _rest
+                    print('[SteamDT] Fetching multi-platform prices for %d tracked items (候选池优先 %d 件)...'
+                          % (len(all_hn), len(_cand)))
                     full_prices = fetch_steamdt_prices(all_hn, verbose=False)
                     if full_prices and len(full_prices) > len(buff_prices):
                         buff_prices = full_prices  # 用全量数据替换
@@ -3677,6 +3702,13 @@ def main():
                                 merged += 1
                         write_json(tracked_path, tracked)
                         print(f'[SteamDT] Merged {merged}/{len(tracked)} items (full catalog + platforms)')
+                        # ⚠ 2026-09-18：SteamDT 是唯一能提供「BUFF 求购(biddingPrice/Count)」的源，
+                        #   而 eco_tracked.json 会被 prices 周期重写清空 → 必须同步落旁路文件。
+                        try:
+                            if save_csqaq_boards(full_prices):
+                                print('[SteamDT] 买盘字段已写入 csqaq_boards.json（旁路持久化）')
+                        except Exception as _pe:
+                            print('[SteamDT] 旁路写入失败: %s' % _pe, file=sys.stderr)
                         
                         # ── 用全量数据保存 BUFF 历史快照 ──
                         if buff_prices and len(buff_prices) > 0:
