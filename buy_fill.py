@@ -46,6 +46,7 @@ def _last_positive(series):
 def _csqaq_buy(hash_names, token, verbose):
     """CSQAQ 优先：批量取 goodId → 逐件取求购价/求购数量。"""
     got = {}
+    out_meta = {}          # 由调用方合并进返回值（留痕 CSQAQ 在售价等）
     if not token:
         if verbose:
             print('[BUY] 无 CSQAQ token，跳过优先通道')
@@ -60,6 +61,23 @@ def _csqaq_buy(hash_names, token, verbose):
             for k, v in ((r.get('data') or {}).get('success') or {}).items():
                 if v.get('goodId'):
                     gid[k] = v['goodId']
+                # 顺带留痕 CSQAQ 自家的在售价/多平台价（供跨源校验与跨市场参考）
+                _row = {}
+                if v.get('buffSellPrice'):
+                    _row['_csqaq_buff'] = float(v['buffSellPrice'])
+                    _row['buff_sell'] = float(v['buffSellPrice'])
+                if v.get('buffSellNum'):
+                    _row['buff_sell_num'] = int(v['buffSellNum'])
+                if v.get('yyypSellPrice'):
+                    _row['yyyp_sell'] = float(v['yyypSellPrice'])
+                if v.get('yyypSellNum'):
+                    _row['yyyp_sell_num'] = int(v['yyypSellNum'])
+                if v.get('steamSellPrice'):
+                    _row['steam_sell'] = float(v['steamSellPrice'])
+                if v.get('steamSellNum'):
+                    _row['steam_sell_num'] = int(v['steamSellNum'])
+                if _row:
+                    out_meta.setdefault(k, {}).update(_row)
         except Exception as e:
             if verbose:
                 print('[BUY] CSQAQ goodId 批失败: %s' % str(e)[:90], file=sys.stderr)
@@ -82,6 +100,8 @@ def _csqaq_buy(hash_names, token, verbose):
         if row:
             row['buy_src'] = 'csqaq_chart'
             got[hn] = row
+    for _hn, _row in (out_meta or {}).items():
+        got.setdefault(_hn, {}).update(_row)
     if verbose:
         print('[BUY] CSQAQ 优先通道: %d/%d 件拿到买盘' % (len(got), len(hash_names)))
     return got, gid
@@ -140,6 +160,8 @@ def _steamdt_fallback(missing, verbose):
             row['buff_sell_num'] = int(bp['buff_sell_num'])
         if bp.get('platforms'):
             row['platforms'] = bp['platforms']
+        if bp.get('buff_sell'):
+            row['_steamdt_buff'] = float(bp['buff_sell'])   # 跨源留痕（SteamDT 自家值）
         if row:
             row['buy_src'] = 'steamdt'
             out[hn] = row

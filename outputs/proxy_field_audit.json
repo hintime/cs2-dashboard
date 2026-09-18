@@ -1,0 +1,33 @@
+{
+  "generated": "2026-09-18 20:36",
+  "n_items": 30,
+  "summary": {
+    "supply_proxy": {
+      "n": 14,
+      "median_ratio": 453.2,
+      "max_ratio": 1614.9
+    },
+    "supply_proxy_old": {
+      "n": 14,
+      "median_ratio": 453.2,
+      "max_ratio": 1614.9
+    },
+    "ref_steam": {
+      "n": 25,
+      "identical_pct": 100.0
+    },
+    "selling_supply": {
+      "n": 30,
+      "identical_pct": 100.0
+    },
+    "price_eco": {
+      "n": 30,
+      "identical_pct": 100.0
+    }
+  },
+  "alarms": [],
+  "notes": [
+    "存世量代理：中位偏离 453 倍（当前仅作兜底）",
+    "存世量代理(旧字段名 n_supply)：中位偏离 453 倍（当前仅作兜底）"
+  ]
+}

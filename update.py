@@ -808,7 +808,7 @@ def run_kronos_forecast(top_n=10, days=14, samples=3):
     return None
 
 
-def save_csqaq_boards(price_map):
+def save_csqaq_boards(price_map, src=None):
     """把 CSQAQ 批量查价结果写入旁路文件 csqaq_boards.json（只存盘口/跨平台字段）。
 
     为什么单独存：eco_tracked.json 会被 prices 周期重写并清掉这些字段，
@@ -829,12 +829,16 @@ def save_csqaq_boards(price_map):
     # ⚠ 2026-09-18：补 'platforms' —— 跨平台比价数据若不落旁路，会被 prices 周期重写清空。
     keys = ('buff_sell', 'buff_buy', 'buff_sell_num', 'buff_buy_num', 'buff_source',
             'yyyp_sell', 'yyyp_sell_num', 'steam_sell', 'steam_sell_num', '_csqaq_buff',
-            'platforms', 'n_supply_real', 'supply_chg7', 'buy_src')
+            'platforms', 'n_supply_real', 'supply_chg7', 'buy_src',
+            '_steamdt_buff', '_steamdt_src')
     n = 0
     for hn, bp in price_map.items():
         if not isinstance(bp, dict):
             continue
         rec = {k: bp.get(k, 0) for k in keys if bp.get(k, 0)}
+        # 来源留痕：同一指标两个独立来源各自存一份，供「跨源一致性」体检比对
+        if src and bp.get('buff_sell'):
+            rec['_steamdt_buff' if src == 'steamdt' else '_csqaq_buff'] = bp['buff_sell']
         if rec:
             # ⚠ 2026-09-18：原来整条替换（boards[hn]=rec）→ 后跑的 CSQAQ（只有卖侧）
             #   会把先前 SteamDT 写入的买盘字段覆盖掉。改为逐键合并，保两源并集。
@@ -921,6 +925,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                 'n_supply_real': item.get('n_supply_real'),
                 'supply_chg7': item.get('supply_chg7'),
                 'buy_src': item.get('buy_src'),
+                # 跨源校验用：BUFF 在售价的两个独立来源（CSQAQ / SteamDT）
+                '_csqaq_buff': item.get('_csqaq_buff'),
+                '_steamdt_buff': item.get('_steamdt_buff'),
             }
     print(f'[REC] BUFF prices available for {len(buff_map)} items')
 
@@ -1190,6 +1197,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'n_supply_real': item.get('n_supply_real'),
             'supply_chg7': item.get('supply_chg7'),
             'buy_src': item.get('buy_src'),
+            # 跨源校验用（两个独立来源的 BUFF 在售价）
+            '_csqaq_buff': item.get('_csqaq_buff'),
+            '_steamdt_buff': item.get('_steamdt_buff'),
             # ⚠ 2026-09-18：fp_rarity 已移除 —— FirePulse 遗留字段，且唯一带稀有度的
             #   CSQAQ 排行榜对本池覆盖率仅 1/30（无有效来源），前端引用已同步清理。
             # ── 归一化层产出的统一字段（前端「数据来源」小标用）──
@@ -3820,7 +3830,7 @@ def main():
                         # ⚠ 2026-09-18：SteamDT 是唯一能提供「BUFF 求购(biddingPrice/Count)」的源，
                         #   而 eco_tracked.json 会被 prices 周期重写清空 → 必须同步落旁路文件。
                         try:
-                            if save_csqaq_boards(full_prices):
+                            if save_csqaq_boards(full_prices, src='steamdt'):
                                 print('[SteamDT] 买盘字段已写入 csqaq_boards.json（旁路持久化）')
                         except Exception as _pe:
                             print('[SteamDT] 旁路写入失败: %s' % _pe, file=sys.stderr)

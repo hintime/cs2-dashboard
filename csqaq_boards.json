@@ -4856,14 +4856,18 @@
     "steam_sell_num": 5
   },
   "AK-47 | Redline (Field-Tested)": {
-    "buff_sell": 178.5,
-    "buff_sell_num": 8261,
-    "yyyp_sell": 175.0,
-    "yyyp_sell_num": 10660,
+    "buff_sell": 180.0,
+    "buff_sell_num": 8248,
+    "yyyp_sell": 178.3,
+    "yyyp_sell_num": 11169,
     "steam_sell": 251.13,
     "steam_sell_num": 1183,
     "buff_buy": 173.0,
-    "buff_buy_num": 101
+    "buff_buy_num": 101,
+    "n_supply_real": 453177,
+    "supply_chg7": 288,
+    "buy_src": "csqaq_chart",
+    "_csqaq_buff": 180.0
   },
   "★ StatTrak™ Huntsman Knife | Lore (Factory New)": {
     "buff_sell": 1479.5,
@@ -15844,8 +15848,8 @@
   "Desert Eagle | Eastern Enigma (Field-Tested)": {
     "buff_sell": 98.99,
     "buff_sell_num": 89,
-    "yyyp_sell": 99.6,
-    "yyyp_sell_num": 126,
+    "yyyp_sell": 99.5,
+    "yyyp_sell_num": 121,
     "buff_buy": 93.0,
     "buff_buy_num": 101,
     "buff_source": "BUFF",
@@ -15883,7 +15887,8 @@
     },
     "buy_src": "csqaq_chart",
     "n_supply_real": 14056,
-    "supply_chg7": 556
+    "supply_chg7": 556,
+    "_csqaq_buff": 98.99
   },
   "★ Specialist Gloves | Emerald Web (Battle-Scarred)": {
     "buff_sell": 2197.0,
@@ -17631,9 +17636,9 @@
   },
   "USP-S | Spiral Glitch (Minimal Wear)": {
     "buff_sell": 279.0,
-    "buff_sell_num": 50,
-    "yyyp_sell": 275.8,
-    "yyyp_sell_num": 79,
+    "buff_sell_num": 48,
+    "yyyp_sell": 271.4,
+    "yyyp_sell_num": 71,
     "buff_buy": 255.0,
     "buff_buy_num": 41,
     "buff_source": "BUFF",
@@ -17671,7 +17676,8 @@
     },
     "buy_src": "csqaq_chart",
     "n_supply_real": 3812,
-    "supply_chg7": 213
+    "supply_chg7": 213,
+    "_csqaq_buff": 279.0
   },
   "SSG 08 | Calligrafaux (Factory New)": {
     "buff_sell": 6.95,
