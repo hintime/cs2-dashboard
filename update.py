@@ -1345,7 +1345,10 @@ def fetch_steamdt_prices(hash_names, verbose=True):
                             headers={'Authorization': f'Bearer {STEAM_KEY}', 'Content-Type': 'application/json'},
                             timeout=30,
                         )
-                        result = _json.loads(resp)
+                        # ⚠ 2026-09-18 真因：http_post_raw 文档明写 "Return parsed JSON"（内部已 json.loads），
+                        #   这里再 _json.loads 一次必然抛 TypeError（dict 不是 str）→ 被裸 except 吞掉
+                        #   → **批量取价从来没成功过**（全池买盘缺失的根因，比限流更根本）。
+                        result = resp if isinstance(resp, dict) else _json.loads(resp)
                     except Exception as _be:
                         result = None
                         if verbose:
