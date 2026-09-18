@@ -423,7 +423,8 @@ def _check_host_blocked(host):
     return False
 
 # ═══════════════ HTTP HELPERS ═══════════════
-def http_get(url, headers=None, timeout=15):
+def http_get(url, headers=None, timeout=15, rl_cb=None):
+    """rl_cb: 命中 429 时回调（供调用方做跨调用自适应节流，与 http_post_raw 保持一致）。"""
     req = urllib.request.Request(url, headers=headers or {})
     for attempt in range(MAX_RETRIES):
         try:
@@ -432,6 +433,13 @@ def http_get(url, headers=None, timeout=15):
                 if raw[:2] == b'\x1f\x8b':
                     raw = gzip.decompress(raw)
                 return json.loads(raw.decode('utf-8'))
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and rl_cb:
+                try: rl_cb()
+                except Exception: pass
+            if attempt == MAX_RETRIES - 1:
+                raise
+            time.sleep(RETRY_DELAY)
         except Exception as e:
             if attempt == MAX_RETRIES - 1:
                 raise
@@ -897,11 +905,19 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
     #   ('StatTrak™ ', ...) 从未命中 → StatTrak 排除形同虚设（实测漏进候选池 3 件 ST 刀）。
     #   改为子串匹配；Souvenir 同理加固。
     _EXCLUDE_EXTERIORS = ('Battle-Scarred', '战痕累累', '破损不堪')
+    # ⚠ 2026-09-18（义轩要求）：贴纸/胶囊等「非饰品外观物」不进推荐池 ——
+    #   它们既缺存世量数据，也不是想要的标的类型。可用 REC_EXCLUDE_KEYWORDS 覆盖（逗号分隔）。
+    _EXCLUDE_KEYWORDS = tuple(k.strip() for k in (
+        os.environ.get('REC_EXCLUDE_KEYWORDS')
+        or '印花,贴纸,胶囊,涂鸦,音乐盒,布章,补丁,Sticker,Capsule,Graffiti,Music Kit,Patch'
+    ).split(',') if k.strip())
     before = len(tracked)
     tracked = [i for i in tracked
                if not any(k in (i.get('HashName','') + ' ' + i.get('GoodsName',''))
                           for k in ('StatTrak', 'Souvenir'))
-               and not any(e in (i.get('HashName','') + i.get('GoodsName','')) for e in _EXCLUDE_EXTERIORS)]
+               and not any(e in (i.get('HashName','') + i.get('GoodsName','')) for e in _EXCLUDE_EXTERIORS)
+               and not any(k.lower() in (i.get('HashName','') + ' ' + i.get('GoodsName','')).lower()
+                           for k in _EXCLUDE_KEYWORDS)]
     if len(tracked) < before:
         print(f'[REC] Filtered out {before - len(tracked)} excluded items ({len(tracked)} remaining)')
 
@@ -1008,25 +1024,8 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                 eco_reasons.append('求购%d单/在售%d件' % (qg_total, selling))
         else:
             a2 = 0.5
-        # A3 相对稀缺度（20 分权重）
-        # ⚠ 2026-09-18：原刻度只看「在售绝对量」→ 概念被混淆（在售 100 件的低端枪皮 与
-        #   在售 100 件的高端刀，稀缺含义完全不同）。改用「流通率 = 在售/存世」为主
-        #   （实测跨度 0.06%~3.23%，54 倍区分度）；无真实存世量时回退原「在售量」刻度。
-        _real_sup = item.get('n_supply_real')
-        if selling > 0 and isinstance(_real_sup, (int, float)) and _real_sup > 0:
-            _turn = selling / float(_real_sup)          # 流通率
-            # 0.05% → 满分；3% 及以上 → 0 分（对数刻度）
-            _lp = _m.log10(max(_turn, 1e-6) / 0.0005) / _m.log10(3.0 / 0.05)
-            a3 = max(0.0, min(1.0, 1 - _lp))
-            if _turn <= 0.001:
-                eco_reasons.append('浮筹极低%.2f%%（在售%d/存世%d）' % (_turn * 100, selling, int(_real_sup)))
-        elif selling > 0:
-            _lo = max(REC_MIN_SELLING, 1)
-            a3 = max(0.0, 1 - _m.log10(max(selling, _lo) / float(_lo)) / _m.log10(50.0))
-            if selling <= _lo * 1.5:
-                eco_reasons.append('ECO在售仅%d件（相对稀缺）' % selling)
-        else:
-            a3 = 0.5
+        # （原 A3「相对稀缺度」已移出 ECO 维度，独立为下方「维度 D：流通/供给」，
+        #   避免与在售量口径重复计分 —— 2026-09-18）
         # A4 同口径估值折价（25 分权重）
         if compre > 0 and price > 0:
             d_val = (compre - price) / price * 100
@@ -1035,9 +1034,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                 eco_reasons.append('ECO综合价高于现价%.0f%%(¥%.0f vs ¥%.0f)' % (d_val, compre, price))
         else:
             a4 = 0.5
-        eco_score_val = (a1 * 30 + a2 * 25 + a3 * 20 + a4 * 25) / 100.0
+        eco_score_val = (a1 * 30 + a2 * 25 + a4 * 25) / 80.0
         eco_missing = ((1 if r_q is None else 0) + (1 if (selling + qg_total) <= 0 else 0)
-                       + (1 if selling <= 0 else 0) + (1 if (compre <= 0 or price <= 0) else 0))
+                       + (1 if (compre <= 0 or price <= 0) else 0))
 
         # ── 维度 B：BUFF 盘口（固定满分；买盘缺失时 B1/B3 记中性 0.5，不虚增也不虚减）──
         buff_reasons = []
@@ -1086,9 +1085,43 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             y_val = 0.5
         y_missing = 0 if yyyp_sell_num > 0 else 1
 
+        # ── 维度 D：流通 / 供给（2026-09-18 新增，独立成维）──
+        #   D1 流通率 = 在售/存世（低流通 = 浮筹少 = 稀缺）权重 70%
+        #   D2 供给变化 = 近7日存世变化/存世（负=被消化利多；正=供给膨胀利空）权重 30%
+        #   实测流通率跨度 0.06%~3.23%（54 倍区分度），是全池区分度最高的新指标。
+        _real_sup = item.get('n_supply_real')
+        d1 = d2 = None
+        flow_reasons = []
+        if selling > 0 and isinstance(_real_sup, (int, float)) and _real_sup > 0:
+            _turn = selling / float(_real_sup)
+            _lp = _m.log10(max(_turn, 1e-6) / 0.0005) / _m.log10(3.0 / 0.05)
+            d1 = max(0.0, min(1.0, 1 - _lp))
+            if _turn <= 0.001:
+                flow_reasons.append('浮筹极低%.2f%%（在售%d/存世%d）' % (_turn * 100, selling, int(_real_sup)))
+        _chg = item.get('supply_chg7')
+        if isinstance(_chg, (int, float)) and isinstance(_real_sup, (int, float)) and _real_sup > 0:
+            _r7 = _chg / float(_real_sup)
+            d2 = max(0.0, min(1.0, 0.5 - _r7 / 0.02))
+            if _r7 <= -0.005:
+                flow_reasons.append('存世近7日减少%.2f%%' % (_r7 * 100))
+            elif _r7 >= 0.02:
+                flow_reasons.append('存世近7日增加%.2f%%' % (_r7 * 100))
+        _fnum = _fw = 0.0
+        if d1 is not None:
+            _fnum += d1 * 0.7
+            _fw += 0.7
+        if d2 is not None:
+            _fnum += d2 * 0.3
+            _fw += 0.3
+        flow_val = (_fnum / _fw) if _fw > 0 else 0.5
+        flow_missing = (0 if d1 is not None else 1) + (0 if d2 is not None else 1)
+
         # 维度权重（缺子项已在维度内按中性计，故此处不再需要"缺维度不参与"）
-        _W = (('eco', 0.50 * eco_mult), ('buff', 0.35 * buff_mult), ('yy', 0.15))
-        _vals = {'eco': eco_score_val, 'buff': buff_score_val, 'yy': y_val}
+        # 2026-09-18：新增「流通/供给」维度，权重从 ECO 匀出（0.50→0.40）
+        _W = (('eco', 0.40 * eco_mult), ('buff', 0.30 * buff_mult),
+              ('flow', 0.15), ('yy', 0.15))
+        _vals = {'eco': eco_score_val, 'buff': buff_score_val,
+                 'flow': flow_val, 'yy': y_val}
         final_score = round(sum(v * w for (k, w), v in zip(_W, _vals.values()))
                             / sum(w for _, w in _W) * 100, 1)
         # eco_score / buff_score 保持字段名（前端「评分构成」与 AI 都在用），统一为 0-100 归一值
@@ -1159,8 +1192,11 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
         combined_reason = ' | '.join(primary_reasons[:3]) if primary_reasons else ''
         reason_enhance = _get_reason_enhancements()
 
-        reason = '{} | 综合{:.0f}(ECO{:.0f}/BUFF{:.0f}/悠悠{:.0f}) | {} | 💡 {} | 建议分仓操作,单品<10%'.format(
-            display_tag, final_score, eco_score, buff_score, yyyp_score, combined_reason, buy_advice)
+        if flow_reasons:
+            combined_reason = (combined_reason + ' | ' + '、'.join(flow_reasons[:2])) if combined_reason else '、'.join(flow_reasons[:2])
+        reason = '{} | 综合{:.0f}(ECO{:.0f}/BUFF{:.0f}/悠悠{:.0f}/流通{:.0f}) | {} | 💡 {} | 建议分仓操作,单品<10%'.format(
+            display_tag, final_score, eco_score, buff_score, yyyp_score,
+            round(flow_val * 100, 1), combined_reason, buy_advice)
 
         
         # 理由增强：根据追踪教训追加优化提示
@@ -1215,7 +1251,7 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'n_cov': item.get('n_cov', 0),
             # 数据缺口（2026-09-18 新增）：各维度缺失的子项数（0=完整）
             'data_gaps': [k for k, n in (('eco', eco_missing), ('buff', buff_missing),
-                                         ('yy', y_missing)) if n > 0],
+                                         ('flow', flow_missing), ('yy', y_missing)) if n > 0],
             'n_warn': item.get('n_warn', []),
             '_reason': reason,
             '_cat': tag,
@@ -3797,7 +3833,9 @@ def main():
                     all_hn = _cand + _rest
                     # ⚠ 2026-09-18：批量接口限「每分钟 1 次、单次≤100 件」→ 全池 4779 件需 48 批≈52 分钟，
                     #   期间任何并发调用都会撞 4005。改为默认只取候选池优先的前 N 件（约 14 分钟）。
-                    _cap = int(os.environ.get('STEAMDT_MAX_ITEMS') or '1400')
+                    # ⚠ 2026-09-18：全池扫描耗 48 批≈52 分钟且与买盘通道抢配额；
+                    #   跨平台/买盘数据已改由 buy_fill 只对入选标的精确获取 → 上限 1400 降到 200。
+                    _cap = int(os.environ.get('STEAMDT_MAX_ITEMS') or '200')
                     if len(all_hn) > _cap:
                         print('[SteamDT] 批量限速 1次/分(≤100件) → 本轮取前 %d 件（候选池优先），其余下轮补 '
                               '（STEAMDT_MAX_ITEMS 可调）' % _cap)

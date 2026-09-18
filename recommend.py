@@ -23,7 +23,8 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 # ═══════════════ HTTP ═══════════════
-def http_post_raw(url, body, headers=None, timeout=15):
+def http_post_raw(url, body, headers=None, timeout=15, rl_cb=None):
+    """rl_cb: 命中 429 时回调（供调用方做「跨调用自适应节流」）。"""
     data = json.dumps(body, ensure_ascii=False).encode('utf-8')
     hdrs = {'Content-Type': 'application/json'}
     if headers: hdrs.update(headers)
@@ -34,6 +35,9 @@ def http_post_raw(url, body, headers=None, timeout=15):
                 raw = r.read()
                 # 检查 HTTP 429
                 if hasattr(r, 'status') and r.status == 429:
+                    if rl_cb:
+                        try: rl_cb()
+                        except Exception: pass
                     wait = min(2 ** attempt, 60)
                     print(f'  [HTTP] 429 rate limited, retry in {wait}s (attempt {attempt+1}/5)')
                     time.sleep(wait)
@@ -44,6 +48,9 @@ def http_post_raw(url, body, headers=None, timeout=15):
                 return {}
         except urllib.error.HTTPError as e:
             if e.code == 429:
+                if rl_cb:
+                    try: rl_cb()
+                    except Exception: pass
                 wait = min(2 ** attempt, 60)
                 print(f'  [HTTP] 429 rate limited, retry in {wait}s (attempt {attempt+1}/5)')
                 time.sleep(wait)

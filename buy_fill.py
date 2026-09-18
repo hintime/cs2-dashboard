@@ -18,14 +18,55 @@ REPO = os.environ.get('CS2_REPO') or r'C:\Users\Lenovo\cs2-runner-local'
 _PLATFORM = int(os.environ.get('BUY_PLATFORM') or '1')
 _PERIOD = int(os.environ.get('BUY_PERIOD') or '7')
 _SLEEP = float(os.environ.get('BUY_SLEEP') or '0.35')
+# 自适应节流：429 越多放得越慢，成功后逐步恢复（避免固定节流要么被限、要么过慢）
+_pace = [_SLEEP]
+_HIST_PATH = os.path.join(REPO, 'outputs', 'supply_history.json')
+
+
+def _bump_pace():
+    _pace[0] = min(5.0, _pace[0] * 1.8)
+
+
+def _ease_pace():
+    _pace[0] = max(_SLEEP, _pace[0] * 0.85)
+
+
+def _pace_sleep():
+    time.sleep(_pace[0])
+
+
+def _save_supply_history(updates):
+    """P2：存世量 180 天历史持久化（逐日去重、每件保留最近 200 天）→ outputs/supply_history.json"""
+    if not updates:
+        return
+    try:
+        os.makedirs(os.path.dirname(_HIST_PATH), exist_ok=True)
+        db = {}
+        if os.path.exists(_HIST_PATH):
+            with open(_HIST_PATH, encoding='utf-8') as f:
+                db = json.load(f) or {}
+        for hn, series in updates.items():
+            d = db.get(hn) or {}
+            d.update(series)
+            if len(d) > 200:
+                for k in sorted(d)[:-200]:
+                    d.pop(k, None)
+            db[hn] = d
+        with open(_HIST_PATH, 'w', encoding='utf-8') as f:
+            json.dump(db, f, ensure_ascii=False)
+        print('[BUY] 存世量历史已更新 %d 件 → supply_history.json' % len(updates))
+    except Exception as e:
+        print('[BUY] 历史持久化失败: %s' % str(e)[:100], file=sys.stderr)
 MAX_ITEMS = int(os.environ.get('BUY_FILL_CAP') or '60')
 
 
 def _csqaq_call(path, body, token):
     sys.path.insert(0, REPO)
     import recommend
-    return recommend.http_post_raw('https://api.csqaq.com' + path, body,
-                                   headers={'ApiToken': token}, timeout=25)
+    r = recommend.http_post_raw('https://api.csqaq.com' + path, body,
+                                headers={'ApiToken': token}, timeout=25, rl_cb=_bump_pace)
+    _ease_pace()
+    return r
 
 
 def _csqaq_get(url, token):
@@ -33,7 +74,9 @@ def _csqaq_get(url, token):
     import update
     if not url.startswith('http'):
         url = 'https://api.csqaq.com' + url   # ⚠ 必须补域名：http_get 不接受相对路径
-    return update.http_get(url, headers={'ApiToken': token}, timeout=20)
+    r = update.http_get(url, headers={'ApiToken': token}, timeout=20, rl_cb=_bump_pace)
+    _ease_pace()
+    return r
 
 
 def _last_positive(series):
@@ -81,7 +124,7 @@ def _csqaq_buy(hash_names, token, verbose):
         except Exception as e:
             if verbose:
                 print('[BUY] CSQAQ goodId 批失败: %s' % str(e)[:90], file=sys.stderr)
-        time.sleep(_SLEEP)
+        _pace_sleep()
     # ② 求购价 / 求购数量
     for hn, g in gid.items():
         row = {}
@@ -96,7 +139,7 @@ def _csqaq_buy(hash_names, token, verbose):
             except Exception as e:
                 if verbose:
                     print('[BUY] CSQAQ chart %s %s 失败: %s' % (hn[:22], key, str(e)[:70]), file=sys.stderr)
-            time.sleep(_SLEEP)
+            _pace_sleep()
         if row:
             row['buy_src'] = 'csqaq_chart'
             got[hn] = row
@@ -113,6 +156,7 @@ def _csqaq_supply(gid_map, token, verbose):
     ⚠ 现有「存世量」是 eco_selling（在售件数）代理，实测与真实值差 100~1000 倍。
     """
     out = {}
+    hist_updates = {}
     if not token or not gid_map:
         return out
     for hn, g in gid_map.items():
@@ -126,10 +170,13 @@ def _csqaq_supply(gid_map, token, verbose):
             if len(vals) > 7:
                 row['supply_chg7'] = int(vals[-1] - vals[-8])
             out[hn] = row
+            hist_updates[hn] = {str(x.get('created_at') or '')[:10]: x.get('statistic')
+                                for x in d if isinstance(x.get('statistic'), int)}
         except Exception as e:
             if verbose:
                 print('[BUY] 存世量 %s 失败: %s' % (hn[:22], str(e)[:60]), file=sys.stderr)
-        time.sleep(_SLEEP)
+        _pace_sleep()
+    _save_supply_history(hist_updates)
     if verbose:
         print('[BUY] 存世量通道: %d/%d 件' % (len(out), len(gid_map)))
     return out
@@ -199,11 +246,18 @@ def fill_buy_data(hash_names, verbose=True):
         if verbose:
             print('[BUY] 存世量通道异常: %s' % str(_se)[:100], file=sys.stderr)
 
-    # 兜底条件：完全没拿到，或没拿到求购数量
+    # 交给 SteamDT 的条件：缺买盘，或缺跨平台比价数据（后者原先靠全池 1400 件扫描，成本高）
     missing = [n for n in names
-               if not out.get(n) or not out[n].get('buff_buy_num')]
+               if not out.get(n) or not out[n].get('buff_buy_num')
+               or not out[n].get('platforms')]
     if missing:
-        out.update(_steamdt_fallback(missing, verbose))
+        # ⚠ 逐键合并（勿用 out.update(整条替换)）：否则会把先前合并进来的存世量等字段冲掉
+        for _hn, _row in (_steamdt_fallback(missing, verbose) or {}).items():
+            _keep_src = (out.get(_hn) or {}).get('buy_src')
+            out.setdefault(_hn, {}).update(_row)
+            # 溯源叠加：两个通道都拿到过买盘时标记为「csqaq_chart+steamdt」，避免被覆盖失真
+            if _keep_src and _keep_src != _row.get('buy_src'):
+                out[_hn]['buy_src'] = _keep_src + '+' + str(_row.get('buy_src'))
 
     # 落旁路（逐键合并，保留既有其他字段）
     if out:
