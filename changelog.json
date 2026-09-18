@@ -1,6 +1,108 @@
 [
   {
     "date": "2026-09-18",
+    "tag": "chore",
+    "title": "market index 2026-09-18 20:52",
+    "desc": "market index 2026-09-18 20:52"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(rec): 排除贴纸胶囊 + 流通/供给独立维度 + 历史持久化 + 自适应节流 + 配额收敛",
+    "desc": "feat(rec): 排除贴纸胶囊 + 流通/供给独立维度 + 历史持久化 + 自适应节流 + 配额收敛"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(audit): 代理字段体检（定期抽样对比真实值）+ 跨源留痕打通",
+    "desc": "feat(audit): 代理字段体检（定期抽样对比真实值）+ 跨源留痕打通"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "fix(rec): 自我复盘修补三处（含 1 处自引入缺陷）",
+    "desc": "fix(rec): 自我复盘修补三处（含 1 处自引入缺陷）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(supply): 接入真实存世量，替换偏差 33~384 倍的代理值",
+    "desc": "feat(supply): 接入真实存世量，替换偏差 33~384 倍的代理值"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(buy): 买盘补全接入推荐流程（CSQAQ 优先 → SteamDT 兜底）",
+    "desc": "feat(buy): 买盘补全接入推荐流程（CSQAQ 优先 → SteamDT 兜底）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "chore",
+    "title": "收录 csqaq_buy.py（CSQAQ info/chart 取 BUFF 求购，供推荐池补买盘）",
+    "desc": "收录 csqaq_buy.py（CSQAQ info/chart 取 BUFF 求购，供推荐池补买盘）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(csqaq): 用 info/chart 拿 BUFF 求购，激活两个长期死掉的评分项",
+    "desc": "feat(csqaq): 用 info/chart 拿 BUFF 求购，激活两个长期死掉的评分项"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(rec): 新增字段覆盖率体检脚本（并入周度自动化）",
+    "desc": "feat(rec): 新增字段覆盖率体检脚本（并入周度自动化）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "fix(rec): FirePulse 遗留死字段清理 + 跨平台比价补齐最后一环",
+    "desc": "fix(rec): FirePulse 遗留死字段清理 + 跨平台比价补齐最后一环"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(rec): 前端展示数据缺口 + 激活「其他平台」比价（死字段修复）",
+    "desc": "feat(rec): 前端展示数据缺口 + 激活「其他平台」比价（死字段修复）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "opt(rec): 批量取价跨进程互斥 + 推荐分散度限额",
+    "desc": "opt(rec): 批量取价跨进程互斥 + 推荐分散度限额"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "fix(steamdt): 批量取价从未成功过 —— 双重解析 TypeError + 限流未处理",
+    "desc": "fix(steamdt): 批量取价从未成功过 —— 双重解析 TypeError + 限流未处理"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-18 17:52",
+    "desc": "wip: local snapshot 2026-09-18 17:52"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "fix(track): 修复「AI追踪分析/进化轨迹/经验教训」三卡永不显示 + 推荐记录折叠",
+    "desc": "fix(track): 修复「AI追踪分析/进化轨迹/经验教训」三卡永不显示 + 推荐记录折叠"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "docs(rec): 体检报告补「修复记录」——三源实测真相 + 8 项优化与前后对比",
+    "desc": "docs(rec): 体检报告补「修复记录」——三源实测真相 + 8 项优化与前后对比"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "opt(rec): 推荐评分与数据链 8 项优化（体检报告 P0/P1 落地）",
+    "desc": "opt(rec): 推荐评分与数据链 8 项优化（体检报告 P0/P1 落地）"
+  },
+  {
+    "date": "2026-09-18",
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-18 17:26",
     "desc": "wip: local snapshot 2026-09-18 17:26"
@@ -16,107 +118,5 @@
     "tag": "fix",
     "title": "feat(track): 追踪页新增「推荐战绩」区块 + 记分卡根目录产物",
     "desc": "feat(track): 追踪页新增「推荐战绩」区块 + 记分卡根目录产物"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "fix(track): rec_tracks 落库真实维度 + Kronos 概率校准结论",
-    "desc": "fix(track): rec_tracks 落库真实维度 + Kronos 概率校准结论"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(rec): 推荐战绩记分卡 + 因子有效性检验（A/B）+ 大盘基准",
-    "desc": "feat(rec): 推荐战绩记分卡 + 因子有效性检验（A/B）+ 大盘基准"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "style(ai): 底部元信息区字号放大（策略/推理/自检/评分权重/教训）",
-    "desc": "style(ai): 底部元信息区字号放大（策略/推理/自检/评分权重/教训）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "style(ai): AI 推荐精选面板重设计（仅 CSS 覆盖，不动 DOM/JS）",
-    "desc": "style(ai): AI 推荐精选面板重设计（仅 CSS 覆盖，不动 DOM/JS）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "fix(track-ai): 追踪AI分析停更3天的双层bug",
-    "desc": "fix(track-ai): 追踪AI分析停更3天的双层bug"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "style(ai): 放大 AI 推荐精选面板字号（义轩要求）",
-    "desc": "style(ai): 放大 AI 推荐精选面板字号（义轩要求）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(ui): Kronos 预测为负时徽章标注「看跌·仅参考」",
-    "desc": "feat(ui): Kronos 预测为负时徽章标注「看跌·仅参考」"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "fix(ui): Kronos 预测徽章涨跌配色写反（跌显示红字）",
-    "desc": "fix(ui): Kronos 预测徽章涨跌配色写反（跌显示红字）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(scan): 全量扫描页排除 StatTrak（义轩要求）",
-    "desc": "feat(scan): 全量扫描页排除 StatTrak（义轩要求）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "chore",
-    "title": "market index 2026-09-18 15:52",
-    "desc": "market index 2026-09-18 15:52"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-18 15:47",
-    "desc": "wip: local snapshot 2026-09-18 15:47"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "chore",
-    "title": "market index 2026-09-18 13:52",
-    "desc": "market index 2026-09-18 13:52"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "fix(rec): StatTrak 排除从未生效（★ 前缀导致 startswith 落空），改子串匹配",
-    "desc": "fix(rec): StatTrak 排除从未生效（★ 前缀导致 startswith 落空），改子串匹配"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-18 12:27",
-    "desc": "wip: local snapshot 2026-09-18 12:27"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "docs(kronos): 微调数据加连续性硬门槛（义轩要求：要用连续几天的，不要看到就用）",
-    "desc": "docs(kronos): 微调数据加连续性硬门槛（义轩要求：要用连续几天的，不要看到就用）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "chore",
-    "title": "market index 2026-09-18 11:52",
-    "desc": "market index 2026-09-18 11:52"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_forecast.json, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, rec_tracks.json, sectors.json 2026-09-18 11:52"
   }
 ]

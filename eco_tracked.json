@@ -5611,13 +5611,44 @@
     "RentGoodsBottomPrice": 0.13,
     "MarketComprePrice": 215.1,
     "_id": "M4A4 | Hellish (Minimal Wear)",
-    "buff_sell": 216.99,
+    "buff_sell": 217.0,
     "yyyp_sell": 215.8,
-    "buff_buy": 210.0,
-    "buff_sell_num": 341,
-    "buff_buy_num": 33,
+    "buff_buy": 205.0,
+    "buff_sell_num": 336,
+    "buff_buy_num": 18,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 218.98,
+        "sell_num": 401,
+        "buy": 562.0,
+        "buy_num": 16
+      },
+      "HALOSKINS": {
+        "sell": 221.96,
+        "sell_num": 383,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 314.24,
+        "sell_num": 111,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 217.0,
+        "sell_num": 336,
+        "buy": 205.0,
+        "buy_num": 18
+      },
+      "YOUPIN": {
+        "sell": 214.5,
+        "sell_num": 925,
+        "buy": 207.0,
+        "buy_num": 15
+      }
+    }
   },
   {
     "HashName": "Nova | Rising Sun (Minimal Wear)",
@@ -8849,13 +8880,44 @@
     "RentGoodsBottomPrice": 0.08,
     "MarketComprePrice": 84.07,
     "_id": "M4A4 | Spider Lily (Minimal Wear)",
-    "buff_sell": 86.88,
+    "buff_sell": 86.98,
     "yyyp_sell": 85.78,
     "buff_buy": 83.0,
-    "buff_sell_num": 541,
-    "buff_buy_num": 26,
+    "buff_sell_num": 536,
+    "buff_buy_num": 34,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 86.0,
+        "sell_num": 374,
+        "buy": 101.0,
+        "buy_num": 44
+      },
+      "YOUPIN": {
+        "sell": 83.3,
+        "sell_num": 1661,
+        "buy": 81.0,
+        "buy_num": 23
+      },
+      "HALOSKINS": {
+        "sell": 86.25,
+        "sell_num": 366,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 138.8,
+        "sell_num": 142,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 86.98,
+        "sell_num": 536,
+        "buy": 83.0,
+        "buy_num": 34
+      }
+    }
   },
   {
     "HashName": "G3SG1 | Flux (Minimal Wear)",
@@ -21123,13 +21185,44 @@
     "RentGoodsBottomPrice": 0.01,
     "MarketComprePrice": 39.83,
     "_id": "Prof. Shahmat | Elite Crew",
-    "buff_sell": 40.68,
+    "buff_sell": 40.89,
     "yyyp_sell": 39.49,
-    "buff_buy": 37.5,
-    "buff_sell_num": 786,
-    "buff_buy_num": 30,
+    "buff_buy": 37.8,
+    "buff_sell_num": 778,
+    "buff_buy_num": 39,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 39.95,
+        "sell_num": 736,
+        "buy": 55.0,
+        "buy_num": 33
+      },
+      "YOUPIN": {
+        "sell": 40.0,
+        "sell_num": 1781,
+        "buy": 0.0,
+        "buy_num": 42
+      },
+      "HALOSKINS": {
+        "sell": 40.54,
+        "sell_num": 704,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 40.89,
+        "sell_num": 778,
+        "buy": 37.8,
+        "buy_num": 39
+      },
+      "STEAM": {
+        "sell": 57.2,
+        "sell_num": 811,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "MAG-7 | Carbon Fiber (Minimal Wear)",
@@ -21773,9 +21866,40 @@
     "yyyp_sell": 579.5,
     "buff_buy": 530.0,
     "buff_sell_num": 54,
-    "buff_buy_num": 19,
+    "buff_buy_num": 20,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 574.0,
+        "sell_num": 62,
+        "buy": 950.0,
+        "buy_num": 8
+      },
+      "BUFF": {
+        "sell": 560.0,
+        "sell_num": 54,
+        "buy": 530.0,
+        "buy_num": 20
+      },
+      "YOUPIN": {
+        "sell": 555.0,
+        "sell_num": 163,
+        "buy": 537.0,
+        "buy_num": 12
+      },
+      "STEAM": {
+        "sell": 884.92,
+        "sell_num": 25,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 581.64,
+        "sell_num": 58,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "★ Hydra Gloves | Emerald (Minimal Wear)",
@@ -33852,13 +33976,44 @@
     "RentGoodsBottomPrice": 0.01,
     "MarketComprePrice": 39.99,
     "_id": "Blackwolf | Sabre",
-    "buff_sell": 40.4,
+    "buff_sell": 40.59,
     "yyyp_sell": 40.0,
-    "buff_buy": 37.1,
-    "buff_sell_num": 571,
-    "buff_buy_num": 18,
+    "buff_buy": 37.5,
+    "buff_sell_num": 569,
+    "buff_buy_num": 23,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 39.85,
+        "sell_num": 634,
+        "buy": 62.0,
+        "buy_num": 59
+      },
+      "YOUPIN": {
+        "sell": 39.29,
+        "sell_num": 2083,
+        "buy": 0.0,
+        "buy_num": 35
+      },
+      "HALOSKINS": {
+        "sell": 40.4,
+        "sell_num": 580,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 40.59,
+        "sell_num": 569,
+        "buy": 37.5,
+        "buy_num": 23
+      },
+      "STEAM": {
+        "sell": 55.99,
+        "sell_num": 838,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "MAC-10 | Button Masher (Minimal Wear)",
@@ -35208,13 +35363,44 @@
     "RentGoodsBottomPrice": 0.1,
     "MarketComprePrice": 78.1,
     "_id": "'Blueberries' Buckshot | NSWC SEAL",
-    "buff_sell": 80.37,
+    "buff_sell": 80.15,
     "yyyp_sell": 80.0,
-    "buff_buy": 74.0,
-    "buff_sell_num": 163,
-    "buff_buy_num": 13,
+    "buff_buy": 73.0,
+    "buff_sell_num": 170,
+    "buff_buy_num": 12,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "BUFF": {
+        "sell": 80.15,
+        "sell_num": 170,
+        "buy": 73.0,
+        "buy_num": 12
+      },
+      "C5": {
+        "sell": 81.88,
+        "sell_num": 234,
+        "buy": 115.0,
+        "buy_num": 8
+      },
+      "YOUPIN": {
+        "sell": 78.1,
+        "sell_num": 545,
+        "buy": 0.0,
+        "buy_num": 19
+      },
+      "STEAM": {
+        "sell": 115.95,
+        "sell_num": 176,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 83.02,
+        "sell_num": 210,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "AK-47 | Frontside Misty (Field-Tested)",
@@ -40934,13 +41120,44 @@
     "RentGoodsBottomPrice": 0.17,
     "MarketComprePrice": 147.51,
     "_id": "M4A4 | 龍王 (Dragon King) (Minimal Wear)",
-    "buff_sell": 151.0,
+    "buff_sell": 154.2,
     "yyyp_sell": 155.99,
-    "buff_buy": 144.0,
-    "buff_sell_num": 363,
+    "buff_buy": 142.0,
+    "buff_sell_num": 345,
     "buff_buy_num": 27,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 154.88,
+        "sell_num": 338,
+        "buy": 172.0,
+        "buy_num": 30
+      },
+      "HALOSKINS": {
+        "sell": 156.96,
+        "sell_num": 324,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "YOUPIN": {
+        "sell": 151.0,
+        "sell_num": 701,
+        "buy": 148.0,
+        "buy_num": 21
+      },
+      "BUFF": {
+        "sell": 154.2,
+        "sell_num": 345,
+        "buy": 142.0,
+        "buy_num": 27
+      },
+      "STEAM": {
+        "sell": 205.01,
+        "sell_num": 134,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "P2000 | Handgun (Factory New)",
@@ -53733,13 +53950,44 @@
     "RentGoodsBottomPrice": 0.01,
     "MarketComprePrice": 38.25,
     "_id": "Rezan The Ready | Sabre",
-    "buff_sell": 39.38,
+    "buff_sell": 39.69,
     "yyyp_sell": 38.88,
-    "buff_buy": 36.3,
-    "buff_sell_num": 722,
-    "buff_buy_num": 55,
+    "buff_buy": 36.5,
+    "buff_sell_num": 712,
+    "buff_buy_num": 59,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 38.95,
+        "sell_num": 914,
+        "buy": 65.0,
+        "buy_num": 73
+      },
+      "YOUPIN": {
+        "sell": 38.0,
+        "sell_num": 2210,
+        "buy": 0.0,
+        "buy_num": 46
+      },
+      "HALOSKINS": {
+        "sell": 39.53,
+        "sell_num": 809,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 39.69,
+        "sell_num": 712,
+        "buy": 36.5,
+        "buy_num": 59
+      },
+      "STEAM": {
+        "sell": 59.62,
+        "sell_num": 662,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "UMP-45 | Houndstooth (Factory New)",
@@ -56975,13 +57223,44 @@
     "RentGoodsBottomPrice": 0.1,
     "MarketComprePrice": 20.24,
     "_id": "Dual Berettas | Heist (Factory New)",
-    "buff_sell": 23.01,
+    "buff_sell": 22.98,
     "yyyp_sell": 26.99,
-    "buff_buy": 19.9,
-    "buff_sell_num": 161,
-    "buff_buy_num": 38,
+    "buff_buy": 14.0,
+    "buff_sell_num": 160,
+    "buff_buy_num": 31,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "YOUPIN": {
+        "sell": 19.61,
+        "sell_num": 560,
+        "buy": 19.0,
+        "buy_num": 21
+      },
+      "BUFF": {
+        "sell": 22.98,
+        "sell_num": 160,
+        "buy": 14.0,
+        "buy_num": 31
+      },
+      "STEAM": {
+        "sell": 32.13,
+        "sell_num": 102,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "C5": {
+        "sell": 20.97,
+        "sell_num": 79,
+        "buy": 71.0,
+        "buy_num": 25
+      },
+      "HALOSKINS": {
+        "sell": 21.31,
+        "sell_num": 73,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "M4A4 | Cyber Security (Field-Tested)",
@@ -63899,13 +64178,44 @@
     "RentGoodsBottomPrice": 0.06,
     "MarketComprePrice": 89.59,
     "_id": "M4A4 | Polysoup (Minimal Wear)",
-    "buff_sell": 90.0,
+    "buff_sell": 90.9,
     "yyyp_sell": 90.0,
-    "buff_buy": 76.0,
-    "buff_sell_num": 183,
-    "buff_buy_num": 6,
+    "buff_buy": 77.0,
+    "buff_sell_num": 185,
+    "buff_buy_num": 7,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 93.64,
+        "sell_num": 137,
+        "buy": 129.0,
+        "buy_num": 12
+      },
+      "STEAM": {
+        "sell": 138.87,
+        "sell_num": 80,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "YOUPIN": {
+        "sell": 89.48,
+        "sell_num": 373,
+        "buy": 82.0,
+        "buy_num": 8
+      },
+      "HALOSKINS": {
+        "sell": 94.92,
+        "sell_num": 135,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 90.9,
+        "sell_num": 185,
+        "buy": 77.0,
+        "buy_num": 7
+      }
+    }
   },
   {
     "HashName": "★ Karambit | Gamma Doppler (Minimal Wear)",
@@ -64838,13 +65148,44 @@
     "RentGoodsBottomPrice": 0.0,
     "MarketComprePrice": 5.08,
     "_id": "M4A4 | Etch Lord (Minimal Wear)",
-    "buff_sell": 5.09,
+    "buff_sell": 5.08,
     "yyyp_sell": 5.18,
     "buff_buy": 5.0,
     "buff_sell_num": 623,
     "buff_buy_num": 41,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "BUFF": {
+        "sell": 5.08,
+        "sell_num": 623,
+        "buy": 5.0,
+        "buy_num": 41
+      },
+      "YOUPIN": {
+        "sell": 5.24,
+        "sell_num": 569,
+        "buy": 5.0,
+        "buy_num": 10
+      },
+      "C5": {
+        "sell": 5.56,
+        "sell_num": 223,
+        "buy": 6.8,
+        "buy_num": 97
+      },
+      "HALOSKINS": {
+        "sell": 5.65,
+        "sell_num": 200,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 7.79,
+        "sell_num": 1230,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "M4A1-S | Moss Quartz (Factory New)",
@@ -64861,13 +65202,44 @@
     "RentGoodsBottomPrice": 0.44,
     "MarketComprePrice": 510.99,
     "_id": "M4A1-S | Moss Quartz (Factory New)",
-    "buff_sell": 559.0,
+    "buff_sell": 557.5,
     "yyyp_sell": 570.0,
-    "buff_buy": 503.0,
-    "buff_sell_num": 131,
+    "buff_buy": 504.0,
+    "buff_sell_num": 133,
     "buff_buy_num": 9,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "YOUPIN": {
+        "sell": 518.29,
+        "sell_num": 509,
+        "buy": 511.0,
+        "buy_num": 39
+      },
+      "C5": {
+        "sell": 518.79,
+        "sell_num": 155,
+        "buy": 1150.0,
+        "buy_num": 13
+      },
+      "BUFF": {
+        "sell": 557.5,
+        "sell_num": 133,
+        "buy": 504.0,
+        "buy_num": 9
+      },
+      "HALOSKINS": {
+        "sell": 525.04,
+        "sell_num": 148,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 802.98,
+        "sell_num": 57,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "★ Classic Knife | Forest DDPAT (Minimal Wear)",
@@ -66606,11 +66978,42 @@
     "_id": "Lt. Commander Ricksaw | NSWC SEAL",
     "buff_sell": 105.0,
     "yyyp_sell": 110.9,
-    "buff_buy": 100.0,
-    "buff_sell_num": 1062,
-    "buff_buy_num": 58,
+    "buff_buy": 101.0,
+    "buff_sell_num": 1066,
+    "buff_buy_num": 66,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 105.0,
+        "sell_num": 889,
+        "buy": 170.0,
+        "buy_num": 91
+      },
+      "HALOSKINS": {
+        "sell": 106.41,
+        "sell_num": 831,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "YOUPIN": {
+        "sell": 103.0,
+        "sell_num": 3318,
+        "buy": 0.0,
+        "buy_num": 94
+      },
+      "BUFF": {
+        "sell": 105.0,
+        "sell_num": 1066,
+        "buy": 101.0,
+        "buy_num": 66
+      },
+      "STEAM": {
+        "sell": 165.08,
+        "sell_num": 485,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "★ Sport Gloves | Violet Beadwork (Well-Worn)",
@@ -68671,11 +69074,42 @@
     "_id": "M4A4 | Urban DDPAT (Factory New)",
     "buff_sell": 149.9,
     "yyyp_sell": 170.0,
-    "buff_buy": 135.0,
+    "buff_buy": 139.0,
     "buff_sell_num": 105,
-    "buff_buy_num": 10,
+    "buff_buy_num": 9,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "YOUPIN": {
+        "sell": 151.99,
+        "sell_num": 497,
+        "buy": 144.0,
+        "buy_num": 40
+      },
+      "C5": {
+        "sell": 153.1,
+        "sell_num": 135,
+        "buy": 311.0,
+        "buy_num": 5
+      },
+      "BUFF": {
+        "sell": 149.9,
+        "sell_num": 105,
+        "buy": 139.0,
+        "buy_num": 9
+      },
+      "STEAM": {
+        "sell": 213.08,
+        "sell_num": 116,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 155.01,
+        "sell_num": 124,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "M249 | Humidor (Factory New)",
@@ -77944,13 +78378,44 @@
     "RentGoodsBottomPrice": 0.06,
     "MarketComprePrice": 117.56,
     "_id": "UMP-45 | Blaze (Factory New)",
-    "buff_sell": 117.6,
+    "buff_sell": 117.59,
     "yyyp_sell": 120.0,
     "buff_buy": 109.0,
     "buff_sell_num": 183,
     "buff_buy_num": 14,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "BUFF": {
+        "sell": 117.59,
+        "sell_num": 183,
+        "buy": 109.0,
+        "buy_num": 14
+      },
+      "C5": {
+        "sell": 118.49,
+        "sell_num": 286,
+        "buy": 256.0,
+        "buy_num": 8
+      },
+      "YOUPIN": {
+        "sell": 117.5,
+        "sell_num": 379,
+        "buy": 107.0,
+        "buy_num": 8
+      },
+      "HALOSKINS": {
+        "sell": 120.12,
+        "sell_num": 271,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 159.57,
+        "sell_num": 100,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "Glock-18 | Oxide Blaze (Factory New)",
@@ -83379,10 +83844,41 @@
     "buff_sell": 247.5,
     "yyyp_sell": 243.83,
     "buff_buy": 228.0,
-    "buff_sell_num": 201,
+    "buff_sell_num": 199,
     "buff_buy_num": 24,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 243.0,
+        "sell_num": 228,
+        "buy": 297.0,
+        "buy_num": 25
+      },
+      "YOUPIN": {
+        "sell": 238.0,
+        "sell_num": 207,
+        "buy": 249.0,
+        "buy_num": 12
+      },
+      "HALOSKINS": {
+        "sell": 246.22,
+        "sell_num": 192,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 247.5,
+        "sell_num": 199,
+        "buy": 228.0,
+        "buy_num": 24
+      },
+      "STEAM": {
+        "sell": 336.09,
+        "sell_num": 147,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "★ StatTrak™ Ursus Knife | Forest DDPAT (Field-Tested)",
@@ -85789,13 +86285,44 @@
     "RentGoodsBottomPrice": 0.7,
     "MarketComprePrice": 75.99,
     "_id": "Galil AR | Vandal (Factory New)",
-    "buff_sell": 87.98,
+    "buff_sell": 87.85,
     "yyyp_sell": 85.0,
-    "buff_buy": 68.0,
-    "buff_sell_num": 66,
-    "buff_buy_num": 5,
+    "buff_buy": 69.0,
+    "buff_sell_num": 67,
+    "buff_buy_num": 9,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "YOUPIN": {
+        "sell": 75.87,
+        "sell_num": 297,
+        "buy": 71.0,
+        "buy_num": 21
+      },
+      "BUFF": {
+        "sell": 87.85,
+        "sell_num": 67,
+        "buy": 69.0,
+        "buy_num": 9
+      },
+      "STEAM": {
+        "sell": 108.22,
+        "sell_num": 71,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "C5": {
+        "sell": 78.35,
+        "sell_num": 94,
+        "buy": 247.0,
+        "buy_num": 10
+      },
+      "HALOSKINS": {
+        "sell": 79.39,
+        "sell_num": 89,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "M4A4 | Royal Paladin (Field-Tested)",
@@ -89713,10 +90240,41 @@
     "buff_sell": 390.0,
     "yyyp_sell": 422.5,
     "buff_buy": 370.0,
-    "buff_sell_num": 177,
+    "buff_sell_num": 176,
     "buff_buy_num": 11,
     "buff_source": "BUFF",
-    "platforms": {}
+    "platforms": {
+      "C5": {
+        "sell": 401.17,
+        "sell_num": 112,
+        "buy": 436.0,
+        "buy_num": 15
+      },
+      "YOUPIN": {
+        "sell": 388.5,
+        "sell_num": 360,
+        "buy": 376.0,
+        "buy_num": 38
+      },
+      "BUFF": {
+        "sell": 390.0,
+        "sell_num": 176,
+        "buy": 370.0,
+        "buy_num": 11
+      },
+      "STEAM": {
+        "sell": 548.23,
+        "sell_num": 74,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 406.41,
+        "sell_num": 106,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   {
     "HashName": "AWP | Black Nile (Factory New)",
