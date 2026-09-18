@@ -2,6 +2,24 @@
   {
     "date": "2026-09-18",
     "tag": "fix",
+    "title": "docs(kronos): 微调数据加连续性硬门槛（义轩要求：要用连续几天的，不要看到就用）",
+    "desc": "docs(kronos): 微调数据加连续性硬门槛（义轩要求：要用连续几天的，不要看到就用）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "chore",
+    "title": "market index 2026-09-18 11:52",
+    "desc": "market index 2026-09-18 11:52"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_forecast.json, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, rec_tracks.json, sectors.json 2026-09-18 11:52"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
     "title": "feat(kronos): 价格库迁 E 盘 + history 覆盖 buff/yy 加速积累",
     "desc": "feat(kronos): 价格库迁 E 盘 + history 覆盖 buff/yy 加速积累"
   },
@@ -88,23 +106,5 @@
     "tag": "fix",
     "title": "feat(ai): 全量切本地 Ollama（含推荐/洞察）+ sentiment 归一化护栏",
     "desc": "feat(ai): 全量切本地 Ollama（含推荐/洞察）+ sentiment 归一化护栏"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-17 17:46",
-    "desc": "wip: local snapshot 2026-09-17 17:46"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "feat(ai): 接入本地 Ollama（deepseek-r1:7b）+ 常驻/自启 + 6 个 JSON 解析容错",
-    "desc": "feat(ai): 接入本地 Ollama（deepseek-r1:7b）+ 常驻/自启 + 6 个 JSON 解析容错"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "feat(ai): AI 调用统一 provider 层（支持本地 Ollama）+ 修掉 6 个功能被空 key 挡死",
-    "desc": "feat(ai): AI 调用统一 provider 层（支持本地 Ollama）+ 修掉 6 个功能被空 key 挡死"
   }
 ]
