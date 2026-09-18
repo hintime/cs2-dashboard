@@ -882,11 +882,14 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             print(f'[REC] 读取盘口旁路失败: {_be}', file=sys.stderr)
 
     # 排除 StatTrak / Souvenir(纪念品) / BS(破损不堪/战痕累累) 等不想要的
-    _EXCLUDE_PREFIXES = ('StatTrak™ ', 'StatTrak ', 'Souvenir ')
+    # ⚠ 2026-09-18 修复：ECO 真名以 "★ StatTrak™ " 开头（★ 前缀+空格），原 startswith
+    #   ('StatTrak™ ', ...) 从未命中 → StatTrak 排除形同虚设（实测漏进候选池 3 件 ST 刀）。
+    #   改为子串匹配；Souvenir 同理加固。
     _EXCLUDE_EXTERIORS = ('Battle-Scarred', '战痕累累', '破损不堪')
     before = len(tracked)
     tracked = [i for i in tracked
-               if not any(i.get('HashName','').startswith(p) for p in _EXCLUDE_PREFIXES)
+               if not any(k in (i.get('HashName','') + ' ' + i.get('GoodsName',''))
+                          for k in ('StatTrak', 'Souvenir'))
                and not any(e in (i.get('HashName','') + i.get('GoodsName','')) for e in _EXCLUDE_EXTERIORS)]
     if len(tracked) < before:
         print(f'[REC] Filtered out {before - len(tracked)} excluded items ({len(tracked)} remaining)')
