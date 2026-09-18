@@ -58,6 +58,11 @@ td{padding:4px 8px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)
   .kpi-v{font-size:18px}
   .timeline{padding-left:20px}
 }
+#trackWrap.collapsed > table > tbody > tr:nth-child(n+9){display:none}
+.track-toggle{margin-top:10px;text-align:center;font-size:12px;color:var(--blue);
+  cursor:pointer;padding:8px;border:1px dashed var(--border);border-radius:8px;
+  user-select:none;transition:background .15s,border-color .15s}
+.track-toggle:hover{background:rgba(96,165,250,.07);border-color:var(--blue)}
 </style>
 </head>
 <body>
@@ -72,8 +77,11 @@ td{padding:4px 8px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)
     </div>
   </div>
   <div class="card">
-    <h2>📋 推荐记录 (按当前价格实时计算)</h2>
-    <table><thead><tr><th style="width:42%">饰品</th><th>推荐日</th><th>推荐价</th><th>当前价</th><th style="text-align:right">收益</th></tr></thead><tbody id="trackList"></tbody></table>
+    <h2>📋 推荐记录 (按当前价格实时计算)<span id="trackCount" style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px"></span></h2>
+    <div id="trackWrap" class="collapsed">
+      <table><thead><tr><th style="width:42%">饰品</th><th>推荐日</th><th>推荐价</th><th>当前价</th><th style="text-align:right">收益</th></tr></thead><tbody id="trackList"></tbody></table>
+    </div>
+    <div id="trackToggle" class="track-toggle" style="display:none" role="button" tabindex="0"></div>
   </div>
   <div class="card" id="aiTrackCard" style="display:none">
     <h2>🧠 AI 追踪分析 <span style="font-size:9px;background:rgba(96,165,250,.15);color:#60a5fa;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px">智谱 GLM-4</span><span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px" id="aiMeta"></span></h2>
@@ -228,12 +236,60 @@ function renderTracks(tracks, nowPrices, marketData, nameMap) {
   }).join('');
 
   document.getElementById('trackList').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">暂无记录</td></tr>';
+
+  // ── 折叠：默认只显示前 8 条，底部「展开全部」（状态跨定时刷新保持）──
+  (function(){
+    var wrap = document.getElementById('trackWrap');
+    var tg = document.getElementById('trackToggle');
+    var cnt = document.getElementById('trackCount');
+    var n = document.querySelectorAll('#trackList tr').length;
+    if (cnt) cnt.textContent = n ? ('共 ' + n + ' 条 · 按收益排序') : '';
+    if (!wrap || !tg) return;
+    if (n > 8) {
+      tg.style.display = '';
+      wrap.classList.toggle('collapsed', !window._trackExpanded);
+      tg.textContent = window._trackExpanded ? '▲ 收起（仅看前 8 条）' : ('▼ 展开全部 ' + n + ' 条');
+    } else {
+      tg.style.display = 'none';
+      wrap.classList.remove('collapsed');
+    }
+  })();
+
+  // ⚠ 2026-09-18 修复：这些统计量原来是 renderTracks 内的 var，
+  //   而 runAITrackAnalysis 在其外部直接引用 → Uncaught ReferenceError: total is not defined
+  //   → AI 追踪分析 / 进化轨迹 / 经验教训 三张卡片全部不渲染。此处导出到 window.TK。
+  window.TK = {
+    total: total, uniqueDays: uniqueDays, profited: profited, avgRet: avgRet,
+    bestName: bestName, bestRet: bestRet, worstName: worstName, worstRet: worstRet
+  };
+  // ⚠ 2026-09-18：runAITrackAnalysis 原来只在脚本加载时调一次（那时 TK 还没生成、total=0 →
+  //   直接 return）→ AI 追踪分析/进化轨迹/经验教训 三卡永远不显示。必须在数据渲染完成后调用。
+  try { runAITrackAnalysis(); } catch (e) { console.warn("[track] AI 分析渲染失败", e); }
 }
+
+// 推荐记录折叠开关
+(function(){
+  var tg = document.getElementById('trackToggle');
+  if (!tg) return;
+  tg.addEventListener('click', function(){
+    window._trackExpanded = !window._trackExpanded;
+    var wrap = document.getElementById('trackWrap');
+    if (wrap) wrap.classList.toggle('collapsed', !window._trackExpanded);
+    var n = document.querySelectorAll('#trackList tr').length;
+    this.textContent = window._trackExpanded ? '▲ 收起（仅看前 8 条）' : ('▼ 展开全部 ' + n + ' 条');
+  });
+})();
 
 loadTracks();
 (function(){var _l=Date.now();setInterval(function(){fetch('data_status.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadTracks();}}).catch(function(){})},60000)})();
   // ── AI 追踪分析（双源：CI端全量分析 + 本地简要总结）──
   function runAITrackAnalysis() {
+    // 从 window.TK 取回统计量（见 renderTracks 末尾；修复 ReferenceError）
+    var _TK = window.TK || {};
+    var total = _TK.total || 0, uniqueDays = _TK.uniqueDays || 0,
+        profited = _TK.profited || 0, avgRet = _TK.avgRet || 0,
+        bestName = _TK.bestName || '', bestRet = _TK.bestRet || 0,
+        worstName = _TK.worstName || '', worstRet = _TK.worstRet || 0;
     var card = document.getElementById('aiTrackCard');
     var el = document.getElementById('aiTrackContent');
     if (!el || total < 3) return;
