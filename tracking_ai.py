@@ -17,7 +17,8 @@ import urllib.error
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = SCRIPT_DIR
 DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', '')
-# 追踪分析固定用 DeepSeek
+# ⚠ 2026-09-18：原硬编码 DeepSeek（DEEPSEEK_KEY 未配置 → 持续 401，追踪分析停更 3 天）。
+#   现统一走 update._ai_call（智谱 GLM / ollama，含云端兜底）；下列常量仅为兼容保留。
 AI_KEY = DEEPSEEK_KEY
 AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions'
 MODEL = 'deepseek-v4-flash'
@@ -89,51 +90,29 @@ def load_all_tracks():
 # ── AI 调用 ──
 
 def _call_ai(messages, max_tokens=2048, temperature=0.5, json_mode=False):
-    """统一 AI 调用 — 自动切换 DeepSeek/Zhipu（含重试）"""
-    key = AI_KEY
-    endpoint = AI_ENDPOINT
-    
-    for attempt in range(3):
-        try:
-            body = {
-                'model': MODEL,
-                'messages': messages,
-                'max_tokens': max_tokens,
-                'temperature': temperature,
-                'thinking': {'type': 'enabled'}
-            }
-            if json_mode:
-                body['response_format'] = {'type': 'json_object'}
-            
-            data = json.dumps(body).encode('utf-8')
-            req = urllib.request.Request(
-                endpoint,
-                data=data,
-                headers={
-                    'Authorization': f'Bearer {key}',
-                    'Content-Type': 'application/json'
-                }
-            )
-            resp = urllib.request.urlopen(req, timeout=90)
-            result = json.loads(resp.read().decode('utf-8'))
-            content = result['choices'][0]['message'].get('content', '')
-            return content
-        except urllib.error.HTTPError as e:
-            if e.code == 429:
-                wait = (attempt + 1) * 12
-                print(f'[TRACK-AI] 429 rate limited, waiting {wait}s (attempt {attempt+1}/3)...')
-                time.sleep(wait)
-            else:
-                print(f'[TRACK-AI] HTTP {e.code}: {e}', file=sys.stderr)
-                if attempt == 2:
-                    return None
-                time.sleep(5)
-        except Exception as e:
-            print(f'[TRACK-AI] Error: {e}', file=sys.stderr)
-            if attempt == 2:
-                return None
-            time.sleep(5)
-    return None
+    """统一 AI 调用 — 复用 update._ai_call（智谱 GLM / ollama，含云端兜底与重试）。
+
+    ⚠ 2026-09-18 修复：原实现硬编码 DeepSeek 端点 + DEEPSEEK_KEY（未配置）→ 持续 401，
+      追踪分析自 09-15 起一直失败，且被"每 24h 最多 1 次"限流锁死，
+      导致 tracking_analysis.json / tracking_lessons.json 停更 3 天。
+      现复用项目统一 AI 出口，与推荐/洞察等走同一 provider（默认 zhipu glm-4-flash）。
+    """
+    try:
+        import update as _u
+        return _u._ai_call(messages, max_tokens=max_tokens, temperature=temperature,
+                           json_mode=json_mode, timeout=120)
+    except Exception as e:
+        print('[TRACK-AI] 统一 AI 出口调用失败: %s' % e, file=sys.stderr)
+        return None
+
+def _ai_model_label():
+    """返回当前实际 AI 模型名（用于 meta，避免写死过期的 deepseek 常量）。"""
+    try:
+        import update as _u
+        return _u._ai_model_name(False)
+    except Exception:
+        return MODEL
+
 
 # ── 核心分析 ──
 
@@ -250,24 +229,38 @@ ECO推荐{len(eco_items)}件，BUFF推荐{len(buff_items)}件
     
     try:
         analysis = json.loads(result)
-        analysis['meta'] = {
-            'total_tracks': total,
-            'date_range': f"{dates[0]}~{dates[-1]}" if dates else 'N/A',
-            'analyzed_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
-            'model': MODEL
-        }
-        return analysis
     except json.JSONDecodeError:
-        # 尝试提取JSON
-        start = result.find('{')
-        end = result.rfind('}') + 1
-        if start >= 0 and end > start:
+        # 兜底1：剥掉 markdown 代码围栏（```json ... ```）
+        _r = (result or '').strip()
+        if _r.startswith('```'):
+            _parts = _r.split('```')
+            if len(_parts) >= 2:
+                _r = _parts[1]
+            if _r.lstrip().lower().startswith('json'):
+                _r = _r.lstrip()[4:]
+        # 兜底2：截取最外层 {...}
+        _a, _b = _r.find('{'), _r.rfind('}')
+        analysis = None
+        _cands = [_r, (_r[_a:_b + 1] if (_a >= 0 and _b > _a) else '')]
+        for _cand in _cands:
+            if not _cand:
+                continue
             try:
-                return json.loads(result[start:end])
-            except:
-                pass
-        print(f'[TRACK-AI] Failed to parse AI response as JSON')
-        return None
+                analysis = json.loads(_cand)
+                break
+            except Exception:
+                continue
+        if analysis is None:
+            _snip = (result or '').strip().replace('\n', ' ')[:400]
+            print('[TRACK-AI] Failed to parse AI response as JSON；原始片段: %s' % _snip, file=sys.stderr)
+            return None
+    analysis['meta'] = {
+        'total_tracks': total,
+        'date_range': f"{dates[0]}~{dates[-1]}" if dates else 'N/A',
+        'analyzed_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'model': _ai_model_label(),
+    }
+    return analysis
 
 def _get_market_background():
     """获取当前市场背景数据"""
