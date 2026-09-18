@@ -1,22 +1,18 @@
 {
-  "update_time": "2026-09-18 23:38:28",
+  "update_time": "2026-09-19 00:10:33",
   "total_cost": 20309.35,
-  "total_market": 4645.73,
+  "total_market": 4641.49,
   "items": [
     {
       "name": "M4A1消音版 | 苔藓石英 (崭新出厂)",
       "wear": "FN",
       "wear_value": null,
       "cost": 1610.0,
-      "price": 546.31,
+      "price": 540.99,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A1-S | Moss Quartz (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 1090.0
-        },
         {
           "date": "2026-05-19",
           "price": 1100.0
@@ -252,11 +248,15 @@
         {
           "date": "2026-09-18",
           "price": 546.31
+        },
+        {
+          "date": "2026-09-19",
+          "price": 540.99
         }
       ],
-      "rate_1": -0.0,
-      "rate_7": -11.88,
-      "rate_30": -12.17,
+      "rate_1": -0.97,
+      "rate_7": -12.74,
+      "rate_30": -12.39,
       "buff_sell": 520.0,
       "buff_buy": 505.0,
       "buff_sell_num": 133,
@@ -288,10 +288,6 @@
       "qty": 2,
       "market_hash": "FAMAS | Commemoration (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 445.0
-        },
         {
           "date": "2026-05-19",
           "price": 428.0
@@ -527,15 +523,19 @@
         {
           "date": "2026-09-18",
           "price": 399.0
+        },
+        {
+          "date": "2026-09-19",
+          "price": 399.0
         }
       ],
       "rate_1": 0.0,
       "rate_7": -10.34,
-      "rate_30": -2.52,
+      "rate_30": -1.65,
       "buff_sell": 389.5,
       "buff_buy": 370.0,
       "buff_sell_num": 177,
-      "buff_buy_num": 9,
+      "buff_buy_num": 10,
       "fp_current_price": 394.5,
       "fp_today_ratio": -1.25,
       "fp_week_ratio": -9.21,
@@ -563,10 +563,6 @@
       "qty": 1,
       "market_hash": "P2000 | Fire Elemental (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 945.0
-        },
         {
           "date": "2026-05-19",
           "price": 960.0
@@ -802,11 +798,15 @@
         {
           "date": "2026-09-18",
           "price": 588.0
+        },
+        {
+          "date": "2026-09-19",
+          "price": 588.0
         }
       ],
       "rate_1": 0.0,
       "rate_7": -3.4,
-      "rate_30": -9.21,
+      "rate_30": -9.45,
       "buff_sell": 560.0,
       "buff_buy": 530.0,
       "buff_sell_num": 53,
@@ -838,10 +838,6 @@
       "qty": 2,
       "market_hash": "UMP-45 | Blaze (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 253.0
-        },
         {
           "date": "2026-05-19",
           "price": 253.0
@@ -1077,6 +1073,10 @@
         {
           "date": "2026-09-18",
           "price": 123.0
+        },
+        {
+          "date": "2026-09-19",
+          "price": 123.0
         }
       ],
       "rate_1": 0.0,
@@ -1113,10 +1113,6 @@
       "qty": 1,
       "market_hash": "M4A4 | Hellish (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 562.99
-        },
         {
           "date": "2026-05-19",
           "price": 561.0
@@ -1352,15 +1348,19 @@
         {
           "date": "2026-09-18",
           "price": 223.0
+        },
+        {
+          "date": "2026-09-19",
+          "price": 223.0
         }
       ],
       "rate_1": 0.0,
       "rate_7": -5.51,
-      "rate_30": -14.73,
+      "rate_30": -14.7,
       "buff_sell": 218.49,
       "buff_buy": 205.0,
-      "buff_sell_num": 331,
-      "buff_buy_num": 17,
+      "buff_sell_num": 333,
+      "buff_buy_num": 18,
       "fp_current_price": 214,
       "fp_today_ratio": -0.91,
       "fp_week_ratio": -4.46,
@@ -1388,10 +1388,6 @@
       "qty": 2,
       "market_hash": "Lt. Commander Ricksaw | NSWC SEAL",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 171.0
-        },
         {
           "date": "2026-05-19",
           "price": 166.0
@@ -1627,11 +1623,15 @@
         {
           "date": "2026-09-18",
           "price": 105.89
+        },
+        {
+          "date": "2026-09-19",
+          "price": 105.89
         }
       ],
-      "rate_1": -0.1,
+      "rate_1": 0.0,
       "rate_7": -13.82,
-      "rate_30": -9.29,
+      "rate_30": -8.83,
       "buff_sell": 106.99,
       "buff_buy": 100.0,
       "buff_sell_num": 1003,
@@ -1663,10 +1663,6 @@
       "qty": 3,
       "market_hash": "'Blueberries' Buckshot | NSWC SEAL",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 125.0
-        },
         {
           "date": "2026-05-19",
           "price": 124.98
@@ -1902,6 +1898,10 @@
         {
           "date": "2026-09-18",
           "price": 82.5
+        },
+        {
+          "date": "2026-09-19",
+          "price": 82.5
         }
       ],
       "rate_1": 0.0,
@@ -1938,10 +1938,6 @@
       "qty": 1,
       "market_hash": "M4A4 | Urban DDPAT (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 318.0
-        },
         {
           "date": "2026-05-19",
           "price": 326.0
@@ -2177,11 +2173,15 @@
         {
           "date": "2026-09-18",
           "price": 153.5
+        },
+        {
+          "date": "2026-09-19",
+          "price": 153.5
         }
       ],
       "rate_1": 0.0,
       "rate_7": -14.25,
-      "rate_30": -12.62,
+      "rate_30": -12.91,
       "buff_sell": 149.9,
       "buff_buy": 138.0,
       "buff_sell_num": 105,
@@ -2213,10 +2213,6 @@
       "qty": 3,
       "market_hash": "M4A4 | Polysoup (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 128.88
-        },
         {
           "date": "2026-05-19",
           "price": 123.91
@@ -2452,11 +2448,15 @@
         {
           "date": "2026-09-18",
           "price": 96.1
+        },
+        {
+          "date": "2026-09-19",
+          "price": 96.1
         }
       ],
-      "rate_1": 0.72,
+      "rate_1": 0.0,
       "rate_7": -1.25,
-      "rate_30": -6.2,
+      "rate_30": -5.47,
       "buff_sell": 90.9,
       "buff_buy": 73.0,
       "buff_sell_num": 182,
@@ -2488,10 +2488,6 @@
       "qty": 1,
       "market_hash": "★ Moto Gloves | 3rd Commando Company (Field-Tested)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 315.0
-        },
         {
           "date": "2026-05-19",
           "price": 329.0
@@ -2727,15 +2723,19 @@
         {
           "date": "2026-09-18",
           "price": 247.98
+        },
+        {
+          "date": "2026-09-19",
+          "price": 247.98
         }
       ],
-      "rate_1": -0.0,
+      "rate_1": 0.0,
       "rate_7": -4.33,
-      "rate_30": -5.19,
+      "rate_30": -6.01,
       "buff_sell": 247.5,
       "buff_buy": 228.0,
       "buff_sell_num": 197,
-      "buff_buy_num": 22,
+      "buff_buy_num": 23,
       "fp_current_price": 240,
       "fp_today_ratio": -2.04,
       "fp_week_ratio": -2.04,
@@ -2758,15 +2758,11 @@
       "wear": "FN",
       "wear_value": null,
       "cost": 368.0,
-      "price": 73.85,
+      "price": 73.82,
       "category": "步枪",
       "qty": 1,
       "market_hash": "Galil AR | Vandal (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 247.5
-        },
         {
           "date": "2026-05-19",
           "price": 250.99
@@ -3002,11 +2998,15 @@
         {
           "date": "2026-09-18",
           "price": 73.85
+        },
+        {
+          "date": "2026-09-19",
+          "price": 73.82
         }
       ],
       "rate_1": -0.04,
-      "rate_7": -19.89,
-      "rate_30": -17.11,
+      "rate_7": -19.93,
+      "rate_30": -17.22,
       "buff_sell": 84.97,
       "buff_buy": 70.0,
       "buff_sell_num": 65,
@@ -3038,10 +3038,6 @@
       "qty": 5,
       "market_hash": "Prof. Shahmat | Elite Crew",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 57.67
-        },
         {
           "date": "2026-05-19",
           "price": 58.0
@@ -3277,11 +3273,15 @@
         {
           "date": "2026-09-18",
           "price": 39.83
+        },
+        {
+          "date": "2026-09-19",
+          "price": 39.83
         }
       ],
       "rate_1": 0.0,
       "rate_7": -2.81,
-      "rate_30": -7.55,
+      "rate_30": -7.64,
       "buff_sell": 40.89,
       "buff_buy": 37.7,
       "buff_sell_num": 772,
@@ -3308,15 +3308,11 @@
       "wear": "other",
       "wear_value": null,
       "cost": 239.0,
-      "price": 17.77,
+      "price": 17.51,
       "category": "印花",
       "qty": 6,
       "market_hash": "Sticker | FaZe Clan (Holo) | Shanghai 2024",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 35.7
-        },
         {
           "date": "2026-05-19",
           "price": 36.72
@@ -3552,11 +3548,15 @@
         {
           "date": "2026-09-18",
           "price": 17.77
+        },
+        {
+          "date": "2026-09-19",
+          "price": 17.51
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -17.46,
-      "rate_30": -12.25,
+      "rate_1": -1.46,
+      "rate_7": -18.67,
+      "rate_30": -12.76,
       "buff_sell": 16.91,
       "buff_buy": 13.0,
       "buff_sell_num": 81,
@@ -3586,10 +3586,6 @@
       "qty": 5,
       "market_hash": "Sticker | Natus Vincere (Holo) | Shanghai 2024",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 32.44
-        },
         {
           "date": "2026-05-19",
           "price": 31.5
@@ -3825,11 +3821,15 @@
         {
           "date": "2026-09-18",
           "price": 13.83
+        },
+        {
+          "date": "2026-09-19",
+          "price": 13.83
         }
       ],
       "rate_1": 0.0,
       "rate_7": -17.68,
-      "rate_30": -13.99,
+      "rate_30": -13.68,
       "buff_sell": 13.88,
       "buff_buy": 12.1,
       "buff_sell_num": 136,
@@ -3854,15 +3854,11 @@
       "wear": "MW",
       "wear_value": null,
       "cost": 184.0,
-      "price": 155.0,
+      "price": 158.0,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | 龍王 (Dragon King) (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 179.17
-        },
         {
           "date": "2026-05-19",
           "price": 179.58
@@ -4098,15 +4094,19 @@
         {
           "date": "2026-09-18",
           "price": 155.0
+        },
+        {
+          "date": "2026-09-19",
+          "price": 158.0
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -4.91,
-      "rate_30": -3.29,
-      "buff_sell": 152.5,
-      "buff_buy": 143.0,
-      "buff_sell_num": 347,
-      "buff_buy_num": 20,
+      "rate_1": 1.94,
+      "rate_7": -3.07,
+      "rate_30": -2.93,
+      "buff_sell": 154.2,
+      "buff_buy": 142.0,
+      "buff_sell_num": 344,
+      "buff_buy_num": 21,
       "fp_current_price": 147.5,
       "fp_today_ratio": -2.54,
       "fp_week_ratio": -7.41,
@@ -4134,10 +4134,6 @@
       "qty": 5,
       "market_hash": "Sticker | HEROIC (Holo) | Shanghai 2024",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 38.7
-        },
         {
           "date": "2026-05-19",
           "price": 39.5
@@ -4373,12 +4369,16 @@
         {
           "date": "2026-09-18",
           "price": 16.82
+        },
+        {
+          "date": "2026-09-19",
+          "price": 16.82
         }
       ],
       "rate_1": 0.0,
       "rate_7": -9.13,
-      "rate_30": -13.79,
-      "buff_sell": 19.64,
+      "rate_30": -14.0,
+      "buff_sell": 19.63,
       "buff_buy": 14.0,
       "buff_sell_num": 124,
       "buff_buy_num": 314,
@@ -4402,15 +4402,11 @@
       "wear": "other",
       "wear_value": null,
       "cost": 137.0,
-      "price": 40.18,
+      "price": 40.17,
       "category": "匕首",
       "qty": 1,
       "market_hash": "Rezan The Ready | Sabre",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 68.0
-        },
         {
           "date": "2026-05-19",
           "price": 64.0
@@ -4646,15 +4642,19 @@
         {
           "date": "2026-09-18",
           "price": 40.18
+        },
+        {
+          "date": "2026-09-19",
+          "price": 40.17
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -1.98,
-      "rate_30": -9.98,
-      "buff_sell": 39.87,
-      "buff_buy": 36.5,
-      "buff_sell_num": 705,
-      "buff_buy_num": 59,
+      "rate_1": -0.02,
+      "rate_7": -2.0,
+      "rate_30": -9.08,
+      "buff_sell": 37.9,
+      "buff_buy": 36.6,
+      "buff_sell_num": 706,
+      "buff_buy_num": 60,
       "fp_current_price": 38,
       "fp_today_ratio": -1.55,
       "fp_week_ratio": -2.31,
@@ -4682,10 +4682,6 @@
       "qty": 2,
       "market_hash": "Sticker | Evil Geniuses (Holo) | Stockholm 2021",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 43.99
-        },
         {
           "date": "2026-05-19",
           "price": 43.99
@@ -4921,6 +4917,10 @@
         {
           "date": "2026-09-18",
           "price": 26.68
+        },
+        {
+          "date": "2026-09-19",
+          "price": 26.68
         }
       ],
       "rate_1": 0.0,
@@ -4928,8 +4928,8 @@
       "rate_30": -9.6,
       "buff_sell": 23.79,
       "buff_buy": 22.2,
-      "buff_sell_num": 546,
-      "buff_buy_num": 274,
+      "buff_sell_num": 541,
+      "buff_buy_num": 269,
       "fp_current_price": 24.19,
       "fp_today_ratio": -0.45,
       "fp_week_ratio": -16.01,
@@ -4950,15 +4950,11 @@
       "wear": "other",
       "wear_value": null,
       "cost": 130.0,
-      "price": 41.39,
+      "price": 41.36,
       "category": "匕首",
       "qty": 1,
       "market_hash": "Blackwolf | Sabre",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 67.19
-        },
         {
           "date": "2026-05-19",
           "price": 67.0
@@ -5194,14 +5190,18 @@
         {
           "date": "2026-09-18",
           "price": 41.39
+        },
+        {
+          "date": "2026-09-19",
+          "price": 41.36
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -5.93,
-      "rate_30": -9.37,
-      "buff_sell": 40.46,
+      "rate_1": -0.07,
+      "rate_7": -6.0,
+      "rate_30": -9.33,
+      "buff_sell": 40.36,
       "buff_buy": 37.5,
-      "buff_sell_num": 565,
+      "buff_sell_num": 566,
       "buff_buy_num": 26,
       "fp_current_price": 39.75,
       "fp_today_ratio": 1.15,
@@ -5225,15 +5225,11 @@
       "wear": "MW",
       "wear_value": null,
       "cost": 127.0,
-      "price": 87.4,
+      "price": 86.73,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | Spider Lily (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 105.98
-        },
         {
           "date": "2026-05-19",
           "price": 108.0
@@ -5469,14 +5465,18 @@
         {
           "date": "2026-09-18",
           "price": 87.4
+        },
+        {
+          "date": "2026-09-19",
+          "price": 86.73
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": 0.01,
-      "rate_30": -4.28,
+      "rate_1": -0.77,
+      "rate_7": -0.76,
+      "rate_30": -4.8,
       "buff_sell": 86.66,
       "buff_buy": 83.0,
-      "buff_sell_num": 536,
+      "buff_sell_num": 537,
       "buff_buy_num": 36,
       "fp_current_price": 83.5,
       "fp_today_ratio": -1.18,
@@ -5505,10 +5505,6 @@
       "qty": 1,
       "market_hash": "Sticker | paiN Gaming (Holo) | Stockholm 2021",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 42.04
-        },
         {
           "date": "2026-05-19",
           "price": 40.42
@@ -5744,11 +5740,15 @@
         {
           "date": "2026-09-18",
           "price": 26.82
+        },
+        {
+          "date": "2026-09-19",
+          "price": 26.82
         }
       ],
-      "rate_1": 11.47,
+      "rate_1": 0.0,
       "rate_7": 12.12,
-      "rate_30": -8.83,
+      "rate_30": -8.21,
       "buff_sell": 24.47,
       "buff_buy": 15.0,
       "buff_sell_num": 135,
@@ -5778,10 +5778,6 @@
       "qty": 3,
       "market_hash": "Sticker | GamerLegion (Holo) | Budapest 2025",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 15.92
-        },
         {
           "date": "2026-05-19",
           "price": 15.97
@@ -6017,14 +6013,18 @@
         {
           "date": "2026-09-18",
           "price": 8.95
+        },
+        {
+          "date": "2026-09-19",
+          "price": 8.95
         }
       ],
       "rate_1": 0.0,
       "rate_7": -8.39,
-      "rate_30": -10.68,
-      "buff_sell": 9.2,
+      "rate_30": -10.72,
+      "buff_sell": 9.0,
       "buff_buy": 7.1,
-      "buff_sell_num": 89,
+      "buff_sell_num": 90,
       "buff_buy_num": 66,
       "fp_current_price": 8.31,
       "fp_today_ratio": 0,
@@ -6051,10 +6051,6 @@
       "qty": 2,
       "market_hash": "Sticker | Natus Vincere (Holo) | Stockholm 2021",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 24.28
-        },
         {
           "date": "2026-05-19",
           "price": 24.62
@@ -6290,11 +6286,15 @@
         {
           "date": "2026-09-18",
           "price": 15.6
+        },
+        {
+          "date": "2026-09-19",
+          "price": 15.6
         }
       ],
       "rate_1": 0.0,
       "rate_7": -5.34,
-      "rate_30": -8.72,
+      "rate_30": -8.94,
       "buff_sell": 15.0,
       "buff_buy": 13.5,
       "buff_sell_num": 392,
@@ -6324,10 +6324,6 @@
       "qty": 2,
       "market_hash": "Sticker | fnatic (Holo) | Budapest 2025",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 15.39
-        },
         {
           "date": "2026-05-19",
           "price": 16.48
@@ -6563,11 +6559,15 @@
         {
           "date": "2026-09-18",
           "price": 7.0
+        },
+        {
+          "date": "2026-09-19",
+          "price": 7.0
         }
       ],
-      "rate_1": -5.28,
+      "rate_1": 0.0,
       "rate_7": -14.63,
-      "rate_30": -13.3,
+      "rate_30": -14.03,
       "buff_sell": 7.58,
       "buff_buy": 6.7,
       "buff_sell_num": 121,
@@ -6599,10 +6599,6 @@
       "qty": 1,
       "market_hash": "Dual Berettas | Heist (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 68.0
-        },
         {
           "date": "2026-05-19",
           "price": 66.0
@@ -6838,15 +6834,19 @@
         {
           "date": "2026-09-18",
           "price": 20.99
+        },
+        {
+          "date": "2026-09-19",
+          "price": 20.99
         }
       ],
       "rate_1": 0.0,
       "rate_7": -20.85,
-      "rate_30": -16.86,
+      "rate_30": -16.63,
       "buff_sell": 22.88,
-      "buff_buy": 15.8,
+      "buff_buy": 15.9,
       "buff_sell_num": 159,
-      "buff_buy_num": 38,
+      "buff_buy_num": 36,
       "fp_current_price": 20.18,
       "fp_today_ratio": -2.46,
       "fp_week_ratio": -19.86,
@@ -6874,10 +6874,6 @@
       "qty": 1,
       "market_hash": "Sticker | Complexity Gaming (Holo) | Antwerp 2022",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 37.12
-        },
         {
           "date": "2026-05-19",
           "price": 39.56
@@ -7113,11 +7109,15 @@
         {
           "date": "2026-09-18",
           "price": 20.79
+        },
+        {
+          "date": "2026-09-19",
+          "price": 20.79
         }
       ],
       "rate_1": 0.0,
       "rate_7": -7.85,
-      "rate_30": -10.73,
+      "rate_30": -11.57,
       "buff_sell": 21.7,
       "buff_buy": 18.0,
       "buff_sell_num": 139,
@@ -7147,10 +7147,6 @@
       "qty": 1,
       "market_hash": "Sticker | Ninjas in Pyjamas (Holo) | Stockholm 2021",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 25.89
-        },
         {
           "date": "2026-05-19",
           "price": 25.74
@@ -7386,11 +7382,15 @@
         {
           "date": "2026-09-18",
           "price": 12.65
+        },
+        {
+          "date": "2026-09-19",
+          "price": 12.65
         }
       ],
       "rate_1": 0.0,
       "rate_7": -2.17,
-      "rate_30": -12.47,
+      "rate_30": -12.4,
       "buff_sell": 11.25,
       "buff_buy": 10.7,
       "buff_sell_num": 408,
@@ -7420,10 +7420,6 @@
       "qty": 1,
       "market_hash": "Sticker | RED Canids (Holo) | Budapest 2025",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 27.0
-        },
         {
           "date": "2026-05-19",
           "price": 25.57
@@ -7659,11 +7655,15 @@
         {
           "date": "2026-09-18",
           "price": 10.53
+        },
+        {
+          "date": "2026-09-19",
+          "price": 10.53
         }
       ],
-      "rate_1": -0.66,
+      "rate_1": 0.0,
       "rate_7": -10.54,
-      "rate_30": -14.88,
+      "rate_30": -14.35,
       "buff_sell": 10.45,
       "buff_buy": 9.1,
       "buff_sell_num": 123,
@@ -7693,10 +7693,6 @@
       "qty": 1,
       "market_hash": "Sticker | MIBR (Holo) | Budapest 2025",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 16.32
-        },
         {
           "date": "2026-05-19",
           "price": 16.45
@@ -7932,11 +7928,15 @@
         {
           "date": "2026-09-18",
           "price": 7.18
+        },
+        {
+          "date": "2026-09-19",
+          "price": 7.18
         }
       ],
       "rate_1": 0.0,
       "rate_7": -16.22,
-      "rate_30": -13.66,
+      "rate_30": -13.74,
       "buff_sell": 8.59,
       "buff_buy": 6.0,
       "buff_sell_num": 97,
@@ -7966,10 +7966,6 @@
       "qty": 1,
       "market_hash": "Music Kit | DRYDEN, Feel The Power",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 8.98
-        },
         {
           "date": "2026-05-19",
           "price": 9.0
@@ -8205,14 +8201,18 @@
         {
           "date": "2026-09-18",
           "price": 8.86
+        },
+        {
+          "date": "2026-09-19",
+          "price": 8.86
         }
       ],
       "rate_1": 0.0,
       "rate_7": 0.45,
-      "rate_30": -0.33,
-      "buff_sell": 9.11,
+      "rate_30": -0.38,
+      "buff_sell": 9.09,
       "buff_buy": 8.7,
-      "buff_sell_num": 569,
+      "buff_sell_num": 570,
       "buff_buy_num": 27,
       "fp_current_price": 9.04,
       "fp_today_ratio": 0,
@@ -8234,15 +8234,11 @@
       "wear": "MW",
       "wear_value": null,
       "cost": 7.65,
-      "price": 5.27,
+      "price": 5.65,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | Etch Lord (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 6.09
-        },
         {
           "date": "2026-05-19",
           "price": 6.09
@@ -8478,14 +8474,18 @@
         {
           "date": "2026-09-18",
           "price": 5.27
+        },
+        {
+          "date": "2026-09-19",
+          "price": 5.65
         }
       ],
-      "rate_1": -6.06,
-      "rate_7": -2.41,
-      "rate_30": -3.28,
+      "rate_1": 7.21,
+      "rate_7": 4.63,
+      "rate_30": -1.76,
       "buff_sell": 5.1,
       "buff_buy": 5.0,
-      "buff_sell_num": 619,
+      "buff_sell_num": 616,
       "buff_buy_num": 41,
       "fp_current_price": 5.1,
       "fp_today_ratio": -0.39,
@@ -8514,10 +8514,6 @@
       "qty": 1,
       "market_hash": "Sticker | iM | Shanghai 2024",
       "price_history": [
-        {
-          "date": "2026-05-18",
-          "price": 0.02
-        },
         {
           "date": "2026-05-19",
           "price": 0.02
@@ -8752,6 +8748,10 @@
         },
         {
           "date": "2026-09-18",
+          "price": 0.02
+        },
+        {
+          "date": "2026-09-19",
           "price": 0.02
         }
       ],
