@@ -2,6 +2,18 @@
   {
     "date": "2026-09-18",
     "tag": "fix",
+    "title": "feat(kronos): 价格库迁 E 盘 + history 覆盖 buff/yy 加速积累",
+    "desc": "feat(kronos): 价格库迁 E 盘 + history 覆盖 buff/yy 加速积累"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(kronos): 新增独立 history 模式，每 4h 落价以积累微调长序列",
+    "desc": "feat(kronos): 新增独立 history 模式，每 4h 落价以积累微调长序列"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
     "title": "chore(kronos): 建微调评估台架 + 放宽价格历史保留期（365天）",
     "desc": "chore(kronos): 建微调评估台架 + 放宽价格历史保留期（365天）"
   },
@@ -94,17 +106,5 @@
     "tag": "fix",
     "title": "feat(ai): AI 调用统一 provider 层（支持本地 Ollama）+ 修掉 6 个功能被空 key 挡死",
     "desc": "feat(ai): AI 调用统一 provider 层（支持本地 Ollama）+ 修掉 6 个功能被空 key 挡死"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-17 17:15",
-    "desc": "wip: local snapshot 2026-09-17 17:15"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "fix(rec): 折线图去孤立尖刺 + 口径改为真实采样区间（原\"30日\"名不副实）",
-    "desc": "fix(rec): 折线图去孤立尖刺 + 口径改为真实采样区间（原\"30日\"名不副实）"
   }
 ]
