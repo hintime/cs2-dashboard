@@ -605,11 +605,46 @@
   },
   "UMP-45 | Neo-Noir (Field-Tested)": {
     "buff_sell": 27.39,
-    "buff_sell_num": 125,
+    "buff_sell_num": 134,
     "yyyp_sell": 28.04,
     "yyyp_sell_num": 143,
     "steam_sell": 38.42,
-    "steam_sell_num": 146
+    "steam_sell_num": 146,
+    "buff_buy": 26.1,
+    "buff_buy_num": 19,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 27.94,
+        "sell_num": 115,
+        "buy": 39.2,
+        "buy_num": 43
+      },
+      "STEAM": {
+        "sell": 39.86,
+        "sell_num": 136,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "YOUPIN": {
+        "sell": 27.48,
+        "sell_num": 160,
+        "buy": 26.8,
+        "buy_num": 8
+      },
+      "HALOSKINS": {
+        "sell": 28.37,
+        "sell_num": 106,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 27.39,
+        "sell_num": 134,
+        "buy": 26.1,
+        "buy_num": 19
+      }
+    }
   },
   "USP-S | Black Lotus (Field-Tested)": {
     "buff_sell": 6.5,
@@ -1148,20 +1183,90 @@
     "steam_sell_num": 27
   },
   "P2000 | Turf (Minimal Wear)": {
-    "buff_sell": 29.77,
-    "buff_sell_num": 157,
+    "buff_sell": 29.6,
+    "buff_sell_num": 172,
     "yyyp_sell": 31.2,
     "yyyp_sell_num": 110,
     "steam_sell": 41.35,
-    "steam_sell_num": 100
+    "steam_sell_num": 100,
+    "buff_buy": 27.9,
+    "buff_buy_num": 51,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 30.83,
+        "sell_num": 115,
+        "buy": 10.3,
+        "buy_num": 95
+      },
+      "BUFF": {
+        "sell": 29.6,
+        "sell_num": 172,
+        "buy": 27.9,
+        "buy_num": 51
+      },
+      "YOUPIN": {
+        "sell": 31.17,
+        "sell_num": 111,
+        "buy": 29.2,
+        "buy_num": 13
+      },
+      "STEAM": {
+        "sell": 40.8,
+        "sell_num": 105,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 31.26,
+        "sell_num": 113,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "P250 | Kintsugi (Field-Tested)": {
-    "buff_sell": 32.75,
-    "buff_sell_num": 207,
+    "buff_sell": 32.44,
+    "buff_sell_num": 210,
     "yyyp_sell": 32.88,
     "yyyp_sell_num": 199,
     "steam_sell": 50.37,
-    "steam_sell_num": 284
+    "steam_sell_num": 284,
+    "buff_buy": 32.1,
+    "buff_buy_num": 101,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 32.83,
+        "sell_num": 164,
+        "buy": 32.2,
+        "buy_num": 87
+      },
+      "BUFF": {
+        "sell": 32.44,
+        "sell_num": 210,
+        "buy": 32.1,
+        "buy_num": 101
+      },
+      "YOUPIN": {
+        "sell": 32.48,
+        "sell_num": 225,
+        "buy": 52.0,
+        "buy_num": 17
+      },
+      "HALOSKINS": {
+        "sell": 33.28,
+        "sell_num": 156,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 49.6,
+        "sell_num": 275,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "Galil AR | Rocket Pop (Field-Tested)": {
     "buff_sell": 7.36,
@@ -1480,12 +1585,47 @@
     "steam_sell_num": 39
   },
   "Glock-18 | Fully Tuned (Minimal Wear)": {
-    "buff_sell": 616.5,
-    "buff_sell_num": 152,
+    "buff_sell": 617.8,
+    "buff_sell_num": 148,
     "yyyp_sell": 614.99,
     "yyyp_sell_num": 131,
     "steam_sell": 974.51,
-    "steam_sell_num": 112
+    "steam_sell_num": 112,
+    "buff_buy": 601.0,
+    "buff_buy_num": 37,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 621.0,
+        "sell_num": 86,
+        "buy": 600.0,
+        "buy_num": 37
+      },
+      "BUFF": {
+        "sell": 617.8,
+        "sell_num": 148,
+        "buy": 601.0,
+        "buy_num": 37
+      },
+      "YOUPIN": {
+        "sell": 621.5,
+        "sell_num": 144,
+        "buy": 807.0,
+        "buy_num": 38
+      },
+      "STEAM": {
+        "sell": 916.38,
+        "sell_num": 119,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 629.23,
+        "sell_num": 82,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "★ Gut Knife | Night (Field-Tested)": {
     "buff_sell": 339.0,
@@ -2048,10 +2188,45 @@
     "steam_sell_num": 425
   },
   "P250 | Lotus Imprint (Minimal Wear)": {
-    "buff_sell": 38.79,
-    "buff_sell_num": 122,
+    "buff_sell": 41.4,
+    "buff_sell_num": 108,
     "yyyp_sell": 38.49,
-    "yyyp_sell_num": 186
+    "yyyp_sell_num": 186,
+    "buff_buy": 38.4,
+    "buff_buy_num": 7,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 37.5,
+        "sell_num": 245,
+        "buy": 5.0,
+        "buy_num": 45
+      },
+      "YOUPIN": {
+        "sell": 38.49,
+        "sell_num": 181,
+        "buy": 37.8,
+        "buy_num": 18
+      },
+      "BUFF": {
+        "sell": 41.4,
+        "sell_num": 108,
+        "buy": 38.4,
+        "buy_num": 7
+      },
+      "HALOSKINS": {
+        "sell": 38.05,
+        "sell_num": 242,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 55.65,
+        "sell_num": 130,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "★ StatTrak™ Flip Knife | Urban Masked (Field-Tested)": {
     "buff_sell": 899.0,
@@ -3448,12 +3623,47 @@
     "steam_sell_num": 14
   },
   "UMP-45 | K.O. Factory (Minimal Wear)": {
-    "buff_sell": 38.45,
-    "buff_sell_num": 195,
+    "buff_sell": 38.34,
+    "buff_sell_num": 182,
     "yyyp_sell": 38.68,
     "yyyp_sell_num": 281,
     "steam_sell": 55.38,
-    "steam_sell_num": 216
+    "steam_sell_num": 216,
+    "buff_buy": 36.8,
+    "buff_buy_num": 120,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 38.66,
+        "sell_num": 211,
+        "buy": 42.8,
+        "buy_num": 53
+      },
+      "HALOSKINS": {
+        "sell": 39.13,
+        "sell_num": 198,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 54.98,
+        "sell_num": 205,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "YOUPIN": {
+        "sell": 38.54,
+        "sell_num": 307,
+        "buy": 36.8,
+        "buy_num": 14
+      },
+      "BUFF": {
+        "sell": 38.34,
+        "sell_num": 182,
+        "buy": 36.8,
+        "buy_num": 120
+      }
+    }
   },
   "★ M9 Bayonet | Crimson Web (Field-Tested)": {
     "buff_sell": 2840.0,
@@ -4394,12 +4604,47 @@
     "steam_sell_num": 24
   },
   "P90 | Nostalgia (Factory New)": {
-    "buff_sell": 57.99,
-    "buff_sell_num": 63,
+    "buff_sell": 58.9,
+    "buff_sell_num": 73,
     "yyyp_sell": 54.78,
     "yyyp_sell_num": 118,
     "steam_sell": 88.03,
-    "steam_sell_num": 76
+    "steam_sell_num": 76,
+    "buff_buy": 52.0,
+    "buff_buy_num": 19,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 58.9,
+        "sell_num": 73,
+        "buy": 52.0,
+        "buy_num": 19
+      },
+      "YOUPIN": {
+        "sell": 54.57,
+        "sell_num": 120,
+        "buy": 50.0,
+        "buy_num": 9
+      },
+      "C5": {
+        "sell": 57.55,
+        "sell_num": 100,
+        "buy": 135.0,
+        "buy_num": 32
+      },
+      "STEAM": {
+        "sell": 77.5,
+        "sell_num": 82,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 56.4,
+        "sell_num": 94,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "SSG 08 | Parallax (Field-Tested)": {
     "buff_sell": 19.87,
@@ -5432,10 +5677,45 @@
     "steam_sell_num": 206
   },
   "Nova | Smart Gun (Minimal Wear)": {
-    "buff_sell": 28.24,
-    "buff_sell_num": 85,
+    "buff_sell": 29.0,
+    "buff_sell_num": 82,
     "yyyp_sell": 29.1,
-    "yyyp_sell_num": 133
+    "yyyp_sell_num": 133,
+    "buff_buy": 28.0,
+    "buff_buy_num": 24,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 30.68,
+        "sell_num": 133,
+        "buy": 0.0,
+        "buy_num": 20
+      },
+      "YOUPIN": {
+        "sell": 28.89,
+        "sell_num": 150,
+        "buy": 28.2,
+        "buy_num": 11
+      },
+      "BUFF": {
+        "sell": 29.0,
+        "sell_num": 82,
+        "buy": 28.0,
+        "buy_num": 24
+      },
+      "HALOSKINS": {
+        "sell": 31.06,
+        "sell_num": 130,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 46.98,
+        "sell_num": 67,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "★ Flip Knife | Lore (Minimal Wear)": {
     "buff_sell": 1299.0,
@@ -10714,10 +10994,45 @@
     "yyyp_sell_num": 405
   },
   "Glock-18 | Ifrit Lattice (Factory New)": {
-    "buff_sell": 74.67,
-    "buff_sell_num": 68,
+    "buff_sell": 74.47,
+    "buff_sell_num": 74,
     "yyyp_sell": 75.89,
-    "yyyp_sell_num": 89
+    "yyyp_sell_num": 89,
+    "buff_buy": 71.0,
+    "buff_buy_num": 15,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 76.07,
+        "sell_num": 95,
+        "buy": 1.0,
+        "buy_num": 20
+      },
+      "BUFF": {
+        "sell": 74.47,
+        "sell_num": 74,
+        "buy": 71.0,
+        "buy_num": 15
+      },
+      "YOUPIN": {
+        "sell": 75.5,
+        "sell_num": 104,
+        "buy": 70.0,
+        "buy_num": 11
+      },
+      "HALOSKINS": {
+        "sell": 77.1,
+        "sell_num": 90,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 108.28,
+        "sell_num": 68,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "R8 Revolver | Memento (Field-Tested)": {
     "buff_sell": 5.49,
@@ -12041,11 +12356,46 @@
   },
   "Glock-18 | Blue Fissure (Field-Tested)": {
     "buff_sell": 21.75,
-    "buff_sell_num": 160,
+    "buff_sell_num": 163,
     "yyyp_sell": 21.7,
     "yyyp_sell_num": 117,
     "steam_sell": 29.68,
-    "steam_sell_num": 196
+    "steam_sell_num": 196,
+    "buff_buy": 19.8,
+    "buff_buy_num": 34,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 21.75,
+        "sell_num": 163,
+        "buy": 19.8,
+        "buy_num": 34
+      },
+      "C5": {
+        "sell": 21.78,
+        "sell_num": 68,
+        "buy": 18.0,
+        "buy_num": 45
+      },
+      "YOUPIN": {
+        "sell": 21.8,
+        "sell_num": 119,
+        "buy": 19.8,
+        "buy_num": 10
+      },
+      "HALOSKINS": {
+        "sell": 23.13,
+        "sell_num": 62,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 29.84,
+        "sell_num": 206,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "★ Navaja Knife | Crimson Web (Minimal Wear)": {
     "buff_sell": 503.99,
@@ -13308,12 +13658,47 @@
     "steam_sell_num": 147
   },
   "P250 | Epicenter (Field-Tested)": {
-    "buff_sell": 25.63,
-    "buff_sell_num": 124,
+    "buff_sell": 25.4,
+    "buff_sell_num": 129,
     "yyyp_sell": 25.62,
     "yyyp_sell_num": 113,
     "steam_sell": 40.05,
-    "steam_sell_num": 164
+    "steam_sell_num": 164,
+    "buff_buy": 24.1,
+    "buff_buy_num": 16,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 26.32,
+        "sell_num": 91,
+        "buy": 38.8,
+        "buy_num": 27
+      },
+      "STEAM": {
+        "sell": 35.69,
+        "sell_num": 184,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 26.69,
+        "sell_num": 69,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "YOUPIN": {
+        "sell": 25.43,
+        "sell_num": 125,
+        "buy": 24.4,
+        "buy_num": 6
+      },
+      "BUFF": {
+        "sell": 25.4,
+        "sell_num": 129,
+        "buy": 24.1,
+        "buy_num": 16
+      }
+    }
   },
   "AK-47 | Nightwish (Field-Tested)": {
     "buff_sell": 419.5,
@@ -13647,7 +14032,42 @@
     "yyyp_sell": 320.0,
     "yyyp_sell_num": 69,
     "steam_sell": 430.0,
-    "steam_sell_num": 66
+    "steam_sell_num": 66,
+    "buff_buy": 281.0,
+    "buff_buy_num": 5,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 325.0,
+        "sell_num": 112,
+        "buy": 641.0,
+        "buy_num": 8
+      },
+      "STEAM": {
+        "sell": 416.75,
+        "sell_num": 67,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "YOUPIN": {
+        "sell": 319.96,
+        "sell_num": 76,
+        "buy": 303.0,
+        "buy_num": 12
+      },
+      "BUFF": {
+        "sell": 309.99,
+        "sell_num": 97,
+        "buy": 281.0,
+        "buy_num": 5
+      },
+      "HALOSKINS": {
+        "sell": 329.31,
+        "sell_num": 108,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "M4A1-S | Decimator (Factory New)": {
     "buff_sell": 289.99,
@@ -13720,12 +14140,47 @@
     "steam_sell_num": 27
   },
   "★ Flip Knife | Forest DDPAT (Field-Tested)": {
-    "buff_sell": 759.9,
-    "buff_sell_num": 8,
+    "buff_sell": 759.4,
+    "buff_sell_num": 9,
     "yyyp_sell": 756.49,
     "yyyp_sell_num": 15,
     "steam_sell": 1050.32,
-    "steam_sell_num": 7
+    "steam_sell_num": 7,
+    "buff_buy": 725.0,
+    "buff_buy_num": 5,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 759.4,
+        "sell_num": 9,
+        "buy": 725.0,
+        "buy_num": 5
+      },
+      "YOUPIN": {
+        "sell": 755.98,
+        "sell_num": 16,
+        "buy": 744.0,
+        "buy_num": 6
+      },
+      "C5": {
+        "sell": 749.78,
+        "sell_num": 72,
+        "buy": 789.0,
+        "buy_num": 4
+      },
+      "STEAM": {
+        "sell": 1036.09,
+        "sell_num": 7,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 752.44,
+        "sell_num": 67,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "P250 | Apep's Curse (Field-Tested)": {
     "buff_sell": 282.47,
@@ -13870,12 +14325,47 @@
     "steam_sell_num": 9
   },
   "MP9 | Music Box (Minimal Wear)": {
-    "buff_sell": 20.69,
+    "buff_sell": 20.59,
     "buff_sell_num": 28,
     "yyyp_sell": 21.35,
     "yyyp_sell_num": 61,
     "steam_sell": 28.41,
-    "steam_sell_num": 49
+    "steam_sell_num": 49,
+    "buff_buy": 19.5,
+    "buff_buy_num": 13,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 20.59,
+        "sell_num": 28,
+        "buy": 19.5,
+        "buy_num": 13
+      },
+      "YOUPIN": {
+        "sell": 21.25,
+        "sell_num": 68,
+        "buy": 7.1,
+        "buy_num": 2
+      },
+      "STEAM": {
+        "sell": 28.02,
+        "sell_num": 47,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "C5": {
+        "sell": 21.64,
+        "sell_num": 54,
+        "buy": 60.0,
+        "buy_num": 11
+      },
+      "HALOSKINS": {
+        "sell": 21.99,
+        "sell_num": 52,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "★ Talon Knife | Tiger Tooth (Factory New)": {
     "buff_sell": 3035.0,
@@ -14877,19 +15367,89 @@
   },
   "MAG-7 | Justice (Field-Tested)": {
     "buff_sell": 35.99,
-    "buff_sell_num": 148,
+    "buff_sell_num": 160,
     "yyyp_sell": 36.0,
     "yyyp_sell_num": 134,
     "steam_sell": 49.94,
-    "steam_sell_num": 88
+    "steam_sell_num": 88,
+    "buff_buy": 33.4,
+    "buff_buy_num": 51,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 35.99,
+        "sell_num": 160,
+        "buy": 33.4,
+        "buy_num": 51
+      },
+      "YOUPIN": {
+        "sell": 35.74,
+        "sell_num": 146,
+        "buy": 35.5,
+        "buy_num": 8
+      },
+      "C5": {
+        "sell": 36.03,
+        "sell_num": 153,
+        "buy": 37.5,
+        "buy_num": 3
+      },
+      "STEAM": {
+        "sell": 48.26,
+        "sell_num": 94,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 36.5,
+        "sell_num": 139,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "UMP-45 | Momentum (Minimal Wear)": {
-    "buff_sell": 32.69,
-    "buff_sell_num": 79,
+    "buff_sell": 32.65,
+    "buff_sell_num": 85,
     "yyyp_sell": 29.6,
     "yyyp_sell_num": 92,
     "steam_sell": 47.22,
-    "steam_sell_num": 89
+    "steam_sell_num": 89,
+    "buff_buy": 30.2,
+    "buff_buy_num": 20,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 32.65,
+        "sell_num": 85,
+        "buy": 30.2,
+        "buy_num": 20
+      },
+      "C5": {
+        "sell": 29.92,
+        "sell_num": 99,
+        "buy": 31.8,
+        "buy_num": 11
+      },
+      "YOUPIN": {
+        "sell": 30.59,
+        "sell_num": 102,
+        "buy": 28.6,
+        "buy_num": 13
+      },
+      "HALOSKINS": {
+        "sell": 30.32,
+        "sell_num": 98,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 53.57,
+        "sell_num": 59,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "UMP-45 | Crimson Foil (Factory New)": {
     "buff_sell": 28.77,
@@ -15080,12 +15640,47 @@
     "steam_sell_num": 157
   },
   "Galil AR | Black Sand (Minimal Wear)": {
-    "buff_sell": 31.2,
-    "buff_sell_num": 151,
+    "buff_sell": 30.5,
+    "buff_sell_num": 165,
     "yyyp_sell": 31.48,
     "yyyp_sell_num": 120,
     "steam_sell": 42.35,
-    "steam_sell_num": 113
+    "steam_sell_num": 113,
+    "buff_buy": 28.4,
+    "buff_buy_num": 123,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 31.08,
+        "sell_num": 148,
+        "buy": 8.7,
+        "buy_num": 75
+      },
+      "HALOSKINS": {
+        "sell": 31.46,
+        "sell_num": 142,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 30.5,
+        "sell_num": 165,
+        "buy": 28.4,
+        "buy_num": 123
+      },
+      "YOUPIN": {
+        "sell": 31.38,
+        "sell_num": 130,
+        "buy": 29.1,
+        "buy_num": 9
+      },
+      "STEAM": {
+        "sell": 40.19,
+        "sell_num": 115,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "FAMAS | Contrast Spray (Minimal Wear)": {
     "buff_sell": 180.0,
@@ -15184,10 +15779,45 @@
     "steam_sell_num": 64
   },
   "Desert Eagle | Eastern Enigma (Field-Tested)": {
-    "buff_sell": 100.0,
-    "buff_sell_num": 84,
+    "buff_sell": 98.99,
+    "buff_sell_num": 89,
     "yyyp_sell": 99.6,
-    "yyyp_sell_num": 126
+    "yyyp_sell_num": 126,
+    "buff_buy": 93.0,
+    "buff_buy_num": 101,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 99.8,
+        "sell_num": 92,
+        "buy": 0.2,
+        "buy_num": 33
+      },
+      "YOUPIN": {
+        "sell": 99.4,
+        "sell_num": 121,
+        "buy": 95.0,
+        "buy_num": 10
+      },
+      "BUFF": {
+        "sell": 98.99,
+        "sell_num": 89,
+        "buy": 93.0,
+        "buy_num": 101
+      },
+      "HALOSKINS": {
+        "sell": 101.17,
+        "sell_num": 89,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 143.1,
+        "sell_num": 141,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "★ Specialist Gloves | Emerald Web (Battle-Scarred)": {
     "buff_sell": 2197.0,
@@ -16388,12 +17018,47 @@
     "steam_sell_num": 8
   },
   "UMP-45 | Wild Child (Field-Tested)": {
-    "buff_sell": 21.79,
-    "buff_sell_num": 238,
+    "buff_sell": 21.66,
+    "buff_sell_num": 245,
     "yyyp_sell": 22.85,
     "yyyp_sell_num": 231,
     "steam_sell": 29.6,
-    "steam_sell_num": 609
+    "steam_sell_num": 609,
+    "buff_buy": 21.6,
+    "buff_buy_num": 44,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 21.98,
+        "sell_num": 240,
+        "buy": 24.5,
+        "buy_num": 56
+      },
+      "BUFF": {
+        "sell": 21.66,
+        "sell_num": 245,
+        "buy": 21.6,
+        "buy_num": 44
+      },
+      "YOUPIN": {
+        "sell": 22.99,
+        "sell_num": 228,
+        "buy": 22.3,
+        "buy_num": 19
+      },
+      "STEAM": {
+        "sell": 29.71,
+        "sell_num": 612,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 22.32,
+        "sell_num": 225,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "AK-47 | Asiimov (Factory New)": {
     "buff_sell": 2399.0,
@@ -16584,12 +17249,47 @@
     "steam_sell_num": 72
   },
   "SG 553 | Desert Blossom (Minimal Wear)": {
-    "buff_sell": 21.71,
-    "buff_sell_num": 28,
+    "buff_sell": 21.6,
+    "buff_sell_num": 27,
     "yyyp_sell": 22.79,
     "yyyp_sell_num": 30,
     "steam_sell": 27.91,
-    "steam_sell_num": 24
+    "steam_sell_num": 24,
+    "buff_buy": 18.1,
+    "buff_buy_num": 20,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 21.6,
+        "sell_num": 27,
+        "buy": 18.1,
+        "buy_num": 20
+      },
+      "YOUPIN": {
+        "sell": 22.79,
+        "sell_num": 32,
+        "buy": 19.4,
+        "buy_num": 2
+      },
+      "STEAM": {
+        "sell": 25.0,
+        "sell_num": 20,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "C5": {
+        "sell": 21.41,
+        "sell_num": 39,
+        "buy": 75.0,
+        "buy_num": 5
+      },
+      "HALOSKINS": {
+        "sell": 21.72,
+        "sell_num": 38,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "M4A1-S | Liquidation (Field-Tested)": {
     "buff_sell": 12.96,
@@ -16858,10 +17558,45 @@
     "steam_sell_num": 83
   },
   "USP-S | Spiral Glitch (Minimal Wear)": {
-    "buff_sell": 270.0,
-    "buff_sell_num": 53,
+    "buff_sell": 279.0,
+    "buff_sell_num": 50,
     "yyyp_sell": 275.8,
-    "yyyp_sell_num": 79
+    "yyyp_sell_num": 79,
+    "buff_buy": 255.0,
+    "buff_buy_num": 41,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 277.9,
+        "sell_num": 95,
+        "buy": 0.2,
+        "buy_num": 39
+      },
+      "YOUPIN": {
+        "sell": 271.4,
+        "sell_num": 71,
+        "buy": 269.0,
+        "buy_num": 12
+      },
+      "BUFF": {
+        "sell": 279.0,
+        "sell_num": 50,
+        "buy": 255.0,
+        "buy_num": 41
+      },
+      "HALOSKINS": {
+        "sell": 281.31,
+        "sell_num": 90,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 362.97,
+        "sell_num": 56,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "SSG 08 | Calligrafaux (Factory New)": {
     "buff_sell": 6.95,
@@ -17576,12 +18311,47 @@
     "steam_sell_num": 233
   },
   "P90 | Deathgaze (Field-Tested)": {
-    "buff_sell": 33.02,
-    "buff_sell_num": 196,
+    "buff_sell": 32.5,
+    "buff_sell_num": 204,
     "yyyp_sell": 33.13,
     "yyyp_sell_num": 196,
     "steam_sell": 50.75,
-    "steam_sell_num": 264
+    "steam_sell_num": 264,
+    "buff_buy": 32.6,
+    "buff_buy_num": 67,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 32.82,
+        "sell_num": 143,
+        "buy": 38.0,
+        "buy_num": 96
+      },
+      "BUFF": {
+        "sell": 32.5,
+        "sell_num": 204,
+        "buy": 32.6,
+        "buy_num": 67
+      },
+      "YOUPIN": {
+        "sell": 32.59,
+        "sell_num": 221,
+        "buy": 51.0,
+        "buy_num": 22
+      },
+      "HALOSKINS": {
+        "sell": 32.81,
+        "sell_num": 132,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 46.38,
+        "sell_num": 256,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "★ Flip Knife | Ultraviolet (Field-Tested)": {
     "buff_sell": 870.0,
@@ -18442,12 +19212,47 @@
     "steam_sell_num": 629
   },
   "R8 Revolver | Llama Cannon (Field-Tested)": {
-    "buff_sell": 69.95,
+    "buff_sell": 69.58,
     "buff_sell_num": 47,
     "yyyp_sell": 69.5,
     "yyyp_sell_num": 46,
     "steam_sell": 94.96,
-    "steam_sell_num": 120
+    "steam_sell_num": 120,
+    "buff_buy": 68.0,
+    "buff_buy_num": 3,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 69.58,
+        "sell_num": 47,
+        "buy": 68.0,
+        "buy_num": 3
+      },
+      "C5": {
+        "sell": 69.0,
+        "sell_num": 96,
+        "buy": 64.0,
+        "buy_num": 12
+      },
+      "YOUPIN": {
+        "sell": 68.59,
+        "sell_num": 51,
+        "buy": 69.0,
+        "buy_num": 6
+      },
+      "STEAM": {
+        "sell": 92.35,
+        "sell_num": 123,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "HALOSKINS": {
+        "sell": 69.98,
+        "sell_num": 88,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "SCAR-20 | Cyrex (Factory New)": {
     "buff_sell": 188.0,
@@ -20076,10 +20881,45 @@
     "steam_sell_num": 16
   },
   "AUG | Lapis Lazuli (Minimal Wear)": {
-    "buff_sell": 38.67,
-    "buff_sell_num": 146,
+    "buff_sell": 40.0,
+    "buff_sell_num": 138,
     "yyyp_sell": 38.56,
-    "yyyp_sell_num": 176
+    "yyyp_sell_num": 176,
+    "buff_buy": 35.2,
+    "buff_buy_num": 7,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 39.79,
+        "sell_num": 124,
+        "buy": 42.0,
+        "buy_num": 29
+      },
+      "BUFF": {
+        "sell": 40.0,
+        "sell_num": 138,
+        "buy": 35.2,
+        "buy_num": 7
+      },
+      "YOUPIN": {
+        "sell": 38.58,
+        "sell_num": 173,
+        "buy": 37.8,
+        "buy_num": 15
+      },
+      "HALOSKINS": {
+        "sell": 40.27,
+        "sell_num": 121,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 56.66,
+        "sell_num": 154,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "MP9 | Army Sheen (Factory New)": {
     "buff_sell": 7.91,
@@ -25662,12 +26502,47 @@
     "steam_sell_num": 297
   },
   "CZ75-Auto | Xiangliu (Factory New)": {
-    "buff_sell": 108.5,
-    "buff_sell_num": 90,
+    "buff_sell": 106.5,
+    "buff_sell_num": 92,
     "yyyp_sell": 109.49,
     "yyyp_sell_num": 111,
     "steam_sell": 182.64,
-    "steam_sell_num": 62
+    "steam_sell_num": 62,
+    "buff_buy": 98.0,
+    "buff_buy_num": 12,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 101.02,
+        "sell_num": 104,
+        "buy": 238.0,
+        "buy_num": 17
+      },
+      "STEAM": {
+        "sell": 161.32,
+        "sell_num": 64,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 106.5,
+        "sell_num": 92,
+        "buy": 98.0,
+        "buy_num": 12
+      },
+      "YOUPIN": {
+        "sell": 107.0,
+        "sell_num": 125,
+        "buy": 92.0,
+        "buy_num": 9
+      },
+      "HALOSKINS": {
+        "sell": 102.38,
+        "sell_num": 97,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "P250 | Black & Tan (Field-Tested)": {
     "buff_sell": 48.75,
@@ -26296,12 +27171,47 @@
     "steam_sell_num": 34
   },
   "Nova | Toy Soldier (Minimal Wear)": {
-    "buff_sell": 34.75,
-    "buff_sell_num": 115,
+    "buff_sell": 34.74,
+    "buff_sell_num": 123,
     "yyyp_sell": 35.48,
     "yyyp_sell_num": 108,
     "steam_sell": 49.0,
-    "steam_sell_num": 90
+    "steam_sell_num": 90,
+    "buff_buy": 34.8,
+    "buff_buy_num": 6,
+    "buff_source": "BUFF",
+    "platforms": {
+      "YOUPIN": {
+        "sell": 35.2,
+        "sell_num": 113,
+        "buy": 32.3,
+        "buy_num": 11
+      },
+      "C5": {
+        "sell": 34.56,
+        "sell_num": 61,
+        "buy": 11.4,
+        "buy_num": 28
+      },
+      "HALOSKINS": {
+        "sell": 35.03,
+        "sell_num": 60,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 34.74,
+        "sell_num": 123,
+        "buy": 34.8,
+        "buy_num": 6
+      },
+      "STEAM": {
+        "sell": 45.17,
+        "sell_num": 89,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "CZ75-Auto | Tacticat (Minimal Wear)": {
     "buff_sell": 8.76,
@@ -28637,11 +29547,46 @@
   },
   "AUG | Chameleon (Factory New)": {
     "buff_sell": 550.0,
-    "buff_sell_num": 119,
+    "buff_sell_num": 117,
     "yyyp_sell": 557.0,
     "yyyp_sell_num": 105,
     "steam_sell": 839.05,
-    "steam_sell_num": 120
+    "steam_sell_num": 120,
+    "buff_buy": 517.0,
+    "buff_buy_num": 33,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 548.0,
+        "sell_num": 78,
+        "buy": 625.0,
+        "buy_num": 15
+      },
+      "HALOSKINS": {
+        "sell": 555.29,
+        "sell_num": 67,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "BUFF": {
+        "sell": 550.0,
+        "sell_num": 117,
+        "buy": 517.0,
+        "buy_num": 33
+      },
+      "YOUPIN": {
+        "sell": 556.0,
+        "sell_num": 117,
+        "buy": 489.0,
+        "buy_num": 6
+      },
+      "STEAM": {
+        "sell": 824.02,
+        "sell_num": 125,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "AWP | Ice Coaled (Factory New)": {
     "buff_sell": 184.0,
@@ -34008,12 +34953,47 @@
     "steam_sell_num": 31
   },
   "AWP | Queen's Gambit (Minimal Wear)": {
-    "buff_sell": 625.5,
-    "buff_sell_num": 282,
+    "buff_sell": 628.0,
+    "buff_sell_num": 268,
     "yyyp_sell": 623.0,
     "yyyp_sell_num": 240,
     "steam_sell": 948.53,
-    "steam_sell_num": 192
+    "steam_sell_num": 192,
+    "buff_buy": 613.0,
+    "buff_buy_num": 40,
+    "buff_source": "BUFF",
+    "platforms": {
+      "C5": {
+        "sell": 632.88,
+        "sell_num": 109,
+        "buy": 800.0,
+        "buy_num": 38
+      },
+      "BUFF": {
+        "sell": 628.0,
+        "sell_num": 268,
+        "buy": 613.0,
+        "buy_num": 40
+      },
+      "YOUPIN": {
+        "sell": 620.0,
+        "sell_num": 251,
+        "buy": 795.0,
+        "buy_num": 49
+      },
+      "HALOSKINS": {
+        "sell": 641.26,
+        "sell_num": 99,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "STEAM": {
+        "sell": 906.03,
+        "sell_num": 198,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "★ Driver Gloves | Overtake (Field-Tested)": {
     "buff_sell": 273.3,
@@ -36854,12 +37834,47 @@
     "steam_sell_num": 73
   },
   "Five-SeveN | Fowl Play (Field-Tested)": {
-    "buff_sell": 128.88,
-    "buff_sell_num": 33,
+    "buff_sell": 128.24,
+    "buff_sell_num": 39,
     "yyyp_sell": 128.9,
     "yyyp_sell_num": 41,
     "steam_sell": 176.14,
-    "steam_sell_num": 81
+    "steam_sell_num": 81,
+    "buff_buy": 125.0,
+    "buff_buy_num": 19,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 128.24,
+        "sell_num": 39,
+        "buy": 125.0,
+        "buy_num": 19
+      },
+      "YOUPIN": {
+        "sell": 125.8,
+        "sell_num": 43,
+        "buy": 122.0,
+        "buy_num": 4
+      },
+      "STEAM": {
+        "sell": 177.58,
+        "sell_num": 84,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "C5": {
+        "sell": 129.04,
+        "sell_num": 96,
+        "buy": 125.0,
+        "buy_num": 5
+      },
+      "HALOSKINS": {
+        "sell": 130.61,
+        "sell_num": 85,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "★ Survival Knife | Urban Masked (Field-Tested)": {
     "buff_sell": 290.66,
@@ -37116,12 +38131,47 @@
     "steam_sell_num": 87
   },
   "G3SG1 | High Seas (Factory New)": {
-    "buff_sell": 56.71,
-    "buff_sell_num": 107,
+    "buff_sell": 54.0,
+    "buff_sell_num": 116,
     "yyyp_sell": 58.0,
     "yyyp_sell_num": 121,
     "steam_sell": 75.82,
-    "steam_sell_num": 70
+    "steam_sell_num": 70,
+    "buff_buy": 44.8,
+    "buff_buy_num": 7,
+    "buff_source": "BUFF",
+    "platforms": {
+      "BUFF": {
+        "sell": 54.0,
+        "sell_num": 116,
+        "buy": 44.8,
+        "buy_num": 7
+      },
+      "YOUPIN": {
+        "sell": 57.35,
+        "sell_num": 121,
+        "buy": 52.0,
+        "buy_num": 7
+      },
+      "STEAM": {
+        "sell": 73.4,
+        "sell_num": 68,
+        "buy": 0.0,
+        "buy_num": 0
+      },
+      "C5": {
+        "sell": 56.54,
+        "sell_num": 77,
+        "buy": 58.0,
+        "buy_num": 11
+      },
+      "HALOSKINS": {
+        "sell": 57.27,
+        "sell_num": 74,
+        "buy": 0.0,
+        "buy_num": 0
+      }
+    }
   },
   "AK-47 | Leet Museo (Factory New)": {
     "buff_sell": 3966.0,

@@ -1103,7 +1103,7 @@ html { scroll-behavior: smooth; }
         <span class="rt-chip on" data-rsort="score">评分 ↓</span>
         <span class="rt-chip" data-rsort="rate_7">7日涨跌</span>
         <span class="rt-chip" data-rsort="n_dev_steam">Steam偏离</span>
-        <span class="rt-chip" data-rsort="fp_total_supply">存世量</span>
+        <span class="rt-chip" data-rsort="eco_selling">存世量</span>
         <span class="rt-sp"></span>
         <span class="rt-cnt" id="recCount"></span>
       </div>
@@ -3695,9 +3695,9 @@ var REC_SORT_FIELDS = {
   score: function(it){ return typeof it.score === 'number' ? it.score : -1; },
   rate_7: function(it){ return typeof it.rate_7 === 'number' ? it.rate_7 : -1e9; },
   n_dev_steam: function(it){ return typeof it.n_dev_steam === 'number' ? it.n_dev_steam : -1e9; },
-  fp_total_supply: function(it){ return parseFloat(it.fp_total_supply) || -1; }
+  eco_selling: function(it){ return parseFloat(it.eco_selling) || -1; }
 };
-var REC_SORT_LABELS = { score:'评分', rate_7:'7日涨跌', n_dev_steam:'Steam偏离', fp_total_supply:'存世量' };
+var REC_SORT_LABELS = { score:'评分', rate_7:'7日涨跌', n_dev_steam:'Steam偏离', eco_selling:'存世量' };
 
 window.recSortBy = function(key) {
   if (_recSortKey === key) { _recSortDesc = !_recSortDesc; } else { _recSortKey = key; _recSortDesc = true; }
@@ -3748,11 +3748,11 @@ function recBuildRow(item, gi, zebra) {
     var v = typeof aiData === 'object' ? (aiData.verdict || '') : ((String(aiData).match(/操作建议[:：]\s*(\S+)/) || [])[1] || '');
     if (v) aiBadge = '<span class="rt-aib">🤖 ' + esc(v) + '</span>';
   }
-  var rare = item.fp_rarity ? '<span class="rt-rare">' + esc(String(item.fp_rarity)) + '</span>' : '';
+  // 稀有度标签已移除：fp_rarity 为 FirePulse 遗留死字段（CSQAQ 排行榜仅覆盖 1/30，无有效来源）
   var chTag = channel ? '<span class="rt-ch">' + esc(recChannelLabel(channel)) + '</span>' : '';
   var buyNum = item.buff_buy_num || 0;
   // 存世量
-  var sup = parseFloat(item.fp_total_supply);
+  var sup = parseFloat(item.eco_selling);
   var supTxt = sup > 0 ? (sup >= 10000 ? (sup / 10000).toFixed(1) + '万' : Math.round(sup).toLocaleString('zh-CN')) : '—';
   // Steam 偏离（唯一的真·跨市场信号）
   var nd = item.n_dev_steam, devHtml;
@@ -3791,7 +3791,7 @@ function recBuildRow(item, gi, zebra) {
   return '<tr class="rt-row' + (zebra ? ' z' : '') + '" data-gi="' + gi + '" role="button" tabindex="0" aria-expanded="false">' +
     '<td class="l"><span class="' + rankCls + '">' + (gi + 1) + '</span></td>' +
     '<td class="l"><div class="rt-nm" title="' + esc(nm) + '">' + esc(nm) + '</div>' +
-      '<div class="rt-tags">' + chTag + rare + aiBadge + (buyNum > 0 ? '<span class="rt-buyq">📥' + buyNum + '</span>' : '') + '</div></td>' +
+      '<div class="rt-tags">' + chTag + aiBadge + (buyNum > 0 ? '<span class="rt-buyq">📥' + buyNum + '</span>' : '') + '</div></td>' +
     '<td><span class="rt-scw"><b style="color:' + recScoreColor(sNum) + '">' + sNum.toFixed(1) + '</b>' +
       '<span class="rt-scb"><i style="width:' + Math.min(100, Math.max(0, sNum)).toFixed(0) + '%;background:' + recScoreColor(sNum) + '"></i></span></span></td>' +
     '<td class="rt-pc">' + (bestPrice > 0 ? recMoney(bestPrice, 0) : '—') + (priceSrc ? '<span class="rt-src">' + esc(priceSrc) + '</span>' : '') + '</td>' +
@@ -4042,8 +4042,8 @@ function renderRecCompare(items) {
     if (typeof cv === 'number' && cv > 0) { covN++; covSum += cv; }
     var sup = r.eco_selling;   // ECO 在售量（≈存世量的可用代理）
     if (typeof sup === 'number' && sup > 0) { supSum += sup; supN++; }
-    if (r.fp_rarity) rarity[r.fp_rarity] = (rarity[r.fp_rarity] || 0) + 1;
-    var wk = r.fp_week_ratio;
+    // fp_rarity 已废弃（无有效数据源）
+    var wk = (typeof r.rate_7 === 'number') ? r.rate_7 / 100 : null;  // fp_week_ratio 为死字段，改用真实 7 日涨跌
     if (typeof wk === 'number') { weekN++; weekSum += wk; if (wk > 0) weekUp++; }
   });
 
@@ -4062,11 +4062,6 @@ function renderRecCompare(items) {
   if (avgSup !== null) chips.push('<span class="rcq-chip">均挂单 <b>' + avgSup.toLocaleString() + '</b> 件</span>');
   if (weekRate !== null && weekN >= cnt / 2) chips.push('<span class="rcq-chip">周线上涨 <b class="rcq-up">' + weekRate + '%</b></span>');
 
-  // 稀有度分布（按数量降序，只显示前 4 档）
-  var rarOrder = Object.keys(rarity).sort(function(a, b) { return rarity[b] - rarity[a]; }).slice(0, 4);
-  var rarHtml = rarOrder.map(function(k) {
-    return '<span class="rcq-rar">' + k + ' <b>' + rarity[k] + '</b></span>';
-  }).join('');
 
   bar.style.display = 'block';
   bar.innerHTML =
@@ -4076,7 +4071,7 @@ function renderRecCompare(items) {
         '<span class="rcq-sub">数据源 ECO · CSQAQ · SteamDT</span>' +
       '</div>' +
       '<div class="rcq-chips">' + chips.join('') + '</div>' +
-      (rarHtml ? '<div class="rcq-rars">' + rarHtml + '</div>' : '') +
+      
     '</div>';
 }
 

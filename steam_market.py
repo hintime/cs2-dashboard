@@ -146,6 +146,8 @@ def compute_alerts_from_history(history):
     return alerts
 
 def generate_recommendations(alerts, items_list=None):
+    """【次级】仅服务 report.html 的「Steam 市场」小节 → market.json:steam_market_recs。
+    主看板推荐请用 update.py::generate_recommendations（两者口径独立、勿混用）。"""
     """Generate recommendations from Steam Market data (with optional BUFF prices)."""
     recs = {'momentum': [], 'oversold': [], 'scarce': [], 'undervalued': [], 'golden_cross': []}
     

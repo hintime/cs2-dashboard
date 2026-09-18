@@ -826,8 +826,10 @@ def save_csqaq_boards(price_map):
             boards = {}
     except Exception:
         boards = {}
+    # ⚠ 2026-09-18：补 'platforms' —— 跨平台比价数据若不落旁路，会被 prices 周期重写清空。
     keys = ('buff_sell', 'buff_buy', 'buff_sell_num', 'buff_buy_num', 'buff_source',
-            'yyyp_sell', 'yyyp_sell_num', 'steam_sell', 'steam_sell_num', '_csqaq_buff')
+            'yyyp_sell', 'yyyp_sell_num', 'steam_sell', 'steam_sell_num', '_csqaq_buff',
+            'platforms')
     n = 0
     for hn, bp in price_map.items():
         if not isinstance(bp, dict):
@@ -847,6 +849,9 @@ def save_csqaq_boards(price_map):
 
 
 def generate_recommendations(alerts=None, steamdt_prices=None):
+    """★ 权威推荐引擎（主看板 market.json:recommendations.all）。
+    注意：steam_market.py 里另有一个同名函数，只服务 report.html 的「Steam 市场」小节
+    （写入 market.json:steam_market_recs），两者口径独立、勿混用。"""
     """Dual-scoring recommendation engine.
     ECO score (0-100): supply/demand + valuation from eco_tracked.json
     BUFF score (0-100): price premium + order book from SteamDT data
@@ -909,6 +914,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                 'buff_buy': item.get('buff_buy', 0),
                 'buff_sell_num': item.get('buff_sell_num', 0),
                 'buff_buy_num': item.get('buff_buy_num', 0),
+                # ⚠ 2026-09-18：原来漏拷 platforms → rec 条目的 item.platforms 恒为空，
+                #   前端「其他平台」比价区拿不到数据。
+                'platforms': item.get('platforms', {}),
             }
     print(f'[REC] BUFF prices available for {len(buff_map)} items')
 
@@ -1163,7 +1171,8 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'yyyp_sell_num': item.get('yyyp_sell_num', 0) or 0,
             # 存世量代理（ECO 在售总数）与稀有度（E:\ 无该源时为空）
             'n_supply': item.get('n_supply') or item.get('SellingTotal') or 0,
-            'fp_rarity': rarity_map.get(gn, '') or '',
+            # ⚠ 2026-09-18：fp_rarity 已移除 —— FirePulse 遗留字段，且唯一带稀有度的
+            #   CSQAQ 排行榜对本池覆盖率仅 1/30（无有效来源），前端引用已同步清理。
             # ── 归一化层产出的统一字段（前端「数据来源」小标用）──
             'n_ref': item.get('n_ref', 0),
             'n_ref_src': item.get('n_ref_src', ''),
