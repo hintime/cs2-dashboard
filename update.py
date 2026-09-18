@@ -1326,12 +1326,23 @@ def fetch_steamdt_prices(hash_names, verbose=True):
             return None
         priority = {'BUFF': 0, 'UUYP': 1, 'C5': 2, 'YOUPIN': 3, 'IGXE': 4, 'STEAM': 5}
         best, best_prio = None, 99
+        # ⚠ 2026-09-18：原来只挑「最优平台」、其余全部丢弃 → 前端「其他平台」比价区块（12 处引用
+        #   item.platforms）恒为空、该功能一直是死的。这里把同一次返回里的所有平台一并收集，
+        #   零额外请求成本地激活跨平台比价（C5 / 悠悠 / WAXPEER / STEAM / BUFF 等）。
+        plats = {}
         for p_inner in platforms:
             plat = p_inner.get('platform', '')
-            sell = float(p_inner.get('sellPrice', 0))
-            buy = float(p_inner.get('biddingPrice', 0))
+            sell = float(p_inner.get('sellPrice', 0) or 0)
+            buy = float(p_inner.get('biddingPrice', 0) or 0)
             if sell <= 0 and buy <= 0:
                 continue
+            if plat:
+                plats[plat] = {
+                    'sell': sell,
+                    'sell_num': int(p_inner.get('sellCount', 0) or 0),
+                    'buy': buy,
+                    'buy_num': int(p_inner.get('biddingCount', 0) or 0),
+                }
             prio = priority.get(plat.upper(), 50)
             if prio < best_prio:
                 best_prio = prio
@@ -1342,9 +1353,8 @@ def fetch_steamdt_prices(hash_names, verbose=True):
                     'update_time': p_inner.get('updateTime', 0),
                     'source': plat, 'buff_source': plat,
                 }
-                # 找到BUFF就是最优，其他平台不关我们事了
-                if prio == 0:
-                    break
+        if best is not None and plats:
+            best['platforms'] = plats
         return best
 
     # ── 持仓（≤32件）：single API，间隔≥1秒 ──

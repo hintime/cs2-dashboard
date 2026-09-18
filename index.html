@@ -3833,6 +3833,16 @@ function recBuildExpand(item, gi, aiReasonMap) {
   if (_cov !== null && _cov > 0) {
     d2.push('<div class="rt-dimrow"><span class="dn2">多源覆盖</span><span class="dbar"><i style="width:' + Math.min(100, _cov * 100).toFixed(0) + '%;background:var(--amber)"></i></span><span class="dv">' + (_cov * 100).toFixed(0) + '%</span></div>');
   }
+  // 数据缺口提示（2026-09-18）：评分对缺失子项按中性 0.5 计 → 必须让用户知道分数基于部分数据
+  try {
+    var _gaps = item.data_gaps;
+    if (Object.prototype.toString.call(_gaps) === '[object Array]' && _gaps.length) {
+      var _gname = { eco: 'ECO 盘口', buff: 'BUFF 盘口', yy: '悠悠盘口' };
+      d2.push('<div class="ln" style="margin-top:4px;color:var(--amber)">⚠ 数据不全：' +
+        esc(_gaps.map(function(g) { return _gname[g] || g; }).join('、')) +
+        ' 有子项缺失，已按中性值计入</div>');
+    }
+  } catch (e) {}
   if (!d2.length) d2.push('<div class="ln">该件缺评分构成数据</div>');
   // 数据源与跨市场信号（真实字段）
   var _meta = [];
@@ -5186,6 +5196,15 @@ window.CAT_LABELS = CAT_LABELS;
           + '<div class="rm-dim-bar"><div class="rm-dim-fill" style="width:' + pc.toFixed(0) + '%;background:' + d[2] + '"></div></div></div>';
       }).join('');
       if (dHtml) scoreBlock += '<div class="rm-dims">' + dHtml + '</div>';
+      // 数据缺口提示（2026-09-18）
+      try {
+        var _gaps2 = item.data_gaps;
+        if (Object.prototype.toString.call(_gaps2) === '[object Array]' && _gaps2.length) {
+          var _gn2 = { eco: 'ECO 盘口', buff: 'BUFF 盘口', yy: '悠悠盘口' };
+          scoreBlock += '<div style="font-size:11px;color:var(--amber);margin-top:6px">⚠ 数据不全：' +
+            esc(_gaps2.map(function(g) { return _gn2[g] || g; }).join('、')) + ' 有子项缺失，已按中性值计入</div>';
+        }
+      } catch (e) {}
       var _mm = [];
       if (item.n_ref_src) _mm.push('基准源 ' + esc(String(item.n_ref_src)) + ((item.n_ref > 0) ? '（¥' + Number(item.n_ref).toFixed(2) + '）' : ''));
       if (typeof item.n_dev_steam === 'number' && isFinite(item.n_dev_steam)) _mm.push('Steam 偏离 ' + (item.n_dev_steam >= 0 ? '+' : '') + item.n_dev_steam.toFixed(1) + '%');
