@@ -91,6 +91,11 @@ def _is_valid_scan_item(it):
         return False
     if 'Souvenir' in hn:
         return False
+    # 2026-09-18（义轩要求）：扫描页也排除 StatTrak（原 8986 件里含 3103 件 ST）。
+    # 注：对扫描速度几乎无影响（耗时大头是 ECO 目录接口与价格库查询），
+    #     收益是 market_scan.json 变小、前端加载更快。
+    if 'StatTrak' in hn:
+        return False
     return True
 
 def main():
