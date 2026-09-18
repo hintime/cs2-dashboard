@@ -87,6 +87,10 @@ td{padding:4px 8px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)
     <h2>📖 经验教训 <span style="font-size:9px;background:rgba(251,191,36,.15);color:#fbbf24;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px" id="lessonCount"></span></h2>
     <div id="lessonsContent"></div>
   </div>
+  <div class="card" id="scoreCard" style="display:none">
+    <h2>📊 推荐战绩 <span style="font-size:9px;background:rgba(34,197,94,.15);color:#22c55e;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px">含大盘超额</span><span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px" id="scoreMeta"></span></h2>
+    <div id="scoreContent"></div>
+  </div>
 </div>
 <script src="ai-badge.js"></script>
 <script>
@@ -441,6 +445,48 @@ loadTracks();
       });
   }
   runAITrackAnalysis();
+function loadScorecard() {
+  fetch('rec_scorecard.json?v=' + Date.now())
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .catch(function(){ return null; })
+    .then(function(d){
+      if (!d) return;
+      var card = document.getElementById('scoreCard');
+      var box = document.getElementById('scoreContent');
+      if (!card || !box) return;
+      var meta = document.getElementById('scoreMeta');
+      if (meta) meta.textContent = '样本 ' + (d.n || 0) + ' 条 · ' + (d.generated || '');
+      function pct(x){ return (x === null || x === undefined) ? '—' : (x > 0 ? '+' : '') + Number(x).toFixed(2) + '%'; }
+      function col(x){ return x > 0 ? 'var(--rise)' : (x < 0 ? 'var(--fall)' : 'var(--text2)'); }
+      var labels = {'r7': '+7 天', 'r14': '+14 天', 'r30': '+30 天'};
+      var h = '<table><thead><tr><th>周期</th><th>样本</th><th>命中率</th><th>均值</th><th>中位</th><th style="text-align:right">超额(vs 大盘)</th></tr></thead><tbody>';
+      ['r7','r14','r30'].forEach(function(k){
+        var o = (d.overall || {})[k]; if (!o) return;
+        var exc = (d.excess || {})[k], bm = (d.benchmark || {})[k.replace('r','')];
+        h += '<tr><td>' + labels[k] + '</td><td>' + o.n + '</td><td>' + o.hit + '%</td>' +
+             '<td style="color:' + col(o.avg) + '">' + pct(o.avg) + '</td>' +
+             '<td style="color:' + col(o.med) + '">' + pct(o.med) + '</td>' +
+             '<td style="text-align:right;color:' + col(exc) + '">' + pct(exc) +
+             ' <span style="color:var(--text3);font-size:11px">(大盘 ' + pct(bm) + ')</span></td></tr>';
+      });
+      h += '</tbody></table>';
+      if (d.by_tag) {
+        h += '<div style="margin-top:14px;font-size:12px;color:var(--text2);margin-bottom:6px">按通道（+14 天）</div>' +
+             '<table><thead><tr><th>通道</th><th>样本</th><th>命中率</th><th>均值</th></tr></thead><tbody>';
+        Object.keys(d.by_tag).forEach(function(t){
+          var o = d.by_tag[t]; if (!o) return;
+          h += '<tr><td>' + esc(t) + '</td><td>' + o.n + '</td><td>' + o.hit + '%</td>' +
+               '<td style="color:' + col(o.avg) + '">' + pct(o.avg) + '</td></tr>';
+        });
+        h += '</tbody></table>';
+      }
+      h += '<div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.7">口径：每条推荐视为一个开仓点，入场=推荐当时价，出场=+7/14/30 天真实价（±4 天就近取点）；超额=推荐均值−全池等权收益。' +
+           '<br>注：样本为“被推荐过的标的”，非全市场随机抽样，结论作方向参考。</div>';
+      box.innerHTML = h;
+      card.style.display = '';
+    });
+}
+loadScorecard();
 </script>
 </body>
 </html>

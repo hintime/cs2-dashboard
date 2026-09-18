@@ -163,7 +163,10 @@ def main():
                      for h in HORIZONS}}
     json.dump(js, open(os.path.join(out_dir, 'rec_scorecard.json'), 'w', encoding='utf-8'),
               ensure_ascii=False, indent=2)
-    print('\n产物: outputs/rec_scorecard.json + outputs/rec_outcomes.csv')
+    # 根目录副本：供 tracking.html 直接 fetch（与其它数据文件同目录，走同一套缓存策略）
+    json.dump(js, open(os.path.join(REPO, 'rec_scorecard.json'), 'w', encoding='utf-8'),
+              ensure_ascii=False, indent=2)
+    print('\n产物: rec_scorecard.json（根）+ outputs/rec_scorecard.json + outputs/rec_outcomes.csv')
 
 if __name__ == '__main__':
     main()
