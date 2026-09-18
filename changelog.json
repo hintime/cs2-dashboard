@@ -2,6 +2,30 @@
   {
     "date": "2026-09-18",
     "tag": "fix",
+    "title": "style(ai): AI 推荐精选面板重设计（仅 CSS 覆盖，不动 DOM/JS）",
+    "desc": "style(ai): AI 推荐精选面板重设计（仅 CSS 覆盖，不动 DOM/JS）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "fix(track-ai): 追踪AI分析停更3天的双层bug",
+    "desc": "fix(track-ai): 追踪AI分析停更3天的双层bug"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "style(ai): 放大 AI 推荐精选面板字号（义轩要求）",
+    "desc": "style(ai): 放大 AI 推荐精选面板字号（义轩要求）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(ui): Kronos 预测为负时徽章标注「看跌·仅参考」",
+    "desc": "feat(ui): Kronos 预测为负时徽章标注「看跌·仅参考」"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
     "title": "fix(ui): Kronos 预测徽章涨跌配色写反（跌显示红字）",
     "desc": "fix(ui): Kronos 预测徽章涨跌配色写反（跌显示红字）"
   },
@@ -88,11 +112,5 @@
     "tag": "fix",
     "title": "feat(rec): 推荐加在售量下限（默认100件）+ 盘口数据改旁路文件防被清 + 跨市场维度去偏",
     "desc": "feat(rec): 推荐加在售量下限（默认100件）+ 盘口数据改旁路文件防被清 + 跨市场维度去偏"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "chore",
-    "title": "market index 2026-09-18 00:55",
-    "desc": "market index 2026-09-18 00:55"
   }
 ]
