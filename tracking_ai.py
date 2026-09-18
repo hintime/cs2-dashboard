@@ -57,14 +57,35 @@ def save_daily_tracks(recommendations):
             'score': rec.get('score', 0),
             'tag': rec.get('tag', 'eco'),
             'tag_label': rec.get('tag_label', rec.get('tag', 'eco')),
-            'channel_eco': rec.get('channel_eco', 0),
-            'channel_buff': rec.get('channel_buff', 0),
+            # ⚠ 2026-09-18 修复：原字段名 channel_eco/channel_buff 在推荐条目上并不存在
+            #   （真实字段是 eco_score/buff_score）→ 历史快照里恒为 0、因子检验随之失效。
+            'channel_eco': rec.get('eco_score', rec.get('channel_eco', 0)),
+            'channel_buff': rec.get('buff_score', rec.get('channel_buff', 0)),
+            # 真实分维度评分 + 信号位（供「因子有效性检验」与「权重实测标定」使用）
+            'dims': {
+                'eco_score': rec.get('eco_score'),
+                'buff_score': rec.get('buff_score'),
+                'n_supply': rec.get('n_supply'),
+                'n_ref': rec.get('n_ref'),
+                'n_steam': rec.get('n_steam'),
+                'n_dev_steam': rec.get('n_dev_steam'),
+                'n_premium_buff': rec.get('n_premium_buff'),
+                'n_premium_yyyp': rec.get('n_premium_yyyp'),
+                'n_cov': rec.get('n_cov'),
+                'eco_selling': rec.get('eco_selling'),
+                'eco_qg_total': rec.get('eco_qg_total'),
+                'buff_sell_num': rec.get('buff_sell_num'),
+                'yyyp_sell_num': rec.get('yyyp_sell_num'),
+                'rate_7': rec.get('rate_7'),
+                'rate_30': rec.get('rate_30'),
+            },
+            'signals': rec.get('trend_signals') or [],
             'buff_sell': rec.get('buff_sell', 0),
             'yyyp_sell': rec.get('yyyp_sell', 0),
-            'reason': rec.get('_reason', '') or rec.get('reason', '')[:200],
+            'reason': rec.get('_reason', '') or (rec.get('reason', '') or '')[:200],
             'recorded_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
         }
-    
+
     if day_items:
         tracks[today] = day_items
         _save_json(path, tracks)

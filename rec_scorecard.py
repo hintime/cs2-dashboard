@@ -79,6 +79,8 @@ def main():
                 row['r%d' % h] = round((ex / entry - 1) * 100, 2) if ex else None
             for k, pat in SIGNALS.items():
                 row['sig_' + k] = bool(re.search(pat, row['reason']))
+            # 真实分维度评分（2026-09-18 起落库；历史记录无 dims → 为空）
+            row['dims'] = it.get('dims') or {}
             if all(row.get('r%d' % h) is None for h in HORIZONS):
                 skipped += 1; continue
             recs.append(row)
@@ -132,6 +134,18 @@ def main():
     show('按推荐理由信号（+14 天；B：谁是有效因子）',
          [(k, [r for r in recs if r.get('sig_' + k)]) for k in SIGNALS] +
          [('无稀缺信号', [r for r in recs if not r.get('sig_稀缺')])])
+
+    # 真实分维度评分（B 的正规做法；仅 2026-09-18 起有 dims，样本逐日累积）
+    dim_keys = ['eco_score', 'buff_score', 'n_supply', 'n_cov']
+    for dk in dim_keys:
+        rows = [r for r in recs if isinstance((r.get('dims') or {}).get(dk), (int, float))]
+        if len(rows) < 20:
+            print('\n按真实维度 %s：有效样本仅 %d 条（dims 自 09-18 起才落库，逐日累积）' % (dk, len(rows)))
+            continue
+        med = statistics.median((r['dims'][dk]) for r in rows)
+        show('按真实维度 %s（中位 %.2f）' % (dk, med),
+             [('高(>=中位)', [r for r in rows if r['dims'][dk] >= med]),
+              ('低(<中位)', [r for r in rows if r['dims'][dk] < med])])
 
     out_dir = os.path.join(REPO, 'outputs'); os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, 'rec_outcomes.csv'), 'w', newline='', encoding='utf-8-sig') as f:
