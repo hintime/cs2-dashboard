@@ -1185,7 +1185,28 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
 
     # Sort by combined score, take top 30
     all_recs.sort(key=lambda x: x['score'], reverse=True)
-    all_recs = all_recs[:30]
+    # ⚠ 2026-09-18：同一饰品的不同磨损等级会互相挤占名额 —— 实测 30 条里 4 组重复、共占 9 条
+    #   （如「沙漠之鹰|东方之谜」占 3 条），组合分散度差。加「同一基础饰品最多 N 档」限额。
+    #   可用 REC_MAX_PER_SKIN 调整（0=关闭）。
+    _max_per_skin = int(os.environ.get('REC_MAX_PER_SKIN') or '1')
+    if _max_per_skin > 0:
+        _seen, _picked, _overflow = {}, [], []
+        for _r in all_recs:
+            _base = (_r.get('name') or '').split(' (')[0].split('（')[0].strip()
+            if _base and _seen.get(_base, 0) >= _max_per_skin:
+                _overflow.append(_r)
+                continue
+            _seen[_base] = _seen.get(_base, 0) + 1
+            _picked.append(_r)
+        # 候选不足 30 时用被压制的条目按分数回补，保证数量不缩水
+        all_recs = (_picked if len(_picked) >= 30 else (_picked + _overflow))[:30]
+        _c = {}
+        for _r in all_recs:
+            _b = (_r.get('name') or '').split(' (')[0].split('（')[0].strip()
+            _c[_b] = _c.get(_b, 0) + 1
+        print('[REC] 分散度限额: 同饰品最多 %d 档 | 最终仍有 %d 组重复' % (_max_per_skin, sum(1 for v in _c.values() if v > 1)))
+    else:
+        all_recs = all_recs[:30]
 
     eco_count = sum(1 for r in all_recs if r['tag'] == 'eco')
     buff_count = sum(1 for r in all_recs if r['tag'] == 'buff')
@@ -1247,6 +1268,38 @@ def fetch_steamdt_klines(items_list):
     return kline_data
 
 # ═══════════════ STEAMDT PRICES (BUFF/悠悠有品/C5/IGXE) ═══════════════
+_STEAMDT_SLOT = os.path.join(DATA_DIR, '.steamdt_batch.slot')
+
+
+def _steamdt_batch_slot(min_gap=62.0, wait_max=1800.0):
+    """批量接口「每分钟 1 次」的**跨进程**互斥（官方文档 6369437）。
+
+    2026-09-18 实测：daemon 的 all 周期与手动补数据脚本同时跑 →
+    两个进程各自按 65s 间隔发批，实际每分钟发 2 次 → 双双 errorCode=4005。
+    这里用文件时间戳"占坑"：谁先读到过期槽位谁占坑，其余等待，保证全机每分钟一次。
+    """
+    import time as _t
+    t0 = _t.time()
+    while True:
+        last = 0.0
+        try:
+            with open(_STEAMDT_SLOT, 'r') as f:
+                last = float((f.read() or '0').strip() or 0)
+        except Exception:
+            last = 0.0
+        gap = _t.time() - last
+        if gap >= min_gap:
+            try:
+                with open(_STEAMDT_SLOT, 'w') as f:
+                    f.write(str(_t.time()))
+            except Exception:
+                pass
+            return True
+        if _t.time() - t0 > wait_max:
+            return False
+        _t.sleep(min(20.0, max(1.0, min_gap - gap)) + 0.3)
+
+
 def fetch_steamdt_prices(hash_names, verbose=True):
     """Fetch multi-platform prices from SteamDT, respecting API limits:
     - single API: 60次/分钟 → 间隔≥1秒（用于持仓≤32件）
@@ -1329,8 +1382,11 @@ def fetch_steamdt_prices(hash_names, verbose=True):
                 break
             if verbose or batch_idx == 0:
                 print(f'[SteamDT] Batch {batch_idx+1}/{total_batches}: {len(batch)} items...')
-            if batch_idx > 0:
-                time.sleep(65.0)  # 遵守1次/分钟限制（加5秒缓冲）
+            # ⚠ 2026-09-18：原实现只按批间隔 sleep 65s，但**多个进程**（daemon + 手动脚本）
+            #   会同时抢这个"每分钟 1 次"的配额 → 双双 4005。改为跨进程占坑（见 _steamdt_batch_slot）。
+            if not _steamdt_batch_slot():
+                print('[SteamDT] 等待批量接口槽位超时，放弃本轮', file=sys.stderr)
+                break
             body = _json.dumps({'marketHashNames': batch}).encode('utf-8')
             try:
                 result = None
