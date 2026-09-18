@@ -4175,10 +4175,13 @@ def main():
             # 大盘时序（每小时一条，累积成走势）
             try:
                 _hp = os.path.join(DATA_DIR, 'market_overview_history.json')
-                _hist, _added = firepulse.append_overview_history(_ov, _hp)
-                if _added:
+                # ⚠ 2026-09-19：firepulse 内 append_overview_history 被定义了两次，**实际生效的是旧版**
+                #   （返回 {日期: [点...]} 的 dict，而非新版 (hist, added) 二元组）→ 解包 2 值每次报
+                #   "too many values to unpack"。改为按旧版契约接收返回值。
+                _hist = firepulse.append_overview_history(_ov, _hp)
+                if _hist:
                     dirty_files.add('market_overview_history.json')
-                    print('[FirePulse] 大盘历史: +1 条，共 %d 条' % len(_hist or []))
+                    print('[FirePulse] 大盘历史: 共 %d 天' % len(_hist))
             except Exception as _e:
                 print('[FirePulse] 大盘历史失败: %s' % _e, file=sys.stderr)
 
@@ -4188,10 +4191,16 @@ def main():
                 _h2 = read_json(_hp2)
                 _items2 = (_h2 or {}).get('items', []) if isinstance(_h2, dict) else []
                 if _items2:
-                    _cnt = firepulse.enrich_items(_items2, id_cache={}, max_items=40)
+                    # ⚠ 2026-09-19：enrich_items 同样被定义两次，**生效的是旧版** `(items, cache, limit)`
+                    #   → 原调用用新版关键字 (id_cache/max_items) 必然报错，导致持仓精确化从未生效。
+                    #   改为旧版签名，并使用持久化 id 缓存（原为空 dict，每次重复解析 ID）。
+                    _cp2 = os.path.join(DATA_DIR, 'firepulse_ids.json')
+                    _c2 = firepulse.load_id_cache(_cp2)
+                    _cnt = firepulse.enrich_items(_items2, _c2, limit=40)
                     if _cnt:
+                        firepulse.save_id_cache(_cp2, _c2)
                         write_json(_hp2, _h2)
-                        dirty_files.add('holdings.json')
+                        dirty_files.update(['holdings.json', 'firepulse_ids.json'])
                         print('[FirePulse] 持仓精确化: %d/%d 项' % (_cnt, len(_items2)))
             except Exception as _e:
                 print('[FirePulse] 持仓精确化失败: %s' % _e, file=sys.stderr)
