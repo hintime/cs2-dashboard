@@ -64,9 +64,6 @@ def _csqaq_buy(hash_names, token, verbose):
             if verbose:
                 print('[BUY] CSQAQ goodId 批失败: %s' % str(e)[:90], file=sys.stderr)
         time.sleep(_SLEEP)
-    global _LAST_GID
-    _LAST_GID = gid
-
     # ② 求购价 / 求购数量
     for hn, g in gid.items():
         row = {}
@@ -87,7 +84,7 @@ def _csqaq_buy(hash_names, token, verbose):
             got[hn] = row
     if verbose:
         print('[BUY] CSQAQ 优先通道: %d/%d 件拿到买盘' % (len(got), len(hash_names)))
-    return got
+    return got, gid
 
 
 def _csqaq_supply(gid_map, token, verbose):
@@ -151,7 +148,7 @@ def _steamdt_fallback(missing, verbose):
     return out
 
 
-_LAST_GID = {}
+
 
 
 def fill_buy_data(hash_names, verbose=True):
@@ -169,11 +166,11 @@ def fill_buy_data(hash_names, verbose=True):
     except Exception:
         pass
 
-    out = _csqaq_buy(names, token, verbose)
+    out, _gid_map = _csqaq_buy(names, token, verbose)
 
-    # 顺带取真实存世量（同一 goodId 映射，复用 _gid_last 缓存）
+    # 顺带取真实存世量（复用同一次 goodId 映射，避免重复请求）
     try:
-        sup = _csqaq_supply(_LAST_GID or {}, token, verbose)
+        sup = _csqaq_supply(_gid_map, token, verbose)
         for _hn, _row in sup.items():
             out.setdefault(_hn, {}).update(_row)
     except Exception as _se:

@@ -920,6 +920,7 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                 # ⚠ 2026-09-18：真实存世量（CSQAQ statistic）与近7天变化，同样必须透传
                 'n_supply_real': item.get('n_supply_real'),
                 'supply_chg7': item.get('supply_chg7'),
+                'buy_src': item.get('buy_src'),
             }
     print(f'[REC] BUFF prices available for {len(buff_map)} items')
 
@@ -1000,8 +1001,19 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                 eco_reasons.append('求购%d单/在售%d件' % (qg_total, selling))
         else:
             a2 = 0.5
-        # A3 相对稀缺度（20 分权重）：以下限为 1.0、约 50 倍下限为 0 的对数刻度
-        if selling > 0:
+        # A3 相对稀缺度（20 分权重）
+        # ⚠ 2026-09-18：原刻度只看「在售绝对量」→ 概念被混淆（在售 100 件的低端枪皮 与
+        #   在售 100 件的高端刀，稀缺含义完全不同）。改用「流通率 = 在售/存世」为主
+        #   （实测跨度 0.06%~3.23%，54 倍区分度）；无真实存世量时回退原「在售量」刻度。
+        _real_sup = item.get('n_supply_real')
+        if selling > 0 and isinstance(_real_sup, (int, float)) and _real_sup > 0:
+            _turn = selling / float(_real_sup)          # 流通率
+            # 0.05% → 满分；3% 及以上 → 0 分（对数刻度）
+            _lp = _m.log10(max(_turn, 1e-6) / 0.0005) / _m.log10(3.0 / 0.05)
+            a3 = max(0.0, min(1.0, 1 - _lp))
+            if _turn <= 0.001:
+                eco_reasons.append('浮筹极低%.2f%%（在售%d/存世%d）' % (_turn * 100, selling, int(_real_sup)))
+        elif selling > 0:
             _lo = max(REC_MIN_SELLING, 1)
             a3 = max(0.0, 1 - _m.log10(max(selling, _lo) / float(_lo)) / _m.log10(50.0))
             if selling <= _lo * 1.5:
@@ -1177,6 +1189,7 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             # 真实存世量（CSQAQ）：与在售件数无关，可算流通率 = 在售/存世
             'n_supply_real': item.get('n_supply_real'),
             'supply_chg7': item.get('supply_chg7'),
+            'buy_src': item.get('buy_src'),
             # ⚠ 2026-09-18：fp_rarity 已移除 —— FirePulse 遗留字段，且唯一带稀有度的
             #   CSQAQ 排行榜对本池覆盖率仅 1/30（无有效来源），前端引用已同步清理。
             # ── 归一化层产出的统一字段（前端「数据来源」小标用）──

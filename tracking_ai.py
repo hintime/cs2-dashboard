@@ -77,6 +77,13 @@ def save_daily_tracks(recommendations):
                 'buff_sell_num': rec.get('buff_sell_num'),
                 'yyyp_sell_num': rec.get('yyyp_sell_num'),
                 'rate_7': rec.get('rate_7'),
+                # 2026-09-18 新增（真实存世量/买盘来源）：不写进 dims 的话，追踪快照抓不到、
+                # 未来做因子检验与 Kronos 校准时就用不上。
+                'n_supply_real': rec.get('n_supply_real'),
+                'supply_chg7': rec.get('supply_chg7'),
+                'buff_buy': rec.get('buff_buy'),
+                'buff_buy_num': rec.get('buff_buy_num'),
+                'buy_src': rec.get('buy_src'),
                 'rate_30': rec.get('rate_30'),
             },
             'signals': rec.get('trend_signals') or [],
