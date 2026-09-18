@@ -829,7 +829,7 @@ def save_csqaq_boards(price_map):
     # ⚠ 2026-09-18：补 'platforms' —— 跨平台比价数据若不落旁路，会被 prices 周期重写清空。
     keys = ('buff_sell', 'buff_buy', 'buff_sell_num', 'buff_buy_num', 'buff_source',
             'yyyp_sell', 'yyyp_sell_num', 'steam_sell', 'steam_sell_num', '_csqaq_buff',
-            'platforms')
+            'platforms', 'n_supply_real', 'supply_chg7', 'buy_src')
     n = 0
     for hn, bp in price_map.items():
         if not isinstance(bp, dict):
@@ -917,6 +917,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
                 # ⚠ 2026-09-18：原来漏拷 platforms → rec 条目的 item.platforms 恒为空，
                 #   前端「其他平台」比价区拿不到数据。
                 'platforms': item.get('platforms', {}),
+                # ⚠ 2026-09-18：真实存世量（CSQAQ statistic）与近7天变化，同样必须透传
+                'n_supply_real': item.get('n_supply_real'),
+                'supply_chg7': item.get('supply_chg7'),
             }
     print(f'[REC] BUFF prices available for {len(buff_map)} items')
 
@@ -1171,6 +1174,9 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'yyyp_sell_num': item.get('yyyp_sell_num', 0) or 0,
             # 存世量代理（ECO 在售总数）与稀有度（E:\ 无该源时为空）
             'n_supply': item.get('n_supply') or item.get('SellingTotal') or 0,
+            # 真实存世量（CSQAQ）：与在售件数无关，可算流通率 = 在售/存世
+            'n_supply_real': item.get('n_supply_real'),
+            'supply_chg7': item.get('supply_chg7'),
             # ⚠ 2026-09-18：fp_rarity 已移除 —— FirePulse 遗留字段，且唯一带稀有度的
             #   CSQAQ 排行榜对本池覆盖率仅 1/30（无有效来源），前端引用已同步清理。
             # ── 归一化层产出的统一字段（前端「数据来源」小标用）──

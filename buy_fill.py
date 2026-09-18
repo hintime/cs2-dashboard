@@ -28,6 +28,14 @@ def _csqaq_call(path, body, token):
                                    headers={'ApiToken': token}, timeout=25)
 
 
+def _csqaq_get(url, token):
+    sys.path.insert(0, REPO)
+    import update
+    if not url.startswith('http'):
+        url = 'https://api.csqaq.com' + url   # ⚠ 必须补域名：http_get 不接受相对路径
+    return update.http_get(url, headers={'ApiToken': token}, timeout=20)
+
+
 def _last_positive(series):
     for v in reversed(series or []):
         if isinstance(v, (int, float)) and v > 0:
@@ -56,6 +64,9 @@ def _csqaq_buy(hash_names, token, verbose):
             if verbose:
                 print('[BUY] CSQAQ goodId 批失败: %s' % str(e)[:90], file=sys.stderr)
         time.sleep(_SLEEP)
+    global _LAST_GID
+    _LAST_GID = gid
+
     # ② 求购价 / 求购数量
     for hn, g in gid.items():
         row = {}
@@ -77,6 +88,34 @@ def _csqaq_buy(hash_names, token, verbose):
     if verbose:
         print('[BUY] CSQAQ 优先通道: %d/%d 件拿到买盘' % (len(got), len(hash_names)))
     return got
+
+
+def _csqaq_supply(gid_map, token, verbose):
+    """真实存世量（近180天走势）→ n_supply_real + supply_chg7。
+
+    ⚠ 现有「存世量」是 eco_selling（在售件数）代理，实测与真实值差 100~1000 倍。
+    """
+    out = {}
+    if not token or not gid_map:
+        return out
+    for hn, g in gid_map.items():
+        try:
+            r = _csqaq_get('/api/v1/info/good/statistic?id=%d' % g, token)
+            d = r.get('data') or []
+            vals = [x.get('statistic') for x in d if isinstance(x.get('statistic'), int)]
+            if not vals:
+                continue
+            row = {'n_supply_real': int(vals[-1])}
+            if len(vals) > 7:
+                row['supply_chg7'] = int(vals[-1] - vals[-8])
+            out[hn] = row
+        except Exception as e:
+            if verbose:
+                print('[BUY] 存世量 %s 失败: %s' % (hn[:22], str(e)[:60]), file=sys.stderr)
+        time.sleep(_SLEEP)
+    if verbose:
+        print('[BUY] 存世量通道: %d/%d 件' % (len(out), len(gid_map)))
+    return out
 
 
 def _steamdt_fallback(missing, verbose):
@@ -112,6 +151,9 @@ def _steamdt_fallback(missing, verbose):
     return out
 
 
+_LAST_GID = {}
+
+
 def fill_buy_data(hash_names, verbose=True):
     """主入口：返回并落盘 {hash_name: {buff_buy, buff_buy_num, buy_src, ...}}。"""
     names = [n for n in (hash_names or []) if n][:MAX_ITEMS]
@@ -128,6 +170,15 @@ def fill_buy_data(hash_names, verbose=True):
         pass
 
     out = _csqaq_buy(names, token, verbose)
+
+    # 顺带取真实存世量（同一 goodId 映射，复用 _gid_last 缓存）
+    try:
+        sup = _csqaq_supply(_LAST_GID or {}, token, verbose)
+        for _hn, _row in sup.items():
+            out.setdefault(_hn, {}).update(_row)
+    except Exception as _se:
+        if verbose:
+            print('[BUY] 存世量通道异常: %s' % str(_se)[:100], file=sys.stderr)
 
     # 兜底条件：完全没拿到，或没拿到求购数量
     missing = [n for n in names

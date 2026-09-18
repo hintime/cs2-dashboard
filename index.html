@@ -3695,7 +3695,7 @@ var REC_SORT_FIELDS = {
   score: function(it){ return typeof it.score === 'number' ? it.score : -1; },
   rate_7: function(it){ return typeof it.rate_7 === 'number' ? it.rate_7 : -1e9; },
   n_dev_steam: function(it){ return typeof it.n_dev_steam === 'number' ? it.n_dev_steam : -1e9; },
-  eco_selling: function(it){ return parseFloat(it.eco_selling) || -1; }
+  eco_selling: function(it){ var v = parseFloat(it.n_supply_real); return (isFinite(v) && v > 0) ? v : (parseFloat(it.eco_selling) || -1); }
 };
 var REC_SORT_LABELS = { score:'评分', rate_7:'7日涨跌', n_dev_steam:'Steam偏离', eco_selling:'存世量' };
 
@@ -3751,9 +3751,19 @@ function recBuildRow(item, gi, zebra) {
   // 稀有度标签已移除：fp_rarity 为 FirePulse 遗留死字段（CSQAQ 排行榜仅覆盖 1/30，无有效来源）
   var chTag = channel ? '<span class="rt-ch">' + esc(recChannelLabel(channel)) + '</span>' : '';
   var buyNum = item.buff_buy_num || 0;
-  // 存世量
-  var sup = parseFloat(item.eco_selling);
-  var supTxt = sup > 0 ? (sup >= 10000 ? (sup / 10000).toFixed(1) + '万' : Math.round(sup).toLocaleString('zh-CN')) : '—';
+  // 存世量：优先真实值（CSQAQ statistic，2026-09-18 接入）；无则回退 ECO 在售件数代理
+  var _supReal = parseFloat(item.n_supply_real);
+  var _supIsReal = isFinite(_supReal) && _supReal > 0;
+  var sup = _supIsReal ? _supReal : parseFloat(item.eco_selling);
+  var _supFmt = function(v) { return v >= 10000 ? (v / 10000).toFixed(1) + '万' : Math.round(v).toLocaleString('zh-CN'); };
+  var supTxt = sup > 0
+    ? (_supIsReal ? _supFmt(sup) : _supFmt(sup) + '<span style="font-size:9px;color:var(--text3)">*代理</span>')
+    : '—';
+  if (_supIsReal && typeof item.supply_chg7 === 'number') {
+    var _c7 = item.supply_chg7;
+    supTxt += '<span style="font-size:9px;margin-left:3px;color:' + (_c7 > 0 ? 'var(--rise)' : 'var(--fall)') + '">'
+      + (_c7 > 0 ? '+' : '') + _c7.toLocaleString('zh-CN') + '/7d</span>';
+  }
   // Steam 偏离（唯一的真·跨市场信号）
   var nd = item.n_dev_steam, devHtml;
   if (typeof nd === 'number' && isFinite(nd)) {
