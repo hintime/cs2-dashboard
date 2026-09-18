@@ -2,6 +2,12 @@
   {
     "date": "2026-09-18",
     "tag": "fix",
+    "title": "fix(rec): StatTrak 排除从未生效（★ 前缀导致 startswith 落空），改子串匹配",
+    "desc": "fix(rec): StatTrak 排除从未生效（★ 前缀导致 startswith 落空），改子串匹配"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-18 12:27",
     "desc": "wip: local snapshot 2026-09-18 12:27"
   },
@@ -94,17 +100,5 @@
     "tag": "fix",
     "title": "feat(ai): 云端兜底 + Ollama 自愈守护（回应「两家能否一起用 / 连不上能不能重试」）",
     "desc": "feat(ai): 云端兜底 + Ollama 自愈守护（回应「两家能否一起用 / 连不上能不能重试」）"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "chore(ai): 全量本地化收尾——质量敏感任务（推荐/市场洞察）确认走 Ollama",
-    "desc": "chore(ai): 全量本地化收尾——质量敏感任务（推荐/市场洞察）确认走 Ollama"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "fix(ops): 修掉 Ollama 与 GUI 抢端口导致的每秒弹窗 + 明确唯一服务归属",
-    "desc": "fix(ops): 修掉 Ollama 与 GUI 抢端口导致的每秒弹窗 + 明确唯一服务归属"
   }
 ]
