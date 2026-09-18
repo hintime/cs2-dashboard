@@ -3822,6 +3822,27 @@ def main():
             buff_n = sum(1 for r in recs.get('all', []) if r.get('tag') == 'buff')
             print(f'[REC] {total} recommendations (ECO={eco_n}, BUFF={buff_n})')
 
+            # ── 买盘补全（CSQAQ info/chart 优先 / SteamDT 兜底）→ 再算一轮，让 B1/B3 生效 ──
+            # 背景：评分 B1「买卖盘强度」(35分) / B3「买盘贴价」(25分) 依赖 BUFF 求购数据，
+            #   缺失时按中性 0.5 计 → BUFF 维度区分度弱。此处对初次入选的标的补齐求购数据后重算。
+            # 关掉：环境变量 SKIP_BUY_FILL=1
+            try:
+                import buy_fill
+                _bnames = [r.get('hash_name') for r in recs.get('all', []) if r.get('hash_name')]
+                if os.environ.get('SKIP_BUY_FILL') != '1' and _bnames:
+                    _filled = buy_fill.fill_buy_data(_bnames, verbose=True)
+                    if _filled:
+                        _before = {r.get('hash_name'): r.get('score') for r in recs.get('all', [])}
+                        recs = generate_recommendations(alerts=alerts_data, steamdt_prices=buff_prices)
+                        _moved = sum(1 for r in recs.get('all', [])
+                                     if _before.get(r.get('hash_name')) != r.get('score'))
+                        _eco2 = sum(1 for r in recs.get('all', []) if r.get('tag') == 'eco')
+                        _buff2 = sum(1 for r in recs.get('all', []) if r.get('tag') == 'buff')
+                        print('[BUY] 补买盘 %d 件后重算：%d 条分数变化 | ECO=%d BUFF=%d'
+                              % (len(_filled), _moved, _eco2, _buff2))
+            except Exception as _be:
+                print('[BUY] 买盘补全失败（非致命）: %s' % _be, file=sys.stderr)
+
             market_path = os.path.join(DATA_DIR, 'market.json')
             market = read_json(market_path)
             market['recommendations'] = recs
