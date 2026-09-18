@@ -2429,9 +2429,11 @@ function fcChip(item) {
   var up = f.change_pct >= 0;
   var cls = up ? 'fc-up' : 'fc-dn';
   var arrow = up ? '▲' : '▼';
+  // 看跌时明确标注，避免被误读成「推荐评级把它判亏了」——Kronos 不进评分、不做否决
+  var tag = up ? '' : ' · 看跌·仅参考';
   return '<span class="fc-chip ' + cls + '" title="Kronos 时序模型 ' + (FC.meta && FC.meta.days ? FC.meta.days : 14) +
-    ' 日预测：' + f.current + ' → ' + f.forecast + '（' + (up ? '+' : '') + f.change_pct + '%）· 实验性，仅方向参考">' +
-    arrow + ' ' + (up ? '+' : '') + f.change_pct + '%／' + (FC.meta && FC.meta.days ? FC.meta.days : 14) + '日</span>';
+    ' 日预测：' + f.current + ' → ' + f.forecast + '（' + (up ? '+' : '') + f.change_pct + '%）· 实验性，仅方向参考，不参与推荐评分">' +
+    arrow + ' ' + (up ? '+' : '') + f.change_pct + '%／' + (FC.meta && FC.meta.days ? FC.meta.days : 14) + '日' + tag + '</span>';
 }
 // 展开行用的一行说明
 function fcLine(item) {
