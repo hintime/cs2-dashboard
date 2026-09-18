@@ -2,6 +2,12 @@
   {
     "date": "2026-09-18",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-18 12:27",
+    "desc": "wip: local snapshot 2026-09-18 12:27"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
     "title": "docs(kronos): 微调数据加连续性硬门槛（义轩要求：要用连续几天的，不要看到就用）",
     "desc": "docs(kronos): 微调数据加连续性硬门槛（义轩要求：要用连续几天的，不要看到就用）"
   },
@@ -100,11 +106,5 @@
     "tag": "fix",
     "title": "fix(ops): 修掉 Ollama 与 GUI 抢端口导致的每秒弹窗 + 明确唯一服务归属",
     "desc": "fix(ops): 修掉 Ollama 与 GUI 抢端口导致的每秒弹窗 + 明确唯一服务归属"
-  },
-  {
-    "date": "2026-09-17",
-    "tag": "fix",
-    "title": "feat(ai): 全量切本地 Ollama（含推荐/洞察）+ sentiment 归一化护栏",
-    "desc": "feat(ai): 全量切本地 Ollama（含推荐/洞察）+ sentiment 归一化护栏"
   }
 ]
