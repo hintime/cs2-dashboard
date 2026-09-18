@@ -2,6 +2,42 @@
   {
     "date": "2026-09-18",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-18 17:26",
+    "desc": "wip: local snapshot 2026-09-18 17:26"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "docs(rec): 推荐板块深度体检报告（P0/P1/P2 分级 + 实测证据）",
+    "desc": "docs(rec): 推荐板块深度体检报告（P0/P1/P2 分级 + 实测证据）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(track): 追踪页新增「推荐战绩」区块 + 记分卡根目录产物",
+    "desc": "feat(track): 追踪页新增「推荐战绩」区块 + 记分卡根目录产物"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "fix(track): rec_tracks 落库真实维度 + Kronos 概率校准结论",
+    "desc": "fix(track): rec_tracks 落库真实维度 + Kronos 概率校准结论"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "feat(rec): 推荐战绩记分卡 + 因子有效性检验（A/B）+ 大盘基准",
+    "desc": "feat(rec): 推荐战绩记分卡 + 因子有效性检验（A/B）+ 大盘基准"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
+    "title": "style(ai): 底部元信息区字号放大（策略/推理/自检/评分权重/教训）",
+    "desc": "style(ai): 底部元信息区字号放大（策略/推理/自检/评分权重/教训）"
+  },
+  {
+    "date": "2026-09-18",
+    "tag": "fix",
     "title": "style(ai): AI 推荐精选面板重设计（仅 CSS 覆盖，不动 DOM/JS）",
     "desc": "style(ai): AI 推荐精选面板重设计（仅 CSS 覆盖，不动 DOM/JS）"
   },
@@ -82,35 +118,5 @@
     "tag": "chore",
     "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
     "desc": "n, ai_forecast.json, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, rec_tracks.json, sectors.json 2026-09-18 11:52"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(kronos): 价格库迁 E 盘 + history 覆盖 buff/yy 加速积累",
-    "desc": "feat(kronos): 价格库迁 E 盘 + history 覆盖 buff/yy 加速积累"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(kronos): 新增独立 history 模式，每 4h 落价以积累微调长序列",
-    "desc": "feat(kronos): 新增独立 history 模式，每 4h 落价以积累微调长序列"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "chore(kronos): 建微调评估台架 + 放宽价格历史保留期（365天）",
-    "desc": "chore(kronos): 建微调评估台架 + 放宽价格历史保留期（365天）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(kronos): 价格预测接入看板（推荐池前10 + AI精选）频率随推荐板块更新",
-    "desc": "feat(kronos): 价格预测接入看板（推荐池前10 + AI精选）频率随推荐板块更新"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(rec): 推荐加在售量下限（默认100件）+ 盘口数据改旁路文件防被清 + 跨市场维度去偏",
-    "desc": "feat(rec): 推荐加在售量下限（默认100件）+ 盘口数据改旁路文件防被清 + 跨市场维度去偏"
   }
 ]
