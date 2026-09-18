@@ -893,6 +893,14 @@ html { scroll-behavior: smooth; }
   .ai-grid>div{padding:0}
   .ai-grid>div+div{border-left:0;border-top:1px solid rgba(148,163,184,.14);padding-top:10px}
 }
+/* 底部元信息（策略/推理过程/自检/评分权重/教训）——含内联 9~10px，需 !important 覆盖 */
+.ai-foot{font-size:13px;line-height:1.75;gap:12px;padding:12px 16px}
+.ai-foot span{line-height:1.7}
+.ai-foot summary{font-size:13px;line-height:1.7}
+.ai-foot details>div{padding:9px 11px!important;line-height:1.8!important;font-size:12.5px!important}
+#aiRecLessons{line-height:1.75}
+#aiRecLessons div{font-size:12.5px!important;line-height:1.75!important}
+#aiRecLessons>div{margin-bottom:6px}
 </style>
 </head>
 <body>
