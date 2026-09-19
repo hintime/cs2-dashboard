@@ -1,6 +1,12 @@
 [
   {
     "date": "2026-09-19",
+    "tag": "chore",
+    "title": "market index 2026-09-19 13:12",
+    "desc": "market index 2026-09-19 13:12"
+  },
+  {
+    "date": "2026-09-19",
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-19 11:46",
     "desc": "wip: local snapshot 2026-09-19 11:46"
@@ -94,17 +100,5 @@
     "tag": "chore",
     "title": "收录 csqaq_buy.py（CSQAQ info/chart 取 BUFF 求购，供推荐池补买盘）",
     "desc": "收录 csqaq_buy.py（CSQAQ info/chart 取 BUFF 求购，供推荐池补买盘）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(csqaq): 用 info/chart 拿 BUFF 求购，激活两个长期死掉的评分项",
-    "desc": "feat(csqaq): 用 info/chart 拿 BUFF 求购，激活两个长期死掉的评分项"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(rec): 新增字段覆盖率体检脚本（并入周度自动化）",
-    "desc": "feat(rec): 新增字段覆盖率体检脚本（并入周度自动化）"
   }
 ]
