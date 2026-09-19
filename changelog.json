@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-09-19",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-19 14:26",
+    "desc": "wip: local snapshot 2026-09-19 14:26"
+  },
+  {
+    "date": "2026-09-19",
+    "tag": "fix",
+    "title": "fix(repo): 清尾巴——firepulse 重复定义/恒等字段契约/失效脚本",
+    "desc": "fix(repo): 清尾巴——firepulse 重复定义/恒等字段契约/失效脚本"
+  },
+  {
+    "date": "2026-09-19",
     "tag": "chore",
     "title": "market index 2026-09-19 13:12",
     "desc": "market index 2026-09-19 13:12"
@@ -76,23 +88,5 @@
     "tag": "fix",
     "title": "feat(audit): 代理字段体检（定期抽样对比真实值）+ 跨源留痕打通",
     "desc": "feat(audit): 代理字段体检（定期抽样对比真实值）+ 跨源留痕打通"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "fix(rec): 自我复盘修补三处（含 1 处自引入缺陷）",
-    "desc": "fix(rec): 自我复盘修补三处（含 1 处自引入缺陷）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(supply): 接入真实存世量，替换偏差 33~384 倍的代理值",
-    "desc": "feat(supply): 接入真实存世量，替换偏差 33~384 倍的代理值"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "feat(buy): 买盘补全接入推荐流程（CSQAQ 优先 → SteamDT 兜底）",
-    "desc": "feat(buy): 买盘补全接入推荐流程（CSQAQ 优先 → SteamDT 兜底）"
   }
 ]
