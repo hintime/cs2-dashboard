@@ -18,6 +18,31 @@ os.environ['PYTHONIOENCODING'] = 'utf-8'
 sys.stdout.reconfigure(encoding='utf-8', errors='replace') if hasattr(sys.stdout, 'reconfigure') else None
 sys.stderr.reconfigure(encoding='utf-8', errors='replace') if hasattr(sys.stderr, 'reconfigure') else None
 
+# ═══════════════ 本地密钥（必须最先加载）═══════════════
+# ⚠ 顺序是硬约束（2026-09-19 事故根因，勿下移）：
+#   recommend.py 在**模块级**执行 `CSQ_KEY = os.environ.get('CSQ_API_TOKEN', '')`，
+#   模块级常量只求值一次。若本文件先 `import recommend`（原 L37）再加载
+#   local_keys.env（原 L43），CSQ_KEY 会**恒为空串**且事后不再刷新 ——
+#   于是全部 CSQAQ 请求都带着 `ApiToken: ''`，服务端一律 401。
+#
+#   极具迷惑性之处：手工跑诊断脚本时都会先加载 env 再请求，结果全是 200，
+#   于是看起来像「服务端偶发限流」；实际只有调度器拉起的 all 周期
+#   （实测 10:04、17:13 两次）100% 失败，而 prices 周期不受影响
+#   （它根本不调 CSQAQ）。曾据此误判为「服务端临时故障」。
+#
+# 云端由 GitHub Actions Secrets 注入；本机读此文件，避免把密钥写进代码
+# （原明文默认值已于 2026-09-13 移除）。
+_local_keys = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'local_keys.env')
+if os.path.exists(_local_keys):
+    try:
+        for _line in open(_local_keys, encoding='utf-8'):
+            _line = _line.strip()
+            if _line and not _line.startswith('#') and '=' in _line:
+                _k, _v = _line.split('=', 1)
+                os.environ.setdefault(_k.strip(), _v.strip())
+    except Exception as _e:
+        print('[WARN] 读取 local_keys.env 失败: ' + str(_e))
+
 # ── git safe.directory：GitHub Actions self-hosted runner 以 SYSTEM 身份运行，
 #    而 runner 工作目录（C:\actions-runner\_work\...）归交互用户所有，
 #    git >= 2.35.2 会因此报 "detected dubious ownership in repository" 并中止。
@@ -37,19 +62,8 @@ import eco_catalog
 import recommend  # CSQAQ multi-platform price provider
 
 # ═══════════════ CONFIG ═══════════════
-# ── 本地密钥文件（不入 git）：每行 KEY=VALUE，供本机运行时使用 ──
-# 云端由 GitHub Actions Secrets 注入；本机读此文件，
-# 避免把密钥写进代码（原明文默认值已于 2026-09-13 移除）。
-_local_keys = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'local_keys.env')
-if os.path.exists(_local_keys):
-    try:
-        for _line in open(_local_keys, encoding='utf-8'):
-            _line = _line.strip()
-            if _line and not _line.startswith('#') and '=' in _line:
-                _k, _v = _line.split('=', 1)
-                os.environ.setdefault(_k.strip(), _v.strip())
-    except Exception as _e:
-        print('[WARN] 读取 local_keys.env 失败: ' + str(_e))
+# 密钥加载已上移至文件顶部（见「本地密钥（必须最先加载）」块），
+# 原因见该处注释 —— 顺序是硬约束，勿再下移。
 
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
 # CSQAQ removed — alerts now self-computed from BUFF price history

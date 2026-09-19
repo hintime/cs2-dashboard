@@ -16,7 +16,35 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from eco_sign import get_eco_key, sign_eco
 
 PARTNER_ID = 'da740aa96cc14cc594371f95469c90ac'
+
+
+def _load_local_keys():
+    """兜底加载 local_keys.env（只 setdefault，不覆盖已有值）。
+
+    ⚠ 2026-09-19 事故根因：CSQ_KEY 是**模块级常量**，只在本模块被 import
+    的那一刻求值一次。任何「先 import recommend、后加载密钥」的入口
+    （update.py 原 L37 import / L43 才加载 env）都会让它恒为空串，
+    之后即使 os.environ 被补上，CSQ_KEY 也不会刷新 —— 结果所有请求
+    带着空的 ApiToken，服务端一律 401，且和真正的限流无法区分。
+    这里自己补载一次，不再依赖调用方的导入顺序。
+    """
+    _p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'local_keys.env')
+    if not os.path.exists(_p):
+        return
+    try:
+        for _l in open(_p, encoding='utf-8'):
+            _l = _l.strip()
+            if _l and not _l.startswith('#') and '=' in _l:
+                _k, _v = _l.split('=', 1)
+                os.environ.setdefault(_k.strip(), _v.strip())
+    except Exception:
+        pass
+
+
 CSQ_KEY = os.environ.get('CSQ_API_TOKEN', '')
+if not CSQ_KEY:
+    _load_local_keys()          # 不依赖调用方顺序：本模块自补载一次
+    CSQ_KEY = os.environ.get('CSQ_API_TOKEN', '')
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
@@ -65,6 +93,9 @@ def http_post_raw(url, body, headers=None, timeout=15, rl_cb=None):
 def fetch_csqaq_alerts():
     """CSQAQ 榜单接口。
 
+    ⚠ 2026-09-19：增加空 key 快速失败。此前 CSQ_KEY 为空时仍会连打 4 页 ×5 次
+    重试，得到一堆 401 后被当成「服务端限流」，真实原因被彻底掩盖。
+
     ⚠ 2026-09-19 接口变更（实测确认）：
       旧 body 用 `filter.sort=['price_up_1d'|'price_down_1d']` → 现在一律 401/422。
       新契约：`filter.index` 必须是**整数**（缺了报 422 "field required"）。
@@ -82,6 +113,10 @@ def fetch_csqaq_alerts():
       update.py 目前恰好按"数量"消费所以没出错，改动前务必确认下游用法。
     """
     all_alerts = []
+
+    if not CSQ_KEY:
+        print('[CSQAQ] ✗ 未取到 CSQ_API_TOKEN（local_keys.env 缺失/键名为空）→ 跳过榜单，避免空 token 全量 401', file=sys.stderr)
+        return []
     seen = set()
     # 排序已失效（见上方说明），再按 price_up/down 各拉一遍只会得到重复数据 → 只取一次
     for page in range(1, 5):
@@ -178,6 +213,12 @@ def fetch_csqaq_batch_prices(hash_names):
     Returns: {market_hash_name: {buff_sell, buff_buy, yyyp_sell, steam_buy, ...}}
     """
     if not hash_names:
+        return {}
+    if not CSQ_KEY:
+        # ⚠ 2026-09-19：空 token 时不要再把 96 批 ×3 次重试全打一遍。
+        # 除了浪费 ~15 分钟，还会把「配置问题」伪装成「服务端限流」。
+        print('[CSQAQ] ✗ 未取到 CSQ_API_TOKEN（local_keys.env 缺失/键名为空）'
+              '→ 跳过全量查价，旧数据保留', file=sys.stderr)
         return {}
 
     def _parse_response(resp, result):
