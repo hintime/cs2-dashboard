@@ -1,6 +1,12 @@
 [
   {
     "date": "2026-09-19",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-19 11:46",
+    "desc": "wip: local snapshot 2026-09-19 11:46"
+  },
+  {
+    "date": "2026-09-19",
     "tag": "chore",
     "title": "market index 2026-09-19 11:12",
     "desc": "market index 2026-09-19 11:12"
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "feat(rec): 前端展示数据缺口 + 激活「其他平台」比价（死字段修复）",
     "desc": "feat(rec): 前端展示数据缺口 + 激活「其他平台」比价（死字段修复）"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "opt(rec): 批量取价跨进程互斥 + 推荐分散度限额",
-    "desc": "opt(rec): 批量取价跨进程互斥 + 推荐分散度限额"
   }
 ]
