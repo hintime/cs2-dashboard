@@ -261,8 +261,15 @@ def fetch_csqaq_batch_prices(hash_names):
                 break
             except urllib.error.HTTPError as e:
                 if e.code == 401:
-                    # 2026-09-17 事故：某次全量运行 96/96 批全 401（key 实测有效，属服务端临时故障），
-                    # 当时静默跳过 → 整条 Steam 基准价链为空。现在必须显式告警 + 退避重试。
+                    # ⚠ 2026-09-19 更正：下面这句旧注释是**误判**，勿再采信 ——
+                    #   「2026-09-17 事故：96/96 批全 401，key 实测有效，属服务端临时故障」。
+                    #   真实根因是**本文件的 CSQ_KEY 恒为空串**：
+                    #   update.py 原先先 `import recommend`（模块级即固化 CSQ_KEY=''），
+                    #   之后才加载 local_keys.env，事后再补 env 也不会刷新这个常量。
+                    #   所以 401 是 100% 必现的配置问题，不是偶发限流。
+                    #   （之所以看起来"key 有效"，是因为手工复测时都会先加载 env 再请求。）
+                    # 现已从两处修掉：update.py 密钥加载上移 + 本文件 _load_local_keys() 兜底。
+                    # 走到这里说明 key 非空却仍 401 → 才是真的 token 失效/服务端问题。
                     if retry < 2:
                         wait = 5 * (retry + 1)
                         print(f'  [CSQAQ] Batch {bi+1}/{total_batches} 401，{wait}s 后重试（{retry+1}/2）...')
