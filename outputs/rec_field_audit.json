@@ -1,15 +1,18 @@
 {
-  "generated": "2026-09-18 20:30",
+  "generated": "2026-09-19 01:27",
   "total": 30,
   "coverage": {
     "_cat": 30,
+    "_csqaq_buff": 26,
     "_reason": 30,
-    "buff_buy": 30,
-    "buff_buy_num": 30,
+    "_steamdt_buff": 25,
+    "buff_buy": 29,
+    "buff_buy_num": 29,
     "buff_score": 30,
     "buff_sell": 30,
     "buff_sell_num": 30,
-    "data_gaps": 4,
+    "buy_src": 27,
+    "data_gaps": 7,
     "eco_compre": 30,
     "eco_daily": 30,
     "eco_daily_ts": 30,
@@ -24,23 +27,23 @@
     "multi_history": 30,
     "multi_history_ts": 30,
     "n_cov": 30,
-    "n_dev_steam": 26,
-    "n_premium_buff": 26,
-    "n_premium_yyyp": 26,
-    "n_ref": 26,
-    "n_ref_src": 26,
-    "n_steam": 26,
+    "n_dev_steam": 27,
+    "n_premium_buff": 27,
+    "n_premium_yyyp": 27,
+    "n_ref": 27,
+    "n_ref_src": 27,
+    "n_steam": 27,
     "n_supply": 30,
-    "n_supply_real": 29,
-    "n_warn": 4,
+    "n_supply_real": 26,
+    "n_warn": 3,
     "name": 30,
-    "platforms": 24,
+    "platforms": 26,
     "price": 30,
     "rate_1": 30,
     "rate_30": 30,
     "rate_7": 30,
     "score": 30,
-    "supply_chg7": 29,
+    "supply_chg7": 26,
     "tag": 30,
     "tag_label": 30,
     "yyyp_history": 30,
@@ -52,17 +55,18 @@
   "low": [
     {
       "key": "data_gaps",
-      "n": 4
+      "n": 7
     },
     {
       "key": "n_warn",
-      "n": 4
+      "n": 3
     }
   ],
   "new_dead": [],
   "recovered": [
-    "n_supply_real",
-    "supply_chg7"
+    "_csqaq_buff",
+    "_steamdt_buff",
+    "buy_src"
   ],
   "vanished": [],
   "allow_dead": []
