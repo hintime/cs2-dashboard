@@ -63,50 +63,68 @@ def http_post_raw(url, body, headers=None, timeout=15, rl_cb=None):
 
 # ═══════════════ FETCH CSQAQ ═══════════════
 def fetch_csqaq_alerts():
+    """CSQAQ 榜单接口。
+
+    ⚠ 2026-09-19 接口变更（实测确认）：
+      旧 body 用 `filter.sort=['price_up_1d'|'price_down_1d']` → 现在一律 401/422。
+      新契约：`filter.index` 必须是**整数**（缺了报 422 "field required"）。
+
+    ⚠ 更重要的退化：实测 index=0..9 返回**完全相同**的结果，
+      rate_1 未降序、`filter.type` 过滤也被忽略、列表里还混着印花（我们本要排除的）。
+      → 该接口**已不再提供「涨幅榜/跌幅榜」语义**，只返回一份默认（按 id）列表。
+      → 因此本函数的定位改为：**批量查价失败时的 BUFF 价格兜底源**，
+         ⚠ 绝不可再把它的 rate_* 当作"涨跌幅排名"使用。
+
+    ⚠ 字段命名陷阱（历史遗留，勿"按名字想当然"）：
+      下文字段 `buff_sell` / `buff_buy` / `yyyp_sell` / `yyyp_buy` / `steam_sell`
+      实际装的是 **挂单数量**（源字段 *_num），不是价格！
+      价格字段是 `price`(=buff_sell_price) / `buff_buy_price` / `yyyp_price` / `steam_buy_price`。
+      update.py 目前恰好按"数量"消费所以没出错，改动前务必确认下游用法。
+    """
     all_alerts = []
     seen = set()
-    for sort_key in ('price_up_1d', 'price_down_1d'):
-        for page in range(1, 5):
-            body = {
-                'page_index': page, 'page_size': 50,
-                'filter': {'type': ['sticker', 'normal'], 'sort': [sort_key]},
-                'show_recently_price': True
-            }
-            try:
-                d = http_post_raw('https://api.csqaq.com/api/v1/info/get_rank_list',
-                    body, headers={'ApiToken': CSQ_KEY}, timeout=15)
-                items = d.get('data', {})
-                if isinstance(items, dict): items = items.get('data', [])
-                if not items: break
-                for item in items:
-                    iid = item.get('id')
-                    if iid in seen: continue
-                    seen.add(iid)
-                    all_alerts.append({
-                        'id': iid,
-                        'name': item.get('name', ''),
-                        'exterior': item.get('exterior_localized_name', ''),
-                        'rarity': item.get('rarity_localized_name', ''),
-                        'price': float(item.get('buff_sell_price') or 0),
-                        'rate_1': round(float(item.get('buff_price_chg') or item.get('sell_price_rate_1') or 0), 2),
-                        'rate_7': round(float(item.get('sell_price_rate_7') or 0), 2),
-                        'rate_30': round(float(item.get('sell_price_rate_30') or 0), 2),
-                        'img': item.get('img', ''),
-                        # Multi-platform supply/demand
-                        'buff_sell': int(item.get('buff_sell_num') or 0),
-                        'buff_buy': int(item.get('buff_buy_num') or 0),
-                        'buff_buy_price': float(item.get('buff_buy_price') or 0),
-                        'yyyp_sell': int(item.get('yyyp_sell_num') or 0),
-                        'yyyp_buy': int(item.get('yyyp_buy_num') or 0),
-                        'yyyp_price': float(item.get('yyyp_sell_price') or 0),
-                        'steam_sell': int(item.get('steam_sell_num') or 0),
-                        'steam_buy': int(item.get('steam_buy_num') or 0),
-                        'steam_buy_price': float(item.get('steam_buy_price') or 0),
-                    })
-                if len(items) < 50: break
-            except Exception as e:
-                print(f'[WARN] CSQAQ {sort_key} p{page}: {e}', file=sys.stderr)
-            time.sleep(0.5)
+    # 排序已失效（见上方说明），再按 price_up/down 各拉一遍只会得到重复数据 → 只取一次
+    for page in range(1, 5):
+        body = {
+            'page_index': page, 'page_size': 50,
+            'filter': {'index': 1},
+            'show_recently_price': True
+        }
+        try:
+            d = http_post_raw('https://api.csqaq.com/api/v1/info/get_rank_list',
+                body, headers={'ApiToken': CSQ_KEY}, timeout=15)
+            items = d.get('data', {})
+            if isinstance(items, dict): items = items.get('data', [])
+            if not items: break
+            for item in items:
+                iid = item.get('id')
+                if iid in seen: continue
+                seen.add(iid)
+                all_alerts.append({
+                    'id': iid,
+                    'name': item.get('name', ''),
+                    'exterior': item.get('exterior_localized_name', ''),
+                    'rarity': item.get('rarity_localized_name', ''),
+                    'price': float(item.get('buff_sell_price') or 0),
+                    'rate_1': round(float(item.get('buff_price_chg') or item.get('sell_price_rate_1') or 0), 2),
+                    'rate_7': round(float(item.get('sell_price_rate_7') or 0), 2),
+                    'rate_30': round(float(item.get('sell_price_rate_30') or 0), 2),
+                    'img': item.get('img', ''),
+                    # ⚠ 见函数 docstring：以下 *_sell/*_buy 装的是**挂单数量**不是价格
+                    'buff_sell': int(item.get('buff_sell_num') or 0),
+                    'buff_buy': int(item.get('buff_buy_num') or 0),
+                    'buff_buy_price': float(item.get('buff_buy_price') or 0),
+                    'yyyp_sell': int(item.get('yyyp_sell_num') or 0),
+                    'yyyp_buy': int(item.get('yyyp_buy_num') or 0),
+                    'yyyp_price': float(item.get('yyyp_sell_price') or 0),
+                    'steam_sell': int(item.get('steam_sell_num') or 0),
+                    'steam_buy': int(item.get('steam_buy_num') or 0),
+                    'steam_buy_price': float(item.get('steam_buy_price') or 0),
+                })
+            if len(items) < 50: break
+        except Exception as e:
+            print(f'[WARN] CSQAQ rank p{page}: {e}', file=sys.stderr)
+        time.sleep(0.5)
     return all_alerts
 
 # ═══════════════ CSQAQ 全量多平台价格 ═══════════════
