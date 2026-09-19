@@ -1,44 +1,58 @@
 {
   "overview": {
-    "verdict": "部分推荐成功，但整体市场波动较大，需关注产品稀缺度和市场热度",
-    "success_pattern": "多平台信号、Buff覆盖率高、稀缺求/售比高",
-    "failure_pattern": "低估市场热度、忽视求购活跃度",
+    "verdict": "部分推荐理由准确，整体偏向高溢价但需改进。",
+    "success_pattern": "涨的推荐多基于高ECO和Buff评分，稀缺求/售比准确。",
+    "failure_pattern": "跌的推荐忽略了ECO和Buff评分差异，忽视了溢价不匹配。",
     "confidence_trend": "中等",
-    "market_signal": "领涨产品表现强劲，领跌产品表现不佳"
+    "market_signal": "当前市场偏向高溢价，领涨品表现突出，领跌品分析不足。"
   },
   "reason_analysis": {
-    "right_reasons": "强调多平台溢价、Buff覆盖率高、稀缺求/售比高",
-    "wrong_reasons": "过度依赖单一ECO信号、忽视市场热度",
-    "reason_keywords_avoid": "低估市场热度、忽视求购活跃度",
-    "reason_keywords_use": "多平台信号、Buff覆盖率高、稀缺求/售比"
+    "right_reasons": "强调多平台溢价、稀缺求/售比评估准确，如穿肠刀、双持贝瑞塔等。",
+    "wrong_reasons": "过度依赖单一ECO信号，如弯刀、折刀等。",
+    "reason_keywords_avoid": "高溢价、稀缺求/售比、多平台溢价",
+    "reason_keywords_use": "ECO和Buff评分、多平台信号、稀缺求/售比"
   },
   "lessons": [
     {
       "id": "L01",
-      "category": "reason/scoring/timing/market/source",
-      "lesson": "忽视市场热度导致低估涨幅",
-      "impact": "低",
-      "action": "增加市场热度评估"
+      "category": "ECO和Buff评分",
+      "lesson": "高ECO和Buff评分是关键因素",
+      "impact": "高",
+      "action": "优化权重分配。"
     },
     {
       "id": "L02",
-      "category": "reason/scoring/timing/market/source",
-      "lesson": "过度依赖Buff信号忽视多平台信号",
+      "category": "稀缺求/售比",
+      "lesson": "稀缺求/售比应作为主要评估指标",
       "impact": "中",
-      "action": "平衡Buff与多平台信号"
+      "action": "加强分析。"
+    },
+    {
+      "id": "L03",
+      "category": "多平台信号",
+      "lesson": "多平台信号的重要性",
+      "impact": "高",
+      "action": "强化多平台评估。"
+    },
+    {
+      "id": "L04",
+      "category": "多平台溢价",
+      "lesson": "多平台溢价的利用",
+      "impact": "高",
+      "action": "优化利用方式。"
     }
   ],
   "scoring_feedback": {
-    "eco_weight_advice": "+15%",
-    "buff_weight_advice": "+20%",
+    "eco_weight_advice": "+20%",
+    "buff_weight_advice": "+30%",
     "premium_threshold_advice": "50%",
     "liquidity_advice": "中等"
   },
-  "reason_prompt_tweak": "推荐理由应强调多平台信号、Buff覆盖率高、稀缺求/售比，并避免忽视市场热度和求购活跃度",
+  "reason_prompt_tweak": "推荐理由应强调ECO和Buff评分的差异、稀缺求/售比评估、多平台溢价利用，并避免过度依赖单一信号。",
   "meta": {
-    "total_tracks": 1003,
-    "date_range": "2026-06-15~2026-09-18",
-    "analyzed_at": "2026-09-18T08:48:06Z",
+    "total_tracks": 1033,
+    "date_range": "2026-06-15~2026-09-19",
+    "analyzed_at": "2026-09-19T03:11:58Z",
     "model": "deepseek-r1:7b"
   }
 }

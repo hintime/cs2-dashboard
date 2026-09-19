@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-09-19",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-19 10:04",
+    "desc": "wip: local snapshot 2026-09-19 10:04"
+  },
+  {
+    "date": "2026-09-19",
+    "tag": "fix",
+    "title": "fix(firepulse): 修复「重复定义」导致的两处调用失配（每轮 all 报错）",
+    "desc": "fix(firepulse): 修复「重复定义」导致的两处调用失配（每轮 all 报错）"
+  },
+  {
+    "date": "2026-09-19",
     "tag": "chore",
     "title": "market index 2026-09-19 00:52",
     "desc": "market index 2026-09-19 00:52"
@@ -106,17 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-18 17:52",
     "desc": "wip: local snapshot 2026-09-18 17:52"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "fix(track): 修复「AI追踪分析/进化轨迹/经验教训」三卡永不显示 + 推荐记录折叠",
-    "desc": "fix(track): 修复「AI追踪分析/进化轨迹/经验教训」三卡永不显示 + 推荐记录折叠"
-  },
-  {
-    "date": "2026-09-18",
-    "tag": "fix",
-    "title": "docs(rec): 体检报告补「修复记录」——三源实测真相 + 8 项优化与前后对比",
-    "desc": "docs(rec): 体检报告补「修复记录」——三源实测真相 + 8 项优化与前后对比"
   }
 ]

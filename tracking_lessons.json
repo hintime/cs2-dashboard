@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 5,
+  "total_analyses": 6,
   "lessons": [
     {
       "id": "L01",
@@ -10,8 +10,8 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 9,
-      "last_seen": "2026-09-18"
+      "confirmed": 10,
+      "last_seen": "2026-09-19"
     },
     {
       "id": "L02",
@@ -20,8 +20,8 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 9,
-      "last_seen": "2026-09-18"
+      "confirmed": 10,
+      "last_seen": "2026-09-19"
     },
     {
       "id": "L03",
@@ -30,8 +30,8 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 8,
-      "last_seen": "2026-06-16"
+      "confirmed": 9,
+      "last_seen": "2026-09-19"
     },
     {
       "id": "L04",
@@ -40,8 +40,8 @@
       "impact": "中",
       "action": "拓宽信息来源，增加数据维度",
       "added_at": "2026-06-16",
-      "confirmed": 6,
-      "last_seen": "2026-06-16"
+      "confirmed": 7,
+      "last_seen": "2026-09-19"
     },
     {
       "id": "L05",
@@ -55,7 +55,7 @@
     }
   ],
   "history": [],
-  "last_updated": "2026-09-18T08:48:06Z",
+  "last_updated": "2026-09-19T03:11:58Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -194,7 +194,37 @@
         "profitable": 762,
         "rate": 76.5
       }
+    },
+    {
+      "seq": 6,
+      "ts": "2026-09-19T03:11:58Z",
+      "overview": {
+        "verdict": "部分推荐理由准确，整体偏向高溢价但需改进。",
+        "success_pattern": "涨的推荐多基于高ECO和Buff评分，稀缺求/售比准确。",
+        "failure_pattern": "跌的推荐忽略了ECO和Buff评分差异，忽视了溢价不匹配。",
+        "confidence_trend": "中等",
+        "market_signal": "当前市场偏向高溢价，领涨品表现突出，领跌品分析不足。"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "+20%",
+        "buff_weight_advice": "+30%",
+        "premium_threshold_advice": "50%",
+        "liquidity_advice": "中等"
+      },
+      "reason_analysis": {
+        "right_reasons": "强调多平台溢价、稀缺求/售比评估准确，如穿肠刀、双持贝瑞塔等。",
+        "wrong_reasons": "过度依赖单一ECO信号，如弯刀、折刀等。",
+        "reason_keywords_avoid": "高溢价、稀缺求/售比、多平台溢价",
+        "reason_keywords_use": "ECO和Buff评分、多平台信号、稀缺求/售比"
+      },
+      "prompt_tweak": "推荐理由应强调ECO和Buff评分的差异、稀缺求/售比评估、多平台溢价利用，并避免过度依赖单一信号。",
+      "stats": {
+        "total": 1033,
+        "priced": 1026,
+        "profitable": 773,
+        "rate": 75.3
+      }
     }
   ],
-  "last_track_count": 1003
+  "last_track_count": 1033
 }

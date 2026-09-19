@@ -1,195 +1,259 @@
 {
-  "玛莎 | 纪念碑 (崭新出厂)": {
-    "verdict": "减仓",
-    "confidence": 70,
-    "reason": "高亏损率，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "50",
-    "entryHigh": "70"
-  },
-  "蓝莓”铅弹 | 海军水面战中心海豹部队": {
-    "verdict": "减仓",
-    "confidence": 75,
-    "reason": "亏损率高达-86.0%，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "100",
-    "entryHigh": "120"
-  },
-  "沙哈马特教授 | 精锐分子": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "亏损率高达-88.6%，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "50",
-    "entryHigh": "70"
-  },
-  "M4A1消音版 | 蔀苔石英 (崭新出厂)": {
-    "verdict": "持有",
-    "confidence": 60,
-    "reason": "中等亏损率，市场前景不明",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "2000",
-    "entryHigh": "2500"
-  },
-  "UMP-45 | 炽烈之炎 (崭新出厂)": {
-    "verdict": "减仓",
-    "confidence": 85,
-    "reason": "亏损率高达-84.3%，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "100",
-    "entryHigh": "120"
-  },
-  "印花 | FaZe Clan（全息）| 2024年上海锦标赛": {
-    "verdict": "减仓",
-    "confidence": 90,
-    "reason": "高亏损率，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "10",
-    "entryHigh": "15"
-  },
-  "P2000 | 火灵 (崭新出厂)": {
-    "verdict": "持有",
-    "confidence": 70,
-    "reason": "亏损率中等，市场前景不明",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "100",
-    "entryHigh": "120"
-  },
-  "海军上尉里克索尔 | 海军水面战中心海豹部队": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "亏损率高达-83.8%，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "100",
-    "entryHigh": "120"
-  },
-  "M4A4 | 多边形编辑 (略有磨损)": {
-    "verdict": "持有",
-    "confidence": 60,
-    "reason": "中等亏损率，市场前景不明",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "200",
-    "entryHigh": "250"
-  },
-  "印花 | Natus Vincere（全息）| 2024年上海锦标赛": {
-    "verdict": "减仓",
-    "confidence": 90,
-    "reason": "高亏损率，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "10",
-    "entryHigh": "15"
-  },
-  "印花 | HEROIC（全息）| 2024年上海锦标赛": {
-    "verdict": "减仓",
-    "confidence": 85,
-    "reason": "高亏损率，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "10",
-    "entryHigh": "15"
-  },
-  "M4A4 | 炼狱之火 (略有磨损)": {
-    "verdict": "持有",
-    "confidence": 60,
-    "reason": "中等亏损率，市场前景不明",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "200",
-    "entryHigh": "250"
-  },
-  "M4A4 | 都市 DDPAT (崭新出厂)": {
+  "法玛斯|纪念碑": {
     "verdict": "买入",
     "confidence": 80,
-    "reason": "盈利率为+62.7%，建议买入",
-    "risk": "价格可能进一步上涨",
-    "entryLow": "100",
-    "entryHigh": "120"
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 1412,
+    "entryHigh": 1412
   },
-  "M4A4 | 彼岸花 (略有磨损)": {
-    "verdict": "持有",
-    "confidence": 70,
-    "reason": "中等亏损率，市场前景不明",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "200",
-    "entryHigh": "250"
-  },
-  "印花 | Fnatic（全息）| 2025年布达佩斯锦标赛": {
-    "verdict": "减仓",
-    "confidence": 90,
-    "reason": "高亏损率，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "10",
-    "entryHigh": "15"
-  },
-  "印花 | paiN Gaming （全息）| 2021年斯德哥尔摩锦标赛": {
-    "verdict": "减仓",
-    "confidence": 85,
-    "reason": "中等亏损率，市场前景不明",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "20",
-    "entryHigh": "25"
-  },
-  "双持贝瑞塔 | 街头抢匪 (崭新出厂)": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "高亏损率，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "50",
-    "entryHigh": "70"
-  },
-  "印花 | Complexity Gaming（全息）| 2022年安特卫普锦标赛": {
-    "verdict": "减仓",
-    "confidence": 75,
-    "reason": "中等亏损率，市场前景不明",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "20",
-    "entryHigh": "25"
-  },
-  "印花 | Ninjas in Pyjamas （全息） | 2021年斯德哥尔摩锦标赛": {
-    "verdict": "减仓",
-    "confidence": 85,
-    "reason": "高亏损率，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "10",
-    "entryHigh": "15"
-  },
-  "印花 | RED Canids（全息）| 2025年布达佩斯锦标赛": {
-    "verdict": "减仓",
-    "confidence": 80,
-    "reason": "中等亏损率，市场前景不明",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "10",
-    "entryHigh": "15"
-  },
-  "印花 | MIBR（全息）| 2025年布达佩斯锦标赛": {
-    "verdict": "减仓",
-    "confidence": 85,
-    "reason": "高亏损率，建议减仓",
-    "risk": "价格可能进一步下跌",
-    "entryLow": "10",
-    "entryHigh": "15"
-  },
-  "音乐盒 | DRYDEN - 触摸能量 | 现价¥9 | 成本¥11 | 盈亏-13.7% | 7日+5.4% | 30日+0.9%": {
+  "蓝莓铅弹": {
     "verdict": "买入",
-    "confidence": 70,
-    "reason": "30日涨幅+0.9%，建议买入",
-    "risk": "价格可能进一步上涨",
-    "entryLow": "10",
-    "entryHigh": "12"
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 591,
+    "entryHigh": 591
   },
-  "M4A4 | 蚀刻领主 (略有磨损)": {
-    "verdict": "减仓",
-    "confidence": 70,
-    "reason": "亏损率高达-26.1%，建议减仓",
+  "沙哈马特教授": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 350,
+    "entryHigh": 350
+  },
+  "M4A1消音版": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 1610,
+    "entryHigh": 1610
+  },
+  "UMP-45": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 760,
+    "entryHigh": 760
+  },
+  "印花|FaZe Clan（全息）": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 239,
+    "entryHigh": 239
+  },
+  "P2000|火灵（全息）": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 1340,
+    "entryHigh": 1340
+  },
+  "海军上尉里克索尔": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 667,
+    "entryHigh": 667
+  },
+  "M4A4|多边形编辑": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 393,
+    "entryHigh": 393
+  },
+  "印花|Natus Vincere（全息）": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 229,
+    "entryHigh": 229
+  },
+  "印花|HEROIC（全息）": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 152,
+    "entryHigh": 152
+  },
+  "M4A4|炼狱之火 (略有磨损)": {
+    "verdict": "卖出",
+    "confidence": 80,
+    "reason": "价格已经接近成本价，且有较大跌幅。",
     "risk": "价格可能进一步下跌",
-    "entryLow": "6",
-    "entryHigh": "8"
+    "entryLow": 744,
+    "entryHigh": 744
   },
-  "印花 | iM | 2024年上海锦标赛": {
-    "verdict": "观望",
-    "confidence": 50,
-    "reason": "亏损率高达0%，建议观望",
+  "M4A4|都市 DDPAT (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 410,
+    "entryHigh": 410
+  },
+  "摩托手套（★）": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 380,
+    "entryHigh": 380
+  },
+  "加利尔 AR | 破坏者 (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 368,
+    "entryHigh": 368
+  },
+  "印花|Evil Geniuses (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 135,
+    "entryHigh": 135
+  },
+  "印花|GamerLegion (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 88,
+    "entryHigh": 88
+  },
+  "M4A4|龙王 (略有磨损)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 184,
+    "entryHigh": 184
+  },
+  "印花|Natus Vincere (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 83,
+    "entryHigh": 83
+  },
+  "准备就绪的列赞 | 军刀": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 137,
+    "entryHigh": 137
+  },
+  "黑狼 | 军刀": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 130,
+    "entryHigh": 130
+  },
+  "M4A4|彼岸花 (略有磨损)": {
+    "verdict": "卖出",
+    "confidence": 80,
+    "reason": "价格已经接近成本价，且有较大跌幅。",
     "risk": "价格可能进一步下跌",
-    "entryLow": "0",
-    "entryHigh": "0"
+    "entryLow": 127,
+    "entryHigh": 127
   },
-  "_market_summary": "整体市场表现不佳，多数饰品亏损率较高，建议减仓或观望。部分饰品如M4A4的 variant 有较好的中短期涨幅，可考虑买入。"
+  "印花|Fnatic (全息)": {
+    "verdict": "卖出",
+    "confidence": 80,
+    "reason": "价格已经接近成本价，且有较大跌幅。",
+    "risk": "价格可能进一步下跌",
+    "entryLow": 57,
+    "entryHigh": 57
+  },
+  "印花|paiN Gaming (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 103,
+    "entryHigh": 103
+  },
+  "双持贝瑞塔 | 街头抢匪 (全息)": {
+    "verdict": "卖出",
+    "confidence": 80,
+    "reason": "价格已经接近成本价，且有较大跌幅。",
+    "risk": "价格可能进一步下跌",
+    "entryLow": 55,
+    "entryHigh": 55
+  },
+  "印花|Complexity Gaming (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 50,
+    "entryHigh": 50
+  },
+  "印花|Ninjas in Pyjamas (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 46,
+    "entryHigh": 46
+  },
+  "印花|RED Canids (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 43,
+    "entryHigh": 43
+  },
+  "印花|MIBR (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 31,
+    "entryHigh": 31
+  },
+  "音乐盒|DRYDEN - 触摸能量 (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 11,
+    "entryHigh": 11
+  },
+  "M4A4|蚀刻领主 (略有磨损)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格接近成本价，且有上涨趋势。",
+    "risk": "短期波动可能影响价格",
+    "entryLow": 8,
+    "entryHigh": 8
+  },
+  "印花|iM (全息)": {
+    "verdict": "买入",
+    "confidence": 80,
+    "reason": "价格为0，可能即将反弹。",
+    "risk": "价格为0，可能即将反弹",
+    "entryLow": 0,
+    "entryHigh": 0
+  },
+  "_market_summary": "整体市场偏向于上涨，尤其是FN57表现突出，可能是一个买入机会。Buff和YY的覆盖情况显示市场波动较大，但整体趋势向上。"
 }
