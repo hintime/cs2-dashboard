@@ -1215,9 +1215,20 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'score': round(final_score, 1),
             'tag': tag,
             'tag_label': display_tag,
-            'eco_price': price,
+            # ── 2026-09-19：三组「恒等字段」统一说明 ──
+            #   ① eco_price ≡ price        → 两者的**唯一来源**都是本循环开头的
+            #      `price = float(item['Price'])`（ECO 低位档价）。前端两列都显示它。
+            #   ② eco_selling ≡ n_supply   → 唯一来源是 `selling = int(item['SellingTotal'])`
+            #      （ECO 在售件数，是「存世量」的代理，非真值）。
+            #   ③ n_ref ≡ n_steam          → normalize.py 里 ref_price 的取值分支实际只落到
+            #      steam_sell 一路（eco_platform_price 全池无值），故两者恒等。
+            #   以下改为「一处取值 + 显式别名」，让恒等成为**有意契约**而不是巧合，
+            #   并登记进 proxy_field_audit.py 的 IDENTICAL_CHECKS 定期复核。
+            'price': price,
+            'eco_price': price,                      # 别名：同源，勿单独维护
             'eco_compre': compre,
             'eco_selling': selling,
+            'n_supply': selling,                     # 别名：同源，且**是代理值不等于真实存世量**
             'eco_qg_total': qg_total,
             'eco_qg_price': qg_max,
             'buff_sell': bd.get('buff_sell', 0) or 0,
@@ -1227,8 +1238,7 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
             'platforms': bd.get('platforms', {}),
             'yyyp_sell': item.get('yyyp_sell', 0) or 0,
             'yyyp_sell_num': item.get('yyyp_sell_num', 0) or 0,
-            # 存世量代理（ECO 在售总数）与稀有度（E:\ 无该源时为空）
-            'n_supply': item.get('n_supply') or item.get('SellingTotal') or 0,
+            # （n_supply 已在上方与 eco_selling 一起赋值 —— 见「三组恒等字段」说明）
             # 真实存世量（CSQAQ）：与在售件数无关，可算流通率 = 在售/存世
             'n_supply_real': item.get('n_supply_real'),
             'supply_chg7': item.get('supply_chg7'),
@@ -4175,9 +4185,10 @@ def main():
             # 大盘时序（每小时一条，累积成走势）
             try:
                 _hp = os.path.join(DATA_DIR, 'market_overview_history.json')
-                # ⚠ 2026-09-19：firepulse 内 append_overview_history 被定义了两次，**实际生效的是旧版**
-                #   （返回 {日期: [点...]} 的 dict，而非新版 (hist, added) 二元组）→ 解包 2 值每次报
-                #   "too many values to unpack"。改为按旧版契约接收返回值。
+                # 契约：append_overview_history(ov, path, keep_days=30) -> dict{日期: [点...]}
+                #   （2026-09-19：firepulse.py 里曾有两个同名定义，新定义返回 (hist, added) 二元组
+                #    会写出 list 结构 → 前端 Object.keys(list) 遍历失效。已删除新定义，
+                #    统一以返回 dict 的这版为准；此处按 dict 契约接收。）
                 _hist = firepulse.append_overview_history(_ov, _hp)
                 if _hist:
                     dirty_files.add('market_overview_history.json')
@@ -4191,9 +4202,10 @@ def main():
                 _h2 = read_json(_hp2)
                 _items2 = (_h2 or {}).get('items', []) if isinstance(_h2, dict) else []
                 if _items2:
-                    # ⚠ 2026-09-19：enrich_items 同样被定义两次，**生效的是旧版** `(items, cache, limit)`
-                    #   → 原调用用新版关键字 (id_cache/max_items) 必然报错，导致持仓精确化从未生效。
-                    #   改为旧版签名，并使用持久化 id 缓存（原为空 dict，每次重复解析 ID）。
+                    # 契约：enrich_items(items, cache, limit=120) -> 成功条数
+                    #   （2026-09-19：曾有两个同名定义，另一个用 id_cache/max_items 关键字签名。
+                    #    已删除重复定义，统一以 (items, cache, limit) 这版为准。
+                    #    cache 用持久化 id 缓存，避免每次重复解析 ID。）
                     _cp2 = os.path.join(DATA_DIR, 'firepulse_ids.json')
                     _c2 = firepulse.load_id_cache(_cp2)
                     _cnt = firepulse.enrich_items(_items2, _c2, limit=40)

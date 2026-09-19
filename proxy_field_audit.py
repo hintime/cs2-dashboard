@@ -30,9 +30,19 @@ RATIO_CHECKS = [
      'alarm_ratio': 10.0},
 ]
 IDENTICAL_CHECKS = [
-    {'id': 'ref_steam', 'a': 'n_ref', 'b': 'n_steam', 'note': '两字段恒等 → 冗余，建议合并'},
-    {'id': 'selling_supply', 'a': 'eco_selling', 'b': 'n_supply', 'note': '两字段恒等 → 命名重复'},
-    {'id': 'price_eco', 'a': 'price', 'b': 'eco_price', 'note': '两字段恒等 → 冗余'},
+    # ── 以下三组在 2026-09-19 已确认为「**有意别名**」，非 bug ──
+    #   处理方式：源头改为「一处取值 + 显式别名」（update.py 推荐条目构建处），
+    #   恒等是契约的一部分。此处保留检查，用于**发现未来有人破坏该契约**
+    #   （例如给其中一个字段单独赋值 → 恒等率掉下来 → 立刻告警）。
+    {'id': 'ref_steam', 'a': 'n_ref', 'b': 'n_steam',
+     'note': '有意别名：normalize 的 ref_price 实际只走 steam_sell 一路（eco_platform_price 全池无值）',
+     'expect_identical': True},
+    {'id': 'selling_supply', 'a': 'eco_selling', 'b': 'n_supply',
+     'note': '有意别名：同源 SellingTotal；n_supply 是「存世量」代理、非真值',
+     'expect_identical': True},
+    {'id': 'price_eco', 'a': 'price', 'b': 'eco_price',
+     'note': '有意别名：同源 ECO 低位档价 item[Price]',
+     'expect_identical': True},
 ]
 CROSS_CHECKS = [
     # buff_sell 会被 SteamDT 覆盖成它的值；_csqaq_buff 是 CSQAQ 原值 →
@@ -77,9 +87,9 @@ def main():
         print('  %-28s n=%-3d 中位偏离 %6.1f 倍  最大 %6.1f 倍  %s（%s）'
               % (c['label'], n, med, mx, flag, c['note']))
         notes.append('%s：中位偏离 %.0f 倍%s' % (c['label'], med,
-                                               '（当前仅作兜底）' if not c.get('primary') else ''))
+                                               '（当前仅作兜底，已在后端标注 *代理）' if not c.get('primary') else ''))
 
-    print('[恒等检查] 本应不同却恒等')
+    print('[恒等检查] 本应不同却恒等 / 或本应恒等的别名被破坏')
     for c in IDENTICAL_CHECKS:
         pairs = [(_num(it.get(c['a'])), _num(it.get(c['b']))) for it in items]
         pairs = [(a, b) for a, b in pairs if a and b]
@@ -88,7 +98,15 @@ def main():
         same = sum(1 for a, b in pairs if abs(a - b) < 1e-9)
         pct = same / len(pairs) * 100
         summary[c['id']] = {'n': len(pairs), 'identical_pct': round(pct, 1)}
-        print('  %-28s %s vs %s  恒等 %.0f%%（%s）' % (c['id'], c['a'], c['b'], pct, c['note']))
+        # 「预期恒等」的别名：恒等率跌破 99% 说明有人给其中一个字段单独赋值 → 契约被破坏
+        if c.get('expect_identical'):
+            broken = pct < 99.0
+            if broken:
+                alarms.append('%s：别名契约被破坏（恒等率仅 %.0f%%，应 ≈100%%）' % (c['id'], pct))
+            print('  %-28s %s ≡ %s  恒等 %.0f%%  %s（%s）'
+                  % (c['id'], c['a'], c['b'], pct, '⚠ 契约破坏' if broken else '✓ 契约成立', c['note']))
+        else:
+            print('  %-28s %s vs %s  恒等 %.0f%%（%s）' % (c['id'], c['a'], c['b'], pct, c['note']))
 
     print('[跨源检查] 同一指标两个来源')
     for c in CROSS_CHECKS:

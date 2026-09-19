@@ -121,7 +121,7 @@ def normalize(item, fp=None, src_hint=None):
     eco_plat = _f(item.get('eco_platform_price'))     # ECO 在 10 平台体系的在售均价
     eco_compre = _f(item.get('MarketComprePrice'))    # ECO 综合价
     eco_qg = _f(item.get('QGMaxPrice'))               # ECO 求购价
-    eco_sell_total = _f(item.get('SellingTotal'))     # ECO 在售总数（≈存世量）
+    eco_sell_total = _f(item.get('SellingTotal'))     # ECO 在售件数（⚠ 是「存世量」代理，非真值）
     eco_max = _f(item.get('MaxPrice'))
 
     sd_sell = _f(item.get('buff_sell'))               # SteamDT：优先 BUFF，缺失时降级其它平台
@@ -190,6 +190,13 @@ def normalize(item, fp=None, src_hint=None):
 
     ref, ref_src, ref_conf = 0.0, '', 0.0
     steam_sell = _f(item.get('steam_sell'))
+    # ⚠ 2026-09-19 复核：下面 eco_plat 这一路目前是**死分支**。
+    #   `eco_platform_price` 只由 firepulse.to_dashboard_fields() 写入（FirePulse 已停用），
+    #   实测 eco_tracked.json 全池 4775 条中带该字段的 = 0 条，推荐池 30/30 亦为 0。
+    #   于是 ref_price 实际永远只落到 `elif steam_sell` 一路 ——
+    #   这直接导致 item['n_ref'] ≡ item['n_steam']（两字段恒等，实测 4470/4470 条）。
+    #   保留该分支以便未来接入「ECO 平台均价」时自动生效，但**不要**据此假定
+    #   两者当前是独立来源；体检脚本 proxy_field_audit.py 已登记该恒等关系。
     if eco_plat > 0:
         ref, ref_src, ref_conf = eco_plat, 'eco', 0.75
         # 若同源有 Steam 价，可交叉验证（两者是可比的「独立市场」）
@@ -199,6 +206,8 @@ def normalize(item, fp=None, src_hint=None):
             if cf:
                 warn.append('基准价分歧>35%%(eco=%.1f vs steam=%.1f)' % (eco_plat, steam_sell))
     elif steam_sell > 0:
+        # ★ 当前实际生效的唯一分支：基准价 = Steam 社区市场价。
+        #   因无第二来源可交叉验证，置信度给 0.6（不是 1.0）。
         ref, ref_src, ref_conf = steam_sell, 'csqaq', 0.6
     else:
         # 只有国内平台价 → 无法构成有意义的跨市场溢价

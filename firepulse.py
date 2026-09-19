@@ -264,12 +264,10 @@ def quality_filter(items, min_price=1.0, max_abs_ratio=100.0, require_supply=Fal
 
 
 # ─────────────────────── 板块 ───────────────────────
-def fetch_sectors(category_type=0):
-    """板块列表。category_type: 0全部 -1热门 2一级"""
-    d = _post('/v1/category/list/new', {'category_type': category_type})
-    if not d or d.get('code') not in (0, 200):
-        return []
-    return d.get('data') or []
+# ⚠ 2026-09-19：此处原有 `fetch_sectors(category_type=0)` 旧定义，返回原始 data 列表；
+#   本文件后段还有一个同名新定义（返回 {'id','name','index','change_pct','trend'} 列表）。
+#   后者胜出，故旧定义是**永远不会被调用**的死代码 —— 已删除，避免再次误判契约。
+#   （update.py 调用 `firepulse.fetch_sectors(category_type=-1, limit=24)`，只认新签名。）
 
 
 def fetch_sector_kline(category_id, date_type=1, date_range=1):
@@ -337,87 +335,14 @@ def fetch_sector_overview(top_n=10, kline_for_top=8):
 
 
 # ─────────────────────── 大盘时序（累积）───────────────────────
-OVERVIEW_HIST = 'market_overview_history.json'
-
-
-def append_overview_history(ov, path):
-    """把当前大盘快照追加进历史（按小时去重，保留最近 720 条）
-
-    返回 (历史数据, 是否新增)
-    """
-    if not ov:
-        return None, False
-    hist = []
-    if os.path.exists(path):
-        try:
-            with open(path, encoding='utf-8') as f:
-                hist = json.load(f)
-            if not isinstance(hist, list):
-                hist = []
-        except Exception:
-            hist = []
-    hour_key = time.strftime('%Y-%m-%dT%H:00')
-    rec = {
-        't': hour_key,
-        'idx': (ov.get('index') or {}).get('current'),
-        'chg': (ov.get('index') or {}).get('change_pct'),
-        'amount': (ov.get('trade') or {}).get('today_amount'),
-        'volume': (ov.get('trade') or {}).get('today_volume'),
-        'up': (ov.get('updown') or {}).get('up'),
-        'down': (ov.get('updown') or {}).get('down'),
-        'greedy': (ov.get('greedy') or {}).get('value'),
-    }
-    if hist and hist[-1].get('t') == hour_key:
-        hist[-1] = rec          # 同一小时内覆盖
-        added = False
-    else:
-        hist.append(rec)
-        added = True
-    hist = hist[-720:]
-    try:
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(hist, f, ensure_ascii=False, separators=(',', ':'))
-    except Exception as e:
-        print('[FirePulse] 写入大盘历史失败: %s' % e, file=sys.stderr)
-        return hist, False
-    return hist, added
-
-
-# ─────────────────────── 持仓精确化 ───────────────────────
-def enrich_items(items, id_cache=None, max_items=30, on_progress=None):
-    """对指定饰品列表补充 FirePulse 多平台价格字段
-
-    items: [{'名称或 market_hash', ...}]  会就地 update
-    id_cache: {name: skin_id} 缓存（避免重复 search）
-    用量：每项最多 2 次（search + detail），命中缓存时 1 次
-    返回：成功补充的数量
-    """
-    if not enabled() or not items:
-        return 0
-    if id_cache is None:
-        id_cache = {}
-    ok = 0
-    for it in items[:max_items]:
-        name = it.get('market_hash') or it.get('name') or it.get('n') or ''
-        if not name:
-            continue
-        sid = id_cache.get(name)
-        if not sid:
-            lst = search_skin(name, limit=1)
-            if lst:
-                sid = lst[0].get('id')
-                if sid:
-                    id_cache[name] = sid
-        if not sid:
-            continue
-        det = fetch_detail(sid)
-        f = to_dashboard_fields(det)
-        if f:
-            it.update(f)
-            ok += 1
-        if on_progress:
-            on_progress(name, ok)
-    return ok
+# ⚠ 2026-09-19：此处原有 `append_overview_history(ov, path)` 新定义（返回 (hist, added) 二元组、
+#   写成 list 结构）；本文件后段还有一个同名旧定义（返回 {日期: [点...]} 的 dict）。
+#   后者胜出 —— 而前端 index.html 正是按 dict 结构消费的
+#   （`Object.keys(hd).sort().forEach(day => hd[day].forEach(...))`）。
+#   若让新版胜出，会写出 list → 前端 Object.keys(list) 得到 ['0','1',...]，
+#   再对其取 [day] 得到单个对象、.forEach 不存在 → 走势图静默失效。
+#   因此新定义属**不可启用的死代码**，已删除；保留后段 dict 版为准。
+#   真实契约：append_overview_history(ov, path, keep_days=30) -> dict{日期: [点...]}
 
 
 # ══════════════════ ID 缓存（避免重复调用搜索接口）══════════════════
