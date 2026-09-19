@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 6,
+  "total_analyses": 7,
   "lessons": [
     {
       "id": "L01",
@@ -10,8 +10,8 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 10,
-      "last_seen": "2026-09-19"
+      "confirmed": 11,
+      "last_seen": "2026-09-20"
     },
     {
       "id": "L02",
@@ -20,8 +20,8 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 10,
-      "last_seen": "2026-09-19"
+      "confirmed": 11,
+      "last_seen": "2026-09-20"
     },
     {
       "id": "L03",
@@ -30,8 +30,8 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 9,
-      "last_seen": "2026-09-19"
+      "confirmed": 10,
+      "last_seen": "2026-09-20"
     },
     {
       "id": "L04",
@@ -40,8 +40,8 @@
       "impact": "中",
       "action": "拓宽信息来源，增加数据维度",
       "added_at": "2026-06-16",
-      "confirmed": 7,
-      "last_seen": "2026-09-19"
+      "confirmed": 8,
+      "last_seen": "2026-09-20"
     },
     {
       "id": "L05",
@@ -55,7 +55,7 @@
     }
   ],
   "history": [],
-  "last_updated": "2026-09-19T03:11:58Z",
+  "last_updated": "2026-09-19T17:52:34Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -224,7 +224,37 @@
         "profitable": 773,
         "rate": 75.3
       }
+    },
+    {
+      "seq": 7,
+      "ts": "2026-09-19T17:52:34Z",
+      "overview": {
+        "verdict": "涨的推荐准确率较高，但部分跌的推荐理由有误",
+        "success_pattern": "多平台信号和溢价强劲是涨的正确理由，市场热度和稀缺求/售比是部分成功因素",
+        "failure_pattern": "过度依赖单一信号和忽视溢价匹配是跌的错误理由",
+        "confidence_trend": "上升",
+        "market_signal": "领涨_FN57显示市场热度"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "+3%",
+        "buff_weight_advice": "+2%",
+        "premium_threshold_advice": "溢价率100%以上",
+        "liquidity_advice": "多平台信号+稀缺求/售比"
+      },
+      "reason_analysis": {
+        "right_reasons": "多平台信号、溢价强劲、市场热度",
+        "wrong_reasons": "过度依赖单一ECO信号、忽视溢价匹配",
+        "reason_keywords_avoid": "溢、溢价强劲",
+        "reason_keywords_use": "多平台溢价、市场热度、稀缺求/售比"
+      },
+      "prompt_tweak": "推荐理由应强调多平台信号、市场热度和稀缺求/售比，避免过度依赖单一信号，并更准确地评估溢价率，同时使用专业术语如'多平台溢价'和'市场热度'",
+      "stats": {
+        "total": 1063,
+        "priced": 1056,
+        "profitable": 754,
+        "rate": 71.4
+      }
     }
   ],
-  "last_track_count": 1033
+  "last_track_count": 1063
 }
