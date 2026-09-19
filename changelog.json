@@ -2,6 +2,12 @@
   {
     "date": "2026-09-19",
     "tag": "fix",
+    "title": "fix(csqaq): 修正密钥加载顺序——CSQ_API_TOKEN 恒空导致 all 周期全量 401",
+    "desc": "fix(csqaq): 修正密钥加载顺序——CSQ_API_TOKEN 恒空导致 all 周期全量 401"
+  },
+  {
+    "date": "2026-09-19",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-19 19:06",
     "desc": "wip: local snapshot 2026-09-19 19:06"
   },
@@ -82,11 +88,5 @@
     "tag": "fix",
     "title": "fix(firepulse): 修复「重复定义」导致的两处调用失配（每轮 all 报错）",
     "desc": "fix(firepulse): 修复「重复定义」导致的两处调用失配（每轮 all 报错）"
-  },
-  {
-    "date": "2026-09-19",
-    "tag": "chore",
-    "title": "market index 2026-09-19 00:52",
-    "desc": "market index 2026-09-19 00:52"
   }
 ]
