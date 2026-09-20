@@ -42,59 +42,39 @@ def write_json(path, data):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False)
 
-def classify(hn):
-    if not hn: return 'other'
-    if 'Knife' in hn: return 'knife'
-    gl = ['Gloves', 'Hand Wraps', 'Sport Gloves', 'Specialist Gloves', 'Moto Gloves', 'Driver Gloves', 'Bloodhound Gloves']
-    if any(g in hn for g in gl): return 'glove'
-    if hn.startswith('Sticker'): return 'sticker'
-    if any(c in hn for c in ['Case', 'Container', 'Package']): return 'case'
-    if 'Music Kit' in hn: return 'musickit'
-    if any(c in hn for c in ['Charm', 'Pin']): return 'charm'
-    if 'Graffiti' in hn: return 'graffiti'
-    if 'Patch' in hn: return 'patch'
-    if 'Terminal' in hn: return 'other'
-    # 探员：无磨损等级 + 前缀不是武器
-    wear_words = ['Factory New', 'Minimal Wear', 'Field-Tested', 'Well-Worn', 'Battle-Scarred',
-                  '崭新出厂', '略有磨损', '久经沙场', '破损不堪', '战痕累累']
-    if not any(w in hn for w in wear_words):
-        weapon_ps = ['AK-47', 'M4A4', 'M4A1-S', 'AWP', 'AUG', 'SG ', 'FAMAS', 'Galil', 'SSG', 'SCAR', 'G3SG1',
-                     'P250', 'P2000', 'USP', 'Glock', 'Desert Eagle', 'Five-SeveN', 'CZ75', 'Dual Berettas', 'Tec-9', 'R8',
-                     'MP5', 'MP7', 'MP9', 'MAC-10', 'PP-', 'UMP', 'P90',
-                     'Nova', 'XM1014', 'MAG-7', 'Sawed-Off', 'Negev', 'M249',
-                     'Zeus', 'Flashbang', 'Smoke', 'HE Grenade', 'Molotov', 'Incendiary', 'Decoy', '★']
-        pref = hn.split(' | ')[0].strip() if ' | ' in hn else hn.split('|')[0].strip()
-        if not any(pref.startswith(wp) for wp in weapon_ps):
-            return 'agent'
-    return 'weapon'
+# ══════════════ 筛选规则：统一到 item_filter（单一来源）══════════════
+# 2026-09-20：原来这里自带一份 classify/_is_valid_scan_item，与 update.py 里的
+# _EXCLUDE_PREFIXES/_EXCLUDE_EXTERIORS 是两套不一致的规则，而**数据库写入**和
+# **异动榜**两处根本没有过滤 —— 导致 db 里躺着 811 个不该在的标的（15.5%），
+# 且它们会直接出现在涨跌榜上。
+# 现在统一走 item_filter，并修正了「贴纸胶囊被误判成探员」的 bug。
+_DIR = os.path.dirname(os.path.abspath(__file__))
+if _DIR not in sys.path:
+    sys.path.insert(0, _DIR)
+from item_filter import classify, is_excluded, SKIP_CATS  # noqa: E402
+
 
 def is_boring(name):
-    kw = ['武器箱', ' Capsule', '胶囊', '钥匙', 'Terminal', 'Music Kit', 'Charm', 'Pin', 'Sticker', '印花', 'Patch', '布章']
+    """中文名兜底：原实现的关键词表（保留，与 item_filter 互为补充）。"""
+    kw = ['武器箱', ' Capsule', '胶囊', '钥匙', 'Terminal', 'Music Kit',
+          'Charm', 'Pin', 'Sticker', '印花', 'Patch', '布章']
     return any(k in (name or '') for k in kw)
 
-# 不参与全量扫描的品类（所有面板都不显示）
-SKIP_CATS = {'sticker', 'musickit', 'charm', 'graffiti', 'case', 'patch'}
 
 def _is_valid_scan_item(it):
-    """全量扫描应排除的品类 / 磨损等级"""
-    if not isinstance(it, dict): return False
+    """全量扫描应排除的品类 / 磨损 / 前缀。
+
+    两道判断都过才算有效：
+      ① item_filter.is_excluded —— 前缀(StatTrak/Souvenir) + 磨损 + 品类
+      ② is_boring(中文名)       —— 中文关键词兜底（英文名可能看不出来）
+    """
+    if not isinstance(it, dict):
+        return False
     hn = it.get('HashName', '')
-    c = classify(hn)
-    if c in SKIP_CATS:  # 印花/音乐盒/挂件
+    gn = it.get('GoodsName') or ''
+    if is_excluded(hn, gn):
         return False
-    if is_boring(hn + (it.get('GoodsName') or '')):  # 终端机/武器箱等
-        return False
-    # 排除 破损不堪(WW) / 战痕累累(BS) / 纪念品
-    if 'Battle-Scarred' in hn or '战痕累累' in (it.get('GoodsName') or ''):
-        return False
-    if 'Well-Worn' in hn or '破损不堪' in (it.get('GoodsName') or ''):
-        return False
-    if 'Souvenir' in hn:
-        return False
-    # 2026-09-18（义轩要求）：扫描页也排除 StatTrak（原 8986 件里含 3103 件 ST）。
-    # 注：对扫描速度几乎无影响（耗时大头是 ECO 目录接口与价格库查询），
-    #     收益是 market_scan.json 变小、前端加载更快。
-    if 'StatTrak' in hn:
+    if is_boring(hn + gn):
         return False
     return True
 
@@ -182,7 +162,7 @@ def main():
         #   即 **1 日涨跌**；但输出字段历史上叫 `r7`（前端在用它），故保持不变，
         #   仅在此说明以免误解（改字段名会牵动 report.html）。
         cutoff = time.time() - 86400  # 1天前
-        stat = {'price': 0, 'chg': 0, 'step': 0, 'supply': 0, 'passed': 0}
+        stat = {'cat': 0, 'price': 0, 'chg': 0, 'step': 0, 'supply': 0, 'passed': 0}
         for name, h in ph.items():
             if not isinstance(h, list): continue
             eco_prices = [(e.get('t',''), e.get('p',0)) for e in h if isinstance(e, dict) and e.get('p', 0) > 0]
@@ -204,8 +184,11 @@ def main():
             eco_chg = (last_p - prev_p) / prev_p * 100
             if abs(eco_chg) < 0.01: continue
             cn = name_map.get(name, name)
-            # 过滤破损不堪/战痕累累/涂鸦/印花
-            if any(w in cn for w in ('破损不堪', '战痕累累', 'Battle-Scarred', 'Well-Worn', 'Souvenir', '涂鸦', 'Graffiti', '印花', 'Sticker')):
+            # ── 门槛 0：品类 / 前缀 / 磨损 —— 统一走 item_filter ──
+            #  ★ 原来只按中文关键词过滤，漏掉了 StatTrak、贴纸胶囊（被误判成探员）等
+            #    811 个不该出现在榜上的标的。改用 is_excluded 后与采集层规则一致。
+            if is_excluded(name, cn) or is_boring(name + cn):
+                stat['cat'] += 1
                 continue
             # ── 门槛 1：最小价格 ──
             if last_p < MIN_PRICE:
@@ -238,9 +221,9 @@ def main():
         neg = sorted([g for g in gains if g[1] < 0], key=lambda x: x[1])
         losers = [{'n': g[0], 'r7': g[1], 'p': g[2]} for g in neg[:10]]
         movers = {'gainers': gainers, 'losers': losers}
-        print('[SCAN] movers 过滤：价格<%g 剔除 %d ｜ 日涨跌>%g%% 剔除 %d ｜ '
-              '采样跳变>%g%% 剔除 %d ｜ 在售<=%d 剔除 %d ｜ 通过 %d'
-              % (MIN_PRICE, stat['price'], MAX_CHG, stat['chg'],
+        print('[SCAN] movers 过滤：品类/前缀/磨损 剔除 %d ｜ 价格<%g 剔除 %d ｜ '
+              '日涨跌>%g%% 剔除 %d ｜ 采样跳变>%g%% 剔除 %d ｜ 在售<=%d 剔除 %d ｜ 通过 %d'
+              % (stat['cat'], MIN_PRICE, stat['price'], MAX_CHG, stat['chg'],
                  MAX_CHG, stat['step'], MIN_SUPPLY, stat['supply'], stat['passed']))
     except Exception as e:
         print(f'[SCAN] movers error: {e}')

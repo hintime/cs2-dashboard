@@ -3453,24 +3453,40 @@ def main():
     if mode == 'history':
         try:
             import price_db
+            # ★ 品类过滤（2026-09-20，义轩要求）：不要的饰品**不采集、不落库**。
+            #   规则统一走 item_filter（与 market_scan / 异动榜同一份），
+            #   排除 StatTrak™/Souvenir 前缀、战痕/破损磨损、贴纸/胶囊/箱子等；
+            #   **保留探员**。放在最前面是为了顺带省掉 ECO 的 API 调用。
+            try:
+                from item_filter import is_excluded
+            except ImportError:
+                def is_excluded(hn, goods_name=''):
+                    return False
             _seed_db_if_needed(price_db)
             now = time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime())
             # 1) 重新抓 ECO 现价（活跃在售 ~500 件）→ eco 通道
             tp = os.path.join(DATA_DIR, 'eco_tracked.json')
             hn_list = []
+            _excl = 0
             if os.path.exists(tp):
                 for it in (read_json(tp) or []):
                     hn = it.get('HashName', '') or ''
-                    if hn:
-                        hn_list.append(hn)
+                    if not hn:
+                        continue
+                    if is_excluded(hn, it.get('GoodsName') or ''):
+                        _excl += 1
+                        continue
+                    hn_list.append(hn)
             if not hn_list:
                 mp = os.path.join(DATA_DIR, 'market.json')
                 if os.path.exists(mp):
                     for r in (read_json(mp) or {}).get('recommendations', {}).get('all', []):
                         hn = r.get('hash_name', '') or ''
-                        if hn:
+                        if hn and not is_excluded(hn):
                             hn_list.append(hn)
             hn_list = list(dict.fromkeys(hn_list))
+            if _excl:
+                print(f'[HISTORY] 品类过滤：剔除 {_excl} 件（StatTrak/战痕/破损/贴纸胶囊等）')
             records = []
             if hn_list:
                 print(f'[HISTORY] 重新抓取 {len(hn_list)} 件 ECO 现价...')
@@ -3485,6 +3501,8 @@ def main():
                 for it in (read_json(tp) or []):
                     hn = it.get('HashName', '') or ''
                     if not hn:
+                        continue
+                    if is_excluded(hn, it.get('GoodsName') or ''):
                         continue
                     bp = float(it.get('buff_sell', 0) or 0)
                     if bp > 0:
