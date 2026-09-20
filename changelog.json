@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-21 00:00",
+    "desc": "wip: local snapshot 2026-09-21 00:00"
+  },
+  {
     "date": "2026-09-20",
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-20 23:00",
@@ -100,11 +106,5 @@
     "tag": "fix",
     "title": "fix(price_db): 加 busy_timeout；history 频率 3h -> 1h",
     "desc": "fix(price_db): 加 busy_timeout；history 频率 3h -> 1h"
-  },
-  {
-    "date": "2026-09-20",
-    "tag": "fix",
-    "title": "fix(price_db): 按平台判断 DB_PATH，Linux 不再新建字面量 E: 目录",
-    "desc": "fix(price_db): 按平台判断 DB_PATH，Linux 不再新建字面量 E: 目录"
   }
 ]
