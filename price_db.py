@@ -29,9 +29,14 @@ def _now():
 
 def get_db():
     """获取数据库连接（自动初始化表结构）"""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=60)
     conn.execute('PRAGMA journal_mode=WAL')
     conn.execute('PRAGMA synchronous=NORMAL')
+    # ⚠ 2026-09-20 加：history 频率提到 1h 后，会与 `all`（0 分启动、约 78 分钟）
+    #   在同一时段写库。WAL 允许并发读，但**写是串行的** —— 没有 busy_timeout 时
+    #   第二个写会立刻抛 `database is locked`，直接丢掉这一轮采样。
+    #   30 秒足够等前一个批量插入完成。
+    conn.execute('PRAGMA busy_timeout=30000')
     conn.execute('PRAGMA cache_size=-8000')  # 8MB cache
     conn.execute('''CREATE TABLE IF NOT EXISTS prices (
         item_name TEXT NOT NULL,
