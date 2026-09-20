@@ -1,6 +1,36 @@
 [
   {
     "date": "2026-09-20",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-20 18:30",
+    "desc": "wip: local snapshot 2026-09-20 18:30"
+  },
+  {
+    "date": "2026-09-20",
+    "tag": "fix",
+    "title": "perf(price_db): trim_old_data 加 VACUUM 节流",
+    "desc": "perf(price_db): trim_old_data 加 VACUUM 节流"
+  },
+  {
+    "date": "2026-09-20",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-20 18:26",
+    "desc": "wip: local snapshot 2026-09-20 18:26"
+  },
+  {
+    "date": "2026-09-20",
+    "tag": "fix",
+    "title": "fix(price_db): 加 busy_timeout；history 频率 3h -> 1h",
+    "desc": "fix(price_db): 加 busy_timeout；history 频率 3h -> 1h"
+  },
+  {
+    "date": "2026-09-20",
+    "tag": "fix",
+    "title": "fix(price_db): 按平台判断 DB_PATH，Linux 不再新建字面量 E: 目录",
+    "desc": "fix(price_db): 按平台判断 DB_PATH，Linux 不再新建字面量 E: 目录"
+  },
+  {
+    "date": "2026-09-20",
     "tag": "chore",
     "title": "market index 2026-09-20 16:44",
     "desc": "market index 2026-09-20 16:44"
@@ -52,23 +82,5 @@
     "tag": "chore",
     "title": "market index 2026-09-19 20:32",
     "desc": "market index 2026-09-19 20:32"
-  },
-  {
-    "date": "2026-09-19",
-    "tag": "fix",
-    "title": "docs(csqaq): 更正 401 根因注释——是 CSQ_KEY 恒空，不是服务端临时故障",
-    "desc": "docs(csqaq): 更正 401 根因注释——是 CSQ_KEY 恒空，不是服务端临时故障"
-  },
-  {
-    "date": "2026-09-19",
-    "tag": "fix",
-    "title": "fix(csqaq): 修正密钥加载顺序——CSQ_API_TOKEN 恒空导致 all 周期全量 401",
-    "desc": "fix(csqaq): 修正密钥加载顺序——CSQ_API_TOKEN 恒空导致 all 周期全量 401"
-  },
-  {
-    "date": "2026-09-19",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-19 19:06",
-    "desc": "wip: local snapshot 2026-09-19 19:06"
   }
 ]
