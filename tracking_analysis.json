@@ -1,58 +1,58 @@
 {
   "overview": {
-    "verdict": "涨的推荐准确率较高，但部分跌的推荐理由有误",
-    "success_pattern": "多平台信号和溢价强劲是涨的正确理由，市场热度和稀缺求/售比是部分成功因素",
-    "failure_pattern": "过度依赖单一信号和忽视溢价匹配是跌的错误理由",
+    "verdict": "推荐准确率较高，但需优化信号解读。",
+    "success_pattern": "强调多平台溢价和稀缺性。",
+    "failure_pattern": "忽略价格波动和供需变化。",
     "confidence_trend": "上升",
-    "market_signal": "领涨_FN57显示市场热度"
+    "market_signal": "市场波动较大，需谨慎投资。"
   },
   "reason_analysis": {
-    "right_reasons": "多平台信号、溢价强劲、市场热度",
-    "wrong_reasons": "过度依赖单一ECO信号、忽视溢价匹配",
-    "reason_keywords_avoid": "溢、溢价强劲",
-    "reason_keywords_use": "多平台溢价、市场热度、稀缺求/售比"
+    "right_reasons": "强调多平台溢价和稀缺性。",
+    "wrong_reasons": "忽略价格波动和供需变化。",
+    "reason_keywords_avoid": "单一平台信号, 忽略溢价",
+    "reason_keywords_use": "多平台溢价, 稀缺性, 价格波动"
   },
   "lessons": [
     {
       "id": "L01",
-      "category": "多平台信号准确性",
-      "lesson": "多平台信号在涨中准确预测，但需警惕市场变化",
+      "category": "reason",
+      "lesson": "需综合考虑价格波动和供需变化。",
       "impact": "高",
-      "action": "加强多平台信号监控，避免过度依赖单一平台"
+      "action": "引入更多市场数据，优化信号解读模型。"
     },
     {
       "id": "L02",
-      "category": "溢价匹配评估",
-      "lesson": "溢价匹配准确，但部分跌的推荐错误",
+      "category": "scoring",
+      "lesson": "ECO和BUFF权重需平衡。",
       "impact": "中",
-      "action": "优化溢价匹配评估，避免过度依赖单一信号"
+      "action": "调整ECO和BUFF权重，以反映市场变化。"
     },
     {
       "id": "L03",
-      "category": "市场热度判断",
-      "lesson": "市场热度是涨的正确依据，但忽视了其他因素",
+      "category": "timing",
+      "lesson": "推荐时机需更精准。",
       "impact": "中",
-      "action": "综合考虑市场热度和产品特性"
+      "action": "优化推荐时机，避免市场波动影响。"
     },
     {
       "id": "L04",
-      "category": "稀缺求/售比应用",
-      "lesson": "稀缺求/售比是涨的正确依据，但部分跌的推荐错误",
-      "impact": "中",
-      "action": "优化稀缺求/售比评估，避免误导判断"
+      "category": "market",
+      "lesson": "关注市场整体趋势。",
+      "impact": "高",
+      "action": "加强市场趋势分析，调整投资策略。"
     }
   ],
   "scoring_feedback": {
-    "eco_weight_advice": "+3%",
-    "buff_weight_advice": "+2%",
-    "premium_threshold_advice": "溢价率100%以上",
-    "liquidity_advice": "多平台信号+稀缺求/售比"
+    "eco_weight_advice": "+10%/不变",
+    "buff_weight_advice": "-10%/不变",
+    "premium_threshold_advice": "溢价率>50%需谨慎",
+    "liquidity_advice": "流动性权重+20%"
   },
-  "reason_prompt_tweak": "推荐理由应强调多平台信号、市场热度和稀缺求/售比，避免过度依赖单一信号，并更准确地评估溢价率，同时使用专业术语如'多平台溢价'和'市场热度'",
+  "reason_prompt_tweak": "强调多平台溢价和稀缺性，避免单一信号依赖，关注价格波动和供需变化。",
   "meta": {
     "total_tracks": 1063,
     "date_range": "2026-06-15~2026-09-20",
-    "analyzed_at": "2026-09-19T17:52:34Z",
+    "analyzed_at": "2026-09-20T11:03:59Z",
     "model": "deepseek-r1:7b"
   }
 }
