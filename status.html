@@ -122,7 +122,7 @@ var t0 = Math.floor(Date.now() / 900000);
       var badge = '<span class="badge badge-old">缺失</span>';
 
       if (d) {
-        var ut = d.update_time || d.alerts_updated || d.market_updated || d.updated || d.date || '';
+        var ut = d.updated || d.update_time || d.alerts_updated || d.market_updated || d.date || ''; /* 2026-09-21: updated 优先 —— 它每轮 prices 都刷新；原优先级让 alerts_updated(6h 一轮)排前面，状态页时间最多滞后 30 分钟 */
         if (Array.isArray(d) && d.length > 0) {
           // eco_tracked is array - use first item's timestamp or just show count
           var first = d[0];
