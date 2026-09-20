@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-09-20",
+    "tag": "chore",
+    "title": "market index 2026-09-20 14:43",
+    "desc": "market index 2026-09-20 14:43"
+  },
+  {
+    "date": "2026-09-20",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_forecast.json, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, csqaq_boards.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, rec_tracks.json, sectors.json 2026-09-20 14:38"
+  },
+  {
+    "date": "2026-09-20",
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-20 13:24",
     "desc": "wip: local snapshot 2026-09-20 13:24"
@@ -64,17 +76,5 @@
     "tag": "chore",
     "title": "market index 2026-09-19 15:12",
     "desc": "market index 2026-09-19 15:12"
-  },
-  {
-    "date": "2026-09-19",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-19 14:59",
-    "desc": "wip: local snapshot 2026-09-19 14:59"
-  },
-  {
-    "date": "2026-09-19",
-    "tag": "fix",
-    "title": "fix(csqaq): 排行榜接口适配新契约（401/422 → 恢复）",
-    "desc": "fix(csqaq): 排行榜接口适配新契约（401/422 → 恢复）"
   }
 ]
