@@ -19,6 +19,11 @@
   ✔ 排除：贴纸、箱子、胶囊、布章、挂件、涂鸦、音乐盒
   ✘ 保留：**探员（agent）** —— 虽然不在原有排除列表里，但它有交易价值
 
+★ 2026-09-20 追加：义轩要求 **knife（刀）与 glove（手套）也去掉**。
+  最终保留集合 = **weapon + agent**。
+  （KEEP_CATS 已改；classify 仍会返回 knife/glove 以便统计，
+   但 is_excluded 会把它们判为排除。）
+
 ★ 关于"贴纸胶囊被误判成探员"这个 bug
 ------------------------------------
 `2021 Community Sticker Capsule` 这类名字：不含磨损词、前缀也不是武器，
@@ -34,8 +39,10 @@ import re
 
 # 这些品类整类排除
 SKIP_CATS = {'sticker', 'musickit', 'patch', 'case', 'charm', 'graffiti'}
-# 这些品类保留
-KEEP_CATS = {'weapon', 'knife', 'glove', 'agent'}
+# 保留的品类（★ 2026-09-20 义轩追加：knife / glove 也去掉，只保留 weapon 与 agent）
+KEEP_CATS = {'weapon', 'agent'}
+# 曾被保留、后来按义轩要求去掉的（留个记录，免得以后误以为是 bug）
+DROPPED_CATS = {'knife', 'glove'}
 
 EXCLUDE_PREFIXES = ('StatTrak', 'Souvenir')
 EXCLUDE_EXTERIORS = ('Battle-Scarred', 'Well-Worn',
@@ -168,8 +175,17 @@ if __name__ == '__main__':
     # 自检
     CASES = [
         ('AK-47 | Redline (Field-Tested)', False, 'weapon'),
-        ('★ Butterfly Knife | Doppler (Factory New)', False, 'knife'),
-        ('★ Sport Gloves | Pandora\'s Box (Factory New)', False, 'glove'),
+        # ★ 2026-09-20 变更：刀与手套也排除（义轩要求）。品类标签仍是 knife/glove，
+        #   但 is_excluded 判为 True。
+        ('★ Butterfly Knife | Doppler (Factory New)', True, 'knife'),
+        ('★ Sport Gloves | Pandora\'s Box (Factory New)', True, 'glove'),
+        ('★ Hand Wraps | Spruce DDPAT (Well-Worn)', True, 'glove'),
+        # 回归 2：皮肤名把品类关键词"吃掉"—— 判顺序错了会被误杀成箱子/挂件
+        #   "Case Hardened"(表面淬火) 含 Case，"Pinstripe"(细条纹) 含 Pin
+        #   现在它们应被判为 knife/glove 并因**品类**排除，而非误判成 case/charm
+        ('★ Ursus Knife | Case Hardened (Factory New)', True, 'knife'),
+        ('★ Butterfly Knife | Case Hardened (Minimal Wear)', True, 'knife'),
+        ('★ Sport Gloves | Creme Pinstripe (Minimal Wear)', True, 'glove'),
         ('Sir Bloody Miami Darryl | The Professionals', False, 'agent'),
         ('StatTrak™ AK-47 | Redline (Field-Tested)', True, 'weapon'),
         # ★ 回归用例：刀名以「★ 」开头，StatTrak 不在开头 —— 用 startswith 会漏掉
@@ -185,12 +201,6 @@ if __name__ == '__main__':
         ('Sealed Graffiti | Recoil AK-47', True, 'graffiti'),
         ('Patch | Metal SAS', True, 'patch'),
         ('Souvenir AWP | Dragon Lore (Factory New)', True, 'weapon'),
-        # ★ 回归用例 2：皮肤名把品类关键词"吃掉"了 —— 判顺序错了会被误杀
-        #   "Case Hardened"(表面淬火) 含 Case，"Pinstripe"(细条纹) 含 Pin
-        ('★ Ursus Knife | Case Hardened (Factory New)', False, 'knife'),
-        ('★ Butterfly Knife | Case Hardened (Minimal Wear)', False, 'knife'),
-        ('★ Sport Gloves | Creme Pinstripe (Minimal Wear)', False, 'glove'),
-        ('★ Hand Wraps | Spruce DDPAT (Well-Worn)', True, 'glove'),
         # 真箱子（无 " | " 分隔符）
         ('Operation Riptide Case', True, 'case'),
         ('Chroma 2 Case', True, 'case'),
