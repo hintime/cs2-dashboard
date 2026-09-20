@@ -5,10 +5,17 @@ CS2 饰品购买推荐引擎
 综合 CSQAQ（趋势数据）+ ECOSteam（全量供需数据）生成推荐
 
 推荐策略：
-1. 🔥 强势追涨 — 7日涨幅>5% 且 1日仍涨，趋势向上
+1. 🔥 强势追涨 — 7日涨幅>5%，趋势向上
 2. 💎 低估捡漏 — ECO综合价远高于最低售价，有估值修复空间
 3. 📉 超跌反弹 — 7日跌幅>8% 但有求购盘承接
 4. ⚡ 供不应求 — 求购/在售比高，卖盘稀缺
+
+★ 2026-09-20 重要变更：策略 1/3 的涨跌幅**不再使用 CSQAQ 的 rate_1/rate_7**。
+  那个字段已被证伪（rate_1 未降序、filter.type 被忽略、列表混着印花，
+  见本文件下方 fetch_csqaq_alerts 的注释「绝不可再当作涨跌幅排名使用」）。
+  改用 **price_summary.json**（由 price_history.db 算出，实测中位 377 个采样点）。
+  没有可信数据的标的会被跳过 —— 宁可不推荐，也不用坏数据凑数。
+  （CSQAQ 的**价格**字段 buff_sell/yyyp_sell/steam_sell 仍然可信，照常使用。）
 """
 import json, time, base64, urllib.request, urllib.error, ssl, os, sys
 
@@ -334,6 +341,82 @@ def build_name_index(eco_items):
     return idx
 
 # ═══════════════ RECOMMENDATION ENGINE ═══════════════
+# ══════════════ 可信涨跌幅（替代 CSQAQ rate_*）══════════════
+# ★ 2026-09-20 义轩指出「csqaq 也没用」后修复：
+#   CSQAQ 排行榜的 rate_1/rate_7/rate_30 **绝不可当作涨跌幅排名**使用 ——
+#   rate_1 未降序、filter.type 被忽略、列表里还混着印花（见本文件 L104-107 的警告）。
+#   但旧的 Momentum / Oversold 两条策略**整个就建在 rate_* 上**，等于用坏数据打分。
+#
+#   改用我们自己库的涨跌幅：price_summary.json 由 price_db.generate_price_summary()
+#   生成，数据源是 price_history.db（实测中位 377 个采样点，可信）。
+_PS_CACHE = {'mtime': 0, 'data': None}
+
+
+def _load_price_summary():
+    """懒加载 price_summary.json（按 mtime 缓存，避免每轮重复解析 3MB+）。"""
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'price_summary.json')
+    try:
+        mt = os.path.getmtime(p)
+    except OSError:
+        return None
+    if _PS_CACHE['data'] is not None and _PS_CACHE['mtime'] == mt:
+        return _PS_CACHE['data']
+    try:
+        data = json.load(open(p, encoding='utf-8'))
+        _PS_CACHE.update(mtime=mt, data=data)
+        return data
+    except Exception as e:
+        print(f'[REC] price_summary 读取失败：{e}', file=sys.stderr)
+        return None
+
+
+# 异常值上限（与 generate_scan.py 的异动榜 **同一个阈值**，保持一致）
+MAX_CHG = 100.0
+
+
+def _chg(entry, field='change_7d'):
+    """返回该标的的可信涨跌幅（%），无数据/不可信返回 None。
+
+    用 hash_name 匹配（price_summary 的 key 就是 db 里的 HashName）。
+    返回 None 表示「没有可信数据」—— 调用方应跳过，而不是退化成 0，
+    否则会出现「没数据 = 没涨跌 = 不该推荐」的误判。
+
+    ★ 两道可信性检查（2026-09-20 实测依据）：
+      1. |涨跌幅| > 100% → 判为数据跳变。实测 |change_7d|>100% 的 6 件
+         **全部**伴随 >80% 的相邻采样跳变，没有一件是真涨。
+         典型：`P90 | Blind Spot` 44.9 → 1891.2 → 200.0（一天 41 倍又回落）。
+      2. 相邻采样点跳变 > 100% → 同上。
+    """
+    hn = entry.get('hash_name') or ''
+    if not hn:
+        return None
+    ps = _load_price_summary()
+    if not ps:
+        return None
+    rec = ps.get(hn)
+    if not rec:
+        return None
+    v = rec.get(field)
+    if v is None:
+        return None
+    try:
+        v = float(v)
+    except (TypeError, ValueError):
+        return None
+    if abs(v) > MAX_CHG:
+        return None
+    # 相邻采样跳变检查（price_summary 里带着日均价序列）
+    prices = rec.get('prices') or []
+    for i in range(1, len(prices)):
+        try:
+            p0, p1 = float(prices[i - 1]), float(prices[i])
+        except (TypeError, ValueError):
+            continue
+        if p0 > 0 and abs(p1 - p0) / p0 * 100 > MAX_CHG:
+            return None
+    return v
+
+
 def generate_recommendations(csqaq_alerts, eco_items):
     eco_idx = build_name_index(eco_items)
     recs = {'momentum': [], 'undervalued': [], 'oversold': [], 'scarce': [], 'updated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
@@ -395,10 +478,28 @@ def generate_recommendations(csqaq_alerts, eco_items):
             })
 
     # ── 🔥 强势追涨 (Momentum) ──
+    # ★ 2026-09-20：改用我们自己的 change_7d（来自 price_history.db），
+    #   不再用 CSQAQ 的 rate_7/rate_1（已被证伪：未降序、混印花）。
+    #   阈值为 0 用 5%；没有可信数据的标的直接跳过（不进榜）。
+    _n_nochg = 0
     for m in merged:
-        if m.get('rate_7', 0) > 5 and m.get('rate_1', 0) > 0 and m.get('price', 0) > 50:
-            m['_score'] = round(m['rate_7'] + m['rate_1'], 2)
+        c7 = _chg(m)
+        c30 = _chg(m, 'change_30d')
+        if c7 is None:
+            _n_nochg += 1
+            continue
+        price = m.get('price', 0) or m.get('eco_price', 0)
+        if c7 > 5 and price > 50:
+            # 30 日同向（向上）加权，避免"7日反弹但月线仍跌"的假强势
+            bonus = 0.0
+            if c30 is not None and c30 > 0:
+                bonus = min(c30, 20) * 0.25
+            m['_score'] = round(c7 + bonus, 2)
+            m['_reason'] = (f'7日{c7:+.1f}%'
+                            + (f' / 30日{c30:+.1f}%' if c30 is not None else ''))
             recs['momentum'].append(m)
+    if _n_nochg:
+        print(f'[REC] Momentum：{_n_nochg} 件无可信 change_7d，已跳过')
     recs['momentum'].sort(key=lambda x: x['_score'], reverse=True)
     recs['momentum'] = recs['momentum'][:20]
 
@@ -440,10 +541,21 @@ def generate_recommendations(csqaq_alerts, eco_items):
     recs['undervalued'] = recs['undervalued'][:20]
 
     # ── 📉 超跌反弹 (Oversold) ──
+    # ★ 2026-09-20：同样改用 change_7d；并要求「有求购盘承接」(eco_qg_total>0)，
+    #   否则只是没人要的阴跌，不是超跌反弹。
+    _n_nochg2 = 0
     for m in merged:
-        if m.get('rate_7', 0) < -8 and m.get('eco_qg_total', 0) > 0 and m.get('price', 0) > 50:
-            m['_score'] = abs(m['rate_7'])
+        c7 = _chg(m)
+        if c7 is None:
+            _n_nochg2 += 1
+            continue
+        price = m.get('price', 0) or m.get('eco_price', 0)
+        if c7 < -8 and m.get('eco_qg_total', 0) > 0 and price > 50:
+            m['_score'] = round(abs(c7), 2)
+            m['_reason'] = f'7日{c7:+.1f}%，有求购盘承接'
             recs['oversold'].append(m)
+    if _n_nochg2:
+        print(f'[REC] Oversold：{_n_nochg2} 件无可信 change_7d，已跳过')
     recs['oversold'].sort(key=lambda x: x['_score'], reverse=True)
     recs['oversold'] = recs['oversold'][:20]
 

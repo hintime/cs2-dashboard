@@ -934,11 +934,20 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
         or '印花,贴纸,胶囊,涂鸦,音乐盒,布章,补丁,Sticker,Capsule,Graffiti,Music Kit,Patch'
     ).split(',') if k.strip())
     before = len(tracked)
+    # ★ 2026-09-20：改为统一走 item_filter（与采集层、异动榜同一套规则）。
+    #   原来这里是**第三套独立规则**：虽然也排除了 StatTrak/贴纸/涂鸦，
+    #   但**没有排除刀与手套** —— 结果推荐池 4066 件、采集池 2835 件，两边不一致，
+    #   会出现"我们已经在删的标的，推荐还在推"。
+    #   REC_EXCLUDE_KEYWORDS 保留为**额外**关键词（默认空），叠加在 item_filter 之上。
+    try:
+        from item_filter import is_excluded as _is_excluded
+    except ImportError:
+        def _is_excluded(hn, goods_name=''):
+            return False
     tracked = [i for i in tracked
-               if not any(k in (i.get('HashName','') + ' ' + i.get('GoodsName',''))
-                          for k in ('StatTrak', 'Souvenir'))
-               and not any(e in (i.get('HashName','') + i.get('GoodsName','')) for e in _EXCLUDE_EXTERIORS)
-               and not any(k.lower() in (i.get('HashName','') + ' ' + i.get('GoodsName','')).lower()
+               if not _is_excluded(i.get('HashName', '') or '', i.get('GoodsName') or '')
+               and not any(k.lower() in ((i.get('HashName', '') or '')
+                                         + ' ' + (i.get('GoodsName') or '')).lower()
                            for k in _EXCLUDE_KEYWORDS)]
     if len(tracked) < before:
         print(f'[REC] Filtered out {before - len(tracked)} excluded items ({len(tracked)} remaining)')
