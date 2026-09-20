@@ -1,19 +1,19 @@
 {
-  "generated": "2026-09-19 18:40",
+  "generated": "2026-09-20 13:26",
   "n_items": 30,
   "summary": {
     "supply_proxy": {
       "n": 30,
-      "median_ratio": 498.7,
-      "max_ratio": 1608.4
+      "median_ratio": 533.8,
+      "max_ratio": 1467.7
     },
     "supply_proxy_old": {
       "n": 30,
-      "median_ratio": 498.7,
-      "max_ratio": 1608.4
+      "median_ratio": 533.8,
+      "max_ratio": 1467.7
     },
     "ref_steam": {
-      "n": 27,
+      "n": 28,
       "identical_pct": 100.0
     },
     "selling_supply": {
@@ -25,14 +25,14 @@
       "identical_pct": 100.0
     },
     "buff_two_sources": {
-      "n": 22,
-      "median_dev_pct": 0.72,
-      "max_dev_pct": 7.69
+      "n": 25,
+      "median_dev_pct": 1.02,
+      "max_dev_pct": 3.44
     }
   },
   "alarms": [],
   "notes": [
-    "存世量代理：中位偏离 499 倍（当前仅作兜底，已在后端标注 *代理）",
-    "存世量代理(旧字段名 n_supply)：中位偏离 499 倍（当前仅作兜底，已在后端标注 *代理）"
+    "存世量代理：中位偏离 534 倍（当前仅作兜底，已在后端标注 *代理）",
+    "存世量代理(旧字段名 n_supply)：中位偏离 534 倍（当前仅作兜底，已在后端标注 *代理）"
   ]
 }
