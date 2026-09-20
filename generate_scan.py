@@ -154,18 +154,35 @@ def main():
     movers = []
     # 构建 英文→中文 映射
     name_map = {}
+    # ★ 在售量映射（流动性过滤用；SellingTotal 就是"在售数量"）
+    supply_map = {}
     for it in cat:
         hn = it.get('HashName', '')
         gn = it.get('GoodsName', '')
         if hn and gn:
             name_map[hn] = gn
-    
+        if hn:
+            try:
+                supply_map[hn] = int(it.get('SellingTotal') or 0)
+            except (TypeError, ValueError):
+                supply_map[hn] = 0
+
+    # ── 涨跌榜过滤阈值（2026-09-20 加，义轩定）──
+    # 背景：原来的榜单被两类垃圾污染 —— ① 9 块钱的物品（0.1 元波动就是 10% 涨幅）
+    # ② 价格离谱的异常记录（如"手套"标价 28 万）。加了下面三道门槛后榜单才有参考价值。
+    MIN_PRICE = 10.0      # 最小价格（元）：低于此值百分比噪声太大
+    MAX_CHG = 100.0       # 单次变动上限（%）：超过视为异常（数据错误 / 异常挂牌）
+    MIN_SUPPLY = 100      # 最小在售量：流动性太差的物品价格不可信
+
     try:
         import price_db
         ph = price_db.get_movers_data()
         gains = []
-        # 取 1 天前的价格做日涨跌对比
+        # ⚠ 注意：这里比的是「约 1 天前」的价格（cutoff = now-86400），
+        #   即 **1 日涨跌**；但输出字段历史上叫 `r7`（前端在用它），故保持不变，
+        #   仅在此说明以免误解（改字段名会牵动 report.html）。
         cutoff = time.time() - 86400  # 1天前
+        stat = {'price': 0, 'chg': 0, 'step': 0, 'supply': 0, 'passed': 0}
         for name, h in ph.items():
             if not isinstance(h, list): continue
             eco_prices = [(e.get('t',''), e.get('p',0)) for e in h if isinstance(e, dict) and e.get('p', 0) > 0]
@@ -190,11 +207,41 @@ def main():
             # 过滤破损不堪/战痕累累/涂鸦/印花
             if any(w in cn for w in ('破损不堪', '战痕累累', 'Battle-Scarred', 'Well-Worn', 'Souvenir', '涂鸦', 'Graffiti', '印花', 'Sticker')):
                 continue
+            # ── 门槛 1：最小价格 ──
+            if last_p < MIN_PRICE:
+                stat['price'] += 1
+                continue
+            # ── 门槛 2a：1 日涨跌超限（日线级异常）──
+            if abs(eco_chg) > MAX_CHG:
+                stat['chg'] += 1
+                continue
+            # ── 门槛 2b：相邻采样跳变超限（★ "单次变动" —— 抓数据错误/异常挂牌）──
+            #   例：某"手套"标价 288888，就是靠这条与门槛 3 一起挡住的
+            max_step = 0.0
+            for (_, p1), (_, p2) in zip(eco_prices, eco_prices[1:]):
+                if p1 > 0:
+                    step = abs(p2 - p1) / p1 * 100
+                    if step > max_step:
+                        max_step = step
+            if max_step > MAX_CHG:
+                stat['step'] += 1
+                continue
+            # ── 门槛 3：流动性 ──
+            if supply_map.get(name, 0) <= MIN_SUPPLY:
+                stat['supply'] += 1
+                continue
+            stat['passed'] += 1
             gains.append((cn[:24], round(eco_chg, 1), last_p))
         gains.sort(key=lambda x: x[1], reverse=True)
         gainers = [{'n': g[0], 'r7': g[1], 'p': g[2]} for g in gains if g[1] > 0][:10]
-        losers = [{'n': g[0], 'r7': g[1], 'p': g[2]} for g in gains if g[1] < 0][-10:][::-1]
+        # 显式按涨幅升序取最跌的 10 个（原写法 [-10:][::-1] 依赖上游排序方向，脆弱）
+        neg = sorted([g for g in gains if g[1] < 0], key=lambda x: x[1])
+        losers = [{'n': g[0], 'r7': g[1], 'p': g[2]} for g in neg[:10]]
         movers = {'gainers': gainers, 'losers': losers}
+        print('[SCAN] movers 过滤：价格<%g 剔除 %d ｜ 日涨跌>%g%% 剔除 %d ｜ '
+              '采样跳变>%g%% 剔除 %d ｜ 在售<=%d 剔除 %d ｜ 通过 %d'
+              % (MIN_PRICE, stat['price'], MAX_CHG, stat['chg'],
+                 MAX_CHG, stat['step'], MIN_SUPPLY, stat['supply'], stat['passed']))
     except Exception as e:
         print(f'[SCAN] movers error: {e}')
 
