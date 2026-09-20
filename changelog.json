@@ -2,6 +2,18 @@
   {
     "date": "2026-09-21",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-21 00:30",
+    "desc": "wip: local snapshot 2026-09-21 00:30"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-21 00:15",
+    "desc": "wip: local snapshot 2026-09-21 00:15"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-21 00:00",
     "desc": "wip: local snapshot 2026-09-21 00:00"
   },
@@ -82,29 +94,5 @@
     "tag": "fix",
     "title": "feat(scan): 涨跌榜加三道过滤门槛（价格 / 异常值 / 流动性）",
     "desc": "feat(scan): 涨跌榜加三道过滤门槛（价格 / 异常值 / 流动性）"
-  },
-  {
-    "date": "2026-09-20",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-20 18:30",
-    "desc": "wip: local snapshot 2026-09-20 18:30"
-  },
-  {
-    "date": "2026-09-20",
-    "tag": "fix",
-    "title": "perf(price_db): trim_old_data 加 VACUUM 节流",
-    "desc": "perf(price_db): trim_old_data 加 VACUUM 节流"
-  },
-  {
-    "date": "2026-09-20",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-20 18:26",
-    "desc": "wip: local snapshot 2026-09-20 18:26"
-  },
-  {
-    "date": "2026-09-20",
-    "tag": "fix",
-    "title": "fix(price_db): 加 busy_timeout；history 频率 3h -> 1h",
-    "desc": "fix(price_db): 加 busy_timeout；history 频率 3h -> 1h"
   }
 ]
