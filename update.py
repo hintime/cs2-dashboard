@@ -136,9 +136,17 @@ GIT_ENV = {**os.environ,
            'GCM_INTERACTIVE': 'never',
            'GIT_TERMINAL_PROMPT': '0',
            'GIT_ASKPASS': 'echo'}
-# git 公共参数：清掉 credential.helper（优先用显式 token），
-# 并统一走 openssl backend + 关 SSL 校验（本机 hosts 走透明代理，证书链不完整）。
-GIT_BASE = ['-c', 'credential.helper=', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
+# git 公共参数：清掉 credential.helper（优先用显式 token）。
+# ⚠ http.sslBackend 必须按平台区分（2026-09-20 上云时踩到）：
+#   · Windows（本机）：`openssl` —— 本机 hosts 走透明代理，证书链不完整，需要它兜底。
+#   · Linux（服务器）：**绝不能传 openssl** —— Ubuntu 的 git 只编译了 gnutls backend，
+#     传 `-c http.sslBackend=openssl` 会直接 `fatal: Unsupported SSL backend`，
+#     导致所有 git 操作失败（而且是 fatal，重试也救不回来）。
+#   · http.sslVerify=false 两边都留：大陆网络下 GitHub 的 TLS 常被中间人干扰。
+_SSL_ARGS = (['-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
+             if sys.platform == 'win32'
+             else ['-c', 'http.sslVerify=false'])
+GIT_BASE = ['-c', 'credential.helper='] + _SSL_ARGS
 
 # 非 CI 环境下 GH_TOKEN 为空的告警（会导致 push 静默失败）
 if not GH_TOKEN and not os.environ.get('GITHUB_ACTIONS'):
@@ -2883,8 +2891,10 @@ def _git_auth_args():
     if GH_TOKEN:
         b64 = base64.b64encode(
             ('x-access-token:' + GH_TOKEN).encode('utf-8')).decode('ascii')
-        return ['-c', 'http.extraHeader=Authorization: Basic ' + b64,
-                '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
+        # ⚠ 用 _SSL_ARGS 而不是硬编码 openssl：Linux 上 git 只有 gnutls backend，
+        #   传 openssl 会 fatal，重试也救不回来（2026-09-20 上云时踩到）。见 GIT_BASE 上方注释。
+        return (['-c', 'http.extraHeader=Authorization: Basic ' + b64]
+                + _SSL_ARGS)
     return list(GIT_BASE)
 
 

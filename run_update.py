@@ -56,7 +56,13 @@ def run_py(args):
 
 def run_git(cmd):
     # 用 token 认证
-    full_cmd = ['git', '-c', 'http.sslBackend=openssl', '-c', 'http.sslVerify=false']
+    # ⚠ 注：本文件是**旧版 Windows 启动器**，认证用的是 Bearer —— 但 GitHub 的 git 传输
+    #   只认 Basic（`x-access-token:<token>`），Bearer 会 rc=128 失败。核心链路已改走
+    #   update.py 的 _git_auth_args()，本文件保留仅为历史参考，勿在服务器上使用。
+    full_cmd = ['git']
+    if sys.platform == 'win32':
+        full_cmd += ['-c', 'http.sslBackend=openssl']
+    full_cmd += ['-c', 'http.sslVerify=false']
     if cmd[0] in ('push', 'pull', 'fetch'):
         full_cmd += ['-c', f'http.extraHeader=Authorization: Bearer {GITHUB_TOKEN}']
     result = subprocess.run(full_cmd + cmd,
