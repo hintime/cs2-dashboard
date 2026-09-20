@@ -234,16 +234,29 @@ def get_stats():
 
 # ═══════════════ 数据保持 ═══════════════
 
-def trim_old_data(max_days=90):
-    """清理超过 max_days 天的数据（保持 DB 可控大小）"""
+def trim_old_data(max_days=90, vacuum_min_rows=200000):
+    """清理超过 max_days 天的数据。
+
+    ⚠ 2026-09-20 修：原来只要删了**任意一条**就 `VACUUM`。而本函数在 history 模式里
+    **每次落库后都会调用**；history 提到 1h 后，一旦 db 越过保留期，就会变成
+    **每小时 VACUUM 一次整个库** —— 那是几分钟的阻塞 + 需要近等量的临时磁盘空间
+    （db 到 5GB 时就是 5GB 临时空间），会直接把服务器拖垮。
+
+    改法：只有删除量足够大（默认 20 万行）才 VACUUM。日常少量删除**不需要**回收 ——
+    SQLite 会把删掉的页标为空闲、后续插入直接复用，db 体积会稳定在保留期对应的大小。
+    """
     conn = get_db()
     try:
         cutoff = time.strftime('%Y-%m-%d', time.gmtime(time.time() - max_days * 86400))
         deleted = conn.execute('DELETE FROM prices WHERE date(ts) < ?', (cutoff,)).rowcount
         conn.commit()
-        if deleted:
-            print(f'[DB-TRIM] Deleted {deleted} records older than {max_days} days')
+        if deleted >= vacuum_min_rows:
+            print(f'[DB-TRIM] Deleted {deleted:,} records older than {max_days} days '
+                  f'-> VACUUM（删除量大，回收空间）')
             conn.execute('VACUUM')
+        elif deleted:
+            print(f'[DB-TRIM] Deleted {deleted:,} records older than {max_days} days '
+                  f'（量小，跳过 VACUUM，空闲页会被后续插入复用）')
         return deleted
     finally:
         conn.close()
