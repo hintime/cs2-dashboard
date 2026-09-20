@@ -11,7 +11,17 @@ import sqlite3, json, os, time, sys
 # 可用环境变量 PRICE_HIST_DB 覆盖（如仍想留在仓库内则设回仓库路径）。
 # 2026-09-18 迁移：原 C:\Users\Lenovo\cs2-runner-local\price_history.db
 #   → E:\cs2-data\price_history.db（sqlite 在线 backup，行数一致校验通过）。
-DB_PATH = os.environ.get('PRICE_HIST_DB') or os.path.join(r'E:\cs2-data', 'price_history.db')
+#
+# ⚠ 2026-09-20 修：原来无论什么平台都拼 `E:\cs2-data`，**在 Linux 上会新建一个
+#   名为 `E:\cs2-data` 的字面量目录**（因为 'E:' 在 Linux 只是普通字符），
+#   然后得到一个空库 → 查询全空、还留下垃圾目录。
+#   现在按平台分流：Windows 用 E 盘，其他平台落在本文件所在目录。
+if os.environ.get('PRICE_HIST_DB'):
+    DB_PATH = os.environ['PRICE_HIST_DB']
+elif sys.platform == 'win32':
+    DB_PATH = os.path.join('E:\\cs2-data', 'price_history.db')
+else:
+    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'price_history.db')
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 def _now():
