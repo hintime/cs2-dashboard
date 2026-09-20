@@ -55,10 +55,21 @@ from item_filter import classify, is_excluded, SKIP_CATS  # noqa: E402
 
 
 def is_boring(name):
-    """中文名兜底：原实现的关键词表（保留，与 item_filter 互为补充）。"""
+    """中文名兜底：原实现的关键词表（保留，与 item_filter 互为补充）。
+
+    ⚠ 2026-09-20 修：原来裸用 `'印花'` / `'Pin'` 这类短词，会把**皮肤名**误杀：
+      · `Desert Eagle | Printstream` 中文「沙漠之鹰 | **印花集**」   → 被"印花"误杀
+      · `CZ75-Auto | Imprint`       中文「CZ75自动型 | **印花板**」 → 被"印花"误杀
+      · `SSG 08 | Sea Calico`       中文「SSG 08 | 海滨**印花**」   → 被"印花"误杀
+      · `★ Sport Gloves | Creme Pinstripe` 含 "**Pin**stripe"      → 被"Pin"误杀
+    改法：这些词要求后面紧跟 ` | `（真物品名形如「印花 | 手套就位」）。
+    皮肤名不会是这个格式，所以不会误伤。
+    """
     kw = ['武器箱', ' Capsule', '胶囊', '钥匙', 'Terminal', 'Music Kit',
-          'Charm', 'Pin', 'Sticker', '印花', 'Patch', '布章']
-    return any(k in (name or '') for k in kw)
+          'Charm', 'Sticker', 'Patch', '布章']
+    kw_sep = ['印花 |', '印花板 |', '涂鸦 |', '挂件 |', '音乐盒 |']
+    return (any(k in (name or '') for k in kw)
+            or any(k in (name or '') for k in kw_sep))
 
 
 def _is_valid_scan_item(it):
