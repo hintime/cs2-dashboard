@@ -1,51 +1,58 @@
 {
   "overview": {
-    "verdict": "推荐策略整体有效，需优化信号匹配",
-    "success_pattern": "强调多平台信号和溢价强劲",
-    "failure_pattern": "忽略价格波动和流动性",
+    "verdict": "推荐准确率较高，但需优化信号解读。",
+    "success_pattern": "强调多平台信号和溢价强劲。",
+    "failure_pattern": "忽略跌价风险和溢价不匹配。",
     "confidence_trend": "上升",
-    "market_signal": "市场波动较大，需谨慎操作"
+    "market_signal": "市场波动大，需关注热门和冷门饰品变化。"
   },
   "reason_analysis": {
-    "right_reasons": "强调多平台信号和溢价强劲，流动性评估准确",
-    "wrong_reasons": "过度依赖单一ECO信号，忽略溢价不匹配",
-    "reason_keywords_avoid": "单一平台信号，溢价过高，流动性差",
-    "reason_keywords_use": "多平台信号，溢价合理，流动性好"
+    "right_reasons": "强调多平台溢价和流动性评估准确。",
+    "wrong_reasons": "过度依赖单一ECO信号和忽略溢价不匹配。",
+    "reason_keywords_avoid": "单一信号，溢价不匹配",
+    "reason_keywords_use": "多平台信号，溢价强劲，流动性"
   },
   "lessons": [
     {
       "id": "L01",
       "category": "reason",
-      "lesson": "推荐理由需考虑价格波动和流动性",
-      "impact": "中",
-      "action": "结合市场数据和价格趋势进行综合评估"
+      "lesson": "推荐理由需综合考虑多平台信号和溢价情况，避免单一信号依赖。",
+      "impact": "高",
+      "action": "引入溢价匹配度和流动性指标。"
     },
     {
       "id": "L02",
       "category": "scoring",
-      "lesson": "ECO和BUFF权重需平衡",
-      "impact": "高",
-      "action": "调整ECO和BUFF权重，避免单一信号影响"
+      "lesson": "评分体系需更全面反映市场变化。",
+      "impact": "中",
+      "action": "调整评分权重，增加跌价风险评估。"
     },
     {
       "id": "L03",
+      "category": "timing",
+      "lesson": "推荐时机需更精准。",
+      "impact": "中",
+      "action": "引入市场趋势预测模型。"
+    },
+    {
+      "id": "L04",
       "category": "market",
-      "lesson": "关注市场整体趋势",
+      "lesson": "需关注市场整体趋势和热门饰品变化。",
       "impact": "高",
-      "action": "实时监控市场动态，调整推荐策略"
+      "action": "加强市场数据分析，及时调整推荐策略。"
     }
   ],
   "scoring_feedback": {
-    "eco_weight_advice": "+10%/-5%/不变",
-    "buff_weight_advice": "+5%/-10%/不变",
-    "premium_threshold_advice": "溢价率阈值为50%",
-    "liquidity_advice": "流动性权重建议为20%"
+    "eco_weight_advice": "+10%/不变",
+    "buff_weight_advice": "+5%/不变",
+    "premium_threshold_advice": "溢价率>50%需谨慎",
+    "liquidity_advice": "流动性权重+20%"
   },
-  "reason_prompt_tweak": "强调多平台信号和溢价合理性，避免单一信号判断，用数据支撑推荐理由",
+  "reason_prompt_tweak": "强调多平台信号和溢价匹配度，避免单一信号依赖，使用客观表述。",
   "meta": {
     "total_tracks": 1093,
     "date_range": "2026-06-15~2026-09-21",
-    "analyzed_at": "2026-09-20T17:04:16Z",
+    "analyzed_at": "2026-09-20T23:02:54Z",
     "model": "deepseek-r1:7b"
   }
 }
