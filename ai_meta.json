@@ -1,6 +1,6 @@
 {
-  "date": "2026-09-20 19:03",
-  "total_sec": 373.6,
+  "date": "2026-09-21 01:03",
+  "total_sec": 438.4,
   "ok": 7,
   "failed": 0,
   "provider_fast": "ollama",
@@ -10,49 +10,49 @@
   "stages": [
     {
       "stage": "Analysis",
-      "sec": 123.3,
+      "sec": 227.9,
       "ok": true,
       "provider": "ollama",
       "model": "deepseek-r1:7b"
     },
     {
       "stage": "Daily report",
-      "sec": 12.5,
+      "sec": 9.1,
       "ok": true,
       "provider": "ollama",
       "model": "deepseek-r1:7b"
     },
     {
       "stage": "Anomaly",
-      "sec": 8.7,
+      "sec": 7.5,
       "ok": true,
       "provider": "ollama",
       "model": "deepseek-r1:7b"
     },
     {
       "stage": "Stock picks",
-      "sec": 24.6,
+      "sec": 21.9,
       "ok": true,
       "provider": "ollama",
       "model": "deepseek-r1:7b"
     },
     {
       "stage": "Market insight",
-      "sec": 9.4,
-      "ok": true,
-      "provider": "ollama",
-      "model": "deepseek-r1:7b"
-    },
-    {
-      "stage": "News impact",
       "sec": 8.8,
       "ok": true,
       "provider": "ollama",
       "model": "deepseek-r1:7b"
     },
     {
+      "stage": "News impact",
+      "sec": 11.5,
+      "ok": true,
+      "provider": "ollama",
+      "model": "deepseek-r1:7b"
+    },
+    {
       "stage": "Recommendations",
-      "sec": 186.3,
+      "sec": 151.7,
       "ok": true,
       "provider": "ollama",
       "model": "deepseek-r1:7b"
