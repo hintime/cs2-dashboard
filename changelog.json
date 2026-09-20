@@ -2,6 +2,30 @@
   {
     "date": "2026-09-20",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-20 20:29",
+    "desc": "wip: local snapshot 2026-09-20 20:29"
+  },
+  {
+    "date": "2026-09-20",
+    "tag": "fix",
+    "title": "feat(filter): 义轩要求 —— knife 与 glove 也排除，只留 weapon + agent",
+    "desc": "feat(filter): 义轩要求 —— knife 与 glove 也排除，只留 weapon + agent"
+  },
+  {
+    "date": "2026-09-20",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-20 20:15",
+    "desc": "wip: local snapshot 2026-09-20 20:15"
+  },
+  {
+    "date": "2026-09-20",
+    "tag": "fix",
+    "title": "fix(filter): 修掉三处误伤 —— Case Hardened / Pinstripe / Printstre",
+    "desc": "m"
+  },
+  {
+    "date": "2026-09-20",
+    "tag": "fix",
     "title": "feat(filter): 筛选规则统一到 item_filter，采集层与异动榜都过滤",
     "desc": "feat(filter): 筛选规则统一到 item_filter，采集层与异动榜都过滤"
   },
@@ -88,17 +112,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-20 13:24",
     "desc": "wip: local snapshot 2026-09-20 13:24"
-  },
-  {
-    "date": "2026-09-20",
-    "tag": "chore",
-    "title": "market index 2026-09-20 01:52",
-    "desc": "market index 2026-09-20 01:52"
-  },
-  {
-    "date": "2026-09-20",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_daily_report.json, ai_forecast.j",
-    "desc": "on, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, csqaq_boards.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, rec_tracks.json, sectors.json, tracking_analysis.json, tracking_lessons.json 2026-09-20 01:52"
   }
 ]
