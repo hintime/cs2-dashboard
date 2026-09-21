@@ -157,6 +157,34 @@ def cmd_movers():
 
     _blk('\u25b2 \u6da8\u5e45', g)
     _blk('\u25bc \u8dcc\u5e45', l)
+    # \u2605 2026-09-21\uff1a\u5728\u552e / \u6c42\u8d2d\u5f02\u52a8\uff08\u76d8\u53e3\u53d8\u5316\uff0c\u6bd4\u4ef7\u683c\u66f4\u65e9\u53cd\u6620\u4f9b\u9700\uff09
+    #   \u6570\u636e\u81ea 2026-09-21 \u8d77\u5728 boards \u8868\u79ef\u7d2f\uff1b\u4e0d\u8db3 2 \u5c0f\u65f6\u8de8\u5ea6\u65f6\u5982\u5b9e\u8bf4\u660e\u3002
+    try:
+        import price_db as _pdb
+        bm = _pdb.get_board_movers(hours=24, limit=3)
+        _span = float(bm.get('span_hours') or 0)
+        if bm.get('base_ts') and _span >= 2:
+            def _blk2(title, arr, unit):
+                if not arr:
+                    return
+                L.append('')
+                L.append(title)
+                for x in arr[:3]:
+                    L.append('  %s  %d\u2192%d %s (%+.0f%%)'
+                             % (x.get('name'), x.get('old'), x.get('new'), unit,
+                                x.get('pct') or 0))
+            _blk2('\u25b2 \u5728\u552e\u589e\u52a0\uff08\u5356\u538b\u2191\uff09', (bm.get('sell') or {}).get('add'), '\u4ef6')
+            _blk2('\u25bc \u5728\u552e\u51cf\u5c11\uff08\u626b\u8d27\u2191\uff09', (bm.get('sell') or {}).get('drop'), '\u4ef6')
+            _blk2('\u25b2 \u6c42\u8d2d\u589e\u52a0\uff08\u9700\u6c42\u2191\uff09', (bm.get('buy') or {}).get('add'), '\u4e2a')
+            _blk2('\u25bc \u6c42\u8d2d\u51cf\u5c11\uff08\u9700\u6c42\u2193\uff09', (bm.get('buy') or {}).get('drop'), '\u4e2a')
+        else:
+            L.append('')
+            L.append('\u5728\u552e/\u6c42\u8d2d\u5f02\u52a8\uff1a\u6570\u636e\u79ef\u7d2f\u4e2d\uff08\u5df2 %d \u4e2a\u91c7\u6837\u70b9 / \u8de8\u5ea6 %.1f \u5c0f\u65f6\uff0c'
+                     '\u6ee1 24 \u5c0f\u65f6\u51fa\u699c\uff09' % (bm.get('total') or 0, _span))
+    except Exception as _e:
+        L.append('')
+        L.append('\u5728\u552e/\u6c42\u8d2d\u5f02\u52a8\uff1a\u6682\u4e0d\u53ef\u7528\uff08%s\uff09' % type(_e).__name__)
+
     return chr(10).join(L)
 
 
