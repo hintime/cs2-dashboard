@@ -1,22 +1,18 @@
 {
-  "update_time": "2026-09-21 23:30:05",
+  "update_time": "2026-09-22 00:00:05",
   "total_cost": 20309.35,
-  "total_market": 4631.66,
+  "total_market": 4636.47,
   "items": [
     {
       "name": "M4A1消音版 | 苔藓石英 (崭新出厂)",
       "wear": "FN",
       "wear_value": null,
       "cost": 1610.0,
-      "price": 547.66,
+      "price": 540.98,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A1-S | Moss Quartz (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 1029.99
-        },
         {
           "date": "2026-05-22",
           "price": 949.99
@@ -252,31 +248,35 @@
         {
           "date": "2026-09-21",
           "price": 547.66
+        },
+        {
+          "date": "2026-09-22",
+          "price": 540.98
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -9.83,
-      "rate_30": -11.42,
+      "rate_1": -1.22,
+      "rate_7": -6.72,
+      "rate_30": -10.5,
       "buff_sell": 537.98,
       "buff_buy": 478,
       "buff_sell_num": 124,
-      "buff_buy_num": 6,
-      "fp_current_price": 514.22,
-      "fp_today_ratio": -3.79,
-      "fp_week_ratio": -9.62,
-      "fp_month_ratio": -19.78,
+      "buff_buy_num": 7,
+      "fp_current_price": 509.99,
+      "fp_today_ratio": -4.58,
+      "fp_week_ratio": -8.02,
+      "fp_month_ratio": -18.81,
       "fp_total_supply": "16079",
       "fp_rarity": "工业级",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
-      "yyyp_sell": 514.22,
-      "yyyp_sell_num": 500,
+      "yyyp_sell": 509.99,
+      "yyyp_sell_num": 501,
       "yyyp_buy": 495,
       "yyyp_buy_num": 33,
       "igxe_sell": 674,
       "igxe_sell_num": 14,
-      "eco_platform_price": 547.66
+      "eco_platform_price": 540.98
     },
     {
       "name": "法玛斯 | 纪念碑 (崭新出厂)",
@@ -288,10 +288,6 @@
       "qty": 2,
       "market_hash": "FAMAS | Commemoration (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 411.56
-        },
         {
           "date": "2026-05-22",
           "price": 343.97
@@ -527,28 +523,32 @@
         {
           "date": "2026-09-21",
           "price": 419.8
+        },
+        {
+          "date": "2026-09-22",
+          "price": 419.8
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -5.41,
-      "rate_30": 0.49,
+      "rate_7": -0.05,
+      "rate_30": 5.38,
       "buff_sell": 390,
-      "buff_buy": 358,
-      "buff_sell_num": 180,
-      "buff_buy_num": 13,
+      "buff_buy": 359,
+      "buff_sell_num": 179,
+      "buff_buy_num": 14,
       "fp_current_price": 390,
       "fp_today_ratio": -1.52,
-      "fp_week_ratio": -7.14,
-      "fp_month_ratio": -12.45,
+      "fp_week_ratio": -5.11,
+      "fp_month_ratio": -11.75,
       "fp_total_supply": "33583",
       "fp_rarity": "隐秘",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 398.9,
       "yyyp_sell_num": 332,
       "yyyp_buy": 380,
-      "yyyp_buy_num": 39,
+      "yyyp_buy_num": 38,
       "igxe_sell": 467.9,
       "igxe_sell_num": 15,
       "eco_platform_price": 419.8
@@ -558,15 +558,11 @@
       "wear": "FN",
       "wear_value": null,
       "cost": 1340.0,
-      "price": 575.17,
+      "price": 585.0,
       "category": "手枪",
       "qty": 1,
       "market_hash": "P2000 | Fire Elemental (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 902.51
-        },
         {
           "date": "2026-05-22",
           "price": 786.0
@@ -802,22 +798,26 @@
         {
           "date": "2026-09-21",
           "price": 575.17
+        },
+        {
+          "date": "2026-09-22",
+          "price": 585.0
         }
       ],
-      "rate_1": -0.77,
-      "rate_7": -4.42,
-      "rate_30": -8.85,
-      "buff_sell": 533.11,
-      "buff_buy": 507,
-      "buff_sell_num": 55,
-      "buff_buy_num": 26,
-      "fp_current_price": 533.11,
-      "fp_today_ratio": -2.89,
-      "fp_week_ratio": -7.29,
-      "fp_month_ratio": -11.89,
+      "rate_1": 1.71,
+      "rate_7": -1.35,
+      "rate_30": -6.24,
+      "buff_sell": 545,
+      "buff_buy": 508,
+      "buff_sell_num": 54,
+      "buff_buy_num": 28,
+      "fp_current_price": 545,
+      "fp_today_ratio": -0.73,
+      "fp_week_ratio": -4.72,
+      "fp_month_ratio": -9.09,
       "fp_total_supply": "8090",
       "fp_rarity": "隐秘",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 558,
@@ -826,7 +826,7 @@
       "yyyp_buy_num": 14,
       "igxe_sell": 590,
       "igxe_sell_num": 7,
-      "eco_platform_price": 578.07
+      "eco_platform_price": 585
     },
     {
       "name": "UMP-45 | 炽烈之炎 (崭新出厂)",
@@ -838,10 +838,6 @@
       "qty": 2,
       "market_hash": "UMP-45 | Blaze (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 245.13
-        },
         {
           "date": "2026-05-22",
           "price": 213.0
@@ -1077,26 +1073,30 @@
         {
           "date": "2026-09-21",
           "price": 116.13
+        },
+        {
+          "date": "2026-09-22",
+          "price": 116.13
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -9.27,
-      "rate_30": -12.84,
+      "rate_7": -8.55,
+      "rate_30": -11.09,
       "buff_sell": 107.88,
       "buff_buy": 106,
       "buff_sell_num": 180,
       "buff_buy_num": 7,
       "fp_current_price": 107.88,
       "fp_today_ratio": -1.93,
-      "fp_week_ratio": -10.1,
-      "fp_month_ratio": -17.02,
+      "fp_week_ratio": -10.38,
+      "fp_month_ratio": -19.18,
       "fp_total_supply": "32993",
       "fp_rarity": "军规级",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
-      "yyyp_sell": 109.49,
-      "yyyp_sell_num": 394,
+      "yyyp_sell": 110,
+      "yyyp_sell_num": 392,
       "yyyp_buy": 105,
       "yyyp_buy_num": 7,
       "igxe_sell": 125,
@@ -1113,10 +1113,6 @@
       "qty": 1,
       "market_hash": "M4A4 | Hellish (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 538.98
-        },
         {
           "date": "2026-05-22",
           "price": 476.0
@@ -1352,30 +1348,34 @@
         {
           "date": "2026-09-21",
           "price": 210.0
+        },
+        {
+          "date": "2026-09-22",
+          "price": 210.0
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -11.02,
-      "rate_30": -14.89,
+      "rate_7": -7.35,
+      "rate_30": -13.63,
       "buff_sell": 200,
       "buff_buy": 196,
-      "buff_sell_num": 338,
+      "buff_sell_num": 339,
       "buff_buy_num": 17,
       "fp_current_price": 200,
       "fp_today_ratio": -2.2,
-      "fp_week_ratio": -7.28,
-      "fp_month_ratio": -9.09,
+      "fp_week_ratio": -7.62,
+      "fp_month_ratio": -13.04,
       "fp_total_supply": "35480",
       "fp_rarity": "保密",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 200,
       "yyyp_sell_num": 914,
-      "yyyp_buy": 194,
-      "yyyp_buy_num": 17,
-      "igxe_sell": 249.9,
-      "igxe_sell_num": 32,
+      "yyyp_buy": 195,
+      "yyyp_buy_num": 19,
+      "igxe_sell": 245,
+      "igxe_sell_num": 33,
       "eco_platform_price": 210
     },
     {
@@ -1388,10 +1388,6 @@
       "qty": 2,
       "market_hash": "Lt. Commander Ricksaw | NSWC SEAL",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 156.0
-        },
         {
           "date": "2026-05-22",
           "price": 149.0
@@ -1627,29 +1623,33 @@
         {
           "date": "2026-09-21",
           "price": 104.99
+        },
+        {
+          "date": "2026-09-22",
+          "price": 104.99
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -13.75,
-      "rate_30": -7.98,
-      "buff_sell": 100.99,
+      "rate_7": -8.09,
+      "rate_30": -7.2,
+      "buff_sell": 101.99,
       "buff_buy": 98,
-      "buff_sell_num": 975,
-      "buff_buy_num": 64,
-      "fp_current_price": 99,
-      "fp_today_ratio": -5.7,
-      "fp_week_ratio": -10.32,
-      "fp_month_ratio": -20.16,
+      "buff_sell_num": 974,
+      "buff_buy_num": 65,
+      "fp_current_price": 99.89,
+      "fp_today_ratio": -4.85,
+      "fp_week_ratio": -8.36,
+      "fp_month_ratio": -19.44,
       "fp_total_supply": "0",
       "fp_rarity": "大师",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
-      "yyyp_sell": 99,
-      "yyyp_sell_num": 3242,
-      "yyyp_buy": 97,
-      "yyyp_buy_num": 90,
-      "igxe_sell": 111.77,
+      "yyyp_sell": 99.89,
+      "yyyp_sell_num": 3236,
+      "yyyp_buy": 98,
+      "yyyp_buy_num": 94,
+      "igxe_sell": 111.49,
       "igxe_sell_num": 191,
       "eco_platform_price": 104.99
     },
@@ -1663,10 +1663,6 @@
       "qty": 3,
       "market_hash": "'Blueberries' Buckshot | NSWC SEAL",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 122.0
-        },
         {
           "date": "2026-05-22",
           "price": 121.0
@@ -1902,30 +1898,34 @@
         {
           "date": "2026-09-21",
           "price": 83.99
+        },
+        {
+          "date": "2026-09-22",
+          "price": 83.99
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -2.23,
-      "rate_30": -7.6,
+      "rate_7": -0.01,
+      "rate_30": -7.46,
       "buff_sell": 79,
       "buff_buy": 72,
-      "buff_sell_num": 156,
+      "buff_sell_num": 155,
       "buff_buy_num": 18,
       "fp_current_price": 78.93,
       "fp_today_ratio": -1.25,
-      "fp_week_ratio": -0.75,
-      "fp_month_ratio": -8.03,
+      "fp_week_ratio": 0.38,
+      "fp_month_ratio": -11.23,
       "fp_total_supply": "0",
       "fp_rarity": "卓越",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 80.99,
       "yyyp_sell_num": 481,
-      "yyyp_buy": 74,
-      "yyyp_buy_num": 21,
+      "yyyp_buy": 73,
+      "yyyp_buy_num": 18,
       "igxe_sell": 88.29,
-      "igxe_sell_num": 33,
+      "igxe_sell_num": 32,
       "eco_platform_price": 83.99
     },
     {
@@ -1938,10 +1938,6 @@
       "qty": 1,
       "market_hash": "M4A4 | Urban DDPAT (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 311.0
-        },
         {
           "date": "2026-05-22",
           "price": 264.71
@@ -2177,28 +2173,32 @@
         {
           "date": "2026-09-21",
           "price": 153.99
+        },
+        {
+          "date": "2026-09-22",
+          "price": 153.99
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -13.5,
-      "rate_30": -12.31,
-      "buff_sell": 148,
+      "rate_7": -9.95,
+      "rate_30": -10.2,
+      "buff_sell": 147,
       "buff_buy": 129,
       "buff_sell_num": 107,
       "buff_buy_num": 7,
-      "fp_current_price": 148,
-      "fp_today_ratio": -1.33,
-      "fp_week_ratio": -7.5,
-      "fp_month_ratio": -22.51,
+      "fp_current_price": 147,
+      "fp_today_ratio": -2,
+      "fp_week_ratio": -8.13,
+      "fp_month_ratio": -21.6,
       "fp_total_supply": "21052",
       "fp_rarity": "工业级",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 148.98,
-      "yyyp_sell_num": 505,
-      "yyyp_buy": 141,
-      "yyyp_buy_num": 32,
+      "yyyp_sell_num": 500,
+      "yyyp_buy": 138,
+      "yyyp_buy_num": 31,
       "igxe_sell": 260,
       "igxe_sell_num": 11,
       "eco_platform_price": 153.99
@@ -2213,10 +2213,6 @@
       "qty": 3,
       "market_hash": "M4A4 | Polysoup (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 133.0
-        },
         {
           "date": "2026-05-22",
           "price": 128.0
@@ -2452,27 +2448,31 @@
         {
           "date": "2026-09-21",
           "price": 87.0
+        },
+        {
+          "date": "2026-09-22",
+          "price": 87.0
         }
       ],
-      "rate_1": -0.55,
-      "rate_7": -9.27,
-      "rate_30": -8.44,
+      "rate_1": 0.0,
+      "rate_7": -8.87,
+      "rate_30": -7.81,
       "buff_sell": 88.88,
       "buff_buy": 78,
-      "buff_sell_num": 177,
-      "buff_buy_num": 7,
+      "buff_sell_num": 185,
+      "buff_buy_num": 8,
       "fp_current_price": 86.98,
       "fp_today_ratio": -0.91,
-      "fp_week_ratio": -5.62,
+      "fp_week_ratio": -0.8,
       "fp_month_ratio": -8.23,
       "fp_total_supply": "50541",
       "fp_rarity": "受限",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 87.3,
       "yyyp_sell_num": 377,
-      "yyyp_buy": 72,
+      "yyyp_buy": 73,
       "yyyp_buy_num": 10,
       "igxe_sell": 87.2,
       "igxe_sell_num": 23,
@@ -2488,10 +2488,6 @@
       "qty": 1,
       "market_hash": "★ Moto Gloves | 3rd Commando Company (Field-Tested)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 350.0
-        },
         {
           "date": "2026-05-22",
           "price": 350.0
@@ -2727,28 +2723,32 @@
         {
           "date": "2026-09-21",
           "price": 248.0
+        },
+        {
+          "date": "2026-09-22",
+          "price": 248.0
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -1.58,
+      "rate_7": -1.59,
       "rate_30": -7.11,
-      "buff_sell": 248.98,
-      "buff_buy": 227,
-      "buff_sell_num": 190,
-      "buff_buy_num": 32,
+      "buff_sell": 257.58,
+      "buff_buy": 228,
+      "buff_sell_num": 191,
+      "buff_buy_num": 33,
       "fp_current_price": 241.54,
       "fp_today_ratio": 2.32,
-      "fp_week_ratio": -0.14,
-      "fp_month_ratio": -1.61,
+      "fp_week_ratio": -2.23,
+      "fp_month_ratio": -0.62,
       "fp_total_supply": "20124",
       "fp_rarity": "非凡",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 242.5,
       "yyyp_sell_num": 185,
-      "yyyp_buy": 261,
-      "yyyp_buy_num": 17,
+      "yyyp_buy": 264,
+      "yyyp_buy_num": 18,
       "igxe_sell": 282,
       "igxe_sell_num": 21,
       "eco_platform_price": 248
@@ -2763,10 +2763,6 @@
       "qty": 1,
       "market_hash": "Galil AR | Vandal (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 202.91
-        },
         {
           "date": "2026-05-22",
           "price": 181.97
@@ -3002,28 +2998,32 @@
         {
           "date": "2026-09-21",
           "price": 77.22
+        },
+        {
+          "date": "2026-09-22",
+          "price": 77.22
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -15.57,
-      "rate_30": -15.11,
+      "rate_7": -9.06,
+      "rate_30": -14.04,
       "buff_sell": 82.13,
       "buff_buy": 69,
       "buff_sell_num": 85,
       "buff_buy_num": 4,
       "fp_current_price": 76.36,
       "fp_today_ratio": -0.9,
-      "fp_week_ratio": -9.65,
+      "fp_week_ratio": -4.55,
       "fp_month_ratio": -31.82,
       "fp_total_supply": "10394",
       "fp_rarity": "军规级",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 78.88,
-      "yyyp_sell_num": 232,
-      "yyyp_buy": 72,
-      "yyyp_buy_num": 24,
+      "yyyp_sell_num": 231,
+      "yyyp_buy": 70,
+      "yyyp_buy_num": 20,
       "igxe_sell": 110,
       "igxe_sell_num": 12,
       "eco_platform_price": 77.22
@@ -3038,10 +3038,6 @@
       "qty": 5,
       "market_hash": "Prof. Shahmat | Elite Crew",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 56.59
-        },
         {
           "date": "2026-05-22",
           "price": 54.13
@@ -3277,26 +3273,30 @@
         {
           "date": "2026-09-21",
           "price": 39.82
+        },
+        {
+          "date": "2026-09-22",
+          "price": 39.82
         }
       ],
       "rate_1": 0.0,
       "rate_7": -0.43,
-      "rate_30": -7.23,
+      "rate_30": -6.45,
       "buff_sell": 40,
       "buff_buy": 36.6,
       "buff_sell_num": 758,
       "buff_buy_num": 51,
-      "fp_current_price": 38.31,
-      "fp_today_ratio": -1.52,
-      "fp_week_ratio": -1.77,
-      "fp_month_ratio": -6.49,
+      "fp_current_price": 38.39,
+      "fp_today_ratio": -1.31,
+      "fp_week_ratio": -1.31,
+      "fp_month_ratio": -8.03,
       "fp_total_supply": "0",
       "fp_rarity": "非凡",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
-      "yyyp_sell": 38.31,
-      "yyyp_sell_num": 1745,
+      "yyyp_sell": 38.39,
+      "yyyp_sell_num": 1735,
       "yyyp_buy": 37.2,
       "yyyp_buy_num": 40,
       "igxe_sell": 42.99,
@@ -3313,10 +3313,6 @@
       "qty": 6,
       "market_hash": "Sticker | FaZe Clan (Holo) | Shanghai 2024",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 30.04
-        },
         {
           "date": "2026-05-22",
           "price": 32.0
@@ -3552,29 +3548,33 @@
         {
           "date": "2026-09-21",
           "price": 17.64
+        },
+        {
+          "date": "2026-09-22",
+          "price": 17.64
         }
       ],
-      "rate_1": -0.62,
-      "rate_7": -18.07,
-      "rate_30": -10.07,
+      "rate_1": 0.0,
+      "rate_7": -13.66,
+      "rate_30": -10.95,
       "buff_sell": 20.2,
       "buff_buy": 13.2,
       "buff_sell_num": 69,
       "buff_buy_num": 124,
       "fp_current_price": 16.58,
-      "fp_today_ratio": -2.76,
-      "fp_week_ratio": -15.18,
-      "fp_month_ratio": -32.48,
+      "fp_today_ratio": -3.4,
+      "fp_week_ratio": -15.22,
+      "fp_month_ratio": -29.24,
       "fp_total_supply": "0",
       "fp_rarity": "奇异",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
-      "yyyp_sell": 17.39,
-      "yyyp_sell_num": 1152,
+      "yyyp_sell": 17.29,
+      "yyyp_sell_num": 1153,
       "yyyp_buy": 16.6,
       "yyyp_buy_num": 22,
-      "eco_platform_price": 17.75
+      "eco_platform_price": 17.64
     },
     {
       "name": "印花 | Natus Vincere（全息）| 2024年上海锦标赛",
@@ -3586,10 +3586,6 @@
       "qty": 5,
       "market_hash": "Sticker | Natus Vincere (Holo) | Shanghai 2024",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 29.0
-        },
         {
           "date": "2026-05-22",
           "price": 26.0
@@ -3825,26 +3821,30 @@
         {
           "date": "2026-09-21",
           "price": 16.33
+        },
+        {
+          "date": "2026-09-22",
+          "price": 16.33
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -2.8,
-      "rate_30": -10.66,
+      "rate_7": -0.06,
+      "rate_30": -9.07,
       "buff_sell": 17.33,
       "buff_buy": 12.3,
       "buff_sell_num": 132,
       "buff_buy_num": 150,
       "fp_current_price": 15.69,
       "fp_today_ratio": -2.61,
-      "fp_week_ratio": -1.94,
-      "fp_month_ratio": -20.96,
+      "fp_week_ratio": 5.3,
+      "fp_month_ratio": -11.31,
       "fp_total_supply": "0",
       "fp_rarity": "奇异",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 15.69,
-      "yyyp_sell_num": 810,
+      "yyyp_sell_num": 805,
       "yyyp_buy": 14.1,
       "yyyp_buy_num": 25,
       "eco_platform_price": 16.33
@@ -3854,15 +3854,11 @@
       "wear": "MW",
       "wear_value": null,
       "cost": 184.0,
-      "price": 151.06,
+      "price": 152.08,
       "category": "步枪",
       "qty": 1,
       "market_hash": "M4A4 | 龍王 (Dragon King) (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 175.9
-        },
         {
           "date": "2026-05-22",
           "price": 172.99
@@ -4098,28 +4094,32 @@
         {
           "date": "2026-09-21",
           "price": 151.06
+        },
+        {
+          "date": "2026-09-22",
+          "price": 152.08
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -7.89,
-      "rate_30": -3.44,
+      "rate_1": 0.68,
+      "rate_7": -4.26,
+      "rate_30": -2.95,
       "buff_sell": 147.49,
       "buff_buy": 143,
-      "buff_sell_num": 373,
+      "buff_sell_num": 374,
       "buff_buy_num": 24,
-      "fp_current_price": 143,
-      "fp_today_ratio": -4.54,
-      "fp_week_ratio": -6.54,
-      "fp_month_ratio": -7.74,
+      "fp_current_price": 143.2,
+      "fp_today_ratio": -4.41,
+      "fp_week_ratio": -4.85,
+      "fp_month_ratio": -8.62,
       "fp_total_supply": "87347",
       "fp_rarity": "保密",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
-      "yyyp_sell": 143,
-      "yyyp_sell_num": 717,
-      "yyyp_buy": 133,
-      "yyyp_buy_num": 22,
+      "yyyp_sell": 143.2,
+      "yyyp_sell_num": 715,
+      "yyyp_buy": 134,
+      "yyyp_buy_num": 23,
       "igxe_sell": 177.9,
       "igxe_sell_num": 39,
       "eco_platform_price": 151.06
@@ -4134,10 +4134,6 @@
       "qty": 5,
       "market_hash": "Sticker | HEROIC (Holo) | Shanghai 2024",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 34.62
-        },
         {
           "date": "2026-05-22",
           "price": 37.13
@@ -4373,26 +4369,30 @@
         {
           "date": "2026-09-21",
           "price": 18.05
+        },
+        {
+          "date": "2026-09-22",
+          "price": 18.05
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -10.51,
-      "rate_30": -11.67,
+      "rate_7": -8.28,
+      "rate_30": -12.53,
       "buff_sell": 19.11,
       "buff_buy": 15,
       "buff_sell_num": 124,
       "buff_buy_num": 261,
       "fp_current_price": 16.31,
       "fp_today_ratio": -4.81,
-      "fp_week_ratio": -3.26,
-      "fp_month_ratio": -21.24,
+      "fp_week_ratio": 1.71,
+      "fp_month_ratio": -18.72,
       "fp_total_supply": "0",
       "fp_rarity": "奇异",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 17.8,
-      "yyyp_sell_num": 726,
+      "yyyp_sell_num": 716,
       "yyyp_buy": 16,
       "yyyp_buy_num": 26,
       "eco_platform_price": 18.05
@@ -4402,15 +4402,11 @@
       "wear": "other",
       "wear_value": null,
       "cost": 137.0,
-      "price": 39.66,
+      "price": 40.02,
       "category": "匕首",
       "qty": 1,
       "market_hash": "Rezan The Ready | Sabre",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 65.0
-        },
         {
           "date": "2026-05-22",
           "price": 62.76
@@ -4646,46 +4642,46 @@
         {
           "date": "2026-09-21",
           "price": 39.66
+        },
+        {
+          "date": "2026-09-22",
+          "price": 40.02
         }
       ],
-      "rate_1": -0.4,
-      "rate_7": -3.22,
-      "rate_30": -9.51,
-      "buff_sell": 38.89,
+      "rate_1": 0.91,
+      "rate_7": -2.37,
+      "rate_30": -8.84,
+      "buff_sell": 38.99,
       "buff_buy": 36.3,
       "buff_sell_num": 705,
       "buff_buy_num": 65,
-      "fp_current_price": 37.4,
-      "fp_today_ratio": -0.8,
-      "fp_week_ratio": -3.86,
-      "fp_month_ratio": -9,
+      "fp_current_price": 37,
+      "fp_today_ratio": -1.86,
+      "fp_week_ratio": -6.09,
+      "fp_month_ratio": -9.76,
       "fp_total_supply": "0",
       "fp_rarity": "非凡",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
-      "yyyp_sell": 37.4,
-      "yyyp_sell_num": 2162,
+      "yyyp_sell": 37,
+      "yyyp_sell_num": 2165,
       "yyyp_buy": 36.1,
       "yyyp_buy_num": 46,
-      "igxe_sell": 41,
-      "igxe_sell_num": 131,
-      "eco_platform_price": 39.66
+      "igxe_sell": 40,
+      "igxe_sell_num": 133,
+      "eco_platform_price": 40.02
     },
     {
       "name": "印花 | Evil Geniuses （全息） | 2021年斯德哥尔摩锦标赛",
       "wear": "other",
       "wear_value": null,
       "cost": 135.0,
-      "price": 27.48,
+      "price": 27.83,
       "category": "印花",
       "qty": 2,
       "market_hash": "Sticker | Evil Geniuses (Holo) | Stockholm 2021",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 40.0
-        },
         {
           "date": "2026-05-22",
           "price": 40.8
@@ -4921,26 +4917,30 @@
         {
           "date": "2026-09-21",
           "price": 27.48
+        },
+        {
+          "date": "2026-09-22",
+          "price": 27.83
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -8.4,
-      "rate_30": -7.63,
+      "rate_1": 1.27,
+      "rate_7": -7.23,
+      "rate_30": -7.75,
       "buff_sell": 23.59,
       "buff_buy": 21.1,
       "buff_sell_num": 469,
       "buff_buy_num": 259,
       "fp_current_price": 23.59,
       "fp_today_ratio": -0.04,
-      "fp_week_ratio": -11.32,
-      "fp_month_ratio": -11.25,
+      "fp_week_ratio": -4.88,
+      "fp_month_ratio": -17.49,
       "fp_total_supply": "0",
       "fp_rarity": "卓越",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 24.5,
-      "yyyp_sell_num": 3341,
+      "yyyp_sell_num": 3338,
       "yyyp_buy": 22.1,
       "yyyp_buy_num": 107,
       "eco_platform_price": 27.48
@@ -4955,10 +4955,6 @@
       "qty": 1,
       "market_hash": "Blackwolf | Sabre",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 68.13
-        },
         {
           "date": "2026-05-22",
           "price": 68.99
@@ -5194,26 +5190,30 @@
         {
           "date": "2026-09-21",
           "price": 40.53
+        },
+        {
+          "date": "2026-09-22",
+          "price": 40.53
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -6.76,
-      "rate_30": -9.88,
-      "buff_sell": 39.7,
+      "rate_7": -4.41,
+      "rate_30": -10.06,
+      "buff_sell": 39.8,
       "buff_buy": 37,
-      "buff_sell_num": 569,
+      "buff_sell_num": 567,
       "buff_buy_num": 24,
       "fp_current_price": 38,
       "fp_today_ratio": -2.86,
-      "fp_week_ratio": -6.33,
-      "fp_month_ratio": -13,
+      "fp_week_ratio": -5,
+      "fp_month_ratio": -12.98,
       "fp_total_supply": "0",
       "fp_rarity": "非凡",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 38,
-      "yyyp_sell_num": 2101,
+      "yyyp_sell_num": 2099,
       "yyyp_buy": 36.9,
       "yyyp_buy_num": 38,
       "igxe_sell": 40.98,
@@ -5230,10 +5230,6 @@
       "qty": 1,
       "market_hash": "M4A4 | Spider Lily (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 106.0
-        },
         {
           "date": "2026-05-22",
           "price": 95.6
@@ -5469,26 +5465,30 @@
         {
           "date": "2026-09-21",
           "price": 86.89
+        },
+        {
+          "date": "2026-09-22",
+          "price": 86.89
         }
       ],
       "rate_1": 0.0,
       "rate_7": -0.57,
-      "rate_30": -4.4,
+      "rate_30": -2.22,
       "buff_sell": 84,
       "buff_buy": 80,
-      "buff_sell_num": 552,
-      "buff_buy_num": 27,
+      "buff_sell_num": 550,
+      "buff_buy_num": 26,
       "fp_current_price": 82.7,
       "fp_today_ratio": -0.84,
-      "fp_week_ratio": -3.73,
-      "fp_month_ratio": 1.61,
+      "fp_week_ratio": -3.17,
+      "fp_month_ratio": -2.36,
       "fp_total_supply": "78641",
       "fp_rarity": "受限",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 82.7,
-      "yyyp_sell_num": 1625,
+      "yyyp_sell_num": 1624,
       "yyyp_buy": 80,
       "yyyp_buy_num": 19,
       "igxe_sell": 92.9,
@@ -5500,15 +5500,11 @@
       "wear": "other",
       "wear_value": null,
       "cost": 103.0,
-      "price": 25.33,
+      "price": 25.18,
       "category": "印花",
       "qty": 1,
       "market_hash": "Sticker | paiN Gaming (Holo) | Stockholm 2021",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 38.83
-        },
         {
           "date": "2026-05-22",
           "price": 36.89
@@ -5744,29 +5740,33 @@
         {
           "date": "2026-09-21",
           "price": 25.33
+        },
+        {
+          "date": "2026-09-22",
+          "price": 25.18
         }
       ],
-      "rate_1": -0.67,
-      "rate_7": -2.99,
-      "rate_30": -8.48,
+      "rate_1": -0.59,
+      "rate_7": -19.91,
+      "rate_30": -7.74,
       "buff_sell": 24.03,
       "buff_buy": 20,
       "buff_sell_num": 139,
       "buff_buy_num": 155,
       "fp_current_price": 19.39,
       "fp_today_ratio": 0,
-      "fp_week_ratio": -7.67,
-      "fp_month_ratio": -9.81,
+      "fp_week_ratio": -7.22,
+      "fp_month_ratio": -13.75,
       "fp_total_supply": "0",
       "fp_rarity": "卓越",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 19.39,
       "yyyp_sell_num": 384,
       "yyyp_buy": 17.7,
       "yyyp_buy_num": 14,
-      "eco_platform_price": 25.33
+      "eco_platform_price": 25.18
     },
     {
       "name": "印花 | GamerLegion（全息）| 2025年布达佩斯锦标赛",
@@ -5778,10 +5778,6 @@
       "qty": 3,
       "market_hash": "Sticker | GamerLegion (Holo) | Budapest 2025",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 16.73
-        },
         {
           "date": "2026-05-22",
           "price": 15.0
@@ -6017,26 +6013,30 @@
         {
           "date": "2026-09-21",
           "price": 8.0
+        },
+        {
+          "date": "2026-09-22",
+          "price": 8.0
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -17.44,
-      "rate_30": -12.73,
+      "rate_7": -15.34,
+      "rate_30": -11.38,
       "buff_sell": 8.72,
       "buff_buy": 7.2,
       "buff_sell_num": 99,
       "buff_buy_num": 70,
       "fp_current_price": 7.25,
       "fp_today_ratio": 5.2,
-      "fp_week_ratio": -16.06,
-      "fp_month_ratio": -26.26,
+      "fp_week_ratio": -12.33,
+      "fp_month_ratio": -35.33,
       "fp_total_supply": "0",
       "fp_rarity": "奇异",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 7.89,
-      "yyyp_sell_num": 1180,
+      "yyyp_sell_num": 1179,
       "yyyp_buy": 6.5,
       "yyyp_buy_num": 14,
       "eco_platform_price": 8
@@ -6051,10 +6051,6 @@
       "qty": 2,
       "market_hash": "Sticker | Natus Vincere (Holo) | Stockholm 2021",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 24.01
-        },
         {
           "date": "2026-05-22",
           "price": 24.6
@@ -6290,28 +6286,32 @@
         {
           "date": "2026-09-21",
           "price": 14.16
+        },
+        {
+          "date": "2026-09-22",
+          "price": 14.16
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -13.92,
-      "rate_30": -10.01,
+      "rate_7": -12.27,
+      "rate_30": -10.35,
       "buff_sell": 13.2,
       "buff_buy": 12.1,
       "buff_sell_num": 399,
       "buff_buy_num": 252,
-      "fp_current_price": 12.89,
-      "fp_today_ratio": -3.81,
-      "fp_week_ratio": -13.49,
-      "fp_month_ratio": -7.93,
+      "fp_current_price": 12,
+      "fp_today_ratio": -10.45,
+      "fp_week_ratio": -18.92,
+      "fp_month_ratio": -18.09,
       "fp_total_supply": "0",
       "fp_rarity": "卓越",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
-      "yyyp_sell": 12.89,
-      "yyyp_sell_num": 1888,
-      "yyyp_buy": 10.8,
-      "yyyp_buy_num": 17,
+      "yyyp_sell": 12,
+      "yyyp_sell_num": 1849,
+      "yyyp_buy": 10.9,
+      "yyyp_buy_num": 16,
       "eco_platform_price": 14.16
     },
     {
@@ -6324,10 +6324,6 @@
       "qty": 2,
       "market_hash": "Sticker | fnatic (Holo) | Budapest 2025",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 17.14
-        },
         {
           "date": "2026-05-22",
           "price": 15.09
@@ -6563,46 +6559,46 @@
         {
           "date": "2026-09-21",
           "price": 7.04
+        },
+        {
+          "date": "2026-09-22",
+          "price": 7.04
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -14.25,
-      "rate_30": -14.37,
-      "buff_sell": 32.27,
+      "rate_7": -14.98,
+      "rate_30": -13.01,
+      "buff_sell": 32.17,
       "buff_buy": 29.5,
-      "buff_sell_num": 322,
+      "buff_sell_num": 323,
       "buff_buy_num": 4,
       "fp_current_price": 30.13,
-      "fp_today_ratio": 6.34,
-      "fp_week_ratio": -0.34,
-      "fp_month_ratio": -2.77,
+      "fp_today_ratio": 5.8,
+      "fp_week_ratio": -5.71,
+      "fp_month_ratio": -2.97,
       "fp_total_supply": "43794",
       "fp_rarity": "军规级",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
-      "yyyp_sell": 34.8,
-      "yyyp_sell_num": 242,
+      "yyyp_sell": 34.7,
+      "yyyp_sell_num": 235,
       "yyyp_buy": 32.6,
-      "yyyp_buy_num": 7,
+      "yyyp_buy_num": 4,
       "igxe_sell": 60,
       "igxe_sell_num": 20,
-      "eco_platform_price": 31.89
+      "eco_platform_price": 31.73
     },
     {
       "name": "双持贝瑞塔 | 街头抢匪 (崭新出厂)",
       "wear": "FN",
       "wear_value": null,
       "cost": 54.9,
-      "price": 18.27,
+      "price": 18.0,
       "category": "手枪",
       "qty": 1,
       "market_hash": "Dual Berettas | Heist (Factory New)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 65.0
-        },
         {
           "date": "2026-05-22",
           "price": 58.0
@@ -6838,31 +6834,35 @@
         {
           "date": "2026-09-21",
           "price": 18.27
+        },
+        {
+          "date": "2026-09-22",
+          "price": 18.0
         }
       ],
-      "rate_1": 0.0,
-      "rate_7": -33.68,
-      "rate_30": -17.53,
+      "rate_1": -1.48,
+      "rate_7": -30.69,
+      "rate_30": -16.82,
       "buff_sell": 18.49,
       "buff_buy": 16.1,
-      "buff_sell_num": 168,
+      "buff_sell_num": 170,
       "buff_buy_num": 16,
-      "fp_current_price": 17.86,
-      "fp_today_ratio": -3.77,
-      "fp_week_ratio": -31.23,
-      "fp_month_ratio": -52.59,
+      "fp_current_price": 17.85,
+      "fp_today_ratio": -3.83,
+      "fp_week_ratio": -22.99,
+      "fp_month_ratio": -51.63,
       "fp_total_supply": "23598",
       "fp_rarity": "消费级",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
-      "yyyp_sell": 17.86,
-      "yyyp_sell_num": 515,
-      "yyyp_buy": 15.5,
-      "yyyp_buy_num": 10,
+      "yyyp_sell": 17.85,
+      "yyyp_sell_num": 504,
+      "yyyp_buy": 15.6,
+      "yyyp_buy_num": 13,
       "igxe_sell": 45,
       "igxe_sell_num": 1,
-      "eco_platform_price": 18.27
+      "eco_platform_price": 18.01
     },
     {
       "name": "印花 | Complexity Gaming（全息）| 2022年安特卫普锦标赛",
@@ -6874,10 +6874,6 @@
       "qty": 1,
       "market_hash": "Sticker | Complexity Gaming (Holo) | Antwerp 2022",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 40.19
-        },
         {
           "date": "2026-05-22",
           "price": 39.4
@@ -7113,26 +7109,30 @@
         {
           "date": "2026-09-21",
           "price": 20.79
+        },
+        {
+          "date": "2026-09-22",
+          "price": 20.79
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -7.85,
-      "rate_30": -11.77,
+      "rate_7": -7.89,
+      "rate_30": -11.52,
       "buff_sell": 20.49,
       "buff_buy": 19,
-      "buff_sell_num": 135,
+      "buff_sell_num": 136,
       "buff_buy_num": 30,
       "fp_current_price": 19.89,
       "fp_today_ratio": -0.5,
-      "fp_week_ratio": -9.51,
-      "fp_month_ratio": -6.62,
+      "fp_week_ratio": 17,
+      "fp_month_ratio": -14.08,
       "fp_total_supply": "0",
       "fp_rarity": "奇异",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 19.89,
-      "yyyp_sell_num": 972,
+      "yyyp_sell_num": 859,
       "yyyp_buy": 15.8,
       "yyyp_buy_num": 18,
       "eco_platform_price": 20.79
@@ -7147,10 +7147,6 @@
       "qty": 1,
       "market_hash": "Sticker | Ninjas in Pyjamas (Holo) | Stockholm 2021",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 25.91
-        },
         {
           "date": "2026-05-22",
           "price": 24.07
@@ -7386,26 +7382,30 @@
         {
           "date": "2026-09-21",
           "price": 12.38
+        },
+        {
+          "date": "2026-09-22",
+          "price": 12.38
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -4.25,
-      "rate_30": -12.74,
+      "rate_7": -3.13,
+      "rate_30": -11.85,
       "buff_sell": 10.92,
       "buff_buy": 10.5,
       "buff_sell_num": 407,
       "buff_buy_num": 135,
       "fp_current_price": 10.9,
       "fp_today_ratio": 0.74,
-      "fp_week_ratio": -6.03,
-      "fp_month_ratio": -12.59,
+      "fp_week_ratio": -4.22,
+      "fp_month_ratio": -18.72,
       "fp_total_supply": "0",
       "fp_rarity": "卓越",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 10.9,
-      "yyyp_sell_num": 1276,
+      "yyyp_sell_num": 1221,
       "yyyp_buy": 10.7,
       "yyyp_buy_num": 22,
       "eco_platform_price": 12.38
@@ -7420,10 +7420,6 @@
       "qty": 1,
       "market_hash": "Sticker | RED Canids (Holo) | Budapest 2025",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 26.2
-        },
         {
           "date": "2026-05-22",
           "price": 21.39
@@ -7659,26 +7655,30 @@
         {
           "date": "2026-09-21",
           "price": 11.0
+        },
+        {
+          "date": "2026-09-22",
+          "price": 11.0
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -6.46,
-      "rate_30": -14.15,
+      "rate_7": -7.02,
+      "rate_30": -11.85,
       "buff_sell": 10.45,
       "buff_buy": 9.3,
       "buff_sell_num": 104,
       "buff_buy_num": 57,
       "fp_current_price": 10.4,
       "fp_today_ratio": 5.16,
-      "fp_week_ratio": -10.96,
-      "fp_month_ratio": -17.98,
+      "fp_week_ratio": -5.45,
+      "fp_month_ratio": -18.56,
       "fp_total_supply": "0",
       "fp_rarity": "奇异",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 11,
-      "yyyp_sell_num": 972,
+      "yyyp_sell_num": 969,
       "yyyp_buy": 9.5,
       "yyyp_buy_num": 14,
       "eco_platform_price": 11
@@ -7693,10 +7693,6 @@
       "qty": 1,
       "market_hash": "Sticker | MIBR (Holo) | Budapest 2025",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 17.14
-        },
         {
           "date": "2026-05-22",
           "price": 16.19
@@ -7932,26 +7928,30 @@
         {
           "date": "2026-09-21",
           "price": 6.9
+        },
+        {
+          "date": "2026-09-22",
+          "price": 6.9
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -19.95,
-      "rate_30": -14.57,
-      "buff_sell": 7.45,
+      "rate_7": -13.75,
+      "rate_30": -14.0,
+      "buff_sell": 7.44,
       "buff_buy": 6.1,
       "buff_sell_num": 107,
       "buff_buy_num": 34,
       "fp_current_price": 6.73,
       "fp_today_ratio": -1.17,
-      "fp_week_ratio": -15.45,
-      "fp_month_ratio": -12.03,
+      "fp_week_ratio": -14.59,
+      "fp_month_ratio": -14.49,
       "fp_total_supply": "0",
       "fp_rarity": "奇异",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006100",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 6.73,
-      "yyyp_sell_num": 1036,
+      "yyyp_sell_num": 1029,
       "yyyp_buy": 5.8,
       "yyyp_buy_num": 17,
       "eco_platform_price": 6.9
@@ -7966,10 +7966,6 @@
       "qty": 1,
       "market_hash": "Music Kit | DRYDEN, Feel The Power",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 8.93
-        },
         {
           "date": "2026-05-22",
           "price": 8.88
@@ -8205,22 +8201,26 @@
         {
           "date": "2026-09-21",
           "price": 8.69
+        },
+        {
+          "date": "2026-09-22",
+          "price": 8.69
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -3.01,
-      "rate_30": -0.66,
-      "buff_sell": 9.1,
-      "buff_buy": 8.5,
-      "buff_sell_num": 478,
-      "buff_buy_num": 73,
+      "rate_7": -7.26,
+      "rate_30": -0.52,
+      "buff_sell": 9.11,
+      "buff_buy": 8.6,
+      "buff_sell_num": 476,
+      "buff_buy_num": 81,
       "fp_current_price": 8.69,
       "fp_today_ratio": -0.69,
-      "fp_week_ratio": -4.4,
+      "fp_week_ratio": -2.25,
       "fp_month_ratio": -1.25,
       "fp_total_supply": "0",
       "fp_rarity": "高级",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006400",
       "fp_platform_count": 9,
       "buff_source": "BUFF",
       "yyyp_sell": 9.05,
@@ -8239,10 +8239,6 @@
       "qty": 1,
       "market_hash": "M4A4 | Etch Lord (Minimal Wear)",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 6.1
-        },
         {
           "date": "2026-05-22",
           "price": 6.04
@@ -8478,30 +8474,34 @@
         {
           "date": "2026-09-21",
           "price": 5.09
+        },
+        {
+          "date": "2026-09-22",
+          "price": 5.09
         }
       ],
       "rate_1": 0.0,
-      "rate_7": -9.91,
-      "rate_30": -4.04,
-      "buff_sell": 4.89,
+      "rate_7": -0.97,
+      "rate_30": -3.84,
+      "buff_sell": 4.66,
       "buff_buy": 4.7,
-      "buff_sell_num": 593,
+      "buff_sell_num": 603,
       "buff_buy_num": 20,
-      "fp_current_price": 4.89,
-      "fp_today_ratio": -2.2,
-      "fp_week_ratio": -1.81,
-      "fp_month_ratio": -8.77,
+      "fp_current_price": 4.66,
+      "fp_today_ratio": -6.8,
+      "fp_week_ratio": -6.8,
+      "fp_month_ratio": -10.38,
       "fp_total_supply": "291760",
       "fp_rarity": "受限",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006400",
       "fp_platform_count": 10,
       "buff_source": "BUFF",
       "yyyp_sell": 5.06,
-      "yyyp_sell_num": 553,
+      "yyyp_sell_num": 554,
       "yyyp_buy": 5,
       "yyyp_buy_num": 9,
       "igxe_sell": 6,
-      "igxe_sell_num": 34,
+      "igxe_sell_num": 35,
       "eco_platform_price": 5.09
     },
     {
@@ -8514,10 +8514,6 @@
       "qty": 1,
       "market_hash": "Sticker | iM | Shanghai 2024",
       "price_history": [
-        {
-          "date": "2026-05-21",
-          "price": 0.02
-        },
         {
           "date": "2026-05-22",
           "price": 0.02
@@ -8753,6 +8749,10 @@
         {
           "date": "2026-09-21",
           "price": 0.02
+        },
+        {
+          "date": "2026-09-22",
+          "price": 0.02
         }
       ],
       "rate_1": 0.0,
@@ -8768,11 +8768,11 @@
       "fp_month_ratio": 0,
       "fp_total_supply": "0",
       "fp_rarity": "高级",
-      "fp_updated_at": "1790004300",
+      "fp_updated_at": "1790006400",
       "fp_platform_count": 8,
       "buff_source": "BUFF",
       "yyyp_sell": 0.02,
-      "yyyp_sell_num": 8555,
+      "yyyp_sell_num": 8282,
       "yyyp_buy": 0,
       "yyyp_buy_num": 0,
       "eco_platform_price": 0.02
