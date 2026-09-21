@@ -25,6 +25,25 @@ DATA_DIR = os.path.join(SCRIPT_DIR, '..') if SCRIPT_DIR.endswith('.github') else
 HIST_DIR = os.path.join(DATA_DIR, 'market_history')
 INDEX_DIR = os.path.join(DATA_DIR, 'index_history')
 
+# ============ 本地密钥（必须最先加载）============
+# index_collector.py 是**独立入口**（run_cycle.sh 的 index 分支直接 exec 它），
+# 而 run_cycle.sh 不为它 source local_keys.env。
+# 若不在这里自行加载，get_eco_key() 既拿不到 ECO_PRIVATE_KEY_B64，
+# 也没有 eco_private*.pem 文件，于是每轮都打印 [ERROR] ECO key not found
+# 后直接返回 —— 大盘指数**静默断更**。
+# （2026-09-19 22:32 -> 09-21 22:00 实际断更两天，约 24 个采样点丢失）
+# 与 update.py 顶部同一套做法，顺序是硬约束，勿下移。
+_local_keys = os.path.join(DATA_DIR, 'local_keys.env')
+if os.path.exists(_local_keys):
+    try:
+        for _line in open(_local_keys, encoding='utf-8'):
+            _line = _line.strip()
+            if _line and not _line.startswith('#') and '=' in _line:
+                _k, _v = _line.split('=', 1)
+                os.environ.setdefault(_k.strip(), _v.strip())
+    except Exception as _e:
+        print('[WARN] 读取 local_keys.env 失败: ' + str(_e))
+
 # SSL
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
