@@ -2,6 +2,12 @@
   {
     "date": "2026-09-21",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-21 15:00",
+    "desc": "wip: local snapshot 2026-09-21 15:00"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-21 14:00",
     "desc": "wip: local snapshot 2026-09-21 14:00"
   },
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "chore(watchdog): 把企微回调/推送/巡检三个脚本纳入版本控制",
     "desc": "chore(watchdog): 把企微回调/推送/巡检三个脚本纳入版本控制"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "fix(git): 推送前先 fetch 对齐、取消 force 强推（防两侧互相覆盖）",
-    "desc": "fix(git): 推送前先 fetch 对齐、取消 force 强推（防两侧互相覆盖）"
   }
 ]
