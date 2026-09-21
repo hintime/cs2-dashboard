@@ -115,11 +115,49 @@ def fmt_age(iso):
 
 def cmd_help():
     return ("【CS2 看板 · 指令】\n"
-            "查询 <名字>   查现价，如「查询 AK红」\n"
+            "查询 <名字>   查三档磨损现价，如「查询 AK红」「毛细血管」\n"
+            "异动          今日涨跌榜\n"
             "今天          当日概况\n"
             "持仓          持仓盈亏\n"
             "就绪度        Kronos 训练进度\n"
             "帮助          这条")
+
+
+def cmd_movers():
+    """今日异动榜（读 market_scan.json 的 movers，涨跌各前 5）。"""
+    sc = load_json('market_scan.json', {}) or {}
+    mv = sc.get('movers') or {}
+    g = mv.get('gainers') or []
+    l = mv.get('losers') or []
+    st = load_json('data_status.json', {}) or {}
+    L = ['【CS2 看板 · 异动】']
+    upd = st.get('updated')
+    if upd:
+        L.append('数据  %s' % fmt_age(upd))
+    if not g and not l:
+        L.append('（本轮无符合条件的异动标的）')
+        return chr(10).join(L)
+
+    def _blk(title, arr):
+        if not arr:
+            return
+        L.append('')
+        L.append('%s（前 %d）' % (title, min(5, len(arr))))
+        for x in arr[:5]:
+            nm = str(x.get('n') or '')
+            try:
+                chg = float(x.get('r7') or 0)
+            except Exception:
+                chg = 0.0
+            try:
+                pr = float(x.get('p') or 0)
+            except Exception:
+                pr = 0.0
+            L.append('  %s  %+.1f%%  \u00a5%g' % (nm, chg, pr))
+
+    _blk('\u25b2 \u6da8\u5e45', g)
+    _blk('\u25bc \u8dcc\u5e45', l)
+    return chr(10).join(L)
 
 
 def cmd_today():
@@ -409,6 +447,8 @@ def handle_command(text):
         return cmd_holdings()
     if low in ('就绪度', 'kronos', '训练', '进度'):
         return cmd_ready()
+    if low in ('异动', '涨跌', '榜单', '涨跌幅', '涨跌榜'):
+        return cmd_movers()
     if t.startswith('查询') or t.startswith('查'):
         kw = t[2:] if t.startswith('查询') else t[1:]
         return cmd_query(kw)
