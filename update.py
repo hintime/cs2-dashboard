@@ -3586,6 +3586,28 @@ def main():
                     if yp > 0:
                         records.append((hn, 'yy', now, yp)); yy_n += 1
             written = price_db.record_batch(records) if records else 0
+            # ★ 2026-09-21：同轮落盘口量（在售/求购），供「在售异动 / 求购异动」。
+            #   数据现成（eco_tracked.json 里就有），零额外 API 成本。
+            #   price_history 只存价格，算不出盘口变化 → 单独 boards 表从今日起积累。
+            board_recs = []
+            if os.path.exists(tp):
+                for it in (read_json(tp) or []):
+                    hn = it.get('HashName', '') or ''
+                    if not hn or is_excluded(hn, it.get('GoodsName') or ''):
+                        continue
+                    try:
+                        board_recs.append((
+                            hn, now,
+                            int(float(it.get('buff_sell_num') or 0)),
+                            int(float(it.get('buff_buy_num') or 0)),
+                            int(float(it.get('SellingTotal') or 0)),
+                            int(float(it.get('QGTotal') or 0)),
+                        ))
+                    except Exception:
+                        continue
+            bw = price_db.record_boards_batch(board_recs) if board_recs else 0
+            if bw:
+                print(f'[HISTORY] 盘口落库 {bw} 条（在售/求购）')
             keep = int(os.environ.get('PRICE_HIST_KEEP_DAYS') or '365')
             price_db.trim_old_data(keep)
             print(f'[HISTORY] 落库 {written} 条（eco {eco_n} / buff {buff_n} / yy {yy_n}），保留 {keep} 天')

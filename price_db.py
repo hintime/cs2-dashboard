@@ -50,6 +50,18 @@ def get_db():
         key TEXT PRIMARY KEY,
         value TEXT
     )''')
+    # ★ 2026-09-21：盘口量历史表（在售/求购）。
+    #   prices 只存价格，算不出「在售异动 / 求购异动」；本表从今日起积累。
+    conn.execute('''CREATE TABLE IF NOT EXISTS boards (
+        item_name     TEXT NOT NULL,
+        ts            TEXT NOT NULL,
+        buff_sell_num INTEGER DEFAULT 0,
+        buff_buy_num  INTEGER DEFAULT 0,
+        eco_selling   INTEGER DEFAULT 0,
+        eco_qg        INTEGER DEFAULT 0,
+        PRIMARY KEY (item_name, ts)
+    )''')
+    conn.execute('CREATE INDEX IF NOT EXISTS idx_boards ON boards(item_name, ts)')
     return conn
 
 # ═══════════════ 写入 ═══════════════
@@ -331,6 +343,99 @@ def generate_price_summary(output_path='price_summary.json'):
         return summary
     finally:
         conn.close()
+
+def record_boards_batch(records):
+    """批量记录盘口量：[(item_name, ts, buff_sell_num, buff_buy_num, eco_selling, eco_qg), ...]
+
+    ★ 2026-09-21：price_history 只存价格，算不出「在售异动 / 求购异动」，
+    盘口量单独建表，从本日起积累。
+    """
+    if not records:
+        return 0
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.executemany(
+            'INSERT OR IGNORE INTO boards'
+            '(item_name, ts, buff_sell_num, buff_buy_num, eco_selling, eco_qg)'
+            ' VALUES (?,?,?,?,?,?)', records)
+        conn.commit()
+        return cur.rowcount
+    finally:
+        conn.close()
+
+
+def get_board_movers(hours=24, limit=8, min_base=3):
+    """盘口异动：在售 / 求购 相对 <hours> 小时前的变化。
+
+    返回 {'sell': {'add': [...], 'drop': [...]},
+          'buy':  {'add': [...], 'drop': [...]},
+          'base_ts': ..., 'span_hours': ..., 'total': ...}
+    每项 {'name','old','new','diff','pct'}。
+    在售口径用 BUFF 在售数，求购用 BUFF 求购数（都能从 eco_tracked.json 零成本拿到）。
+    """
+    import collections
+    import datetime as _dt
+    out = {'sell': {'add': [], 'drop': []}, 'buy': {'add': [], 'drop': []},
+           'base_ts': None, 'span_hours': 0.0, 'total': 0}
+    conn = get_db()
+    try:
+        rows = conn.execute(
+            'SELECT item_name, ts, buff_sell_num, buff_buy_num'
+            ' FROM boards ORDER BY ts').fetchall()
+    finally:
+        conn.close()
+    if not rows:
+        return out
+
+    series = collections.defaultdict(list)
+    for nm, ts, bs, bb in rows:
+        series[nm].append((ts, bs or 0, bb or 0))
+
+    all_ts = sorted({r[1] for r in rows})
+    newest = all_ts[-1]
+    oldest = all_ts[0]
+    try:
+        t_new = _dt.datetime.fromisoformat(newest.replace('Z', '+00:00'))
+        t_old = _dt.datetime.fromisoformat(oldest.replace('Z', '+00:00'))
+    except Exception:
+        return out
+    span = (t_new - t_old).total_seconds() / 3600.0
+    cutoff = (t_new - _dt.timedelta(hours=hours)).isoformat()
+
+    def _delta(idx):
+        res = []
+        for nm, lst in series.items():
+            cur = None
+            old = None
+            for ts, bs, bb in lst:
+                v = (bs, bb)[idx]
+                if ts <= cutoff:
+                    old = v
+                cur = v
+            if cur is None or old is None or old < min_base:
+                continue
+            d = cur - old
+            if d == 0:
+                continue
+            res.append({'name': nm, 'old': old, 'new': cur, 'diff': d,
+                        'pct': round(d / old * 100, 1) if old else 0.0})
+        return res
+
+    sell = _delta(0)
+    buy = _delta(1)
+    out.update(
+        sell={'add': sorted([x for x in sell if x['diff'] > 0],
+                            key=lambda x: -x['diff'])[:limit],
+              'drop': sorted([x for x in sell if x['diff'] < 0],
+                             key=lambda x: x['diff'])[:limit]},
+        buy={'add': sorted([x for x in buy if x['diff'] > 0],
+                           key=lambda x: -x['diff'])[:limit],
+             'drop': sorted([x for x in buy if x['diff'] < 0],
+                            key=lambda x: x['diff'])[:limit]},
+        base_ts=newest, span_hours=round(span, 1), total=len(series))
+    return out
+
 
 def get_movers_data():
     """为 generate_scan.py 提供涨跌榜所需数据"""
