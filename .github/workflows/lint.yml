@@ -21,3 +21,5 @@ jobs:
         run: python lint.py
       - name: 内联 JS 语法检查（node vm.Script 编译，不执行）
         run: node scripts/check_inline_js.mjs
+        - name: 时间字段口径检查（updated 必须优先）
+          run: node scripts/check_time_fields.mjs

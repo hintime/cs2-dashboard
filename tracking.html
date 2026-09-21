@@ -163,8 +163,8 @@ function loadTracks() {
 }
 
 function renderTracks(tracks, nowPrices, marketData, nameMap) {
-  var timeStr = marketData && marketData.update_time
-    ? '数据更新: ' + new Date(marketData.update_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})
+  var timeStr = marketData && (marketData.updated || marketData.update_time)
+    ? '数据更新: ' + new Date(marketData.updated || marketData.update_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})
     : '共 ' + tracks.length + ' 条记录';
 
   document.getElementById('trackDate').textContent = timeStr;
