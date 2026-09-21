@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 10,
+  "total_analyses": 11,
   "lessons": [
     {
       "id": "L01",
@@ -10,7 +10,7 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 14,
+      "confirmed": 15,
       "last_seen": "2026-09-21"
     },
     {
@@ -20,7 +20,7 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 14,
+      "confirmed": 15,
       "last_seen": "2026-09-21"
     },
     {
@@ -30,7 +30,7 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 13,
+      "confirmed": 14,
       "last_seen": "2026-09-21"
     },
     {
@@ -40,7 +40,7 @@
       "impact": "中",
       "action": "拓宽信息来源，增加数据维度",
       "added_at": "2026-06-16",
-      "confirmed": 10,
+      "confirmed": 11,
       "last_seen": "2026-09-21"
     },
     {
@@ -55,7 +55,7 @@
     }
   ],
   "history": [],
-  "last_updated": "2026-09-20T23:02:54Z",
+  "last_updated": "2026-09-21T05:02:09Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -343,6 +343,36 @@
         "priced": 1086,
         "profitable": 726,
         "rate": 66.9
+      }
+    },
+    {
+      "seq": 11,
+      "ts": "2026-09-21T05:02:10Z",
+      "overview": {
+        "verdict": "推荐策略需调整",
+        "success_pattern": "多平台信号、溢价强劲、AI优选",
+        "failure_pattern": "忽略跌势、单一ECO信号",
+        "confidence_trend": "下降",
+        "market_signal": "市场波动大，需谨慎"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "-20%/+10%/不变",
+        "buff_weight_advice": "+10%/不变",
+        "premium_threshold_advice": "溢价率>50%需谨慎",
+        "liquidity_advice": "流动性权重+20%"
+      },
+      "reason_analysis": {
+        "right_reasons": "强调多平台溢价，流动性评估准确",
+        "wrong_reasons": "过度依赖单一ECO信号，忽略溢价不匹配",
+        "reason_keywords_avoid": "跌势，单一信号",
+        "reason_keywords_use": "溢价，流动性，多平台"
+      },
+      "prompt_tweak": "强调溢价与流动性，避免单一信号判断，用数据支撑推荐",
+      "stats": {
+        "total": 1093,
+        "priced": 1086,
+        "profitable": 725,
+        "rate": 66.8
       }
     }
   ],
