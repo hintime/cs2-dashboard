@@ -60,3 +60,11 @@ OPTIMIZATION_LOG.md
 UPDATER_README.md
 CLOUDFLARE_SETUP.md
 最后一步-手动安装计划任务.md
+
+# ── watchdog/（2026-09-21 纳入仓库）──
+watchdog/*.env
+watchdog/.wecom_token.json
+watchdog/*.log
+watchdog/last_result.json
+watchdog/__pycache__/
+watchdog/*.bak*
