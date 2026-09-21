@@ -4228,10 +4228,25 @@ def main():
         eco_cat_path = os.path.join(DATA_DIR, 'eco_catalog.json')
         name_map_path = os.path.join(DATA_DIR, 'name_map.json')
         catalog = json.load(open(eco_cat_path, 'r', encoding='utf-8'))
+        # ★ 2026-09-21 性能优化：原来把分类目录全量 37k 条（含印花/贴纸等
+        #   已排除品类）都写进来，gzip 后 700KB，而首页首屏就 fetch 它。
+        #   改为只保留追踪池标的 → 3416.8KB→409.8KB（gzip 709.5→82.0KB）。
+        _tracked = set()
+        _tp = os.path.join(DATA_DIR, 'eco_tracked.json')
+        try:
+            if os.path.exists(_tp):
+                for _it in (json.load(open(_tp, encoding='utf-8')) or []):
+                    _h = _it.get('HashName')
+                    if _h:
+                        _tracked.add(_h)
+        except Exception as _e:
+            print(f'[NAME] 读取追踪池失败，回退到全量: {_e}', file=sys.stderr)
         name_map = {}
         for x in catalog:
-            if x.get('HashName') and x.get('GoodsName'):
-                name_map[x['HashName']] = x['GoodsName']
+            _hn, _gn = x.get('HashName'), x.get('GoodsName')
+            if _hn and _gn and (not _tracked or _hn in _tracked):
+                name_map[_hn] = _gn
+        # name_map 已按追踪池过滤
         json.dump(name_map, open(name_map_path, 'w', encoding='utf-8'), ensure_ascii=False)
         dirty_files.add('name_map.json')
         print(f'[NAME] Generated name_map.json: {len(name_map)} items')
