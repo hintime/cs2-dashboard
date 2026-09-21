@@ -1,61 +1,61 @@
 {
-  "date": "2026-09-21 13:01",
-  "total_sec": 321.5,
+  "date": "2026-09-21 19:01",
+  "total_sec": 229.9,
   "ok": 7,
   "failed": 0,
-  "provider_fast": "ollama",
-  "provider_quality": "ollama",
-  "quality_model": "deepseek-r1:7b",
+  "provider_fast": "zhipu",
+  "provider_quality": "zhipu",
+  "quality_model": "glm-4-flash",
   "cloud_fallback": true,
   "stages": [
     {
       "stage": "Analysis",
-      "sec": 100.4,
+      "sec": 73.1,
       "ok": true,
-      "provider": "ollama",
-      "model": "deepseek-r1:7b"
+      "provider": "zhipu",
+      "model": "glm-4-flash"
     },
     {
       "stage": "Daily report",
-      "sec": 10.5,
+      "sec": 4.6,
       "ok": true,
-      "provider": "ollama",
-      "model": "deepseek-r1:7b"
+      "provider": "zhipu",
+      "model": "glm-4-flash"
     },
     {
       "stage": "Anomaly",
-      "sec": 8.0,
+      "sec": 2.3,
       "ok": true,
-      "provider": "ollama",
-      "model": "deepseek-r1:7b"
+      "provider": "zhipu",
+      "model": "glm-4-flash"
     },
     {
       "stage": "Stock picks",
-      "sec": 12.5,
+      "sec": 11.1,
       "ok": true,
-      "provider": "ollama",
-      "model": "deepseek-r1:7b"
+      "provider": "zhipu",
+      "model": "glm-4-flash"
     },
     {
       "stage": "Market insight",
-      "sec": 8.7,
+      "sec": 2.1,
       "ok": true,
-      "provider": "ollama",
-      "model": "deepseek-r1:7b"
+      "provider": "zhipu",
+      "model": "glm-4-flash"
     },
     {
       "stage": "News impact",
-      "sec": 10.0,
+      "sec": 3.1,
       "ok": true,
-      "provider": "ollama",
-      "model": "deepseek-r1:7b"
+      "provider": "zhipu",
+      "model": "glm-4-flash"
     },
     {
       "stage": "Recommendations",
-      "sec": 171.4,
+      "sec": 133.6,
       "ok": true,
-      "provider": "ollama",
-      "model": "deepseek-r1:7b"
+      "provider": "zhipu",
+      "model": "glm-4-flash"
     }
   ]
 }
