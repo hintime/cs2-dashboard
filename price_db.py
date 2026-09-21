@@ -365,19 +365,21 @@ def record_boards_batch(records):
         conn.close()
 
 
-def get_board_movers(hours=24, limit=8, min_base=3):
-    """盘口异动：在售 / 求购 相对 <hours> 小时前的变化。
+def get_board_movers(steps=1, limit=8, min_base=3):
+    """盘口**即时**异动：相邻 steps 个采样点之间的变化（steps=1 → 本次 vs 上次）。
+
+    ★ 2026-09-21 义轩要求：异动要「即时」，不要与 24 小时比 ——
+      扫货 / 抛售 / 求购暴增这类事件当天就发生，24 小时窗口会把它稀释掉。
 
     返回 {'sell': {'add': [...], 'drop': [...]},
           'buy':  {'add': [...], 'drop': [...]},
-          'base_ts': ..., 'span_hours': ..., 'total': ...}
+          'base_ts': 最新采样, 'prev_ts': 对比采样, 'points': 采样点数, 'total': 标的数}
     每项 {'name','old','new','diff','pct'}。
-    在售口径用 BUFF 在售数，求购用 BUFF 求购数（都能从 eco_tracked.json 零成本拿到）。
+    在售口径 = BUFF 在售数，求购口径 = BUFF 求购数（都从 eco_tracked.json 零成本取得）。
     """
     import collections
-    import datetime as _dt
     out = {'sell': {'add': [], 'drop': []}, 'buy': {'add': [], 'drop': []},
-           'base_ts': None, 'span_hours': 0.0, 'total': 0}
+           'base_ts': None, 'prev_ts': None, 'points': 0, 'total': 0}
     conn = get_db()
     try:
         rows = conn.execute(
@@ -392,34 +394,28 @@ def get_board_movers(hours=24, limit=8, min_base=3):
     for nm, ts, bs, bb in rows:
         series[nm].append((ts, bs or 0, bb or 0))
 
-    all_ts = sorted({r[1] for r in rows})
-    newest = all_ts[-1]
-    oldest = all_ts[0]
-    try:
-        t_new = _dt.datetime.fromisoformat(newest.replace('Z', '+00:00'))
-        t_old = _dt.datetime.fromisoformat(oldest.replace('Z', '+00:00'))
-    except Exception:
-        return out
-    span = (t_new - t_old).total_seconds() / 3600.0
-    cutoff = (t_new - _dt.timedelta(hours=hours)).isoformat()
+    tss = sorted({r[1] for r in rows})
+    out['points'] = len(tss)
+    out['total'] = len(series)
+    out['base_ts'] = tss[-1]
+    if len(tss) <= steps:
+        return out                      # 采样点不够，无从对比
+    out['prev_ts'] = tss[-1 - steps]
 
     def _delta(idx):
         res = []
         for nm, lst in series.items():
-            cur = None
-            old = None
-            for ts, bs, bb in lst:
-                v = (bs, bb)[idx]
-                if ts <= cutoff:
-                    old = v
-                cur = v
-            if cur is None or old is None or old < min_base:
+            if len(lst) <= steps:
                 continue
-            d = cur - old
+            cur = lst[-1][1:][idx]
+            prev = lst[-1 - steps][1:][idx]
+            if prev < min_base:         # 基数太小的百分比噪声大
+                continue
+            d = cur - prev
             if d == 0:
                 continue
-            res.append({'name': nm, 'old': old, 'new': cur, 'diff': d,
-                        'pct': round(d / old * 100, 1) if old else 0.0})
+            res.append({'name': nm, 'old': prev, 'new': cur, 'diff': d,
+                        'pct': round(d / prev * 100, 1) if prev else 0.0})
         return res
 
     sell = _delta(0)
@@ -432,11 +428,8 @@ def get_board_movers(hours=24, limit=8, min_base=3):
         buy={'add': sorted([x for x in buy if x['diff'] > 0],
                            key=lambda x: -x['diff'])[:limit],
              'drop': sorted([x for x in buy if x['diff'] < 0],
-                            key=lambda x: x['diff'])[:limit]},
-        base_ts=newest, span_hours=round(span, 1), total=len(series))
+                            key=lambda x: x['diff'])[:limit]})
     return out
-
-
 def get_movers_data():
     """为 generate_scan.py 提供涨跌榜所需数据"""
     conn = get_db()

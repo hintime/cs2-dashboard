@@ -161,9 +161,9 @@ def cmd_movers():
     #   \u6570\u636e\u81ea 2026-09-21 \u8d77\u5728 boards \u8868\u79ef\u7d2f\uff1b\u4e0d\u8db3 2 \u5c0f\u65f6\u8de8\u5ea6\u65f6\u5982\u5b9e\u8bf4\u660e\u3002
     try:
         import price_db as _pdb
-        bm = _pdb.get_board_movers(hours=24, limit=3)
+        bm = _pdb.get_board_movers(steps=1, limit=3)
         _span = float(bm.get('span_hours') or 0)
-        if bm.get('base_ts') and _span >= 2:
+        if bm.get('prev_ts'):
             def _blk2(title, arr, unit):
                 if not arr:
                     return
@@ -180,7 +180,7 @@ def cmd_movers():
         else:
             L.append('')
             L.append('\u5728\u552e/\u6c42\u8d2d\u5f02\u52a8\uff1a\u6570\u636e\u79ef\u7d2f\u4e2d\uff08\u5df2 %d \u4e2a\u91c7\u6837\u70b9 / \u8de8\u5ea6 %.1f \u5c0f\u65f6\uff0c'
-                     '\u6ee1 24 \u5c0f\u65f6\u51fa\u699c\uff09' % (bm.get('total') or 0, _span))
+                     '\u7b49\u5f85\u7b2c\u4e8c\u6b21\u91c7\u6837\uff09' % (bm.get('total') or 0, _span))
     except Exception as _e:
         L.append('')
         L.append('\u5728\u552e/\u6c42\u8d2d\u5f02\u52a8\uff1a\u6682\u4e0d\u53ef\u7528\uff08%s\uff09' % type(_e).__name__)
