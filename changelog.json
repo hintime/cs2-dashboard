@@ -2,6 +2,30 @@
   {
     "date": "2026-09-21",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-21 10:00",
+    "desc": "wip: local snapshot 2026-09-21 10:00"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "docs(git): 更正 _sync_remote_tracking_ref 过时注释（推送已改用 fetch+mer",
+    "desc": "e 对齐）"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "chore(watchdog): 把企微回调/推送/巡检三个脚本纳入版本控制",
+    "desc": "chore(watchdog): 把企微回调/推送/巡检三个脚本纳入版本控制"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "fix(git): 推送前先 fetch 对齐、取消 force 强推（防两侧互相覆盖）",
+    "desc": "fix(git): 推送前先 fetch 对齐、取消 force 强推（防两侧互相覆盖）"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
     "title": "fix(tracking)+ci: 追踪页时间字段修复；新增时间口径 lint 防复发",
     "desc": "fix(tracking)+ci: 追踪页时间字段修复；新增时间口径 lint 防复发"
   },
@@ -70,17 +94,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-21 04:00",
     "desc": "wip: local snapshot 2026-09-21 04:00"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-21 03:00",
-    "desc": "wip: local snapshot 2026-09-21 03:00"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-21 02:00",
-    "desc": "wip: local snapshot 2026-09-21 02:00"
   }
 ]
