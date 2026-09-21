@@ -2,6 +2,12 @@
   {
     "date": "2026-09-22",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-22 05:00",
+    "desc": "wip: local snapshot 2026-09-22 05:00"
+  },
+  {
+    "date": "2026-09-22",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-22 04:00",
     "desc": "wip: local snapshot 2026-09-22 04:00"
   },
@@ -88,17 +94,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-21 22:15",
     "desc": "wip: local snapshot 2026-09-21 22:15"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "chore(gitignore): 补漏 —— 备份文件与 local_keys.env 副本不得入库",
-    "desc": "chore(gitignore): 补漏 —— 备份文件与 local_keys.env 副本不得入库"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "chore",
-    "title": "删除已回滚的 app-main.js（外置方案作废，死文件）",
-    "desc": "删除已回滚的 app-main.js（外置方案作废，死文件）"
   }
 ]
