@@ -69,3 +69,11 @@ watchdog/last_result.json
 watchdog/__pycache__/
 watchdog/*.bak*
 watchdog/alerts_sent.json
+
+# ── 2026-09-21 补漏 ──
+# 此前 local_keys.env 的备份（如 local_keys.env.bak.aifix.<epoch> 内含全部密钥）
+# 与常见备份命名 <file>.bak.<tag>.<epoch> 都**不被上面的 *.bak 覆盖**
+# （因为它们以数字结尾，不以 .bak 结尾）。仓库是 public，一旦有人 git add -A
+# 就会把密钥推上 GitHub。故补两条。
+local_keys.env*
+*.bak.*
