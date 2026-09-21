@@ -168,6 +168,17 @@ def main():
     with open(os.path.join(D, "watchdog.log"), "a", encoding="utf-8") as f:
         f.write(line + "\n")
     print(line)
+    # ── 异动主动推送（2026-09-21 义轩要求：有异动要主动发信息）──
+    #   挂在巡检同一趟 cron（每 30 分钟），不新增调度；失败不影响巡检。
+    try:
+        import alerts
+        _n = alerts.run()
+        if _n:
+            print('  [ALERT] 已推送 %d 条异动' % _n)
+    except Exception as _e:
+        print('  [ALERT] 运行失败（不影响巡检）: %s: %s'
+              % (type(_e).__name__, _e), file=sys.stderr)
+
     return 0 if not problems else 1
 
 
