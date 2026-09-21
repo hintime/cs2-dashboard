@@ -2,6 +2,42 @@
   {
     "date": "2026-09-21",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-21 22:15",
+    "desc": "wip: local snapshot 2026-09-21 22:15"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "chore(gitignore): 补漏 —— 备份文件与 local_keys.env 副本不得入库",
+    "desc": "chore(gitignore): 补漏 —— 备份文件与 local_keys.env 副本不得入库"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "chore",
+    "title": "删除已回滚的 app-main.js（外置方案作废，死文件）",
+    "desc": "删除已回滚的 app-main.js（外置方案作废，死文件）"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "fix(index): index_collector 自行加载 local_keys.env —— 修复大盘指数静默断",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "Revert \"perf(index): 主体 JS 外置为 app-main.js\" —— 回滚，恢复内联",
+    "desc": "Revert \"perf(index): 主体 JS 外置为 app-main.js\" —— 回滚，恢复内联"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "fix(index): 外置 JS 加 defer —— 修复同步加载导致的白屏",
+    "desc": "fix(index): 外置 JS 加 defer —— 修复同步加载导致的白屏"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-21 22:00",
     "desc": "wip: local snapshot 2026-09-21 22:00"
   },
@@ -58,23 +94,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-21 16:00",
     "desc": "wip: local snapshot 2026-09-21 16:00"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-21 15:00",
-    "desc": "wip: local snapshot 2026-09-21 15:00"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-21 14:00",
-    "desc": "wip: local snapshot 2026-09-21 14:00"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "perf(name_map): 瘦身后的数据文件（37148→4776 条，gzip 709→82 KB）",
-    "desc": "perf(name_map): 瘦身后的数据文件（37148→4776 条，gzip 709→82 KB）"
   }
 ]
