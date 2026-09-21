@@ -2,6 +2,12 @@
   {
     "date": "2026-09-21",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-21 22:00",
+    "desc": "wip: local snapshot 2026-09-21 22:00"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-21 21:00",
     "desc": "wip: local snapshot 2026-09-21 21:00"
   },
@@ -70,17 +76,5 @@
     "tag": "fix",
     "title": "perf(name_map): 瘦身后的数据文件（37148→4776 条，gzip 709→82 KB）",
     "desc": "perf(name_map): 瘦身后的数据文件（37148→4776 条，gzip 709→82 KB）"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "perf(name_map): 生成时只保留追踪池标的 —— 首屏省 628 KB",
-    "desc": "perf(name_map): 生成时只保留追踪池标的 —— 首屏省 628 KB"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "feat(watchdog): 异动主动推送（义轩要求：有异动要主动发信息给我）",
-    "desc": "feat(watchdog): 异动主动推送（义轩要求：有异动要主动发信息给我）"
   }
 ]
