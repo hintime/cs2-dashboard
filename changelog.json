@@ -2,6 +2,24 @@
   {
     "date": "2026-09-21",
     "tag": "fix",
+    "title": "fix(tracking)+ci: 追踪页时间字段修复；新增时间口径 lint 防复发",
+    "desc": "fix(tracking)+ci: 追踪页时间字段修复；新增时间口径 lint 防复发"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "fix(index): 首页头部时间口径与 status 页统一 —— updated 优先",
+    "desc": "fix(index): 首页头部时间口径与 status 页统一 —— updated 优先"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
+    "title": "chore(rec): 周度记分卡 + 双体检 2026-09-21",
+    "desc": "chore(rec): 周度记分卡 + 双体检 2026-09-21"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-21 09:00",
     "desc": "wip: local snapshot 2026-09-21 09:00"
   },
@@ -64,23 +82,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-21 02:00",
     "desc": "wip: local snapshot 2026-09-21 02:00"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, csqaq_boards.json, daily_report.json, data_status.json, eco_tracked.json, holdings.json, market.json, market_scan.json, rec_tracks.json, tracking_analysis.json, tracking_lessons.json 2026-09-21 01:04"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-21 01:00",
-    "desc": "wip: local snapshot 2026-09-21 01:00"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "fix(status): 状态页时间取值 updated 优先",
-    "desc": "fix(status): 状态页时间取值 updated 优先"
   }
 ]
