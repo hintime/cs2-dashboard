@@ -2,6 +2,12 @@
   {
     "date": "2026-09-21",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-21 14:00",
+    "desc": "wip: local snapshot 2026-09-21 14:00"
+  },
+  {
+    "date": "2026-09-21",
+    "tag": "fix",
     "title": "perf(name_map): 瘦身后的数据文件（37148→4776 条，gzip 709→82 KB）",
     "desc": "perf(name_map): 瘦身后的数据文件（37148→4776 条，gzip 709→82 KB）"
   },
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "fix(git): 推送前先 fetch 对齐、取消 force 强推（防两侧互相覆盖）",
     "desc": "fix(git): 推送前先 fetch 对齐、取消 force 强推（防两侧互相覆盖）"
-  },
-  {
-    "date": "2026-09-21",
-    "tag": "fix",
-    "title": "fix(tracking)+ci: 追踪页时间字段修复；新增时间口径 lint 防复发",
-    "desc": "fix(tracking)+ci: 追踪页时间字段修复；新增时间口径 lint 防复发"
   }
 ]
