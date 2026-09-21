@@ -974,6 +974,53 @@ html { scroll-behavior: smooth; }
     <style>
 .theme-picker.open .theme-menu{display:block!important}
 
+
+/* ═══════════ 持仓板块重设计（2026-09-21）═══════════ */
+.hp-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.hp-kpi{padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.hp-kpi-hero{border-color:rgba(239,68,68,.28)}
+.hp-signal{text-align:center;justify-content:center}
+.hp-signal-row{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700}
+.hp-signal-row>span:first-child{font-size:24px;line-height:1}
+.hp-perf{display:flex;gap:18px;flex-wrap:wrap;margin:-2px 0 12px;padding:0 2px;font-size:12px}
+.hp-market{border:1px solid var(--border);border-radius:10px;background:var(--surface2);margin-bottom:14px;overflow:hidden}
+.hp-market>summary{cursor:pointer;padding:9px 14px;font-size:12px;font-weight:600;color:var(--text2);
+  display:flex;align-items:center;gap:10px;list-style:none;user-select:none;transition:background .15s}
+.hp-market>summary::-webkit-details-marker{display:none}
+.hp-market>summary:hover{background:var(--surface)}
+.hp-market>summary::before{content:'▸';font-size:11px;color:var(--text3);transition:transform .2s;display:inline-block}
+.hp-market[open]>summary::before{transform:rotate(90deg)}
+.hp-fold-hint{font-weight:400;color:var(--text3);font-size:11px}
+.hp-market[open]>summary .hp-fold-hint{display:none}
+.hp-detail-head{flex-direction:column;align-items:stretch;gap:10px}
+.hp-head-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.hp-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hp-tool{padding:5px 12px;font-size:12px;border-radius:8px}
+.hp-tool-primary{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none}
+.hp-filter-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hp-filter-right{display:flex;align-items:center;gap:6px;margin-left:auto}
+#searchInput{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;
+  padding:5px 12px;font-size:12px;width:170px;outline:none;transition:border-color .2s}
+#searchInput:focus{border-color:var(--blue)}
+#sortOrder{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;
+  padding:5px 8px;font-size:12px;cursor:pointer}
+.hp-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.hp-form-grid input{padding:6px 8px;background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);font-size:12px}
+.hp-btn-save{padding:6px 14px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer}
+.hp-btn-cancel{padding:6px 14px;background:var(--surface);color:var(--text2);border:1px solid var(--border);
+  border-radius:6px;font-size:12px;cursor:pointer}
+#holdingsPanel table td,#holdingsPanel table th{padding-top:7px;padding-bottom:7px}
+#holdingsPanel table tbody tr{transition:background .12s}
+#holdingsPanel table tbody tr:hover{background:rgba(59,130,246,.07)}
+@media(max-width:640px){
+  .hp-summary{grid-template-columns:repeat(2,1fr)}
+  .hp-kpi-hero{grid-column:span 2}
+  .hp-filter-right{margin-left:0;width:100%}
+  #searchInput{flex:1;width:auto}
+  .hp-form-grid{grid-template-columns:1fr}
+  .hp-tools{gap:6px}
+}
 </style>
   </div>
 
@@ -1141,74 +1188,85 @@ html { scroll-behavior: smooth; }
   </div>
 
   <div class="panel" id="holdingsPanel">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-      <div class="kpi-card">
-        <div class="k-label">总价值</div>
+    <!-- ① 持仓概览：4 个核心指标，紧凑成一条信息带 -->
+    <div class="hp-summary">
+      <div class="kpi-card hp-kpi">
+        <div class="k-label">持仓市值</div>
         <div class="k-value" id="totalValueHeader">--</div>
         <div class="k-sub" id="totalCountHeader">-- 件</div>
       </div>
-      <div class="kpi-card">
-        <div class="k-label">总盈亏</div>
+      <div class="kpi-card hp-kpi hp-kpi-hero">
+        <div class="k-label">未实现盈亏</div>
         <div class="k-value" id="totalPnlHeader">--</div>
         <div class="k-sub" id="totalPnlPctHeader">--</div>
       </div>
-      <div class="kpi-card">
-        <div class="k-label">投入本金</div>
+      <div class="kpi-card hp-kpi">
+        <div class="k-label">投入成本</div>
         <div class="k-value" id="totalCostHeader">--</div>
-        <div id="bestPerformer" class="kpi-sub" style="display:none"></div>
-        <div id="worstPerformer" class="kpi-sub" style="display:none"></div>
         <div class="k-sub">总成本</div>
       </div>
-      <div class="kpi-card k-accent" style="text-align:center" id="holdingSignal">
+      <div class="kpi-card hp-kpi k-accent hp-signal" id="holdingSignal">
         <div class="k-label">综合信号</div>
-        <div style="font-size:32px;margin-bottom:4px;transition:all .3s" id="signalIcon">⚪</div>
-        <div style="font-size:12px;font-weight:700" id="signalText">--</div>
+        <div class="hp-signal-row">
+          <span id="signalIcon">⚪</span>
+          <span id="signalText">--</span>
+        </div>
         <div class="k-sub" id="signalSub"></div>
       </div>
     </div>
-    <!-- FirePulse 大盘（数据源: market_overview.json） -->
-    <div id="fpOverview" style="display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px">
-      <div class="kpi-card k-mini">
-        <div class="k-label">饰品指数</div>
-        <div class="k-value"><span id="fpIndex">--</span></div>
-        <div class="k-sub" id="fpIndexChg">--</div>
-        <div id="fpSpark" style="margin-top:5px;min-height:22px"></div>
-      </div>
-      <div class="kpi-card k-mini">
-        <div class="k-label">今日成交额</div>
-        <div class="k-value" id="fpAmount">--</div>
-        <div class="k-sub" id="fpAmountMom">--</div>
-      </div>
-      <div class="kpi-card k-mini">
-        <div class="k-label">涨跌分布</div>
-        <div class="k-value"><span class="clr-rise" id="fpUp">--</span><span style="color:var(--text3);font-size:13px"> / </span><span class="clr-fall" id="fpDown">--</span></div>
-        <div class="k-sub">上涨 / 下跌</div>
-      </div>
-      <div class="kpi-card k-mini">
-        <div class="k-label">贪婪指数</div>
-        <div class="k-value" id="fpGreedy">--</div>
-        <div class="k-sub" id="fpGreedyLabel">--</div>
-      </div>
+    <!-- 最佳 / 最差表现（原先挤在成本卡里且默认隐藏，现在独立成行） -->
+    <div class="hp-perf">
+      <span id="bestPerformer" class="kpi-sub" style="display:none"></span>
+      <span id="worstPerformer" class="kpi-sub" style="display:none"></span>
     </div>
-    <!-- FirePulse 板块 -->
-    <div id="fpSectors" style="display:none;gap:8px;overflow-x:auto;padding:2px 0 10px;font-size:12px"></div>
-    <div class="panel-head" style="flex-direction:column;align-items:stretch;gap:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
+    <!-- ② 市场大盘（与「持仓」主任务无关，默认折叠，需要时展开） -->
+    <details class="hp-market" id="hpMarketFold">
+      <summary>市场大盘<span class="hp-fold-hint">展开查看指数 / 成交额 / 涨跌分布 / 贪婪指数</span></summary>
+      <!-- FirePulse 大盘（数据源: market_overview.json） -->
+      <div id="fpOverview" style="display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0">
+        <div class="kpi-card k-mini">
+          <div class="k-label">饰品指数</div>
+          <div class="k-value"><span id="fpIndex">--</span></div>
+          <div class="k-sub" id="fpIndexChg">--</div>
+          <div id="fpSpark" style="margin-top:5px;min-height:22px"></div>
+        </div>
+        <div class="kpi-card k-mini">
+          <div class="k-label">今日成交额</div>
+          <div class="k-value" id="fpAmount">--</div>
+          <div class="k-sub" id="fpAmountMom">--</div>
+        </div>
+        <div class="kpi-card k-mini">
+          <div class="k-label">涨跌分布</div>
+          <div class="k-value"><span class="clr-rise" id="fpUp">--</span><span style="color:var(--text3);font-size:13px"> / </span><span class="clr-fall" id="fpDown">--</span></div>
+          <div class="k-sub">上涨 / 下跌</div>
+        </div>
+        <div class="kpi-card k-mini">
+          <div class="k-label">贪婪指数</div>
+          <div class="k-value" id="fpGreedy">--</div>
+          <div class="k-sub" id="fpGreedyLabel">--</div>
+        </div>
+      </div>
+      <!-- FirePulse 板块 -->
+      <div id="fpSectors" style="display:none;gap:8px;overflow-x:auto;padding:2px 0 10px;font-size:12px"></div>
+    </details>
+    <!-- ③ 持仓明细（主任务，占主体） -->
+    <div class="panel-head hp-detail-head">
+      <div class="hp-head-row">
         <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
-        <button id="addHoldingBtn" class="export-btn" onclick="openAddHolding()" style="margin-left:8px;display:none">+ 添加</button>
-        <button id="importSteamBtn" class="export-btn" onclick="importSteamInventory()" style="margin-left:4px">🚀 导入库存</button>
-        <div style="display:flex;align-items:center;gap:12px">
-          <button class="export-btn" id="addItemBtn" title="手动添加饰品" style="background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;border:none">+ 添加</button>
-          <button class="export-btn" id="exportBtn" title="导出 cost-overrides.json">📥 导出</button>
-          <button class="export-btn" id="csvBtn" title="导出持仓CSV" onclick="exportCSV()">⇲ CSV</button>
+        <div class="hp-tools">
+          <button id="addHoldingBtn" class="export-btn hp-tool" onclick="openAddHolding()" style="display:none">＋ 添加</button>
+          <button id="importSteamBtn" class="export-btn hp-tool" onclick="importSteamInventory()">导入库存</button>
+          <button class="export-btn hp-tool hp-tool-primary" id="addItemBtn" title="手动添加饰品">＋ 添加</button>
+          <button class="export-btn hp-tool" id="exportBtn" title="导出 cost-overrides.json">导出</button>
+          <button class="export-btn hp-tool" id="csvBtn" title="导出持仓CSV" onclick="exportCSV()">CSV</button>
           <span class="sync-status" id="syncStatus"></span>
         </div>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <div class="hp-filter-row">
         <div class="tabs" id="tabBar"></div>
-        <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
-          <input id="searchInput" placeholder="🧠 搜索饰品… (/ 或 S 键聚焦)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 12px;font-size:12px;width:160px;outline:none;transition:border-color .2s" />
-          <select id="sortOrder" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:5px 8px;font-size:12px;cursor:pointer">
+        <div class="hp-filter-right">
+          <input id="searchInput" placeholder="搜索饰品…（/ 或 S 聚焦）" />
+          <select id="sortOrder">
             <option value="pnlPct">按盈亏%排序</option>
             <option value="pnl">按盈亏额排序</option>
             <option value="ecoP">按ECO价排序</option>
@@ -1239,15 +1297,15 @@ html { scroll-behavior: smooth; }
     </div>
     <div id="addHoldingForm" style="display:none;margin-top:12px;padding:14px;background:var(--surface2);border-radius:8px">
       <h4 style="font-size:12px;margin-bottom:8px">＋ 添加持仓</h4>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <input id="hfName" placeholder="饰品名" style="padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px">
-        <input id="hfCost" placeholder="买入价 ¥" type="number" step="0.01" style="padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px">
-        <input id="hfQty" placeholder="数量" type="number" value="1" style="padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px">
-        <input id="hfHash" placeholder="market_hash（选填）" style="padding:6px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px">
+      <div class="hp-form-grid">
+        <input id="hfName" placeholder="饰品名">
+        <input id="hfCost" placeholder="买入价 ¥" type="number" step="0.01">
+        <input id="hfQty" placeholder="数量" type="number" value="1">
+        <input id="hfHash" placeholder="market_hash（选填）">
       </div>
       <div style="margin-top:8px;display:flex;gap:6px">
-        <button onclick="addMyHolding(hfName.value,hfHash.value,parseFloat(hfCost.value)||0,parseInt(hfQty.value)||1,'','');closeHoldingForm()" style="padding:6px 14px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:12px;cursor:pointer">保存</button>
-        <button onclick="closeHoldingForm()" style="padding:6px 14px;background:var(--surface);color:var(--text2);border:1px solid var(--border);border-radius:4px;font-size:12px;cursor:pointer">取消</button>
+        <button onclick="addMyHolding(hfName.value,hfHash.value,parseFloat(hfCost.value)||0,parseInt(hfQty.value)||1,'','');closeHoldingForm()" class="hp-btn-save">保存</button>
+        <button onclick="closeHoldingForm()" class="hp-btn-cancel">取消</button>
       </div>
     </div>
   </div>
