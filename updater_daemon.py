@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# DAEMON_DISABLED_2026-09-21
+# ★ 本机调度已上云（服务器 cron 接管）。本机 daemon 与服务器双头打架，
+#   曾在 09-20 深夜把线上数据覆盖成旧版。禁用方式：进模块立即退出，
+#   这样计划任务 CS2-Updater-Watchdog 每 15 分钟拉起也只会空转。
+#   如需恢复：删除下面两行即可。
+import sys as _sys
+_sys.exit(0)
 """
 CS2 看板 · 本机定时更新调度器
 ================================
