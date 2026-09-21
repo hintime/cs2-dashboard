@@ -3284,7 +3284,13 @@ def _ensure_git_identity():
 def _sync_remote_tracking_ref():
     """把 refs/remotes/origin/main 校准成**远端真实**的 sha。
 
-    为什么需要（2026-09-16 实测）：
+    ⚠️ 2026-09-21 起**已不再被调用**（保留作历史参考 / 应急手段）：
+      推送不再使用 `--force-with-lease`，改为 `_align_with_remote()` 先
+      fetch + merge 对齐、再做普通 push。所以「校准 lease 基准」这件事
+      不再需要；而它把基准校准成远端真值的效果，正是当年让 lease 形同虚设、
+      最终演变成两台机器互相 force 覆盖的原因之一，留此说明以防重蹈。
+
+    历史用途：
       `git push --force-with-lease` 会拿本地的 `refs/remotes/origin/main` 与远端
       当前值比对，不一致就拒绝并报 `! [rejected] main -> main (stale info)`。
       而这个仓库的 fetch 从来没成功过 —— 本地那个 ref 一直停在旧值
@@ -3396,8 +3402,8 @@ def _repair_remote_ref():
 
     历史用途：`git fetch` 报告 `[new branch] main -> origin/main` 但 ref 实际
     没建（git for Windows 的 update-ref 在中间目录缺失时静默失败）。
-    现已不再依赖 fetch；新代码用 `_sync_remote_tracking_ref()` 从 ls-remote
-    取真实 sha。此函数保留作为无网络时的兜底。
+    现已不再依赖 fetch；推送侧改由 `_align_with_remote()` 先 fetch 对齐后做
+    普通 push（不再需要 lease 基准）。此函数保留作为无网络时的兜底。
     """
     gitd = os.path.join(DATA_DIR, '.git')
     ref = 'refs/remotes/origin/main'
