@@ -2939,35 +2939,33 @@ def git_push_locally(files, message):
         if rc != 0:
             raise RuntimeError(f'git commit 失败 rc={rc}: {(err or out).strip()[:250]}')
 
-    # Push: 优先 Token（HTTP Basic，见 _git_auth_args），fallback 到空 credential helper
+    # Push：**先对齐，再普通 push；永不强推**（2026-09-21 改造）
     # （push 超时**不强杀**：push 中断可能留下半推的 ref 状态，代价高于多等一会儿）
     #
-    # ⚠️ 关于 `--force-with-lease`：本仓库是 shallow clone，本地 main 与远端
-    #    main **没有共同祖先**（本地是独立的 root 提交链），因此普通 push 会被
-    #    `non-fast-forward` 拒绝。数据以本机为准，所以这里接受强推。
-    #    用 `--force-with-lease`（而非 --force）保留"远端被别人改过就中止"的保护。
-    #
-    #    但 lease 要求本地 `refs/remotes/origin/main` 与远端当前值一致 ——
-    #    本仓库 fetch 从没成功过，该 ref 一直是旧值，于是 lease 必然报
-    #    `(stale info)` 而拒绝。所以推送前必须用 ls-remote 把基准校准到远端真值。
-    if not _sync_remote_tracking_ref():
-        print('[PUSH] lease 基准校准失败，仍尝试 force（数据以本机为准）', file=sys.stderr)
+    # ⚠️ 原实现是「普通 → force-with-lease → force」，且 `_sync_remote_tracking_ref()`
+    #    会把 lease 基准校准成远端真值 → lease 必然通过 → 实际等于**每次都强推**。
+    #    而家里 Windows 那台也在推同一个 main，两边各自提交就互相覆盖：
+    #    09-21 实测本地 main 与 origin/main 已分叉（本地领先 18 / 落后 70），
+    #    本地 00:26 推上去的 92a512b 被服务器侧 force 抹掉。
+    #    现在全部 force 分支已删除：对不齐就不推（留给下一轮 / push_retry.sh 兜底），
+    #    宁可积压也不再覆盖远端提交。逻辑见 _align_with_remote()。
+    if not _align_with_remote():
+        raise RuntimeError('推送前无法与远端对齐（远端有本地没有的提交且合并失败），'
+                           '本轮不推送，避免覆盖远端提交')
 
-    attempts = [
-        (['push', 'origin', 'main'], '普通'),
-        (['push', '--force-with-lease', 'origin', 'main'], 'force-with-lease'),
-        (['push', '--force', 'origin', 'main'], 'force'),
-    ]
     last_err = ''
-    for extra, tag in attempts:
-        rc, out, err = _git_run(_git_auth_args() + extra, timeout=300, allow_kill=False)
+    for tag in ('首次', '对齐后重试'):
+        rc, out, err = _git_run(_git_auth_args() + ['push', 'origin', 'main'],
+                                timeout=300, allow_kill=False)
         if rc == 0:
-            print(f'[OK] Git pushed ({tag}): {message}')
+            print(f'[OK] Git pushed ({tag}，未使用 force): {message}')
             return
         last_err = (err or out).strip()[:300]
         print(f'[WARN] Git push {tag} 失败 (rc={rc}): {last_err}', file=sys.stderr)
+        if tag == '首次' and not _align_with_remote():
+            break
 
-    raise RuntimeError(f'git push 失败: {last_err}')
+    raise RuntimeError(f'git push 失败（未强推，等下一轮补推）: {last_err}')
 
 # ═══════════════ GIT 子进程安全执行（2026-09-16 新增）═══════════════
 # 背景：本机到 GitHub 只有 ~20 KB/s。`subprocess.run(timeout=)` 在 Windows 上
@@ -3329,6 +3327,68 @@ def _sync_remote_tracking_ref():
     except Exception as _e:
         print(f'[GIT][WARN] 写 {rel} 失败：{_e}', file=sys.stderr)
     return False
+
+
+def _abort_merge():
+    """仅在确实处于 merge 中间态时 abort，避免对正常仓库误执行。"""
+    rc, _, _ = _git_run(['rev-parse', '-q', '--verify', 'MERGE_HEAD'], timeout=60)
+    if rc == 0:
+        _git_run(['merge', '--abort'], timeout=120)
+
+
+def _align_with_remote(branch='main'):
+    """推送前先把本地与远端对齐：fetch → 落后则 merge（**保住对方的提交**）。
+
+    2026-09-21 新增。背景（实测结论）：
+      本机（家里 Windows）与服务器（/home/ubuntu/cs2-run）**都在**推同一个
+      `main`，而原推送链是「普通 → force-with-lease → force」，并且
+      `_sync_remote_tracking_ref()` 会把 lease 基准**校准成远端真值** ——
+      两者叠加的实际效果就是**每次都对远端强推**。
+      于是两边各自提交 → 互相覆盖：09-21 实测本地 main 与 origin/main 已分叉
+      （本地领先 18 / 落后 70），本地 00:26 推上去的 92a512b 被服务器侧 force 抹掉。
+
+    现在改为**永不强推**：push 之前先 fetch，若远端有本地没有的提交就 merge 进来
+    （先按常规合并；仍有冲突再 `-X ours`，以本机生成的数据为准），让 push 变成快进。
+    合并不成（冲突且已 abort）就返回 False，本轮**不推** ——
+    宁可积压等下一轮（tools/push_retry.sh 会兜底），也不覆盖别人的提交。
+
+    返回 True 表示「已对齐，可安全做普通 push」。
+    """
+    _ensure_git_identity()
+    rc, out, err = _git_run(_git_auth_args() + ['fetch', 'origin', branch],
+                            timeout=180, allow_kill=False)
+    if rc != 0:
+        # fetch 拿不到远端真值时**仍允许普通 push**：普通 push 在非快进时会被
+        # 服务端拒绝，不可能覆盖别人的提交；而一昧阻断只会让弱网期间数据积压。
+        print(f'[GIT][WARN] fetch 失败 rc={rc}: {(err or out).strip()[:160]} '
+              f'→ 跳过合并，仍尝试普通 push（非快进会被拒，不会覆盖远端）', file=sys.stderr)
+        return True
+
+    rc, out, _ = _git_run(['rev-list', '--count', f'HEAD..origin/{branch}'], timeout=60)
+    try:
+        behind = int(out.strip())
+    except Exception:
+        print('[GIT][WARN] 无法计算落后提交数，按未对齐处理', file=sys.stderr)
+        return False
+    if behind == 0:
+        return True
+
+    print(f'[GIT] 远端领先 {behind} 个提交 → 先合并（保留双方提交，不做强推）...')
+    rc, out, err = _git_run(['merge', '--no-edit', f'origin/{branch}'], timeout=300)
+    if rc != 0:
+        _abort_merge()
+        print(f'[GIT][WARN] 常规合并冲突，改用 -X ours（冲突处保留本机数据）: '
+              f'{(err or out).strip()[:160]}', file=sys.stderr)
+        rc, out, err = _git_run(['merge', '--no-edit', '-X', 'ours', f'origin/{branch}'],
+                                timeout=300)
+        if rc != 0:
+            _abort_merge()
+            print('[GIT][WARN] 与远端合并失败，本轮不推送（避免覆盖远端提交）', file=sys.stderr)
+            return False
+        print('[GIT] 已用 -X ours 合并完成')
+    else:
+        print('[GIT] 合并完成（无冲突）')
+    return True
 
 
 def _repair_remote_ref():
