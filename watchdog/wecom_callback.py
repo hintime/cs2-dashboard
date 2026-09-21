@@ -161,6 +161,14 @@ def cmd_movers():
     #   \u6570\u636e\u81ea 2026-09-21 \u8d77\u5728 boards \u8868\u79ef\u7d2f\uff1b\u4e0d\u8db3 2 \u5c0f\u65f6\u8de8\u5ea6\u65f6\u5982\u5b9e\u8bf4\u660e\u3002
     try:
         import price_db as _pdb
+        # boards 表存的是英文 HashName，展示时映射成中文名（与其它指令一致）
+        _nm = {}
+        for _it in (load_json('eco_tracked.json', []) or []):
+            _h = _it.get('HashName') or ''
+            if _h and _it.get('GoodsName'):
+                _nm[_h] = _it['GoodsName']
+        def _cn(_h):
+            return _nm.get(_h, _h)
         bm = _pdb.get_board_movers(steps=1, limit=3)
         _span = float(bm.get('span_hours') or 0)
         if bm.get('prev_ts'):
@@ -171,7 +179,7 @@ def cmd_movers():
                 L.append(title)
                 for x in arr[:3]:
                     L.append('  %s  %d\u2192%d %s (%+.0f%%)'
-                             % (x.get('name'), x.get('old'), x.get('new'), unit,
+                             % (_cn(x.get('name')), x.get('old'), x.get('new'), unit,
                                 x.get('pct') or 0))
             _blk2('\u25b2 \u5728\u552e\u589e\u52a0\uff08\u5356\u538b\u2191\uff09', (bm.get('sell') or {}).get('add'), '\u4ef6')
             _blk2('\u25bc \u5728\u552e\u51cf\u5c11\uff08\u626b\u8d27\u2191\uff09', (bm.get('sell') or {}).get('drop'), '\u4ef6')
