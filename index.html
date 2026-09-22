@@ -6083,6 +6083,7 @@ function hpName(h){
 }
 /* 曲线：优先真实历史；无历史且成本为 0 时返回 null（不画假图） */
 function hpCurve(h){
+  /* 数据源 1：holdings.json 自带的 price_history（追踪池物品，约 60 天）*/
   var ph = h.price_history;
   if (Array.isArray(ph) && ph.length >= 8){
     var arr = [];
@@ -6092,6 +6093,22 @@ function hpCurve(h){
     }
     if (arr.length >= 8) return arr.slice(-30);
   }
+  /* ★ 数据源 2：price_summary.json（5118 条，覆盖更广，键名是 market_hash）*/
+  try {
+    var ps = window._priceSummary;
+    if (ps){
+      var pd = ps[h.mh] || ps[h.n];
+      if (pd && Array.isArray(pd.prices) && pd.prices.length >= 8){
+        var a2 = [];
+        for (var j=0;j<pd.prices.length;j++){
+          var v2 = Number(pd.prices[j]);
+          if (v2 > 0) a2.push(v2);
+        }
+        if (a2.length >= 8) return a2.slice(-30);
+      }
+    }
+  } catch(e) {}
+  /* 数据源 3：用「成本 → 现价」插值（需两者都有）*/
   var c = Number(h.c)||0, p = Number(h.p)||0;
   if (c <= 0 || p <= 0) return null;          // 成本/现价为 0：无意义，不画
   var n = 26, out = [];
@@ -6111,7 +6128,7 @@ function hpChart(vals, cost, reason){
       + 'border:1px dashed var(--border);border-radius:8px;line-height:1.7">'
       + '<span style="font-size:18px;opacity:.45">◌</span>'
       + '<span>' + tip + '</span>'
-      + '<span style="font-size:11px;opacity:.75">补录成本后即可绘制走势</span>'
+      + '<span style="font-size:11px;opacity:.75">该品类平台未采集历史价格</span>'
       + '</div>';
   }
   var W=780,H=210, mx=Math.max.apply(null,vals.concat([cost])),
@@ -6216,6 +6233,21 @@ function renderList(){
   if (!list) return;
   /* ★ 接上 getFiltered()：搜索 / 分类 tab / 排序 三个控件由此生效
      （它们原本只作用于已隐藏的表格，列表不跟随） */
+  /* ★ 后台预热 price_summary（5118 条历史价格，用于绘制走势）；
+     之前只有点开 AI 分析才会加载，导致列表里大量「暂无走势数据」。
+     加载完成后自动重渲染一次。 */
+  if (!window._priceSummaryLoaded && !window._priceSummaryLoading){
+    window._priceSummaryLoading = true;
+    window._priceSummary = {};
+    fetch('price_summary.json')
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(ps){
+        window._priceSummary = ps || {};
+        window._priceSummaryLoaded = true;
+        try { renderList(); } catch(e) {}      // 数据到位后刷新曲线
+      })
+      .catch(function(){ window._priceSummaryLoaded = true; });
+  }
   var items;
   try {
     /* getFiltered 定义在另一个 script 块的 IIFE 里，需通过暴露出来的入口调用 */
