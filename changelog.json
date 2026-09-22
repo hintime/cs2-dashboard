@@ -2,6 +2,18 @@
   {
     "date": "2026-09-22",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-22 15:00",
+    "desc": "wip: local snapshot 2026-09-22 15:00"
+  },
+  {
+    "date": "2026-09-22",
+    "tag": "fix",
+    "title": "data(holdings): price_history 保留期 60 天 → 180 天（6 个月）",
+    "desc": "data(holdings): price_history 保留期 60 天 → 180 天（6 个月）"
+  },
+  {
+    "date": "2026-09-22",
+    "tag": "fix",
     "title": "feat(holdings): 持仓云端同步通道（Worker KV ↔ 服务器采集）三端打通",
     "desc": "feat(holdings): 持仓云端同步通道（Worker KV ↔ 服务器采集）三端打通"
   },
@@ -106,17 +118,5 @@
     "tag": "fix",
     "title": "fix(holdings): 修主从列表三个问题 —— 点击无反馈 / 英文名 / 曲线重样",
     "desc": "fix(holdings): 修主从列表三个问题 —— 点击无反馈 / 英文名 / 曲线重样"
-  },
-  {
-    "date": "2026-09-22",
-    "tag": "fix",
-    "title": "redesign(holdings): 持仓明细改为「主从列表」形态 + 柔光织纹背景",
-    "desc": "redesign(holdings): 持仓明细改为「主从列表」形态 + 柔光织纹背景"
-  },
-  {
-    "date": "2026-09-22",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-22 10:00",
-    "desc": "wip: local snapshot 2026-09-22 10:00"
   }
 ]
