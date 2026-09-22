@@ -5729,6 +5729,7 @@ function loadMyHoldings(){
   return raw ? JSON.parse(raw) : [];
 }
 function saveMyHoldings(items){
+  try { hpCloudSync(); } catch(e) {}
   var key = getMyKey(); if(!key) return;
   localStorage.setItem('cs2_holdings_'+key, JSON.stringify(items));
 }
@@ -6690,6 +6691,32 @@ function hpBatchSave(){
   if (n > 0 && typeof hpSelMode === 'function') hpSelMode(false);   /* 保存完自动退出选择模式 */
   if (typeof showToast === 'function') showToast('✓ 已补录 ' + n + ' 件成本' + (skipped ? '（跳过 ' + skipped + ' 件未填）' : ''), 3000);
   if (n > 0 && typeof window.__hpReload === 'function') window.__hpReload();
+}
+
+/* ═══ 持仓云端同步（Worker KV 通道，手机/PC 共用）═══ */
+var _hpCloudTimer = null;
+function hpCloudSync(){
+  clearTimeout(_hpCloudTimer);
+  _hpCloudTimer = setTimeout(function(){
+    try{
+      var key = (typeof getMyKey === 'function') ? getMyKey() : 'admin';
+      var items = [];
+      try { items = JSON.parse(localStorage.getItem('cs2_holdings_' + key) || '[]'); } catch(e) {}
+      if (!Array.isArray(items)) items = [];
+      var payload = items.map(function(it){
+        return { market_hash: it.market_hash || it.mh || it.n || '',
+                 name: it.name || it.n || '',
+                 cost: Number(it.cost) || 0,
+                 qty: Number(it.qty) || 1,
+                 wear: it.wear || '' };
+      }).filter(function(it){ return it.market_hash; });
+      fetch('/api/holdings-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: payload })
+      }).catch(function(){});
+    }catch(e){}
+  }, 2500);   // 与成本同步同节奏，防抖
 }
 </script>
 </html>

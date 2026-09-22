@@ -3505,6 +3505,75 @@ def git_sync_safe():
 
 
 # ═══════════════ MAIN ═══════════════
+def merge_cloud_holdings(holdings_path):
+    """从 Worker KV 拉取云端持仓，合并进 holdings.json。
+
+    语义（义轩 2026-09-22 要求）：
+      · 云端有的物品 → 加入/更新（保留已有 price_history，cost/qty 用云端覆盖）
+      · 云端没有的   → 从 holdings.json 移除（"不在就去掉"）
+      · 云端为空/拉取失败 → 不动本地（防呆）
+    """
+    import json as _json, urllib.request as _rq
+    url = 'https://cs2wyx.asia/api/holdings-sync'
+    try:
+        req = _rq.Request(url, headers={'User-Agent': 'cs2-updater', 'Cache-Control': 'no-cache'})
+        with _rq.urlopen(req, timeout=30) as r:
+            cloud = _json.loads(r.read().decode('utf-8'))
+    except Exception as e:
+        print(f'[CLOUDSYNC] pull failed: {e}', file=sys.stderr)
+        return 0
+    citems = cloud.get('items') or []
+    if not isinstance(citems, list) or len(citems) == 0:
+        print('[CLOUDSYNC] cloud empty, skip')
+        return 0
+
+    data = read_json(holdings_path) or {}
+    items = data.get('items') or []
+    # 本地按 market_hash 索引
+    by_hn = {}
+    for it in items:
+        hn = it.get('market_hash')
+        if hn:
+            by_hn[hn] = it
+    cloud_set = set()
+    added = updated = 0
+    for ci in citems:
+        hn = (ci.get('market_hash') or '').strip()
+        if not hn:
+            continue
+        cloud_set.add(hn)
+        if hn in by_hn:
+            it = by_hn[hn]
+            it['cost'] = float(ci.get('cost') or 0) or it.get('cost', 0)
+            it['qty'] = int(ci.get('qty') or 1) or it.get('qty', 1)
+            if ci.get('name'):
+                it['name'] = ci['name']
+            updated += 1
+        else:
+            new_it = {'name': ci.get('name') or hn, 'market_hash': hn,
+                      'cost': float(ci.get('cost') or 0), 'qty': int(ci.get('qty') or 1),
+                      'wear': ci.get('wear') or '', 'price': 0, 'price_history': []}
+            items.append(new_it)
+            by_hn[hn] = new_it
+            added += 1
+    removed = 0
+    if cloud_set:
+        keep = [it for it in items if (it.get('market_hash') or '') in cloud_set]
+        removed = len(items) - len(keep)
+        items = keep
+    if added or updated or removed:
+        data['items'] = items
+        data['update_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
+        try:
+            write_json(holdings_path, data)
+            print(f'[CLOUDSYNC] merged: +{added} ~{updated} -{removed}')
+        except Exception as e:
+            print(f'[CLOUDSYNC] write failed: {e}', file=sys.stderr)
+    else:
+        print('[CLOUDSYNC] no change')
+    return added + updated
+
+
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else 'all'
 
@@ -3618,6 +3687,10 @@ def main():
     # ── Update ECO prices → holdings.json ──
     if mode in ('all', 'prices'):
         holdings_path = os.path.join(DATA_DIR, 'holdings.json')
+        try:
+            merge_cloud_holdings(holdings_path)
+        except Exception as _e:
+            print(f'[CLOUDSYNC] merge error: {_e}', file=sys.stderr)
         holdings = read_json(holdings_path)
 
         items = holdings.get('items', [])
