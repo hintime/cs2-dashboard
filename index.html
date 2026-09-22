@@ -1181,6 +1181,30 @@ html { scroll-behavior: smooth; }
 /* 动态弹窗：打开时用 flex 居中 */
 .hp-bov{display:none}
 .hp-bov[style*="flex"]{display:flex !important}
+
+/* ═══ 【选择模式】左栏勾选（参考 GitHub/Linear：默认不显示，点按钮才进）═══ */
+/* 自定义勾选框：深色底 + 蓝色对勾，不用原生白方块 */
+.hp-ck{display:inline-block;width:15px;height:15px;border-radius:4px;flex-shrink:0;
+  border:1px solid var(--border);background:var(--surface2);position:relative;
+  transition:background .12s,border-color .12s;cursor:pointer;vertical-align:-2px}
+.hp-ck:hover{border-color:var(--text3)}
+.hp-ck.on{background:var(--blue);border-color:var(--blue)}
+.hp-ck.on::after{content:'';position:absolute;left:4.5px;top:1.5px;width:4px;height:8px;
+  border:solid #fff;border-width:0 1.8px 1.8px 0;transform:rotate(43deg)}
+.hp-ck.half{background:var(--surface2);border-color:var(--blue)}
+.hp-ck.half::after{content:'';position:absolute;left:3px;top:6px;width:7px;height:1.8px;
+  background:var(--blue);border-radius:1px}
+/* 默认 2 列（无勾选列）；选择模式下变 3 列 */
+.hp-li{grid-template-columns:1fr 76px}
+.hp-li.selmode{grid-template-columns:16px 1fr 76px;padding-left:11px}
+.hp-li.selmode .hp-ckcell{display:flex;align-items:center;justify-content:center}
+/* 批量操作行的两态 */
+.hp-batch-bar{min-height:34px}
+.hp-selmode{display:flex;align-items:center;gap:8px;flex:1}
+.hp-bbtn.ghost{background:transparent;border-color:transparent;color:var(--text3);
+  padding:3px 8px}
+.hp-bbtn.ghost:hover{background:var(--surface2);color:var(--text2);border-color:var(--border)}
+@media(max-width:860px){ .hp-li.selmode{grid-template-columns:16px 1fr 66px} }
 </style>
   </div>
 
@@ -1439,11 +1463,15 @@ html { scroll-behavior: smooth; }
             <option value="n">按名称排序</option>
           </select>
       </div>
-      <div class="hp-batch-bar">
-        <label class="hp-ck-all"><input type="checkbox" id="hpAllCk" onchange="hpToggleAll(this)"> 全选</label>
-        <span class="hp-selc" id="hpSelCount">已选 0 项</span>
-        <span style="flex:1"></span>
-        <button class="hp-bbtn" id="hpBatchCostBtn" onclick="hpBatchCost()" disabled>批量补成本</button>
+      <div class="hp-batch-bar" id="hpBatchBar">
+        <button class="hp-bbtn ghost" id="hpEnterSel" onclick="hpSelMode(true)">批量操作</button>
+        <span class="hp-selmode" id="hpSelModeBar" style="display:none">
+          <label class="hp-ck-all"><span class="hp-ck" id="hpAllCkBox"></span>全选</label>
+          <span class="hp-selc" id="hpSelCount">已选 0 项</span>
+          <span style="flex:1"></span>
+          <button class="hp-bbtn" id="hpBatchCostBtn" onclick="hpBatchCost()" disabled>批量补成本</button>
+          <button class="hp-bbtn ghost" onclick="hpSelMode(false)">退出</button>
+        </span>
       </div>
       <div class="hp-list" id="hpList"></div>
       </div>
@@ -6290,6 +6318,10 @@ function hpChart(vals, cost, reason, days){
     + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="3.5" fill="'+col+'"/></svg>';
 }
 window.hpName = hpName;   /* 供其它 script 块（如 AI 分析弹窗）复用中文名 */
+document.addEventListener('click', function(e){
+  var a = e.target.closest && e.target.closest('#hpAllCkBox');
+  if (a){ hpToggleAllBox(); }
+});
 /* ★ 选中高亮跟随：点击后给出明确视觉反馈 */
 function hpMark(idx){
   var L = document.getElementById('hpList');
@@ -6434,11 +6466,12 @@ function renderList(){
       var u = (Number(h.pnl)||0)>=0, cl = u?'rise':'fall', s2 = u?'+':'-';
       var w2 = (h.w && h.w!=='other') ? (' · '+h.w) : '';
       var noCost2 = (Number(h.c)||0) <= 0;
-      out.push('<div class="hp-li'+(first?' on':'')+'" data-i="'+idx+'" onclick="hpSelect('
+      var selMode = !!window._hpSelMode;
+      var checked = !!(window._hpSelSet && window._hpSelSet[idx]);
+      out.push('<div class="hp-li'+(first?' on':'')+(selMode?' selmode':'')+'" data-i="'+idx+'" onclick="hpSelect('
         + idx + ')">'
-        + '<label class="hp-ckcell" onclick="event.stopPropagation()">'
-        +   '<input type="checkbox" class="hp-ck" data-i="'+idx+'" onchange="hpCkChange()">'
-        + '</label>'
+        + (selMode ? ('<span class="hp-ckcell" onclick="event.stopPropagation();hpToggleOne(' + idx + ',this)">'
+            + '<span class="hp-ck' + (checked ? ' on' : '') + '" data-i="' + idx + '"></span></span>') : '')
         + '<div><div class="nm">'+esc(hpName(h))+'</div>'
         + '<div class="sub">'+(noCost2 ? '<span style="color:var(--amber)">成本未录入</span>'
             : ('¥'+hpFmt(h.c)+' → ¥'+hpFmt(h.p)))+w2+'</div></div>'
@@ -6456,11 +6489,43 @@ function renderList(){
   if (b) b.textContent = items.length;
 }
 
-/* ═══ 左栏批量操作（2026-09-22）═══ */
+/* ═══ 左栏批量操作（2026-09-22 · 选择模式版）═══ */
+/* 进入 / 退出选择模式 */
+function hpSelMode(on){
+  window._hpSelMode = !!on;
+  if (!on) window._hpSelSet = {};
+  var bar = document.getElementById('hpSelModeBar');
+  var enter = document.getElementById('hpEnterSel');
+  if (bar) bar.style.display = on ? 'flex' : 'none';
+  if (enter) enter.style.display = on ? 'none' : '';
+  renderList();
+  hpCkChange();
+}
+/* 勾选单个（点自定义方块） */
+function hpToggleOne(idx, el){
+  window._hpSelSet = window._hpSelSet || {};
+  if (window._hpSelSet[idx]) delete window._hpSelSet[idx];
+  else window._hpSelSet[idx] = 1;
+  var box = el ? el.querySelector('.hp-ck') : null;
+  if (box) box.classList.toggle('on', !!window._hpSelSet[idx]);
+  hpCkChange();
+}
+/* 全选 / 取消全选（点自定义方块） */
+function hpToggleAllBox(){
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+  var all = Object.keys(window._hpSelSet || {}).length === arr.length && arr.length > 0;
+  window._hpSelSet = {};
+  if (!all){
+    for (var i=0;i<arr.length;i++) window._hpSelSet[i] = 1;
+  }
+  renderList();
+  hpCkChange();
+}
 function hpCks(){ return document.querySelectorAll('#hpList .hp-ck'); }
 function hpSelectedIdx(){
-  var out = [], all = hpCks();
-  for (var i=0;i<all.length;i++) if (all[i].checked) out.push(Number(all[i].getAttribute('data-i')));
+  var s = window._hpSelSet || {}, out = [];
+  for (var k in s) if (s[k]) out.push(Number(k));
+  out.sort(function(a,b){ return a-b; });
   return out;
 }
 function hpCkChange(){
@@ -6469,19 +6534,16 @@ function hpCkChange(){
   if (el) el.textContent = '已选 ' + n + ' 项';
   var btn = document.getElementById('hpBatchCostBtn');
   if (btn) btn.disabled = (n === 0);
-  var all = hpCks(), allCk = document.getElementById('hpAllCk');
-  if (allCk){
-    var total = all.length, checked = 0;
-    for (var i=0;i<all.length;i++) if (all[i].checked) checked++;
-    allCk.checked = (total > 0 && checked === total);
-    allCk.indeterminate = (checked > 0 && checked < total);
+  /* 全选方块的状态：满选 / 半选 / 未选 */
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+  var total = arr.length;
+  var box = document.getElementById('hpAllCkBox');
+  if (box){
+    box.classList.toggle('on', total > 0 && n === total);
+    box.classList.toggle('half', n > 0 && n < total);
   }
 }
-function hpToggleAll(ck){
-  var all = hpCks();
-  for (var i=0;i<all.length;i++) all[i].checked = !!ck.checked;
-  hpCkChange();
-}
+function hpToggleAll(ck){ hpToggleAllBox(); }
 /* 动态创建弹窗（不依赖 HTML 里的静态节点 —— 之前 </body> 定位失败导致没插进去）*/
 function hpEnsureBatchOv(){
   var ov = document.getElementById('hpBatchOv');
@@ -6547,6 +6609,7 @@ function hpBatchSave(){
   }
   var n = (typeof window.__hpBatchSetCost === 'function') ? window.__hpBatchSetCost(pairs) : 0;
   hpBatchClose();
+  if (n > 0 && typeof hpSelMode === 'function') hpSelMode(false);   /* 保存完自动退出选择模式 */
   if (typeof showToast === 'function') showToast('✓ 已补录 ' + n + ' 件成本' + (skipped ? '（跳过 ' + skipped + ' 件未填）' : ''), 3000);
   if (n > 0 && typeof window.__hpReload === 'function') window.__hpReload();
 }
