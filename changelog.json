@@ -2,6 +2,18 @@
   {
     "date": "2026-09-22",
     "tag": "fix",
+    "title": "fix(holdings): 批量补成本弹窗改为动态创建",
+    "desc": "fix(holdings): 批量补成本弹窗改为动态创建"
+  },
+  {
+    "date": "2026-09-22",
+    "tag": "fix",
+    "title": "feat(holdings): 顶部统一样式 + 左栏批量操作（全选/批量补成本）",
+    "desc": "feat(holdings): 顶部统一样式 + 左栏批量操作（全选/批量补成本）"
+  },
+  {
+    "date": "2026-09-22",
+    "tag": "fix",
     "title": "ui(holdings): 搜索框与排序下拉移到左栏列表上方",
     "desc": "ui(holdings): 搜索框与排序下拉移到左栏列表上方"
   },
@@ -94,11 +106,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-22 06:15",
     "desc": "wip: local snapshot 2026-09-22 06:15"
-  },
-  {
-    "date": "2026-09-22",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-22 06:00",
-    "desc": "wip: local snapshot 2026-09-22 06:00"
   }
 ]
