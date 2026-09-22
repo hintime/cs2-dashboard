@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 972.04,
-    "change": -2.8,
-    "change_pct": -2.8,
-    "market_value": 298372224.93,
-    "total_items": 3834,
-    "updated": "2026-09-23T02:00:03+08:00",
+    "latest": 980.02,
+    "change": -2.0,
+    "change_pct": -2.0,
+    "market_value": 300821451.26,
+    "total_items": 3999,
+    "updated": "2026-09-23T04:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3667,8 +3667,8 @@
         "date": "2026-09-23",
         "dateFull": "2026-09-23 02:00",
         "open": 972.04,
-        "close": 972.04,
-        "high": 972.04,
+        "close": 980.02,
+        "high": 980.02,
         "low": 972.04
       }
     ],
@@ -10985,12 +10985,20 @@
         "index": 972.04,
         "change_pct": -2.8,
         "market_value": 298372224.93
+      },
+      {
+        "time": "04:00",
+        "date": "2026-09-23",
+        "timestamp": 1790107202,
+        "index": 980.02,
+        "change_pct": -2.0,
+        "market_value": 300821451.26
       }
     ],
     "selling": {
-      "total_selling": 1164074,
+      "total_selling": 1320010,
       "total_selling_prev": 0,
-      "total_selling_delta": 1164074,
+      "total_selling_delta": 1320010,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -10998,7 +11006,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790100003550,
+  "index_updated": 1790107203024,
   "alerts": [
     {
       "name": "M4A4 | Hellish (Minimal Wear)",
@@ -29572,7 +29580,7 @@
     "MP9 | Wild Lily (Field-Tested)",
     "MP9 | 中枢 (崭新出厂)"
   ],
-  "updated": "2026-09-22T19:32:06Z",
+  "updated": "2026-09-22T20:02:07Z",
   "steam_market_items": 0,
   "steam_market_recs": {
     "momentum": [],
