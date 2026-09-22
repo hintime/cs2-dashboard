@@ -1177,6 +1177,10 @@ html { scroll-behavior: smooth; }
   .hp-brow{grid-template-columns:1fr 116px}
   .hp-brow .cur{display:none}
 }
+
+/* 动态弹窗：打开时用 flex 居中 */
+.hp-bov{display:none}
+.hp-bov[style*="flex"]{display:flex !important}
 </style>
   </div>
 
@@ -6442,9 +6446,32 @@ function hpToggleAll(ck){
   for (var i=0;i<all.length;i++) all[i].checked = !!ck.checked;
   hpCkChange();
 }
+/* 动态创建弹窗（不依赖 HTML 里的静态节点 —— 之前 </body> 定位失败导致没插进去）*/
+function hpEnsureBatchOv(){
+  var ov = document.getElementById('hpBatchOv');
+  if (ov) return ov;
+  ov = document.createElement('div');
+  ov.className = 'hp-bov';
+  ov.id = 'hpBatchOv';
+  ov.innerHTML =
+    '<div class="hp-bmodal">'
+    + '<div class="hp-bhead">批量补录成本<span id="hpBatchN"></span>'
+    +   '<span class="hp-bx" onclick="hpBatchClose()">✕</span></div>'
+    + '<div class="hp-bbody" id="hpBatchBody"></div>'
+    + '<div class="hp-bfoot">'
+    +   '<span class="hp-btip">留空或 0 表示不修改该件；保存后会同步到你的账户</span>'
+    +   '<span style="flex:1"></span>'
+    +   '<button class="hp-bbtn" onclick="hpBatchClose()">取消</button>'
+    +   '<button class="hp-bbtn pri" onclick="hpBatchSave()">保存</button>'
+    + '</div></div>';
+  ov.addEventListener('click', function(e){ if (e.target === ov) hpBatchClose(); });
+  document.body.appendChild(ov);
+  return ov;
+}
 function hpBatchCost(){
   var idxs = hpSelectedIdx();
   if (!idxs.length) return;
+  hpEnsureBatchOv();
   var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
   var body = document.getElementById('hpBatchBody');
   var nEl = document.getElementById('hpBatchN');
@@ -6468,6 +6495,7 @@ function hpBatchCost(){
 function hpBatchClose(){
   var ov = document.getElementById('hpBatchOv');
   if (ov) ov.style.display = 'none';
+  if (typeof hpCkChange === 'function') hpCkChange();
 }
 function hpBatchSave(){
   var idxs = hpSelectedIdx();
