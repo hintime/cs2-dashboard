@@ -4241,12 +4241,22 @@ def main():
                         _tracked.add(_h)
         except Exception as _e:
             print(f'[NAME] 读取追踪池失败，回退到全量: {_e}', file=sys.stderr)
+        # ★ 2026-09-22 修正：只按追踪池过滤会让「导入库存」拿不到中文名
+        #   （箱子/手套/刀/探员 等不在追踪池）。改为：追踪池 ∪ 非装饰类实体。
+        #   仅排除 印花/涂鸦/音乐盒/布章（纯装饰，约占 55%），以控制体积。
+        _DECOR = ('Sticker', 'Graffiti', 'Music Kit', 'Patch')
         name_map = {}
         for x in catalog:
             _hn, _gn = x.get('HashName'), x.get('GoodsName')
-            if _hn and _gn and (not _tracked or _hn in _tracked):
+            if not _hn or not _gn:
+                continue
+            if _hn in _tracked:
                 name_map[_hn] = _gn
-        # name_map 已按追踪池过滤
+                continue
+            if any(_d in _hn for _d in _DECOR):
+                continue
+            name_map[_hn] = _gn
+        # name_map = 追踪池 + 非装饰类实体（供导入库存查中文名）
         json.dump(name_map, open(name_map_path, 'w', encoding='utf-8'), ensure_ascii=False)
         dirty_files.add('name_map.json')
         print(f'[NAME] Generated name_map.json: {len(name_map)} items')
