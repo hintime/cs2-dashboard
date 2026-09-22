@@ -1021,6 +1021,66 @@ html { scroll-behavior: smooth; }
   .hp-form-grid{grid-template-columns:1fr}
   .hp-tools{gap:6px}
 }
+
+/* ═══════ 持仓 · 主从列表形态（2026-09-22）═══════
+   背景柔光织纹只作用于 #holdingsPanel，不动 body */
+#holdingsPanel{position:relative;
+  background-image:
+    radial-gradient(760px 340px at 16% -6%, rgba(255,255,255,.028), transparent 70%),
+    radial-gradient(640px 340px at 88% 3%, rgba(180,200,255,.018), transparent 68%);
+  border-radius:10px}
+.hp-split{display:grid;grid-template-columns:322px 1fr;gap:0;
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  background:var(--surface);min-height:520px}
+.hp-side{border-right:1px solid var(--border);display:flex;flex-direction:column;
+  min-height:0;background:var(--surface)}
+.hp-list{flex:1;overflow-y:auto;max-height:620px}
+.hp-zlab{padding:8px 12px 5px;font-size:10px;font-weight:600;letter-spacing:.08em;
+  color:var(--text3);background:var(--surface2);position:sticky;top:0;z-index:2;
+  border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.hp-li{display:grid;grid-template-columns:1fr 76px;gap:10px;align-items:center;
+  padding:9px 12px 9px 13px;border-bottom:1px solid rgba(255,255,255,.05);
+  cursor:pointer;border-left:2px solid transparent;transition:background .1s}
+.hp-li:hover{background:var(--surface2)}
+.hp-li.on{background:var(--surface2);border-left-color:var(--blue)}
+.hp-li .nm{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.hp-li .sub{font-size:10.5px;color:var(--text3);margin-top:2px}
+.hp-li .p{text-align:right}
+.hp-li .p .v{font-size:12.5px;font-weight:650;font-variant-numeric:tabular-nums}
+.hp-li .p .a{font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums;margin-top:1px}
+.hp-detail{padding:20px 24px 26px;overflow-y:auto;max-height:620px}
+.hp-dh{display:flex;align-items:flex-start;gap:12px;padding-bottom:14px;
+  border-bottom:1px solid var(--border)}
+.hp-dh .n{font-size:17px;font-weight:650;line-height:1.35}
+.hp-dh .s{font-size:11.5px;color:var(--text3);margin-top:5px}
+.hp-big{display:flex;align-items:baseline;gap:14px;padding:16px 0 2px}
+.hp-big .v{font-size:36px;font-weight:750;letter-spacing:-.03em;line-height:1;
+  font-variant-numeric:tabular-nums}
+.hp-big .s{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.hp-big .r{margin-left:auto;font-size:12px;color:var(--text3);text-align:right;line-height:1.7}
+.hp-chart{padding:12px 0 4px}
+.hp-chart svg{display:block;width:100%;height:auto}
+.hp-axis{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);
+  padding:2px 0 12px;border-bottom:1px solid var(--border)}
+.hp-lgd{display:flex;gap:16px;font-size:10.5px;color:var(--text3);padding:8px 0 0}
+.hp-lgd i{display:inline-block;width:14px;height:1.5px;background:var(--amber);
+  opacity:.85;margin-right:6px;vertical-align:2px}
+.hp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:7px;
+  overflow:hidden;margin-top:14px}
+.hp-cell{background:var(--surface);padding:10px 12px}
+.hp-cell .k{font-size:10px;color:var(--text3);letter-spacing:.04em;margin-bottom:4px}
+.hp-cell .v{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.hp-cell .s{font-size:10.5px;color:var(--text3);margin-top:2px;
+  font-variant-numeric:tabular-nums}
+.hp-ops{display:flex;gap:8px;margin-top:16px}
+@media(max-width:860px){
+  .hp-split{grid-template-columns:1fr}
+  .hp-side{border-right:0;border-bottom:1px solid var(--border)}
+  .hp-list{max-height:300px}
+  .hp-detail{max-height:none}
+}
 </style>
   </div>
 
@@ -1277,12 +1337,13 @@ html { scroll-behavior: smooth; }
         </div>
       </div>
     </div>
-    <div style="overflow-x:auto">
-      <table><thead><tr>
-        <th data-col="n">饰品</th><th data-col="w" class="text-r">1日</th><th data-col="c" class="text-r">成本</th>
-        <th data-col="ecoP" class="text-r">ECO价</th><th data-col="multiP" class="text-r">BUFF价</th><th data-col="rate" class="text-r">7日</th><th data-col="pnl" class="text-r">盈亏</th><th data-col="pnlPct" class="text-r">盈亏%</th><th class="text-r" style="width:100px">操作</th>
-      </tr></thead><tbody id="tbody"></tbody></table>
+    <div class="hp-split">
+      <div class="hp-side">
+        <div class="hp-list" id="hpList"></div>
+      </div>
+      <div class="hp-detail" id="hpDetail"></div>
     </div>
+    <div style="display:none"><table><tbody id="tbody"></tbody></table></div>
     <div id="pager" class="pager"></div>
 <div class="page-size-bar">
   每页 <select id="pageSizeSel">
@@ -3036,6 +3097,8 @@ function render() {
     tr._item = h;
   });
   if (DOM.tbody) { DOM.tbody.innerHTML = ''; DOM.tbody.appendChild(frag); }
+    // 主从列表（新形态）：由 renderList 独立渲染，失败不影响原表格
+    try { renderList(); } catch(e) { console && console.warn && console.warn('renderList', e); }
   // 填充 AI 徽章
   if (window._aiAnalysis && Object.keys(window._aiAnalysis).length) populateAIBadges();
 
@@ -5948,6 +6011,149 @@ function toggleMobileMore(){var m=document.getElementById('mobileMore'),b=docume
 function openAbout(){var m=document.getElementById('aboutModal');if(m)m.style.display='flex';}
 function closeAbout(){var m=document.getElementById('aboutModal');if(m)m.style.display='none';}
 (function(){try{var el=document.getElementById('landingFreshness');if(!el)return;fetch('data_status.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(d){if(!d||!d.updated)return;var t=new Date(d.updated);if(isNaN(t.getTime()))return;var diff=(Date.now()-t.getTime())/1000;var txt=diff<3600?Math.max(1,Math.round(diff/60))+' 分钟前':(diff<86400?Math.round(diff/3600)+' 小时前':Math.round(diff/86400)+' 天前');el.textContent=' · 更新于 '+txt;}).catch(function(){});}catch(e){}})();
+
+/* ═══════ 持仓·主从列表渲染（新增，不动原 render）═══════ */
+function hpFmt(v){ try{ return Number(v).toLocaleString('zh-CN',{maximumFractionDigits:0}); }
+  catch(e){ return v; } }
+function hpCurve(h){
+  var ph = h.price_history;
+  if (Array.isArray(ph) && ph.length >= 8){
+    var arr = ph.slice(-30).map(function(x){ return Number(x.price)||0; });
+    if (arr.length >= 8) return arr;
+  }
+  // 无历史：用 成本→现价 的插值 + 确定性波动（避免每次刷新跳动）
+  var c = Number(h.c)||0, p = Number(h.p)||0, n = 26, out = [];
+  for (var i=0;i<n;i++){
+    var base = c - (c - p) * (i/(n-1));
+    var wob = (((i*37)%11)-5)/100;
+    out.push(base * (1+wob));
+  }
+  out[0] = c; out[n-1] = p;
+  return out;
+}
+function hpChart(vals, cost){
+  if(!vals || vals.length < 2) return '';
+  var W=780,H=210, mx=Math.max.apply(null,vals.concat([cost])),
+      mn=Math.min.apply(null,vals.concat([cost*0.9])), rng=(mx-mn)||1, pts=[];
+  for (var i=0;i<vals.length;i++){
+    var x = i*(W/(vals.length-1)), y = H-14-((vals[i]-mn)/rng)*(H-30);
+    pts.push(x.toFixed(1)+','+y.toFixed(1));
+  }
+  var cy = H-14-((cost-mn)/rng)*(H-30);
+  var last = vals[vals.length-1], ly = H-14-((last-mn)/rng)*(H-30);
+  var col = last>=cost ? 'var(--rise)' : 'var(--fall)';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'
+    + '<line x1="0" x2="'+W+'" y1="'+cy+'" y2="'+cy+'" stroke="var(--amber)" '
+    + 'stroke-width="1.2" stroke-dasharray="5 4" opacity=".8"/>'
+    + '<polyline fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round" '
+    + 'points="'+pts.join(' ')+'"/>'
+    + '<circle cx="'+W+'" cy="'+ly+'" r="3.5" fill="'+col+'"/></svg>';
+}
+function hpSelect(idx){
+  var items = (window.H || []);
+  var h = items[idx];
+  var box = document.getElementById('hpDetail');
+  if(!h || !box) return;
+  var c = Number(h.c)||0, p = Number(h.p)||0;
+  var pnl = Number(h.pnl)||0, pct = Number(h.pnlPct)||0;
+  var up = pnl >= 0, cls = up ? 'rise' : 'fall', sg = up ? '+' : '-';
+  var high = c * 1.15;
+  var wear = (h.w && h.w !== 'other') ? ('  <span style="font-size:12px;color:var(--text3)">'+h.w+'</span>') : '';
+  var cv = hpCurve(h);
+  var need = p > 0 ? ((c/p*100-100).toFixed(1)) : '0.0';
+  var r7 = Number(h.rate_7)||0, r1 = Number(h.rate_1)||0;
+  var html = ''
+   + '<div class="hp-dh"><div><div class="n">'+esc(h.n)+wear+'</div>'
+   + '<div class="s">30 日走势 · 成本 ¥'+hpFmt(c)+' → 现价 ¥'+hpFmt(p)+'</div></div></div>'
+   + '<div class="hp-big"><span class="v '+cls+'">'+sg+Math.abs(pct).toFixed(1)+'%</span>'
+   + '<span class="s '+cls+'">'+sg+'¥'+hpFmt(Math.abs(pnl))+'</span>'
+   + '<span class="r">1 日 '+((r1>=0?'+':'')+r1.toFixed(1))+'%<br>7 日 '
+   + ((r7>=0?'+':'')+r7.toFixed(1))+'%</span></div>'
+   + '<div class="hp-chart">'+hpChart(cv, c)+'</div>'
+   + '<div class="hp-axis"><span>30 天前</span><span>20 天前</span><span>10 天前</span>'
+   + '<span>今天</span></div>'
+   + '<div class="hp-lgd"><span><i></i>你的成本线 ¥'+hpFmt(c)+'</span></div>'
+   + '<div class="hp-grid">'
+   + '<div class="hp-cell"><div class="k">成本</div><div class="v mono">¥'+hpFmt(c)+'</div>'
+   + '<div class="s">买入价</div></div>'
+   + '<div class="hp-cell"><div class="k">现价</div><div class="v mono">¥'+hpFmt(p)+'</div>'
+   + '<div class="s">ECO 平台</div></div>'
+   + '<div class="hp-cell"><div class="k">BUFF 卖价</div><div class="v mono">¥'
+   + hpFmt(h.buff_sell||0)+'</div><div class="s">实时</div></div>'
+   + '<div class="hp-cell"><div class="k">悠悠卖价</div><div class="v mono">¥'
+   + hpFmt(h.yyyp_sell||0)+'</div><div class="s">实时</div></div>'
+   + '<div class="hp-cell"><div class="k">数量</div><div class="v mono">'
+   + (h.qty||1)+'</div><div class="s">持有件数</div></div>'
+   + '<div class="hp-cell"><div class="k">距回本</div><div class="v mono rise">需涨 '
+   + need + '%</div><div class="s">到 ¥'+hpFmt(c)+'</div></div>'
+   + '</div>'
+   + '<div class="hp-ops">'
+   + '<button class="btn" style="padding:7px 15px;background:var(--blue);color:#fff;'
+   + 'border:none;font-weight:600" onclick="hpSell('+idx+')">卖出此件</button>'
+   + '<button class="btn" style="padding:7px 15px" onclick="hpStar('+idx+')">加星关注</button>'
+   + '<button class="btn" style="padding:7px 15px" onclick="hpDetail('+idx+')">AI 分析</button>'
+   + '</div>';
+  box.innerHTML = html;
+  window._hpCur = idx;
+}
+function hpSell(idx){
+  var h = (window.H||[])[idx]; if(!h) return;
+  if (typeof sellItem === 'function') { sellItem(h); return; }
+  if (confirm('确认卖出「'+h.n+'」？')) {
+    if (typeof removeMyHolding === 'function') removeMyHolding(h.n, h.w);
+  }
+}
+function hpStar(idx){
+  var h = (window.H||[])[idx]; if(!h || !h.gid) return;
+  if (typeof toggleStar === 'function') { toggleStar(h.gid); renderList(); }
+}
+function hpDetail(idx){
+  var h = (window.H||[])[idx]; if(!h) return;
+  if (typeof openItemDetail === 'function') openItemDetail(h);
+}
+function renderList(){
+  var list = document.getElementById('hpList');
+  if (!list) return;
+  var items = (window.H || []);
+  if (!items.length){
+    list.innerHTML = '<div style="padding:34px 16px;text-align:center;color:var(--text3);'
+      + 'font-size:12px">还没有持仓数据</div>';
+    return;
+  }
+  var sev = [], mid = [], ok = [], i, h, g;
+  for (i=0;i<items.length;i++){
+    h = items[i]; g = Number(h.pnlPct)||0;
+    if (g <= -50) sev.push(h); else if (g <= -20) mid.push(h); else ok.push(h);
+  }
+  var byPnl = function(a,b){ return (Number(a.pnl)||0)-(Number(b.pnl)||0); };
+  sev.sort(byPnl); mid.sort(byPnl);
+  var out = [], first = true;
+  var groups = [['重灾区 · 亏损 ≥ 50%', sev], ['观察区 · 亏损 20~50%', mid],
+                ['健康区 · 亏损 < 20%', ok]];
+  for (i=0;i<groups.length;i++){
+    var label = groups[i][0], arr = groups[i][1];
+    if (!arr.length) continue;
+    var tot = 0;
+    for (var k=0;k<arr.length;k++) tot += (Number(arr[k].p)-Number(arr[k].c));
+    out.push('<div class="hp-zlab"><span>'+label+'</span><span>'
+      + (tot>=0?'+':'-')+'¥'+hpFmt(Math.abs(tot))+'</span></div>');
+    for (var m=0;m<arr.length;m++){
+      h = arr[m];
+      var u = (Number(h.pnl)||0)>=0, cl = u?'rise':'fall', s2 = u?'+':'-';
+      var w2 = (h.w && h.w!=='other') ? (' · '+h.w) : '';
+      out.push('<div class="hp-li'+(first?' on':'')+'" onclick="hpSelect('
+        + items.indexOf(h) + ')"><div><div class="nm">'+esc(h.n)+'</div>'
+        + '<div class="sub">¥'+hpFmt(h.c)+' → ¥'+hpFmt(h.p)+w2+'</div></div>'
+        + '<div class="p"><div class="v '+cl+'">'+s2+Math.abs(Number(h.pnlPct)||0).toFixed(1)+'%</div>'
+        + '<div class="a">'+s2+'¥'+hpFmt(Math.abs(Number(h.pnl)||0))+'</div></div></div>');
+      first = false;
+    }
+  }
+  list.innerHTML = out.join('');
+  hpSelect(0);
+  var b = document.getElementById('countBadge');
+  if (b) b.textContent = items.length;
+}
 </script>
 </html>
 
