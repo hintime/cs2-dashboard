@@ -1314,11 +1314,10 @@ html { scroll-behavior: smooth; }
       <div class="hp-head-row">
         <h2>持仓明细 <span class="badge" id="countBadge" style="margin-left:8px">--</span></h2>
         <div class="hp-tools">
-          <button id="addHoldingBtn" class="export-btn hp-tool" onclick="openAddHolding()" style="display:none">＋ 添加</button>
-          <button id="importSteamBtn" class="export-btn hp-tool" onclick="importSteamInventory()">导入库存</button>
-          <button class="export-btn hp-tool hp-tool-primary" id="addItemBtn" title="手动添加饰品">＋ 添加</button>
-          <button class="export-btn hp-tool" id="exportBtn" title="导出 cost-overrides.json">导出</button>
-          <button class="export-btn hp-tool" id="csvBtn" title="导出持仓CSV" onclick="exportCSV()">CSV</button>
+            <button id="importSteamBtn" class="export-btn hp-tool" onclick="importSteamInventory()">导入库存</button>
+          <button class="export-btn hp-tool hp-tool-primary" id="addItemBtn" title="手动记录一笔买入（可填磨损与买入价）">＋ 添加</button>
+          <button class="export-btn hp-tool" id="exportBtn" title="导出成本覆盖配置 cost-overrides.json">导出配置</button>
+          <button class="export-btn hp-tool" id="csvBtn" title="把当前持仓导出为 CSV 表格" onclick="exportCSV()">导出 CSV</button>
           <span class="sync-status" id="syncStatus"></span>
         </div>
       </div>
