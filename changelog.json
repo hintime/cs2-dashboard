@@ -2,6 +2,30 @@
   {
     "date": "2026-09-22",
     "tag": "fix",
+    "title": "ui(holdings): 搜索框与排序下拉移到左栏列表上方",
+    "desc": "ui(holdings): 搜索框与排序下拉移到左栏列表上方"
+  },
+  {
+    "date": "2026-09-22",
+    "tag": "fix",
+    "title": "fix(holdings): 走势图接入 price_summary 数据源 + 提示写清原因",
+    "desc": "fix(holdings): 走势图接入 price_summary 数据源 + 提示写清原因"
+  },
+  {
+    "date": "2026-09-22",
+    "tag": "fix",
+    "title": "fix(ai): AI 分析弹窗对「无价格数据」的物品不再给结论",
+    "desc": "fix(ai): AI 分析弹窗对「无价格数据」的物品不再给结论"
+  },
+  {
+    "date": "2026-09-22",
+    "tag": "fix",
+    "title": "feat(holdings): 持仓板块深入体检后的优化 —— 修复搜索/分类/排序失效",
+    "desc": "feat(holdings): 持仓板块深入体检后的优化 —— 修复搜索/分类/排序失效"
+  },
+  {
+    "date": "2026-09-22",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-22 11:00",
     "desc": "wip: local snapshot 2026-09-22 11:00"
   },
@@ -76,17 +100,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-22 06:00",
     "desc": "wip: local snapshot 2026-09-22 06:00"
-  },
-  {
-    "date": "2026-09-22",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-22 05:00",
-    "desc": "wip: local snapshot 2026-09-22 05:00"
-  },
-  {
-    "date": "2026-09-22",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-22 04:00",
-    "desc": "wip: local snapshot 2026-09-22 04:00"
   }
 ]
