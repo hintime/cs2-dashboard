@@ -76,11 +76,5 @@
     "tag": "fix",
     "title": "data(holdings): price_history 保留期 60 天 → 180 天（6 个月）",
     "desc": "data(holdings): price_history 保留期 60 天 → 180 天（6 个月）"
-  },
-  {
-    "date": "2026-09-22",
-    "tag": "fix",
-    "title": "feat(holdings): 持仓云端同步通道（Worker KV ↔ 服务器采集）三端打通",
-    "desc": "feat(holdings): 持仓云端同步通道（Worker KV ↔ 服务器采集）三端打通"
   }
 ]
