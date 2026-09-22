@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 15,
+  "total_analyses": 16,
   "lessons": [
     {
       "id": "L01",
@@ -10,7 +10,7 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 19,
+      "confirmed": 20,
       "last_seen": "2026-09-23"
     },
     {
@@ -20,7 +20,7 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 19,
+      "confirmed": 20,
       "last_seen": "2026-09-23"
     },
     {
@@ -30,7 +30,7 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 18,
+      "confirmed": 19,
       "last_seen": "2026-09-23"
     },
     {
@@ -40,8 +40,8 @@
       "impact": "中",
       "action": "拓宽信息来源，增加数据维度",
       "added_at": "2026-06-16",
-      "confirmed": 13,
-      "last_seen": "2026-09-22"
+      "confirmed": 14,
+      "last_seen": "2026-09-23"
     },
     {
       "id": "L05",
@@ -55,7 +55,7 @@
     }
   ],
   "history": [],
-  "last_updated": "2026-09-22T17:04:04Z",
+  "last_updated": "2026-09-22T23:02:33Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -493,6 +493,36 @@
         "priced": 1146,
         "profitable": 707,
         "rate": 61.7
+      }
+    },
+    {
+      "seq": 16,
+      "ts": "2026-09-22T23:02:33Z",
+      "overview": {
+        "verdict": "推荐准确度中等",
+        "success_pattern": "强调多平台溢价与稀缺性",
+        "failure_pattern": "忽略价格波动与市场供需",
+        "confidence_trend": "上升",
+        "market_signal": "市场波动大，需谨慎投资"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "+10%/-5%/不变",
+        "buff_weight_advice": "+5%/-10%/不变",
+        "premium_threshold_advice": "溢价率阈值为50%",
+        "liquidity_advice": "流动性权重为20%"
+      },
+      "reason_analysis": {
+        "right_reasons": "强调多平台溢价与稀缺性，流动性评估准确",
+        "wrong_reasons": "过度依赖单一ECO信号，忽略溢价不匹配",
+        "reason_keywords_avoid": "单一平台信号，无溢价，无稀缺",
+        "reason_keywords_use": "多平台溢价，稀缺性，市场供需"
+      },
+      "prompt_tweak": "强调市场供需与价格波动，避免单一信号依赖，使用具体数据支持推荐理由",
+      "stats": {
+        "total": 1153,
+        "priced": 1146,
+        "profitable": 704,
+        "rate": 61.4
       }
     }
   ],

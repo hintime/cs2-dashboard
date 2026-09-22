@@ -1,51 +1,58 @@
 {
   "overview": {
-    "verdict": "推荐策略有效，但需优化信号分析。",
-    "success_pattern": "多平台信号与溢价分析准确。",
-    "failure_pattern": "忽略价格波动与稀缺性。",
+    "verdict": "推荐准确度中等",
+    "success_pattern": "强调多平台溢价与稀缺性",
+    "failure_pattern": "忽略价格波动与市场供需",
     "confidence_trend": "上升",
-    "market_signal": "市场波动大，需谨慎投资。"
+    "market_signal": "市场波动大，需谨慎投资"
   },
   "reason_analysis": {
-    "right_reasons": "强调多平台溢价与稀缺性评估。",
-    "wrong_reasons": "过度依赖单一信号，忽略溢价不匹配。",
-    "reason_keywords_avoid": "单一信号，忽略溢价",
-    "reason_keywords_use": "多平台信号，溢价分析，稀缺性"
+    "right_reasons": "强调多平台溢价与稀缺性，流动性评估准确",
+    "wrong_reasons": "过度依赖单一ECO信号，忽略溢价不匹配",
+    "reason_keywords_avoid": "单一平台信号，无溢价，无稀缺",
+    "reason_keywords_use": "多平台溢价，稀缺性，市场供需"
   },
   "lessons": [
     {
       "id": "L01",
       "category": "reason",
-      "lesson": "推荐理由需结合市场波动与稀缺性。",
-      "impact": "高",
-      "action": "加强市场数据与稀缺性分析。"
+      "lesson": "推荐理由需考虑价格波动与市场供需",
+      "impact": "中",
+      "action": "结合市场数据，调整推荐理由"
     },
     {
       "id": "L02",
       "category": "scoring",
-      "lesson": "评分体系需考虑更多因素。",
-      "impact": "中",
-      "action": "引入更多评分维度，如市场趋势。"
+      "lesson": "ECO与BUFF权重需平衡",
+      "impact": "高",
+      "action": "调整ECO与BUFF权重，避免单一依赖"
     },
     {
       "id": "L03",
       "category": "timing",
-      "lesson": "推荐时机需更精准。",
+      "lesson": "注意市场波动，适时调整推荐",
       "impact": "中",
-      "action": "优化推荐时机，避免价格波动。"
+      "action": "实时监控市场动态，及时调整推荐策略"
+    },
+    {
+      "id": "L04",
+      "category": "market",
+      "lesson": "关注市场领涨领跌饰品",
+      "impact": "高",
+      "action": "关注市场热点，调整推荐方向"
     }
   ],
   "scoring_feedback": {
-    "eco_weight_advice": "+10%/不变",
-    "buff_weight_advice": "+5%/不变",
-    "premium_threshold_advice": "溢价率需结合稀缺性评估。",
-    "liquidity_advice": "流动性权重需提高。"
+    "eco_weight_advice": "+10%/-5%/不变",
+    "buff_weight_advice": "+5%/-10%/不变",
+    "premium_threshold_advice": "溢价率阈值为50%",
+    "liquidity_advice": "流动性权重为20%"
   },
-  "reason_prompt_tweak": "强调市场趋势与稀缺性，避免单一信号依赖，用数据支撑判断。",
+  "reason_prompt_tweak": "强调市场供需与价格波动，避免单一信号依赖，使用具体数据支持推荐理由",
   "meta": {
     "total_tracks": 1153,
     "date_range": "2026-06-15~2026-09-23",
-    "analyzed_at": "2026-09-22T17:04:04Z",
+    "analyzed_at": "2026-09-22T23:02:33Z",
     "model": "glm-4-flash"
   }
 }
