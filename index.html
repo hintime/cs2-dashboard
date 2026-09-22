@@ -6188,45 +6188,60 @@ function hpName(h){
   return n;
 }
 /* 曲线：优先真实历史；无历史且成本为 0 时返回 null（不画假图） */
+/* 返回 {p:[价格...], d:[日期...]}；无数据返回 null。
+   ★ 带日期是为了让 X 轴按真实时间比例绘制 —— 数据源常有日期缺口
+     （实测 92.5% 的物品 days 不连续），按数组下标画会让时间轴失真。*/
 function hpCurve(h){
-  /* 数据源 1：holdings.json 自带的 price_history（追踪池物品，约 60 天）*/
+  /* 数据源 1：holdings.json 的 price_history（追踪池物品，约 60 天）*/
   var ph = h.price_history;
   if (Array.isArray(ph) && ph.length >= 8){
-    var arr = [];
+    var p1 = [], d1 = [];
     for (var i=0;i<ph.length;i++){
       var v = Number(ph[i] && ph[i].price);
-      if (v > 0) arr.push(v);
+      var dd = ph[i] && ph[i].date;
+      if (v > 0){ p1.push(v); d1.push(dd || ''); }
     }
-    if (arr.length >= 8) return arr.slice(-30);
+    if (p1.length >= 8){
+      return { p: p1.slice(-30), d: d1.slice(-30) };
+    }
   }
-  /* ★ 数据源 2：price_summary.json（5118 条，覆盖更广，键名是 market_hash）*/
+  /* 数据源 2：price_summary.json（覆盖更广，键名 market_hash）*/
   try {
     var ps = window._priceSummary;
     if (ps){
       var pd = ps[h.mh] || ps[h.n];
       if (pd && Array.isArray(pd.prices) && pd.prices.length >= 8){
-        var a2 = [];
+        var p2 = [], d2 = [];
+        var dys = pd.days || [];
         for (var j=0;j<pd.prices.length;j++){
           var v2 = Number(pd.prices[j]);
-          if (v2 > 0) a2.push(v2);
+          if (v2 > 0){ p2.push(v2); d2.push(dys[j] || ''); }
         }
-        if (a2.length >= 8) return a2.slice(-30);
+        if (p2.length >= 8){
+          return { p: p2.slice(-30), d: d2.slice(-30) };
+        }
       }
     }
   } catch(e) {}
-  /* 数据源 3：用「成本 → 现价」插值（需两者都有）*/
-  var c = Number(h.c)||0, p = Number(h.p)||0;
-  if (c <= 0 || p <= 0) return null;          // 成本/现价为 0：无意义，不画
+  /* 数据源 3：成本 → 现价 插值（无日期，X 轴退化为均匀）*/
+  var c = Number(h.c)||0, pp = Number(h.p)||0;
+  if (c <= 0 || pp <= 0) return null;
   var n = 26, out = [];
   for (var k=0;k<n;k++){
-    var base = c - (c - p) * (k/(n-1));
+    var base = c - (c - pp) * (k/(n-1));
     var wob = (((k*37)%11)-5)/100;
     out.push(base * (1+wob));
   }
-  out[0] = c; out[n-1] = p;
-  return out;
+  out[0] = c; out[n-1] = pp;
+  return { p: out, d: [] };
 }
-function hpChart(vals, cost, reason){
+function hpChart(vals, cost, reason, days){
+  /* vals 现为 {p:[], d:[]}；兼容旧的纯数组写法 */
+  var pts0 = vals, dts = days;
+  if (vals && !Array.isArray(vals) && vals.p){
+    pts0 = vals.p; dts = vals.d || days;
+  }
+  vals = pts0;
   if(!vals || vals.length < 2){
     var tip = reason || '暂无走势数据';
     return '<div style="height:150px;display:flex;flex-direction:column;gap:6px;'
@@ -6239,19 +6254,40 @@ function hpChart(vals, cost, reason){
   }
   var W=780,H=210, mx=Math.max.apply(null,vals.concat([cost])),
       mn=Math.min.apply(null,vals.concat([cost*0.9])), rng=(mx-mn)||1, pts=[];
+  /* ★ X 轴按真实日期差计算；日期缺失或全空时退回等距 */
+  var xs = [];
+  var t0 = NaN, t1 = NaN;
+  if (Array.isArray(dts) && dts.length === vals.length){
+    var ts = [];
+    var ok = true;
+    for (var k=0;k<dts.length;k++){
+      var t = Date.parse(dts[k]);
+      if (isNaN(t)){ ok = false; break; }
+      ts.push(t);
+    }
+    if (ok && ts.length === vals.length){
+      t0 = ts[0]; t1 = ts[ts.length-1];
+      var span = (t1 - t0) || 1;
+      for (var m=0;m<ts.length;m++) xs.push((ts[m]-t0)/span*W);
+    }
+  }
+  if (!xs.length || isNaN(t0)){
+    for (var i0=0;i0<vals.length;i0++) xs.push(i0*(W/(vals.length-1)));
+  }
   for (var i=0;i<vals.length;i++){
-    var x = i*(W/(vals.length-1)), y = H-14-((vals[i]-mn)/rng)*(H-30);
+    var x = xs[i], y = H-14-((vals[i]-mn)/rng)*(H-30);
     pts.push(x.toFixed(1)+','+y.toFixed(1));
   }
   var cy = H-14-((cost-mn)/rng)*(H-30);
   var last = vals[vals.length-1], ly = H-14-((last-mn)/rng)*(H-30);
   var col = last>=cost ? 'var(--rise)' : 'var(--fall)';
+  var lastX = xs.length ? xs[xs.length-1] : W;
   return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'
     + '<line x1="0" x2="'+W+'" y1="'+cy+'" y2="'+cy+'" stroke="var(--amber)" '
     + 'stroke-width="1.2" stroke-dasharray="5 4" opacity=".8"/>'
     + '<polyline fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round" '
     + 'points="'+pts.join(' ')+'"/>'
-    + '<circle cx="'+W+'" cy="'+ly+'" r="3.5" fill="'+col+'"/></svg>';
+    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="3.5" fill="'+col+'"/></svg>';
 }
 window.hpName = hpName;   /* 供其它 script 块（如 AI 分析弹窗）复用中文名 */
 /* ★ 选中高亮跟随：点击后给出明确视觉反馈 */
