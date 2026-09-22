@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 978.79,
-    "change": -2.12,
-    "change_pct": -2.12,
-    "market_value": 300444393.42,
-    "total_items": 4024,
-    "updated": "2026-09-22T14:00:03+08:00",
+    "latest": 983.4,
+    "change": -1.66,
+    "change_pct": -1.66,
+    "market_value": 301858126.52,
+    "total_items": 4041,
+    "updated": "2026-09-22T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3643,8 +3643,8 @@
         "date": "2026-09-22",
         "dateFull": "2026-09-22 14:00",
         "open": 978.79,
-        "close": 978.79,
-        "high": 978.79,
+        "close": 983.4,
+        "high": 983.4,
         "low": 978.79
       }
     ],
@@ -10913,12 +10913,20 @@
         "index": 978.79,
         "change_pct": -2.12,
         "market_value": 300444393.42
+      },
+      {
+        "time": "16:00",
+        "date": "2026-09-22",
+        "timestamp": 1790064003,
+        "index": 983.4,
+        "change_pct": -1.66,
+        "market_value": 301858126.52
       }
     ],
     "selling": {
-      "total_selling": 1368675,
+      "total_selling": 1368094,
       "total_selling_prev": 0,
-      "total_selling_delta": 1368675,
+      "total_selling_delta": 1368094,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -10926,7 +10934,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790056803061,
+  "index_updated": 1790064003874,
   "alerts": [
     {
       "name": "M4A4 | Urban DDPAT (Factory New)",
@@ -29491,7 +29499,7 @@
     "MP9 | Wild Lily (Field-Tested)",
     "MP9 | 中枢 (崭新出厂)"
   ],
-  "updated": "2026-09-22T07:32:06Z",
+  "updated": "2026-09-22T08:02:08Z",
   "steam_market_items": 0,
   "steam_market_recs": {
     "momentum": [],
