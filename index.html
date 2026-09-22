@@ -1081,6 +1081,22 @@ html { scroll-behavior: smooth; }
   .hp-list{max-height:300px}
   .hp-detail{max-height:none}
 }
+
+/* ═══ 主从列表：体检后优化（2026-09-22）═══ */
+/* 列表用滚动代替分页，隐藏已失效的分页控件 */
+#holdingsPanel #pager,
+#holdingsPanel .page-size-bar,
+#holdingsPanel #pageJump { display:none !important; }
+/* 左栏高度自适应（不再固定 620px），更充分利用屏幕 */
+@media (min-width:861px){
+  .hp-list{max-height:none}
+  .hp-split{min-height:640px}
+  .hp-detail{max-height:none}
+}
+/* 长名称防溢出：flex 子项默认 min-width:auto 会撑破布局 */
+.hp-li .nm{min-width:0}
+.hp-li > div:first-child{min-width:0}
+.hp-dh .n{word-break:break-word}
 </style>
   </div>
 
@@ -2002,6 +2018,8 @@ async function loadAll() {
   if (holdingsR && Array.isArray(holdingsR.items)) {
     H = [];
     window.H = H;  // 更新全局引用，确保 openItemDetail 能找到数据
+/* ★ 2026-09-22：把 getFiltered 暴露给其它 script 块（主从列表要用它做搜索/排序/tab 过滤）*/
+window.__hpGetFiltered = function(){ try { return getFiltered(); } catch(e) { return window.H || []; } };
     holdingsR.items.forEach(item => {
       const catKey = CAT_MAP[item.category] || 'other';
       const wearCode = item.wear || '';  // FN/MW/FT/WW/BS/other/'' 
@@ -6046,11 +6064,16 @@ function hpCurve(h){
   out[0] = c; out[n-1] = p;
   return out;
 }
-function hpChart(vals, cost){
+function hpChart(vals, cost, reason){
   if(!vals || vals.length < 2){
-    return '<div style="height:150px;display:flex;align-items:center;justify-content:center;'
-      + 'color:var(--text3);font-size:12px;border:1px dashed var(--border);border-radius:8px">'
-      + '暂无走势数据（该件没有成本价或历史记录）</div>';
+    var tip = reason || '暂无走势数据';
+    return '<div style="height:150px;display:flex;flex-direction:column;gap:6px;'
+      + 'align-items:center;justify-content:center;color:var(--text3);font-size:12px;'
+      + 'border:1px dashed var(--border);border-radius:8px;line-height:1.7">'
+      + '<span style="font-size:18px;opacity:.45">◌</span>'
+      + '<span>' + tip + '</span>'
+      + '<span style="font-size:11px;opacity:.75">补录成本后即可绘制走势</span>'
+      + '</div>';
   }
   var W=780,H=210, mx=Math.max.apply(null,vals.concat([cost])),
       mn=Math.min.apply(null,vals.concat([cost*0.9])), rng=(mx-mn)||1, pts=[];
@@ -6081,7 +6104,7 @@ function hpMark(idx){
   return hit;
 }
 function hpSelect(idx){
-  var items = (window.H || []);
+  var items = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
   var h = items[idx];
   var box = document.getElementById('hpDetail');
   if(!h || !box) return;
@@ -6101,7 +6124,7 @@ function hpSelect(idx){
    + '<span class="s '+cls+'">'+sg+'¥'+hpFmt(Math.abs(pnl))+'</span>'
    + '<span class="r">1 日 '+((r1>=0?'+':'')+r1.toFixed(1))+'%<br>7 日 '
    + ((r7>=0?'+':'')+r7.toFixed(1))+'%</span></div>'
-   + '<div class="hp-chart">'+hpChart(cv, c)+'</div>'
+   + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)))+'</div>'
    + (cv ? ('<div class="hp-axis"><span>30 天前</span><span>20 天前</span><span>10 天前</span>'
       + '<span>今天</span></div>'
       + '<div class="hp-lgd"><span><i></i>你的成本线 ¥'+hpFmt(c)+'</span></div>') : '')
@@ -6131,38 +6154,57 @@ function hpSelect(idx){
   window._hpCur = idx;
 }
 function hpSell(idx){
-  var h = (window.H||[])[idx]; if(!h) return;
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H||[]);
+  var h = arr[idx]; if(!h) return;
   if (typeof sellItem === 'function') { sellItem(h); return; }
   if (confirm('确认卖出「'+hpName(h)+'」？')) {
     if (typeof removeMyHolding === 'function') removeMyHolding(h.n, h.w);
   }
 }
 function hpStar(idx){
-  var h = (window.H||[])[idx]; if(!h || !h.gid) return;
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H||[]);
+  var h = arr[idx]; if(!h || !h.gid) return;
   if (typeof toggleStar === 'function') { toggleStar(h.gid); renderList(); }
 }
 function hpDetail(idx){
-  var h = (window.H||[])[idx]; if(!h) return;
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H||[]);
+  var h = arr[idx]; if(!h) return;
   if (typeof openItemDetail === 'function') openItemDetail(h);
 }
 function renderList(){
   var list = document.getElementById('hpList');
   if (!list) return;
-  var items = (window.H || []);
-  if (!items.length){
-    list.innerHTML = '<div style="padding:34px 16px;text-align:center;color:var(--text3);'
-      + 'font-size:12px">还没有持仓数据</div>';
+  /* ★ 接上 getFiltered()：搜索 / 分类 tab / 排序 三个控件由此生效
+     （它们原本只作用于已隐藏的表格，列表不跟随） */
+  var items;
+  try {
+    /* getFiltered 定义在另一个 script 块的 IIFE 里，需通过暴露出来的入口调用 */
+    items = (typeof window.__hpGetFiltered === 'function')
+      ? window.__hpGetFiltered()
+      : ((typeof getFiltered === 'function') ? getFiltered() : (window.H || []));
+  } catch(e) {
+    items = (window.H || []);
+  }
+  if (!items || !items.length){
+    var tip = (window.H && window.H.length)
+      ? '没有符合条件的持仓<br><span style="font-size:11px;opacity:.75">试试清空搜索，或切回「全部」分类</span>'
+      : '还没有持仓数据<br><span style="font-size:11px;opacity:.75">点上方「＋ 添加」或「导入库存」开始</span>';
+    list.innerHTML = '<div style="padding:40px 18px;text-align:center;color:var(--text3);'
+      + 'font-size:12.5px;line-height:1.8">'
+      + '<div style="font-size:22px;opacity:.45;margin-bottom:10px">◌</div>' + tip + '</div>';
+    window._hpList = [];
     return;
   }
-  /* 分区：带上元素在 items 里的原始下标，点击时直接用它（不再 indexOf） */
+  /* ★ 当前显示的数组存起来，点击/操作都基于它（索引不再错位） */
+  window._hpList = items;
+  /* 分区：保留「按亏损状态分组」的信息架构；
+     ★ 但**组内顺序尊重 getFiltered 的结果**（即用户选的排序），不再强制按亏损额排 */
   var sev = [], mid = [], ok = [], i;
   for (i=0;i<items.length;i++){
     var h0 = items[i], g = Number(h0.pnlPct)||0;
     var rec = { h: h0, i: i };
     if (g <= -50) sev.push(rec); else if (g <= -20) mid.push(rec); else ok.push(rec);
   }
-  var byPnl = function(a,b){ return (Number(a.h.pnl)||0)-(Number(b.h.pnl)||0); };
-  sev.sort(byPnl); mid.sort(byPnl);
   var out = [], first = true;
   var groups = [['重灾区 · 亏损 ≥ 50%', sev], ['观察区 · 亏损 20~50%', mid],
                 ['健康区 · 亏损 < 20%', ok]];
@@ -6171,7 +6213,7 @@ function renderList(){
     if (!arr.length) continue;
     var tot = 0;
     for (var k=0;k<arr.length;k++) tot += (Number(arr[k].h.p)-Number(arr[k].h.c));
-    out.push('<div class="hp-zlab"><span>'+label+'</span><span>'
+    out.push('<div class="hp-zlab"><span>'+label+' · '+arr.length+' 件</span><span>'
       + (tot>=0?'+':'-')+'¥'+hpFmt(Math.abs(tot))+'</span></div>');
     for (var m=0;m<arr.length;m++){
       var rec2 = arr[m], h = rec2.h, idx = rec2.i;
