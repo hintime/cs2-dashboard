@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 14,
+  "total_analyses": 15,
   "lessons": [
     {
       "id": "L01",
@@ -10,8 +10,8 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 18,
-      "last_seen": "2026-09-22"
+      "confirmed": 19,
+      "last_seen": "2026-09-23"
     },
     {
       "id": "L02",
@@ -20,8 +20,8 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 18,
-      "last_seen": "2026-09-22"
+      "confirmed": 19,
+      "last_seen": "2026-09-23"
     },
     {
       "id": "L03",
@@ -30,8 +30,8 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 17,
-      "last_seen": "2026-09-22"
+      "confirmed": 18,
+      "last_seen": "2026-09-23"
     },
     {
       "id": "L04",
@@ -55,7 +55,7 @@
     }
   ],
   "history": [],
-  "last_updated": "2026-09-22T05:09:47Z",
+  "last_updated": "2026-09-22T17:04:04Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -464,7 +464,37 @@
         "profitable": 708,
         "rate": 63.4
       }
+    },
+    {
+      "seq": 15,
+      "ts": "2026-09-22T17:04:04Z",
+      "overview": {
+        "verdict": "推荐策略有效，但需优化信号分析。",
+        "success_pattern": "多平台信号与溢价分析准确。",
+        "failure_pattern": "忽略价格波动与稀缺性。",
+        "confidence_trend": "上升",
+        "market_signal": "市场波动大，需谨慎投资。"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "+10%/不变",
+        "buff_weight_advice": "+5%/不变",
+        "premium_threshold_advice": "溢价率需结合稀缺性评估。",
+        "liquidity_advice": "流动性权重需提高。"
+      },
+      "reason_analysis": {
+        "right_reasons": "强调多平台溢价与稀缺性评估。",
+        "wrong_reasons": "过度依赖单一信号，忽略溢价不匹配。",
+        "reason_keywords_avoid": "单一信号，忽略溢价",
+        "reason_keywords_use": "多平台信号，溢价分析，稀缺性"
+      },
+      "prompt_tweak": "强调市场趋势与稀缺性，避免单一信号依赖，用数据支撑判断。",
+      "stats": {
+        "total": 1153,
+        "priced": 1146,
+        "profitable": 707,
+        "rate": 61.7
+      }
     }
   ],
-  "last_track_count": 1123
+  "last_track_count": 1153
 }
