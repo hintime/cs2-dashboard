@@ -1097,6 +1097,14 @@ html { scroll-behavior: smooth; }
 .hp-li .nm{min-width:0}
 .hp-li > div:first-child{min-width:0}
 .hp-dh .n{word-break:break-word}
+
+/* ═══ 搜索 + 排序 移到左栏列表上方（2026-09-22）═══ */
+.hp-side-tools{display:flex;gap:6px;align-items:center;padding:10px 12px;
+  border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+.hp-side-tools #searchInput{flex:1;min-width:0;width:auto}
+.hp-side-tools #sortOrder{flex:0 0 auto;max-width:132px}
+/* 顶部那行如果只剩 tabs，去掉多余的空隙 */
+.hp-filter-row .hp-filter-right:empty{display:none}
 </style>
   </div>
 
@@ -1339,9 +1347,14 @@ html { scroll-behavior: smooth; }
       </div>
       <div class="hp-filter-row">
         <div class="tabs" id="tabBar"></div>
-        <div class="hp-filter-right">
-          <input id="searchInput" placeholder="搜索饰品…（/ 或 S 聚焦）" />
-          <select id="sortOrder">
+        
+      </div>
+    </div>
+    <div class="hp-split">
+      <div class="hp-side">
+        <div class="hp-side-tools">
+        <input id="searchInput" placeholder="搜索饰品…（/ 或 S 聚焦）" />
+        <select id="sortOrder">
             <option value="pnlPct">按盈亏%排序</option>
             <option value="pnl">按盈亏额排序</option>
             <option value="ecoP">按ECO价排序</option>
@@ -1349,12 +1362,8 @@ html { scroll-behavior: smooth; }
             <option value="c">按成本排序</option>
             <option value="n">按名称排序</option>
           </select>
-        </div>
       </div>
-    </div>
-    <div class="hp-split">
-      <div class="hp-side">
-        <div class="hp-list" id="hpList"></div>
+      <div class="hp-list" id="hpList"></div>
       </div>
       <div class="hp-detail" id="hpDetail"></div>
     </div>
