@@ -1205,6 +1205,21 @@ html { scroll-behavior: smooth; }
   padding:3px 8px}
 .hp-bbtn.ghost:hover{background:var(--surface2);color:var(--text2);border-color:var(--border)}
 @media(max-width:860px){ .hp-li.selmode{grid-template-columns:16px 1fr 66px} }
+
+/* ═══ 【hover】走势图 tooltip + 列表名称提示（2026-09-22）═══ */
+.hp-tip{position:absolute;z-index:10;pointer-events:none;opacity:0;
+  transition:opacity .12s;transform:translateX(-50%);
+  background:var(--surface3);border:1px solid var(--border);border-radius:6px;
+  padding:4px 9px;font-size:11.5px;line-height:1.5;color:var(--text);
+  white-space:nowrap;box-shadow:0 4px 14px -4px rgba(0,0,0,.6);
+  top:-4px;display:flex;align-items:baseline;gap:7px}
+.hp-tip b{font-variant-numeric:tabular-nums;font-size:12.5px;
+  font-family:'DM Mono','JetBrains Mono',ui-monospace,monospace}
+.hp-tip span{color:var(--text3);font-size:10.5px}
+.hp-tip-dot{position:absolute;z-index:9;pointer-events:none;display:none;
+  width:8px;height:8px;border-radius:50%;background:var(--text);
+  border:1.5px solid var(--surface);box-shadow:0 0 0 2px rgba(255,255,255,.08)}
+.hp-chart{cursor:crosshair}
 </style>
   </div>
 
@@ -6383,6 +6398,69 @@ function hpSelect(idx){
    + '</div>';
   box.innerHTML = html;
   window._hpCur = idx;
+  /* ★ 走势图鼠标跟随 tooltip（TradingView 模式）*/
+  try { hpChartTooltip(idx); } catch(e) {}
+}
+/* 详情走势图：鼠标跟随 tooltip */
+function hpChartTooltip(idx){
+  var D = document.getElementById('hpDetail');
+  var svg = D ? D.querySelector('.hp-chart svg') : null;
+  var holder = D ? D.querySelector('.hp-chart') : null;
+  if (!svg || !holder) return;
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+  var h = arr[idx];
+  if (!h) return;
+  var cv = hpCurve(h);
+  if (!cv || !cv.p || cv.p.length < 2) return;
+  var prices = cv.p, days = cv.d || [];
+  // 提取多段 path 的坐标点（用 viewBox 的坐标系映射）
+  var lines = svg.querySelectorAll('polyline');
+  if (!lines.length) return;
+  var ptsStr = lines[0].getAttribute('points') || '';
+  var ptList = ptsStr.split(/\s+/).filter(Boolean);
+  if (!ptList.length) return;
+  var box = document.createElement('div');
+  box.className = 'hp-tip';
+  var dot = document.createElement('span');
+  dot.className = 'hp-tip-dot';
+  holder.style.position = 'relative';
+  holder.appendChild(box);
+  holder.appendChild(dot);
+  var lastX = 0;
+  function move(e){
+    var rect = holder.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var w = rect.width;
+    // 归一化到 viewBox
+    var vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal.width : 780;
+    var vx = mx / w * vb;
+    var xs = ptList.map(function(p){ return parseFloat(p.split(',')[0]); });
+    // 找最近的数据点
+    var best = 0, bestD = Infinity;
+    for (var i=0;i<xs.length;i++){
+      var d0 = Math.abs(xs[i] - vx);
+      if (d0 < bestD){ bestD = d0; best = i; }
+    }
+    var pr = prices[best], dt = days[best] || ('第 ' + (best+1) + ' 天');
+    box.innerHTML = '<b>¥' + hpFmt(pr) + '</b><span>' + dt + '</span>';
+    // 定位 tooltip（跟随但不超出）
+    var tx = Math.max(30, Math.min(w - 60, mx));
+    box.style.left = tx + 'px';
+    // 数据点的 y 坐标（SVG 坐标映射到 CSS）
+    var vy = parseFloat(ptList[best].split(',')[1]);
+    var vH = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal.height : 210;
+    var ch = holder.offsetHeight;
+    var cy = vy / vH * ch;
+    dot.style.left = (mx - 4) + 'px';
+    dot.style.top = (cy - 4) + 'px';
+    dot.style.display = 'block';
+    lastX = mx;
+  }
+  function leave(){ box.style.opacity = '0'; dot.style.display = 'none'; }
+  svg.removeEventListener('mousemove', move);
+  svg.removeEventListener('mouseleave', leave);
+  svg.addEventListener('mousemove', move);
+  svg.addEventListener('mouseleave', leave);
 }
 function hpSell(idx){
   var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H||[]);
@@ -6472,7 +6550,7 @@ function renderList(){
         + idx + ')">'
         + (selMode ? ('<span class="hp-ckcell" onclick="event.stopPropagation();hpToggleOne(' + idx + ',this)">'
             + '<span class="hp-ck' + (checked ? ' on' : '') + '" data-i="' + idx + '"></span></span>') : '')
-        + '<div><div class="nm">'+esc(hpName(h))+'</div>'
+        + '<div><div class="nm" title="'+esc(h.n)+'">'+esc(hpName(h))+'</div>'
         + '<div class="sub">'+(noCost2 ? '<span style="color:var(--amber)">成本未录入</span>'
             : ('¥'+hpFmt(h.c)+' → ¥'+hpFmt(h.p)))+w2+'</div></div>'
         + '<div class="p"><div class="v '+cl+'">'+s2+Math.abs(Number(h.pnlPct)||0).toFixed(1)+'%</div>'
