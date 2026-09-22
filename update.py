@@ -3725,9 +3725,9 @@ def main():
                 if not found:
                     history.append({'date': today, 'price': new_price})
 
-                # 保留最近 60 天历史（足够算 rate_30）
+                # 保留最近 180 天历史（义轩 2026-09-22：历史数据保留 6 个月）
                 history.sort(key=lambda x: x['date'])
-                item['price_history'] = history[-60:]
+                item['price_history'] = history[-180:]
 
                 # 计算涨跌率
                 # rate_1: 相对上一次更新
