@@ -5872,6 +5872,40 @@ function openItemDetail(h) {
   var ps = window._priceSummary || {};
   var key = h.mh || h.n;
   var pdata = ps[key] || {};
+
+  /* ★ 数据充分性检查：完全没有价格就不给结论
+     （印花/涂鸦/音乐盒等非追踪品类常见；此前会兜底成「持有观望 置信度50」，
+       并且推荐入手区间会算成 ¥0 — ¥0）*/
+  var _p  = Number(h.p) || 0;
+  var _eco = Number(h.eco_price) || 0;
+  var _buf = Number(h.buff_sell) || 0;
+  var _yy  = Number(h.yyyp_sell) || 0;
+  var _psP = Number(pdata.price || pdata.current_price || 0) || 0;
+  var hasPrice = (_p + _eco + _buf + _yy + _psP) > 0;
+  var hasCost  = (Number(h.c) || 0) > 0;
+  if (!hasPrice){
+    var _nm = (typeof window.hpName === 'function') ? window.hpName(h) : (h.n || '该物品');
+    content.innerHTML =
+      '<div style="padding:22px 4px 8px;text-align:center">'
+      + '<div style="font-size:30px;opacity:.4;margin-bottom:14px">◌</div>'
+      + '<div style="font-size:14px;font-weight:650;color:var(--text);margin-bottom:8px">'
+      +   esc(_nm) + '</div>'
+      + '<div style="font-size:12.5px;color:var(--text2);line-height:1.9">'
+      +   '该物品<strong style="color:var(--amber)">暂无价格数据</strong>，无法生成分析<br>'
+      +   '<span style="font-size:11.5px;color:var(--text3)">'
+      +     '常见于印花 / 涂鸦 / 音乐盒等非追踪品类，或各平台尚未收录该饰品'
+      +   '</span>'
+      + '</div>'
+      + '<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);'
+      +   'font-size:11.5px;color:var(--text3);line-height:1.8;text-align:left">'
+      +   '若你持有它，可以在左侧详情里手动补录成本；<br>'
+      +   '价格数据需要该饰品进入追踪池后才会自动采集。'
+      + '</div></div>';
+    var _ov = document.getElementById('itemDetailOverlay');
+    if (_ov) _ov.style.display = 'flex';
+    return;
+  }
+
   var r7 = pdata.change_7d || h.rate_7 || 0;
   var r30 = pdata.change_30d || h.rate_30 || 0;
   var curPrice = h.p || h.eco_price || h.buff_sell || 0;
@@ -5881,11 +5915,16 @@ function openItemDetail(h) {
   var cost = h.c || 0;
   var pnl = curPrice - cost;
   var pnlPct = cost > 0 ? (pnl / cost * 100) : 0;
-  var entryLow = Math.round(curPrice * 0.92 * 100) / 100;
-  var entryHigh = Math.round(curPrice * 0.98 * 100) / 100;
+  var entryLow = curPrice > 0 ? Math.round(curPrice * 0.92 * 100) / 100 : 0;
+  var entryHigh = curPrice > 0 ? Math.round(curPrice * 0.98 * 100) / 100 : 0;
+  var hasEntry = entryHigh > 0;   /* ★ 无价格时不渲染「推荐入手区间」*/
   // 操作建议
   var verdict, vColor, confidence;
-  if (pnlPct > 15) { verdict = '🔥 建议减仓'; vColor = 'var(--rise)'; confidence = 78; }
+  if (!hasCost){
+    /* ★ 没录入成本，盈亏无意义 —— 不用「持有观望」这类像样的结论糊弄 */
+    verdict = '◌ 未录入成本'; vColor = 'var(--text3)'; confidence = 0;
+  }
+  else if (pnlPct > 15) { verdict = '🔥 建议减仓'; vColor = 'var(--rise)'; confidence = 78; }
   else if (pnlPct > 5 && r7 > 0) { verdict = '📈 继续持有'; vColor = 'var(--rise)'; confidence = 65; }
   else if (pnlPct < -15) { verdict = '❄ 观望不动'; vColor = 'var(--fall)'; confidence = 40; }
   else if (pnlPct < -5 && r7 < 0) { verdict = '📉 谨慎持有'; vColor = 'var(--fall)'; confidence = 45; }
@@ -6091,6 +6130,7 @@ function hpChart(vals, cost, reason){
     + 'points="'+pts.join(' ')+'"/>'
     + '<circle cx="'+W+'" cy="'+ly+'" r="3.5" fill="'+col+'"/></svg>';
 }
+window.hpName = hpName;   /* 供其它 script 块（如 AI 分析弹窗）复用中文名 */
 /* ★ 选中高亮跟随：点击后给出明确视觉反馈 */
 function hpMark(idx){
   var L = document.getElementById('hpList');
