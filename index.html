@@ -1074,8 +1074,11 @@ html { scroll-behavior: smooth; }
 .hp-cell .v{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
 .hp-cell .s{font-size:10.5px;color:var(--text3);margin-top:2px;
   font-variant-numeric:tabular-nums}
-.hp-ops{display:flex;gap:8px;margin-top:14px;padding-top:14px;
-  border-top:1px solid var(--border)}
+.hp-ops{display:flex;gap:8px;margin-top:14px;
+  padding:12px 0 4px;border-top:1px solid var(--border);
+  /* ★ 常驻详情区底部：无论滚到哪里，卖出/加星/AI 分析都可见 */
+  position:sticky;bottom:-1px;z-index:3;
+  background:var(--surface)}
 /* 详情操作按钮：与板块统一的发丝线风格，悬停才显语义色 */
 .hp-op{padding:5px 13px;font-size:12px;line-height:1.5;border-radius:7px;
   background:var(--surface2);border:1px solid var(--border);color:var(--text2);
@@ -1105,8 +1108,15 @@ html { scroll-behavior: smooth; }
 /* 左栏高度自适应（不再固定 620px），更充分利用屏幕 */
 @media (min-width:861px){
   .hp-list{max-height:none}
-  .hp-split{min-height:640px}
-  .hp-detail{max-height:none}
+  .hp-split{min-height:520px;align-items:start}
+  /* ★ 2026-09-23：详情区高度收敛到视口内 + 内部滚动。
+     原来 max-height:none 会随内容把整页撑长（实测内容高约 1020px，
+     视口仅 508px）→ 数据格与操作按钮被推到折叠下方，看着像"没数据"。 */
+  .hp-detail{
+    max-height:calc(100vh - 200px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
 }
 /* 长名称防溢出：flex 子项默认 min-width:auto 会撑破布局 */
 .hp-li .nm{min-width:0}
@@ -6368,7 +6378,7 @@ function hpChart(vals, cost, reason, days){
       + '<span style="font-size:11px;opacity:.75">该品类平台未采集历史价格</span>'
       + '</div>';
   }
-  var W=780,H=210, mx=Math.max.apply(null,vals.concat([cost])),
+  var W=780,H=176, mx=Math.max.apply(null,vals.concat([cost])),
       mn=Math.min.apply(null,vals.concat([cost*0.9])), rng=(mx-mn)||1, pts=[];
   /* ★ X 轴按真实日期差计算；日期缺失或全空时退回等距 */
   var xs = [];
