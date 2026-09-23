@@ -1296,6 +1296,35 @@ html { scroll-behavior: smooth; }
   padding:2px 6px;background:rgba(255,255,255,.035);border-radius:4px;
   display:inline-block}
 #holdingsPanel .kpi-card{cursor:help}
+
+/* ═══ 矮视口紧凑模式（2026-09-23）═══
+   背景：笔记本 1024×600 这类视口下，页面头部（logo+导航+KPI+工具条）已占约 430px，
+   详情区只剩几十像素可见，数据格与操作按钮被推到视口外 → 看着像"没有数据"。
+   这里在视口高度不足时收紧详情区，保证「数据格 + 操作按钮」一屏可见。 */
+@media (max-height:820px){
+  #holdingsPanel .hp-dh{margin-bottom:6px}
+  #holdingsPanel .hp-dh .n{font-size:14px}
+  #holdingsPanel .hp-dh .s{font-size:11px;margin-top:2px}
+  #holdingsPanel .hp-big{margin-bottom:8px}
+  #holdingsPanel .hp-big .v{font-size:26px}
+  #holdingsPanel .hp-big .s{font-size:12px}
+  #holdingsPanel .hp-big .r{font-size:10.5px}
+  #holdingsPanel .hp-chart{margin:6px 0}
+  #holdingsPanel .hp-axis{margin-top:2px}
+  #holdingsPanel .hp-lgd{margin-top:3px}
+  #holdingsPanel .hp-grid{gap:6px}
+  #holdingsPanel .hp-cell{padding:6px 9px}
+  #holdingsPanel .hp-cell .k{font-size:9.5px}
+  #holdingsPanel .hp-cell .v{font-size:13px}
+  #holdingsPanel .hp-cell .s{font-size:10px}
+  #holdingsPanel .hp-ops{margin-top:8px;padding:8px 0 3px}
+  #holdingsPanel .hp-op{padding:4px 11px;font-size:11.5px}
+}
+/* 视口很矮（<640）时进一步收紧：走势图让位给数据格 */
+@media (max-height:640px){
+  #holdingsPanel .hp-chart{max-height:110px;overflow:hidden}
+  #holdingsPanel .hp-big .v{font-size:23px}
+}
 </style>
   </div>
 
@@ -6378,7 +6407,7 @@ function hpChart(vals, cost, reason, days){
       + '<span style="font-size:11px;opacity:.75">该品类平台未采集历史价格</span>'
       + '</div>';
   }
-  var W=780,H=176, mx=Math.max.apply(null,vals.concat([cost])),
+  var W=780,H=140, mx=Math.max.apply(null,vals.concat([cost])),
       mn=Math.min.apply(null,vals.concat([cost*0.9])), rng=(mx-mn)||1, pts=[];
   /* ★ X 轴按真实日期差计算；日期缺失或全空时退回等距 */
   var xs = [];
