@@ -6543,14 +6543,14 @@ function hpSelect(idx){
    + (need === null ? '—' : ('需涨 '+need+'%'))+'</div>'
    + '<div class="s">'+(noCost ? '需先录入成本' : ('到 ¥'+hpFmt(c)))+'</div></div>'
    + '</div>'
-   + '<div class="hp-ops">'
-   + '<button class="hp-op sell" onclick="hpSell('+idx+')">卖出此件</button>'
-   + '<button class="hp-op star" onclick="hpStar('+idx+')">加星关注</button>'
-   + '<button class="hp-op ai" onclick="hpDetail('+idx+')">AI 分析</button>'
    + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)))+'</div>'
    + (cv ? ('<div class="hp-axis"><span>30 天前</span><span>20 天前</span><span>10 天前</span>'
       + '<span>今天</span></div>'
       + '<div class="hp-lgd"><span><i></i>你的成本线 ¥'+hpFmt(c)+'</span></div>') : '')
+   + '<div class="hp-ops">'
+   + '<button class="hp-op sell" onclick="hpSell('+idx+')">卖出此件</button>'
+   + '<button class="hp-op star" onclick="hpStar('+idx+')">加星关注</button>'
+   + '<button class="hp-op ai" onclick="hpDetail('+idx+')">AI 分析</button>'
    + '</div>';
   box.innerHTML = html;
   window._hpCur = idx;
