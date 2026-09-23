@@ -1239,11 +1239,12 @@ html { scroll-behavior: smooth; }
 .hp-tip{position:absolute;z-index:10;pointer-events:none;opacity:0;
   transition:opacity .12s;transform:translateX(-50%);
   /* ★ 同上：改用不透明背景 */
-  background:var(--surface);
+  background:var(--bg);
   border:1px solid rgba(255,255,255,.13);border-radius:6px;
   padding:4px 9px;font-size:11.5px;line-height:1.5;color:var(--text);
   white-space:nowrap;
-  box-shadow:0 10px 26px -8px rgba(0,0,0,.9), 0 0 0 1px rgba(0,0,0,.4);
+  box-shadow:inset 0 0 0 9999px rgba(255,255,255,.038),
+             0 10px 26px -8px rgba(0,0,0,.9), 0 0 0 1px rgba(0,0,0,.4);
   display:flex;align-items:baseline;gap:7px}
 /* ★ 垂直准线（TradingView 式 crosshair 竖线）*/
 .hp-tip-line{position:absolute;top:0;bottom:0;width:1px;display:none;z-index:8;
@@ -1263,10 +1264,13 @@ html { scroll-behavior: smooth; }
   transition:opacity .12s;
   /* ★ 2026-09-23：原用 --surface3，但该变量站内未定义 → 背景失效、浮层全透明，
      与页面糊在一起。改用 --surface（.88~.92，近乎不透明）并叠加强阴影。 */
-  background:var(--surface);
+  /* ★ 用 --bg 实色打底（--surface 只有 .88~.92，仍会透出下层内容），
+     再用 inset 阴影叠一层极淡提亮，得到"比底色略亮且完全不透"的浮层 */
+  background:var(--bg);
   border:1px solid rgba(255,255,255,.13);
   border-radius:8px;padding:9px 11px;min-width:150px;
-  box-shadow:0 18px 44px -12px rgba(0,0,0,.95),
+  box-shadow:inset 0 0 0 9999px rgba(255,255,255,.038),
+             0 18px 44px -12px rgba(0,0,0,.95),
              0 3px 10px rgba(0,0,0,.55),
              0 0 0 1px rgba(0,0,0,.42);
   color:var(--text);font-size:11.5px;
