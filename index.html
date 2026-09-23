@@ -1074,11 +1074,15 @@ html { scroll-behavior: smooth; }
 .hp-cell .v{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
 .hp-cell .s{font-size:10.5px;color:var(--text3);margin-top:2px;
   font-variant-numeric:tabular-nums}
-.hp-ops{display:flex;gap:8px;margin-top:14px;
+.hp-ops{position:relative;display:flex;gap:8px;margin-top:14px;
   padding:12px 0 4px;border-top:1px solid var(--border);
   /* ★ 常驻详情区底部：无论滚到哪里，卖出/加星/AI 分析都可见 */
   position:sticky;bottom:-1px;z-index:3;
   background:var(--surface)}
+/* 按钮浮起时上方留一段渐变，避免生硬切断内容（如走势图）*/
+.hp-ops::before{content:'';position:absolute;left:0;right:0;top:-20px;height:20px;
+  background:linear-gradient(to bottom,rgba(15,23,42,0),var(--surface));
+  pointer-events:none}
 /* 详情操作按钮：与板块统一的发丝线风格，悬停才显语义色 */
 .hp-op{padding:5px 13px;font-size:12px;line-height:1.5;border-radius:7px;
   background:var(--surface2);border:1px solid var(--border);color:var(--text2);
