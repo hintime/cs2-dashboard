@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 971.21,
-    "change": -2.88,
-    "change_pct": -2.88,
-    "market_value": 298118296.2,
-    "total_items": 3960,
-    "updated": "2026-09-23T06:00:03+08:00",
+    "latest": 967.96,
+    "change": -3.2,
+    "change_pct": -3.2,
+    "market_value": 297119682.08,
+    "total_items": 3941,
+    "updated": "2026-09-23T08:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3675,9 +3675,9 @@
         "date": "2026-09-23",
         "dateFull": "2026-09-23 06:00",
         "open": 971.21,
-        "close": 971.21,
+        "close": 967.96,
         "high": 971.21,
-        "low": 971.21
+        "low": 967.96
       }
     ],
     "volBar": [],
@@ -11009,12 +11009,20 @@
         "index": 971.21,
         "change_pct": -2.88,
         "market_value": 298118296.2
+      },
+      {
+        "time": "08:00",
+        "date": "2026-09-23",
+        "timestamp": 1790121603,
+        "index": 967.96,
+        "change_pct": -3.2,
+        "market_value": 297119682.08
       }
     ],
     "selling": {
-      "total_selling": 1334034,
+      "total_selling": 1325527,
       "total_selling_prev": 0,
-      "total_selling_delta": 1334034,
+      "total_selling_delta": 1325527,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11022,7 +11030,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790114403359,
+  "index_updated": 1790121603089,
   "alerts": [
     {
       "name": "M4A4 | Spider Lily (Minimal Wear)",
@@ -29596,7 +29604,7 @@
     "MP9 | 八音盒 (崭新出厂)",
     "MP9 | 八音盒 (略有磨损)"
   ],
-  "updated": "2026-09-22T23:32:08Z",
+  "updated": "2026-09-23T00:02:10Z",
   "steam_market_items": 0,
   "steam_market_recs": {
     "momentum": [],
