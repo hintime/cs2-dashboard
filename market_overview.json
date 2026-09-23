@@ -1,26 +1,26 @@
 {
   "index": {
     "name": "饰品指数",
-    "current": 791.12,
-    "change": 1.18,
-    "change_pct": 0.15,
+    "current": 791.17,
+    "change": 1.23,
+    "change_pct": 0.16,
     "max": 791.19,
     "min": 790.03,
     "change_days": 2,
-    "latest_time": "2026-09-24 06:55"
+    "latest_time": "2026-09-24 07:25"
   },
   "trade": {
-    "today_amount": 13507370.32,
-    "yesterday_amount": 64559175.26,
-    "today_volume": 513205,
-    "yesterday_volume": 1371367,
-    "amount_mom": 5.39,
-    "volume_mom": 31.62
+    "today_amount": 14549271.29,
+    "yesterday_amount": 64612290.24,
+    "today_volume": 549740,
+    "yesterday_volume": 1371701,
+    "amount_mom": 7.77,
+    "volume_mom": 29.94
   },
   "updown": {
-    "up": 1386,
-    "flat": 4272,
-    "down": 1836
+    "up": 1406,
+    "flat": 4191,
+    "down": 1897
   },
   "greedy": {
     "value": 37.94,
@@ -28,7 +28,6 @@
     "change": "8"
   },
   "trend_24h": [
-    787.46,
     790.06,
     790.76,
     790.09,
@@ -51,8 +50,9 @@
     791.01,
     790.97,
     791.16,
-    791.12
+    791.12,
+    791.17
   ],
-  "updated": "2026-09-23T23:00:28Z",
+  "updated": "2026-09-23T23:30:25Z",
   "source": "firepulse"
 }
