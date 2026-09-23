@@ -1113,7 +1113,7 @@ html { scroll-behavior: smooth; }
      原来 max-height:none 会随内容把整页撑长（实测内容高约 1020px，
      视口仅 508px）→ 数据格与操作按钮被推到折叠下方，看着像"没数据"。 */
   .hp-detail{
-    max-height:calc(100vh - 200px);
+    max-height:calc(100vh - 150px);
     overflow-y:auto;
     overscroll-behavior:contain;
   }
@@ -6453,10 +6453,6 @@ function hpSelect(idx){
    + '<span class="s '+cls+'">'+sg+'¥'+hpFmt(Math.abs(pnl))+'</span>'
    + '<span class="r">1 日 '+((r1>=0?'+':'')+r1.toFixed(1))+'%<br>7 日 '
    + ((r7>=0?'+':'')+r7.toFixed(1))+'%</span></div>'
-   + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)))+'</div>'
-   + (cv ? ('<div class="hp-axis"><span>30 天前</span><span>20 天前</span><span>10 天前</span>'
-      + '<span>今天</span></div>'
-      + '<div class="hp-lgd"><span><i></i>你的成本线 ¥'+hpFmt(c)+'</span></div>') : '')
    + '<div class="hp-grid">'
    + '<div class="hp-cell"><div class="k">成本</div><div class="v mono">'
    + (noCost ? '<span style="color:var(--amber)">未录入</span>' : ('¥'+hpFmt(c)))+'</div>'
@@ -6477,6 +6473,10 @@ function hpSelect(idx){
    + '<button class="hp-op sell" onclick="hpSell('+idx+')">卖出此件</button>'
    + '<button class="hp-op star" onclick="hpStar('+idx+')">加星关注</button>'
    + '<button class="hp-op ai" onclick="hpDetail('+idx+')">AI 分析</button>'
+   + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)))+'</div>'
+   + (cv ? ('<div class="hp-axis"><span>30 天前</span><span>20 天前</span><span>10 天前</span>'
+      + '<span>今天</span></div>'
+      + '<div class="hp-lgd"><span><i></i>你的成本线 ¥'+hpFmt(c)+'</span></div>') : '')
    + '</div>';
   box.innerHTML = html;
   window._hpCur = idx;
