@@ -1088,7 +1088,7 @@ html { scroll-behavior: smooth; }
   background:var(--surface2);border:1px solid var(--border);color:var(--text2);
   cursor:pointer;font-family:inherit;white-space:nowrap;
   transition:background .12s,border-color .12s,color .12s}
-.hp-op:hover{background:var(--surface3);color:var(--text)}
+.hp-op:hover{background:var(--surface);color:var(--text)}
 .hp-op:active{transform:translateY(.5px)}
 .hp-op.sell:hover{border-color:rgba(248,113,113,.42);color:#f87171}
 .hp-op.star:hover{border-color:rgba(251,191,36,.42);color:var(--amber)}
@@ -1166,7 +1166,7 @@ html { scroll-behavior: smooth; }
 .hp-selc{color:var(--text3)}
 .hp-bbtn{padding:3.5px 10px;font-size:11px;border-radius:6px;border:1px solid var(--border);
   background:var(--surface2);color:var(--text2);cursor:pointer;font-family:inherit}
-.hp-bbtn:hover:not(:disabled){background:var(--surface3);color:var(--text)}
+.hp-bbtn:hover:not(:disabled){background:var(--surface);color:var(--text)}
 .hp-bbtn:disabled{opacity:.4;cursor:default}
 .hp-bbtn.pri{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
 /* 列表项：加一列复选框 */
@@ -1238,9 +1238,12 @@ html { scroll-behavior: smooth; }
 /* ═══ 【hover】走势图 tooltip + 列表名称提示（2026-09-22）═══ */
 .hp-tip{position:absolute;z-index:10;pointer-events:none;opacity:0;
   transition:opacity .12s;transform:translateX(-50%);
-  background:var(--surface3);border:1px solid var(--border);border-radius:6px;
+  /* ★ 同上：改用不透明背景 */
+  background:var(--surface);
+  border:1px solid rgba(255,255,255,.13);border-radius:6px;
   padding:4px 9px;font-size:11.5px;line-height:1.5;color:var(--text);
-  white-space:nowrap;box-shadow:0 4px 14px -4px rgba(0,0,0,.6);
+  white-space:nowrap;
+  box-shadow:0 10px 26px -8px rgba(0,0,0,.9), 0 0 0 1px rgba(0,0,0,.4);
   display:flex;align-items:baseline;gap:7px}
 /* ★ 垂直准线（TradingView 式 crosshair 竖线）*/
 .hp-tip-line{position:absolute;top:0;bottom:0;width:1px;display:none;z-index:8;
@@ -1257,9 +1260,16 @@ html { scroll-behavior: smooth; }
 
 /* ═══ 【hover 增强】平台比价 / sparkline 放大 / 快捷键提示 ═══ */
 .hp-pop{position:fixed;z-index:200;pointer-events:none;opacity:0;display:none;
-  transition:opacity .12s;background:var(--surface3);border:1px solid var(--border);
+  transition:opacity .12s;
+  /* ★ 2026-09-23：原用 --surface3，但该变量站内未定义 → 背景失效、浮层全透明，
+     与页面糊在一起。改用 --surface（.88~.92，近乎不透明）并叠加强阴影。 */
+  background:var(--surface);
+  border:1px solid rgba(255,255,255,.13);
   border-radius:8px;padding:9px 11px;min-width:150px;
-  box-shadow:0 12px 34px -10px rgba(0,0,0,.8);color:var(--text);font-size:11.5px;
+  box-shadow:0 18px 44px -12px rgba(0,0,0,.95),
+             0 3px 10px rgba(0,0,0,.55),
+             0 0 0 1px rgba(0,0,0,.42);
+  color:var(--text);font-size:11.5px;
   line-height:1.55}
 .hp-pop-h{font-size:11px;font-weight:650;color:var(--text2);letter-spacing:.03em;
   margin-bottom:2px}
@@ -1340,7 +1350,7 @@ html { scroll-behavior: smooth; }
 /* ③ 数据格：标签弱化、数值强化，层级更清楚 */
 #holdingsPanel .hp-cell{padding:9px 11px;border-radius:8px;background:var(--surface2);
   border:1px solid var(--border);transition:border-color .15s,background .15s}
-#holdingsPanel .hp-cell:hover{border-color:var(--border-hi);background:var(--surface3)}
+#holdingsPanel .hp-cell:hover{border-color:var(--border-hi);background:var(--surface)}
 #holdingsPanel .hp-cell .k{font-size:9.5px;letter-spacing:.07em;color:var(--text3);
   text-transform:uppercase;font-weight:600;margin-bottom:3px}
 #holdingsPanel .hp-cell .v{font-size:16px;font-weight:750;letter-spacing:-.015em;
