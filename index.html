@@ -6433,17 +6433,13 @@ function hpCurve(h){
       }
     }
   } catch(e) {}
-  /* 数据源 3：成本 → 现价 插值（无日期，X 轴退化为均匀）*/
-  var c = Number(h.c)||0, pp = Number(h.p)||0;
-  if (c <= 0 || pp <= 0) return null;
-  var n = 26, out = [];
-  for (var k=0;k<n;k++){
-    var base = c - (c - pp) * (k/(n-1));
-    var wob = (((k*37)%11)-5)/100;
-    out.push(base * (1+wob));
-  }
-  out[0] = c; out[n-1] = pp;
-  return { p: out, d: [] };
+    /* ⚠ 2026-09-24：原本这里还有一个「数据源 3」——用成本→现价线性插值
+       + 固定抖动 wob 给没有真实历史的物品"造"一条曲线。
+       问题：wob 只依赖索引 k，**所有走这条路的物品形状完全相同**
+       （先平→降→平），义轩一眼看出"怎么都是一样的"。
+       时间序列必须是真实数据：宁可显示"暂无走势数据"，也不画假曲线。
+       （上面两个数据源仍为真实数据：price_history / price_summary）*/
+    return null;
 }
 function hpChart(vals, cost, reason, days){
   /* vals 现为 {p:[], d:[]}；兼容旧的纯数组写法 */
