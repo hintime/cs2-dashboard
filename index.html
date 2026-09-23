@@ -1225,6 +1225,46 @@ html { scroll-behavior: smooth; }
   width:8px;height:8px;border-radius:50%;background:var(--text);
   border:1.5px solid var(--surface);box-shadow:0 0 0 2px rgba(255,255,255,.08)}
 .hp-chart{cursor:crosshair}
+
+/* ═══ 【hover 增强】平台比价 / sparkline 放大 / 快捷键提示 ═══ */
+.hp-pop{position:fixed;z-index:200;pointer-events:none;opacity:0;display:none;
+  transition:opacity .12s;background:var(--surface3);border:1px solid var(--border);
+  border-radius:8px;padding:9px 11px;min-width:150px;
+  box-shadow:0 12px 34px -10px rgba(0,0,0,.8);color:var(--text);font-size:11.5px;
+  line-height:1.55}
+.hp-pop-h{font-size:11px;font-weight:650;color:var(--text2);letter-spacing:.03em;
+  margin-bottom:2px}
+.hp-pop-sub{font-size:10.5px;color:var(--text3);margin-bottom:6px;
+  max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hp-pop-row{display:flex;align-items:baseline;gap:8px;padding:2px 0}
+.hp-pop-row .pf{width:38px;color:var(--text3);font-size:10.5px;flex-shrink:0}
+.hp-pop-row b{font-variant-numeric:tabular-nums;font-size:12px}
+.hp-pop-row b.lo{color:var(--fall)}
+.hp-pop-row b.hi{color:var(--rise)}
+.hp-pop-row b.mid{color:var(--text)}
+.hp-pop-row .dt{font-variant-numeric:tabular-nums;font-size:10.5px;min-width:46px}
+.hp-pop-row .dt.lo{color:var(--fall)}
+.hp-pop-row .dt.hi{color:var(--rise)}
+.hp-pop-row .dt.mid{color:var(--text3)}
+.hp-pop-row .lb{color:var(--text3);font-size:10px;margin-left:auto}
+.hp-pop-ft{margin-top:6px;padding-top:5px;border-top:1px solid rgba(255,255,255,.06);
+  font-size:10.5px;color:var(--text3)}
+.hp-pop-ft2{margin-top:3px;font-size:10px;color:var(--text3)}
+.hp-pop-kb{font-size:11px;color:var(--text2);white-space:nowrap}
+.hp-sparkbig{width:200px;height:72px;display:block;margin-top:4px;overflow:visible}
+/* 列表内迷你图 */
+.hp-spark{width:32px;height:16px;display:block;overflow:visible;opacity:.85}
+.hp-li:hover .hp-spark{opacity:1}
+.hp-spark-none{color:var(--text3);font-size:10px}
+.hp-li .sp{display:flex;align-items:center;justify-content:center}
+/* 列表栅格：加一列给 sparkline */
+.hp-li{grid-template-columns:1fr 34px 74px}
+.hp-li.selmode{grid-template-columns:16px 1fr 34px 74px}
+.hp-px{cursor:help}
+@media(max-width:860px){
+  .hp-li{grid-template-columns:1fr 30px 66px}
+  .hp-li.selmode{grid-template-columns:16px 1fr 30px 66px}
+}
 </style>
   </div>
 
@@ -1484,12 +1524,14 @@ html { scroll-behavior: smooth; }
           </select>
       </div>
       <div class="hp-batch-bar" id="hpBatchBar">
-        <button class="hp-bbtn ghost" id="hpEnterSel" onclick="hpSelMode(true)">批量操作</button>
+        <button class="hp-bbtn ghost" id="hpEnterSel" onclick="hpSelMode(true)"
+          data-hint="进入选择模式后可批量补录成本" onmouseenter="hpHint(this)" onmouseleave="hpPopHide()">批量操作</button>
         <span class="hp-selmode" id="hpSelModeBar" style="display:none">
-          <label class="hp-ck-all"><span class="hp-ck" id="hpAllCkBox"></span>全选</label>
+          <label class="hp-ck-all" data-hint="快捷键 A" onmouseenter="hpHint(this)" onmouseleave="hpPopHide()"><span class="hp-ck" id="hpAllCkBox"></span>全选</label>
           <span class="hp-selc" id="hpSelCount">已选 0 项</span>
           <span style="flex:1"></span>
-          <button class="hp-bbtn" id="hpBatchCostBtn" onclick="hpBatchCost()" disabled>批量补成本</button>
+          <button class="hp-bbtn" id="hpBatchCostBtn" onclick="hpBatchCost()" disabled
+            data-hint="快捷键 B ｜ 逐件填写买入价，留空表示不改" onmouseenter="hpHint(this)" onmouseleave="hpPopHide()">批量补成本</button>
           <button class="hp-bbtn ghost" onclick="hpSelMode(false)">退出</button>
         </span>
       </div>
@@ -6384,11 +6426,11 @@ function hpSelect(idx){
    + '<div class="hp-cell"><div class="k">成本</div><div class="v mono">'
    + (noCost ? '<span style="color:var(--amber)">未录入</span>' : ('¥'+hpFmt(c)))+'</div>'
    + '<div class="s">'+(noCost ? '点击上方「＋ 添加」补录' : '买入价')+'</div></div>'
-   + '<div class="hp-cell"><div class="k">现价</div><div class="v mono">¥'+hpFmt(p)+'</div>'
-   + '<div class="s">ECO 平台</div></div>'
-   + '<div class="hp-cell"><div class="k">BUFF 卖价</div><div class="v mono">¥'
+   + '<div class="hp-cell hp-px" data-idx="'+idx+'" onmouseenter="hpCellTip(this)" onmouseleave="hpPopHide()"><div class="k">现价</div><div class="v mono">¥'+hpFmt(p)+'</div>'
+   + '<div class="s">ECO 平台 · 悬停比价</div></div>'
+   + '<div class="hp-cell hp-px" data-idx="'+idx+'" onmouseenter="hpCellTip(this)" onmouseleave="hpPopHide()"><div class="k">BUFF 卖价</div><div class="v mono">¥'
    + hpFmt(h.buff_sell||0)+'</div><div class="s">实时</div></div>'
-   + '<div class="hp-cell"><div class="k">悠悠卖价</div><div class="v mono">¥'
+   + '<div class="hp-cell hp-px" data-idx="'+idx+'" onmouseenter="hpCellTip(this)" onmouseleave="hpPopHide()"><div class="k">悠悠卖价</div><div class="v mono">¥'
    + hpFmt(h.yyyp_sell||0)+'</div><div class="s">实时</div></div>'
    + '<div class="hp-cell"><div class="k">数量</div><div class="v mono">'
    + (h.qty||1)+'</div><div class="s">持有件数</div></div>'
@@ -6571,13 +6613,15 @@ function renderList(){
       var noCost2 = (Number(h.c)||0) <= 0;
       var selMode = !!window._hpSelMode;
       var checked = !!(window._hpSelSet && window._hpSelSet[idx]);
-      out.push('<div class="hp-li'+(first?' on':'')+(selMode?' selmode':'')+'" data-i="'+idx+'" onclick="hpSelect('
-        + idx + ')">'
+      out.push('<div class="hp-li'+(first?' on':'')+(selMode?' selmode':'')+'" data-i="'+idx+'"'
+        + ' onclick="hpSelect(' + idx + ')"'
+        + ' onmouseenter="hpSparkBig(this,' + idx + ')" onmouseleave="hpSparkBigHide()">'
         + (selMode ? ('<span class="hp-ckcell" onclick="event.stopPropagation();hpToggleOne(' + idx + ',this)">'
             + '<span class="hp-ck' + (checked ? ' on' : '') + '" data-i="' + idx + '"></span></span>') : '')
         + '<div><div class="nm" title="'+esc(h.n)+'">'+esc(hpName(h))+'</div>'
         + '<div class="sub">'+(noCost2 ? '<span style="color:var(--amber)">成本未录入</span>'
             : ('¥'+hpFmt(h.c)+' → ¥'+hpFmt(h.p)))+w2+'</div></div>'
+        + '<div class="sp">'+hpSparkline(h)+'</div>'
         + '<div class="p"><div class="v '+cl+'">'+s2+Math.abs(Number(h.pnlPct)||0).toFixed(1)+'%</div>'
         + '<div class="a">'+s2+'¥'+hpFmt(Math.abs(Number(h.pnl)||0))+'</div></div></div>');
       first = false;
@@ -6742,6 +6786,159 @@ function hpCloudSync(){
     }catch(e){}
   }, 2500);   // 与成本同步同节奏，防抖
 }
+
+/* ═══ hover 增强：平台比价 / sparkline / 快捷键提示（2026-09-23）═══ */
+/* 通用浮层（fixed 定位，跟随目标元素）*/
+function hpPop(){
+  var p = document.getElementById('hpPop');
+  if (!p){
+    p = document.createElement('div');
+    p.id = 'hpPop';
+    p.className = 'hp-pop';
+    document.body.appendChild(p);
+  }
+  return p;
+}
+function hpPopAt(el, html){
+  var p = hpPop();
+  p.innerHTML = html;
+  p.style.opacity = '0';
+  p.style.display = 'block';
+  var r = el.getBoundingClientRect();
+  var pw = p.offsetWidth, ph = p.offsetHeight;
+  var vw = window.innerWidth, vh = window.innerHeight;
+  var left = r.left + r.width / 2 - pw / 2;
+  left = Math.max(8, Math.min(vw - pw - 8, left));
+  var top = r.top - ph - 8;
+  if (top < 8) top = r.bottom + 8;
+  if (top + ph > vh - 8) top = Math.max(8, vh - ph - 8);
+  p.style.left = left + 'px';
+  p.style.top = top + 'px';
+  p.style.opacity = '1';
+}
+function hpPopHide(){
+  var p = document.getElementById('hpPop');
+  if (p) p.style.opacity = '0';
+}
+/* ① 平台比价 */
+function hpCellTip(el){
+  var idx = Number(el.getAttribute('data-idx'));
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+  var h = arr[idx];
+  if (!h) return;
+  var eco = Number(h.p) || 0, buf = Number(h.buff_sell) || 0;
+  var yy = Number(h.yyyp_sell) || 0, st = Number(h.n_steam) || 0;
+  var rows = [];
+  if (eco > 0) rows.push({ k: 'ECO', v: eco, tag: '' });
+  if (buf > 0) rows.push({ k: 'BUFF', v: buf, tag: '' });
+  if (yy > 0) rows.push({ k: '悠悠', v: yy, tag: '' });
+  if (st > 0) rows.push({ k: 'Steam', v: st, tag: '含 15% 抽成' });
+  if (rows.length < 2) return;
+  var vals = rows.map(function (r) { return r.v; });
+  var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  var name = (typeof hpName === 'function') ? hpName(h) : h.n;
+  var html = '<div class="hp-pop-h">平台比价 · 谁高谁低</div>'
+    + '<div class="hp-pop-sub">' + esc(name) + '</div>';
+  rows.forEach(function (r) {
+    var d = r.v - lo;
+    var pct = lo > 0 ? (d / lo * 100) : 0;
+    var cls = r.v === lo ? 'lo' : (r.v === hi ? 'hi' : 'mid');
+    var label = r.v === lo ? '最低' : (r.v === hi ? '最高' : '');
+    html += '<div class="hp-pop-row">'
+      + '<span class="pf">' + r.k + '</span>'
+      + '<b class="' + cls + '">¥' + hpFmt(r.v) + '</b>'
+      + '<span class="dt ' + cls + '">' + (d > 0 ? '+' + pct.toFixed(1) + '%' : '基准') + '</span>'
+      + '<span class="lb">' + (label || r.tag || '') + '</span>'
+      + '</div>';
+  });
+  html += '<div class="hp-pop-ft">价差 ¥' + hpFmt(hi - lo) + '（'
+    + (lo > 0 ? ((hi - lo) / lo * 100).toFixed(1) : '0') + '%）</div>';
+  /* 附加维度 */
+  var extra = [];
+  if (h.n_premium_buff) extra.push('BUFF 溢价 ' + (h.n_premium_buff > 0 ? '+' : '') + Number(h.n_premium_buff).toFixed(1) + '%');
+  if (h.n_premium_yyyp) extra.push('悠悠溢价 ' + (h.n_premium_yyyp > 0 ? '+' : '') + Number(h.n_premium_yyyp).toFixed(1) + '%');
+  if (h.data_gaps) extra.push('数据缺口：' + String(h.data_gaps).slice(0, 24));
+  if (extra.length) html += '<div class="hp-pop-ft2">' + extra.join(' · ') + '</div>';
+  hpPopAt(el, html);
+}
+/* ② 迷你 sparkline（列表内）*/
+function hpSparkline(h){
+  var cv = hpCurve(h);
+  if (!cv || !cv.p || cv.p.length < 3) return '<span class="hp-spark-none">—</span>';
+  var v = cv.p, W = 32, H = 16;
+  var mx = Math.max.apply(null, v), mn = Math.min.apply(null, v), rng = (mx - mn) || 1;
+  var pts = [];
+  for (var i = 0; i < v.length; i++) {
+    pts.push((i * (W / (v.length - 1))).toFixed(1) + ','
+      + (H - 2 - ((v[i] - mn) / rng) * (H - 4)).toFixed(1));
+  }
+  var up = v[v.length - 1] >= v[0];
+  return '<svg class="hp-spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">'
+    + '<polyline fill="none" stroke="' + (up ? 'var(--rise)' : 'var(--fall)')
+    + '" stroke-width="1.5" stroke-linejoin="round" points="' + pts.join(' ') + '"/></svg>';
+}
+/* ② hover 放大成 200×72 */
+function hpSparkBig(el, idx){
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+  var h = arr[idx];
+  if (!h) return;
+  var cv = hpCurve(h);
+  if (!cv || !cv.p || cv.p.length < 3) {
+    hpPopAt(el, '<div class="hp-pop-h">' + esc((typeof hpName === 'function') ? hpName(h) : h.n)
+      + '</div><div class="hp-pop-sub" style="margin:4px 0 0">暂无走势数据（该品类平台未采集历史）</div>');
+    return;
+  }
+  var v = cv.p, W = 200, H = 72;
+  var mx = Math.max.apply(null, v), mn = Math.min.apply(null, v), rng = (mx - mn) || 1;
+  var pts = [];
+  for (var i = 0; i < v.length; i++) {
+    pts.push((i * (W / (v.length - 1))).toFixed(1) + ','
+      + (H - 6 - ((v[i] - mn) / rng) * (H - 14)).toFixed(1));
+  }
+  var first = v[0], last = v[v.length - 1];
+  var chg = first > 0 ? ((last - first) / first * 100) : 0;
+  var up = chg >= 0;
+  var col = up ? 'var(--rise)' : 'var(--fall)';
+  var c = Number(h.c) || 0;
+  var costY = (c >= mn && c <= mx) ? (H - 6 - ((c - mn) / rng) * (H - 14)) : null;
+  var svg = '<svg class="hp-sparkbig" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">'
+    + (costY !== null ? '<line x1="0" x2="' + W + '" y1="' + costY.toFixed(1) + '" y2="' + costY.toFixed(1)
+        + '" stroke="var(--amber)" stroke-width="1" stroke-dasharray="4 3" opacity=".75"/>' : '')
+    + '<polyline fill="none" stroke="' + col + '" stroke-width="1.8" stroke-linejoin="round" points="'
+    + pts.join(' ') + '"/></svg>';
+  var name = (typeof hpName === 'function') ? hpName(h) : h.n;
+  var days = (cv.d && cv.d.length) ? (cv.d[0] + ' → ' + cv.d[cv.d.length - 1]) : '最近 ' + v.length + ' 个采样点';
+  hpPopAt(el,
+    '<div class="hp-pop-h">' + esc(name) + '</div>'
+    + svg
+    + '<div class="hp-pop-row" style="margin-top:5px">'
+    + '<span class="pf">区间</span><b>¥' + hpFmt(mn) + ' ~ ¥' + hpFmt(mx) + '</b>'
+    + '<span class="dt ' + (up ? 'hi' : 'lo') + '">' + (up ? '+' : '') + chg.toFixed(1) + '%</span></div>'
+    + '<div class="hp-pop-ft">' + days + (costY !== null ? ' ｜ 虚线＝你的成本' : '') + '</div>');
+}
+function hpSparkBigHide(){ hpPopHide(); }
+/* ③ 快捷键提示 */
+function hpHint(el){
+  var t = el.getAttribute('data-hint');
+  if (t) hpPopAt(el, '<div class="hp-pop-kb">' + esc(t) + '</div>');
+}
+
+/* 选择模式快捷键：A = 全选，B = 批量补成本 */
+document.addEventListener('keydown', function (e) {
+  var tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (!window._hpSelMode) return;
+  var k = (e.key || '').toLowerCase();
+  if (k === 'a') {
+    if (typeof hpToggleAllBox === 'function') { hpToggleAllBox(); e.preventDefault(); }
+  } else if (k === 'b') {
+    var btn = document.getElementById('hpBatchCostBtn');
+    if (btn && !btn.disabled && typeof hpBatchCost === 'function') { hpBatchCost(); e.preventDefault(); }
+  } else if (k === 'escape') {
+    if (typeof hpSelMode === 'function') hpSelMode(false);
+  }
+});
 </script>
 </html>
 
