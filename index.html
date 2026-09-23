@@ -1113,7 +1113,7 @@ html { scroll-behavior: smooth; }
      原来 max-height:none 会随内容把整页撑长（实测内容高约 1020px，
      视口仅 508px）→ 数据格与操作按钮被推到折叠下方，看着像"没数据"。 */
   .hp-detail{
-    max-height:calc(100vh - 150px);
+    /* max-height 由 hpFitDetail() 运行时按实际起点计算，避免与头部高度脱节 */
     overflow-y:auto;
     overscroll-behavior:contain;
   }
@@ -1331,6 +1331,36 @@ html { scroll-behavior: smooth; }
 }
   #holdingsPanel .hp-big .v{font-size:23px}
 }
+
+/* ═══ 持仓板块视觉提升（2026-09-23）═══ */
+/* ③ 数据格：标签弱化、数值强化，层级更清楚 */
+#holdingsPanel .hp-cell{padding:9px 11px;border-radius:8px;background:var(--surface2);
+  border:1px solid var(--border);transition:border-color .15s,background .15s}
+#holdingsPanel .hp-cell:hover{border-color:var(--border-hi);background:var(--surface3)}
+#holdingsPanel .hp-cell .k{font-size:9.5px;letter-spacing:.07em;color:var(--text3);
+  text-transform:uppercase;font-weight:600;margin-bottom:3px}
+#holdingsPanel .hp-cell .v{font-size:16px;font-weight:750;letter-spacing:-.015em;
+  font-variant-numeric:tabular-nums;line-height:1.25}
+#holdingsPanel .hp-cell .s{font-size:10px;color:var(--text3);margin-top:3px;
+  letter-spacing:0}
+/* ④ KPI 数字更醒目 */
+#holdingsPanel .k-value{letter-spacing:-.03em}
+#holdingsPanel .kpi-card{transition:border-color .15s,background .15s}
+/* 大号盈亏：数字与副信息对比拉开 */
+#holdingsPanel .hp-big .v{font-weight:800;letter-spacing:-.03em}
+/* 左栏列表项：hover 更明确 */
+#holdingsPanel .hp-li{transition:background .13s,box-shadow .13s}
+#holdingsPanel .hp-li:hover{box-shadow:inset 2px 0 0 var(--blue)}
+#holdingsPanel .hp-li.on{box-shadow:inset 2px 0 0 var(--blue)}
+/* 分区标题更清晰 */
+#holdingsPanel .hp-zlab{letter-spacing:.02em}
+/* 详情标题区 */
+#holdingsPanel .hp-dh .n{letter-spacing:-.01em}
+/* 滚动条统一（详情区内部）*/
+#holdingsPanel .hp-detail::-webkit-scrollbar{width:8px}
+#holdingsPanel .hp-detail::-webkit-scrollbar-thumb{background:rgba(99,115,129,.35);
+  border-radius:4px}
+#holdingsPanel .hp-detail::-webkit-scrollbar-thumb:hover{background:rgba(99,115,129,.55)}
 </style>
   </div>
 
@@ -6443,12 +6473,21 @@ function hpChart(vals, cost, reason, days){
   var last = vals[vals.length-1], ly = H-14-((last-mn)/rng)*(H-30);
   var col = last>=cost ? 'var(--rise)' : 'var(--fall)';
   var lastX = xs.length ? xs[xs.length-1] : W;
+  /* ★ 渐变面积填充（area chart 观感）：颜色随涨跌取 rise/fall */
+  var uid = 'hpG' + Math.random().toString(36).slice(2, 8);
+  var area = '0,' + H + ' ' + pts.join(' ') + ' ' + W + ',' + H;
   return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'
+    + '<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="0" y2="1">'
+    +   '<stop offset="0%" stop-color="'+col+'" stop-opacity=".26"/>'
+    +   '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'
+    + '</linearGradient></defs>'
     + '<line x1="0" x2="'+W+'" y1="'+cy+'" y2="'+cy+'" stroke="var(--amber)" '
     + 'stroke-width="1.2" stroke-dasharray="5 4" opacity=".8"/>'
+    + '<polygon fill="url(#'+uid+')" points="'+area+'"/>'
     + '<polyline fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round" '
     + 'points="'+pts.join(' ')+'"/>'
-    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="3.5" fill="'+col+'"/></svg>';
+    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="3.5" fill="'+col+'"/>'
+    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="7" fill="'+col+'" opacity=".18"/></svg>';
 }
 window.hpName = hpName;   /* 供其它 script 块（如 AI 分析弹窗）复用中文名 */
 document.addEventListener('click', function(e){
@@ -6517,6 +6556,8 @@ function hpSelect(idx){
   window._hpCur = idx;
   /* ★ 走势图鼠标跟随 tooltip（TradingView 模式）*/
   try { hpChartTooltip(idx); } catch(e) {}
+  /* ★ 详情区高度按视口自适应（每次渲染后重算）*/
+  try { hpFitDetail(); } catch(e) {}
 }
 /* 详情走势图：鼠标跟随 tooltip */
 function hpChartTooltip(idx){
@@ -6617,6 +6658,7 @@ function hpDetail(idx){
   if (typeof openItemDetail === 'function') openItemDetail(h);
 }
 function renderList(){
+  setTimeout(function(){ try { hpFitDetail(); } catch(e){} }, 0);
   var list = document.getElementById('hpList');
   if (!list) return;
   /* ★ 接上 getFiltered()：搜索 / 分类 tab / 排序 三个控件由此生效
@@ -7072,6 +7114,19 @@ function hpKpiTip(el, kind){
     + '<div class="hp-pop-sub">' + esc((typeof hpName === 'function') ? '持仓汇总' : '持仓汇总') + '</div>'
     + body);
 }
+
+/* ★ 详情区高度运行时自适应：按实际起点算可用高度，任何视口都不溢出。
+   （原 CSS calc(100vh - 150px) 与真实起点 399px 不匹配，矮屏下底部会超出视口）*/
+function hpFitDetail(){
+  var D = document.getElementById('hpDetail');
+  if (!D) return;
+  var r = D.getBoundingClientRect();
+  var topAbs = r.top + window.pageYOffset;
+  var avail = window.innerHeight - (topAbs - window.pageYOffset) - 14;
+  avail = Math.max(260, Math.round(avail));
+  D.style.maxHeight = avail + 'px';
+}
+window.addEventListener('resize', function(){ try { hpFitDetail(); } catch(e){} });
 </script>
 </html>
 
