@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 18,
+  "total_analyses": 19,
   "lessons": [
     {
       "id": "L01",
@@ -10,7 +10,7 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 22,
+      "confirmed": 23,
       "last_seen": "2026-09-24"
     },
     {
@@ -20,7 +20,7 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 22,
+      "confirmed": 23,
       "last_seen": "2026-09-24"
     },
     {
@@ -30,7 +30,7 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 21,
+      "confirmed": 22,
       "last_seen": "2026-09-24"
     },
     {
@@ -40,8 +40,8 @@
       "impact": "中",
       "action": "拓宽信息来源，增加数据维度",
       "added_at": "2026-06-16",
-      "confirmed": 14,
-      "last_seen": "2026-09-23"
+      "confirmed": 15,
+      "last_seen": "2026-09-24"
     },
     {
       "id": "L05",
@@ -50,12 +50,12 @@
       "impact": "低",
       "action": "理由应包含具体指标数值（如溢价率）",
       "added_at": "2026-06-15",
-      "confirmed": 4,
-      "last_seen": "2026-09-22"
+      "confirmed": 5,
+      "last_seen": "2026-09-24"
     }
   ],
   "history": [],
-  "last_updated": "2026-09-23T17:03:43Z",
+  "last_updated": "2026-09-23T23:02:54Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -583,6 +583,36 @@
         "priced": 1176,
         "profitable": 687,
         "rate": 58.4
+      }
+    },
+    {
+      "seq": 19,
+      "ts": "2026-09-23T23:02:54Z",
+      "overview": {
+        "verdict": "推荐准确度中等，需优化信号评估。",
+        "success_pattern": "强调多平台信号和溢价强劲。",
+        "failure_pattern": "忽略跌价风险和溢价不匹配。",
+        "confidence_trend": "下降",
+        "market_signal": "市场波动大，需谨慎投资。"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "+10%/-5%/不变",
+        "buff_weight_advice": "+5%/-10%/不变",
+        "premium_threshold_advice": "溢价率>50%需谨慎",
+        "liquidity_advice": "流动性权重提高至20%"
+      },
+      "reason_analysis": {
+        "right_reasons": "强调多平台信号和溢价强劲，流动性评估准确。",
+        "wrong_reasons": "过度依赖单一ECO信号，忽略溢价不匹配。",
+        "reason_keywords_avoid": "单一平台信号，溢价不匹配",
+        "reason_keywords_use": "多平台信号，溢价匹配，流动性"
+      },
+      "prompt_tweak": "强调多平台信号和溢价匹配，避免单一信号判断，用数据支撑推荐理由。",
+      "stats": {
+        "total": 1183,
+        "priced": 1176,
+        "profitable": 696,
+        "rate": 59.2
       }
     }
   ],
