@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 981.81,
-    "change": -1.82,
-    "change_pct": -1.82,
-    "market_value": 301369524.73,
-    "total_items": 3993,
-    "updated": "2026-09-23T18:00:03+08:00",
+    "latest": 981.69,
+    "change": -1.83,
+    "change_pct": -1.83,
+    "market_value": 301333555.86,
+    "total_items": 4004,
+    "updated": "2026-09-23T20:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3699,9 +3699,9 @@
         "date": "2026-09-23",
         "dateFull": "2026-09-23 18:00",
         "open": 981.81,
-        "close": 981.81,
+        "close": 981.69,
         "high": 981.81,
-        "low": 981.81
+        "low": 981.69
       }
     ],
     "volBar": [],
@@ -11081,12 +11081,20 @@
         "index": 981.81,
         "change_pct": -1.82,
         "market_value": 301369524.73
+      },
+      {
+        "time": "20:00",
+        "date": "2026-09-23",
+        "timestamp": 1790164803,
+        "index": 981.69,
+        "change_pct": -1.83,
+        "market_value": 301333555.86
       }
     ],
     "selling": {
-      "total_selling": 1358467,
+      "total_selling": 1359042,
       "total_selling_prev": 0,
-      "total_selling_delta": 1358467,
+      "total_selling_delta": 1359042,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11094,7 +11102,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790157603279,
+  "index_updated": 1790164803893,
   "alerts": [
     {
       "name": "M4A4 | Hellish (Minimal Wear)",
@@ -29688,7 +29696,7 @@
     "MP9 | 九头蛇 (崭新出厂)",
     "MP9 | 九头蛇 (略有磨损)"
   ],
-  "updated": "2026-09-23T11:31:36Z",
+  "updated": "2026-09-23T12:01:38Z",
   "steam_market_items": 0,
   "steam_market_recs": {
     "momentum": [],
