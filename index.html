@@ -1265,6 +1265,12 @@ html { scroll-behavior: smooth; }
   .hp-li{grid-template-columns:1fr 30px 66px}
   .hp-li.selmode{grid-template-columns:16px 1fr 30px 66px}
 }
+
+/* ═══ KPI 口径说明附加样式 ═══ */
+.hp-pop-eq{font-size:10.5px;color:var(--text3);margin:2px 0 5px;
+  padding:2px 6px;background:rgba(255,255,255,.035);border-radius:4px;
+  display:inline-block}
+#holdingsPanel .kpi-card{cursor:help}
 </style>
   </div>
 
@@ -1434,22 +1440,26 @@ html { scroll-behavior: smooth; }
   <div class="panel" id="holdingsPanel">
     <!-- ① 持仓概览：4 个核心指标，紧凑成一条信息带 -->
     <div class="hp-summary">
-      <div class="kpi-card hp-kpi">
+      <div class="kpi-card hp-kpi" data-kpi="value"
+           onmouseenter="hpKpiTip(this,'value')" onmouseleave="hpPopHide()">
         <div class="k-label">持仓市值</div>
         <div class="k-value" id="totalValueHeader">--</div>
         <div class="k-sub" id="totalCountHeader">-- 件</div>
       </div>
-      <div class="kpi-card hp-kpi hp-kpi-hero">
+      <div class="kpi-card hp-kpi hp-kpi-hero" data-kpi="pnl"
+           onmouseenter="hpKpiTip(this,'pnl')" onmouseleave="hpPopHide()">
         <div class="k-label">未实现盈亏</div>
         <div class="k-value" id="totalPnlHeader">--</div>
         <div class="k-sub" id="totalPnlPctHeader">--</div>
       </div>
-      <div class="kpi-card hp-kpi">
+      <div class="kpi-card hp-kpi" data-kpi="cost"
+           onmouseenter="hpKpiTip(this,'cost')" onmouseleave="hpPopHide()">
         <div class="k-label">投入成本</div>
         <div class="k-value" id="totalCostHeader">--</div>
         <div class="k-sub">总成本</div>
       </div>
-      <div class="kpi-card hp-kpi k-accent hp-signal" id="holdingSignal">
+      <div class="kpi-card hp-kpi k-accent hp-signal" id="holdingSignal"
+           onmouseenter="hpKpiTip(this,'signal')" onmouseleave="hpPopHide()">
         <div class="k-label">综合信号</div>
         <div class="hp-signal-row">
           <span id="signalIcon">⚪</span>
@@ -6842,8 +6852,9 @@ function hpCellTip(el){
   rows.forEach(function (r) {
     var d = r.v - lo;
     var pct = lo > 0 ? (d / lo * 100) : 0;
-    var cls = r.v === lo ? 'lo' : (r.v === hi ? 'hi' : 'mid');
-    var label = r.v === lo ? '最低' : (r.v === hi ? '最高' : '');
+    var same = (hi - lo) < 0.005;                 /* 四舍五入后同价时不再区分高低 */
+    var cls = same ? 'mid' : (r.v === lo ? 'lo' : (r.v === hi ? 'hi' : 'mid'));
+    var label = same ? '同价' : (r.v === lo ? '最低' : (r.v === hi ? '最高' : ''));
     html += '<div class="hp-pop-row">'
       + '<span class="pf">' + r.k + '</span>'
       + '<b class="' + cls + '">¥' + hpFmt(r.v) + '</b>'
@@ -6939,6 +6950,69 @@ document.addEventListener('keydown', function (e) {
     if (typeof hpSelMode === 'function') hpSelMode(false);
   }
 });
+
+/* ═══ KPI 口径说明（内容取自 updateKPI 的真实逻辑）═══ */
+function hpKpiTip(el, kind){
+  var H = window.H || [];
+  if (!H.length) return;
+  var n = H.length, tc = 0, tp = 0, win = 0;
+  for (var i = 0; i < n; i++){
+    var h = H[i];
+    var c = Number(h.c) || 0, p = Number(h.p) || 0;
+    tc += c; tp += p;
+    if (p > c) win++;
+  }
+  var pnl = tp - tc;
+  var pct = tc > 0 ? pnl / tc * 100 : 0;
+  var wr = n > 0 ? win / n * 100 : 0;
+  var f = function (v) { return (typeof hpFmt === 'function') ? hpFmt(Math.abs(v)) : Math.round(Math.abs(v)); };
+  var sgn = pnl >= 0 ? '+' : '-';
+  var head = '', body = '';
+  if (kind === 'value'){
+    head = '持仓市值 · 怎么算的';
+    body = '<div class="hp-pop-eq">Σ 每件现价</div>'
+      + '<div class="hp-pop-row"><span class="pf">件数</span><b>' + n + ' 件</b>'
+      + '<span class="lb">数量&gt;1 已拆成多行逐件计入</span></div>'
+      + '<div class="hp-pop-row"><span class="pf">合计</span><b>¥' + f(tp) + '</b></div>'
+      + '<div class="hp-pop-ft">现价来自 ECO / BUFF / 悠悠 三源，取可用值</div>';
+  } else if (kind === 'cost'){
+    head = '投入成本 · 怎么算的';
+    body = '<div class="hp-pop-eq">Σ 每件买入成本</div>'
+      + '<div class="hp-pop-row"><span class="pf">件数</span><b>' + n + ' 件</b>'
+      + '<span class="lb">按拆行后的件数计</span></div>'
+      + '<div class="hp-pop-row"><span class="pf">合计</span><b>¥' + f(tc) + '</b></div>'
+      + '<div class="hp-pop-ft">含「批量补录」的成本覆盖值</div>';
+  } else if (kind === 'pnl'){
+    head = '未实现盈亏 · 怎么算的';
+    body = '<div class="hp-pop-eq">现价合计 − 成本合计</div>'
+      + '<div class="hp-pop-row"><span class="pf">现价</span><b>¥' + f(tp) + '</b></div>'
+      + '<div class="hp-pop-row"><span class="pf">成本</span><b>¥' + f(tc) + '</b></div>'
+      + '<div class="hp-pop-row"><span class="pf">盈亏</span><b class="' + (pnl >= 0 ? 'hi' : 'lo') + '">'
+      + sgn + '¥' + f(pnl) + '</b><span class="dt ' + (pnl >= 0 ? 'hi' : 'lo') + '">'
+      + (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%</span></div>'
+      + '<div class="hp-pop-ft">胜率 = 盈利件数 / 总件数 = ' + win + ' / ' + n
+      + '（' + wr.toFixed(0) + '%）</div>';
+  } else {
+    head = '综合信号 · 判定规则';
+    var hit = '⚪ 平稳';
+    if (pct > 10 && wr > 60) hit = '▲ 强势';
+    else if (pct > 0 && wr > 40) hit = '🟡 观望';
+    else if (pct < -5) hit = '▼ 注意';
+    body = '<div class="hp-pop-row"><span class="pf">▲ 强势</span>'
+      + '<span class="lb" style="margin-left:0">盈亏率 &gt; +10% 且 胜率 &gt; 60%</span></div>'
+      + '<div class="hp-pop-row"><span class="pf">🟡 观望</span>'
+      + '<span class="lb" style="margin-left:0">盈亏率 &gt; 0 且 胜率 &gt; 40%</span></div>'
+      + '<div class="hp-pop-row"><span class="pf">▼ 注意</span>'
+      + '<span class="lb" style="margin-left:0">盈亏率 &lt; −5%</span></div>'
+      + '<div class="hp-pop-row"><span class="pf">⚪ 平稳</span>'
+      + '<span class="lb" style="margin-left:0">其余情况</span></div>'
+      + '<div class="hp-pop-ft">当前：盈亏率 ' + (pct >= 0 ? '+' : '') + pct.toFixed(2)
+      + '%、胜率 ' + wr.toFixed(0) + '% → 命中「' + hit + '」</div>';
+  }
+  hpPopAt(el, '<div class="hp-pop-h">' + head + '</div>'
+    + '<div class="hp-pop-sub">' + esc((typeof hpName === 'function') ? '持仓汇总' : '持仓汇总') + '</div>'
+    + body);
+}
 </script>
 </html>
 
