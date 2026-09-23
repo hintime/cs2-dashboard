@@ -1472,8 +1472,12 @@ def fetch_steamdt_prices(hash_names, verbose=True):
             best['platforms'] = plats
         return best
 
-    # ── 持仓（≤32件）：single API，间隔≥1秒 ──
-    if len(hash_names) <= 32:
+    # ── 极少量（≤5 件）：single API，间隔≥1秒 ──
+    # ⚠ 2026-09-23：原为 <=32 → prices 模式每 30 分钟对 32 件持仓逐件走 single，
+    #   一天约 1536 次调用，直接把 SteamDT 免费额度打爆（实测 errorCode=4005 频发）。
+    #   改为仅 ≤5 件用 single；其余（含 32 件持仓）走 batch —— 32 件 = 1 批 = 1 次调用，
+    #   调用量降到 1/32。batch 的「每分钟 1 次」由 _steamdt_batch_slot 跨进程协调。
+    if len(hash_names) <= 5:
         prices = {}
         for i, name in enumerate(hash_names):
             try:
@@ -1518,7 +1522,10 @@ def fetch_steamdt_prices(hash_names, verbose=True):
                 # ⚠ 2026-09-18（依官方文档 6369437）：批量接口限「每分钟 1 次」，
                 #   撞限流 errorCode=4005 时原来只打印一次 → 整个池子拿不到买盘。
                 #   改为等 60s 重试（最多 3 次），把限流当"稍后再来"而不是"放弃"。
-                for _attempt in range(3):
+                # ⚠ 2026-09-23：原为 3 次重试、每次等 60s → 一批失败要耗 2 分钟，
+                #   额度耗尽时整轮都在撞墙（实测一轮浪费 6 分钟）。
+                #   改为 1 次尝试：失败即跳过，本轮用 CSQAQ 的基准价兜底。
+                for _attempt in range(1):
                     try:
                         resp = http_post_raw(
                             'https://open.steamdt.com/open/cs2/v1/price/batch',

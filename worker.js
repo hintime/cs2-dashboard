@@ -3,6 +3,8 @@
  *
  * API 路由：
  *   POST /api/sold          → 追加卖出记录
+ *   GET/POST /api/holdings-sync → 持仓云端同步（手机 ↔ KV ↔ 服务器采集）
+ *   GET  /api/steam-market  → 代理 Steam 社区市场搜索（服务器在国内被墙）
  *   GET  /api/sold          → 获取所有卖出记录
  *   DELETE /api/sold        → 清空卖出记录
  *   GET  /api/csqaq/batch   → 实时查价（CSQAQ 优先 → SteamDT 兜底）
@@ -203,6 +205,65 @@ export default {
         if (prices.length < 2) return json({ error: 'not enough data' }, 404, cors);
         // 返回格式与前端预期兼容：{ eco: [{t, p}, ...] }
         return json({ eco: prices }, 200, cors);
+      }
+
+      // ── 持仓同步（手机/浏览器 → KV → 服务器采集）──
+      if (path === '/api/holdings-sync') {
+        const KEY = 'hpsync:admin'
+        if (method === 'GET') {
+          const raw = await env.SOLD_KV.get(KEY)
+          if (!raw) return json({ ok: true, empty: true, ts: 0, items: [] }, 200, cors)
+          return new Response(raw, { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...cors } })
+        }
+        if (method === 'PUT' || method === 'POST') {
+          const body = await request.json()
+          const items = Array.isArray(body && body.items) ? body.items : null
+          if (!items) return json({ error: 'missing items' }, 400, cors)
+          if (items.length > 500) return json({ error: 'too many items' }, 400, cors)
+          // 只保留必要字段，防垃圾数据膨胀
+          const clean = items.slice(0, 500).map(function (it) {
+            return {
+              market_hash: String(it.market_hash || '').slice(0, 200),
+              name: String(it.name || '').slice(0, 200),
+              cost: Number(it.cost) || 0,
+              qty: Number(it.qty) || 1,
+              wear: String(it.wear || '').slice(0, 20),
+            }
+          }).filter(function (it) { return it.market_hash })
+          const payload = { ok: true, ts: Date.now(), count: clean.length, items: clean }
+          await env.SOLD_KV.put(KEY, JSON.stringify(payload))
+          return json({ ok: true, count: clean.length, ts: payload.ts }, 200, cors)
+        }
+      }
+
+      // ── Steam 市场代理（服务器在国内访问 steamcommunity 被墙）──
+      //   Steam 市场抓取模块（steam_market.py）原直连 steamcommunity.com，
+      //   实测从腾讯云北京 000 超时；api.steampowered.com 可达但没有市场搜索接口。
+      //   故经本 Worker 中转（Worker 在海外，可正常访问）。
+      if (path === '/api/steam-market') {
+        try {
+          const qs = url.searchParams.toString()
+          const stUrl = 'https://steamcommunity.com/market/search/render/?' + qs
+          const stResp = await fetch(stUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+              'Accept': 'application/json, text/plain, */*',
+              'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            },
+            cf: { cacheTtl: 300, cacheEverything: true },
+          })
+          const body = await stResp.text()
+          return new Response(body, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8',
+              'Cache-Control': 'public, max-age=300',
+              'Access-Control-Allow-Origin': '*',
+            },
+          })
+        } catch (e) {
+          return json({ success: false, error: 'steam proxy failed: ' + e.message }, 200, cors)
+        }
       }
 
       // ── 代理 GitHub Pages 静态文件 ──

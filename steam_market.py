@@ -10,6 +10,10 @@ ctx = ssl.create_default_context()
 
 DATA_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# ⚠ 2026-09-23：服务器（腾讯云北京）到 steamcommunity.com 实测 000 超时（被墙），
+#   Steam 市场抓取一直返回 0 件。改为经 Cloudflare Worker 代理
+#   （/api/steam-market），Worker 在海外可正常访问。
+#   注：api.steampowered.com 可达，但官方接口没有市场搜索，故走代理而非换接口。
 def http_get(url, timeout=15):
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     try:
@@ -30,7 +34,7 @@ def fetch_steam_market_items(max_items=500, min_price=10.0, max_pages=10):
             break
         
         start = page * page_size
-        url = (f'https://steamcommunity.com/market/search/render/?'
+        url = (f'https://cs2wyx.asia/api/steam-market?'
                f'query=&start={start}&count={page_size}'
                f'&search_descriptions=0'
                f'&sort_column=popular&sort_dir=desc'
