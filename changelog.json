@@ -2,6 +2,30 @@
   {
     "date": "2026-09-23",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-23 14:00",
+    "desc": "wip: local snapshot 2026-09-23 14:00"
+  },
+  {
+    "date": "2026-09-23",
+    "tag": "fix",
+    "title": "fix(holdings): hover 浮层改为 100% 不透明（--surface 只有 .92，仍透出下层）",
+    "desc": "fix(holdings): hover 浮层改为 100% 不透明（--surface 只有 .92，仍透出下层）"
+  },
+  {
+    "date": "2026-09-23",
+    "tag": "fix",
+    "title": "fix(holdings): 修 hover 浮层「与背景融为一体」",
+    "desc": "fix(holdings): 修 hover 浮层「与背景融为一体」"
+  },
+  {
+    "date": "2026-09-23",
+    "tag": "fix",
+    "title": "polish(holdings): 走势图高度再收 28px（数据格+走势图+按钮一屏装下，消除按钮遮挡）",
+    "desc": "polish(holdings): 走势图高度再收 28px（数据格+走势图+按钮一屏装下，消除按钮遮挡）"
+  },
+  {
+    "date": "2026-09-23",
+    "tag": "fix",
     "title": "polish(holdings): sticky 操作按钮加渐变过渡（浮起时不生硬切断走势图）",
     "desc": "polish(holdings): sticky 操作按钮加渐变过渡（浮起时不生硬切断走势图）"
   },
@@ -94,29 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-23 12:15",
     "desc": "wip: local snapshot 2026-09-23 12:15"
-  },
-  {
-    "date": "2026-09-23",
-    "tag": "fix",
-    "title": "feat(holdings): 三项 hover 增强（平台比价 / sparkline 放大 / 快捷键）",
-    "desc": "feat(holdings): 三项 hover 增强（平台比价 / sparkline 放大 / 快捷键）"
-  },
-  {
-    "date": "2026-09-23",
-    "tag": "fix",
-    "title": "fix(chart): 修 tooltip 从不显示的真 bug（move 里漏设 opacity）+ 准线增强",
-    "desc": "fix(chart): 修 tooltip 从不显示的真 bug（move 里漏设 opacity）+ 准线增强"
-  },
-  {
-    "date": "2026-09-23",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-23 11:00",
-    "desc": "wip: local snapshot 2026-09-23 11:00"
-  },
-  {
-    "date": "2026-09-23",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-23 10:00",
-    "desc": "wip: local snapshot 2026-09-23 10:00"
   }
 ]
