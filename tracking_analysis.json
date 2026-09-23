@@ -1,51 +1,51 @@
 {
   "overview": {
-    "verdict": "推荐准确率较高，但需优化信号评估。",
-    "success_pattern": "强调多平台溢价和稀缺性。",
-    "failure_pattern": "忽略价格波动和流动性。",
+    "verdict": "推荐准确率较高，需优化信号判断。",
+    "success_pattern": "多平台信号强，溢价合理。",
+    "failure_pattern": "忽略溢价不匹配，单一信号依赖。",
     "confidence_trend": "上升",
-    "market_signal": "市场波动较大，需关注稀有度和溢价率。"
+    "market_signal": "AWP领涨，市场情绪乐观。"
   },
   "reason_analysis": {
-    "right_reasons": "强调多平台溢价和稀缺性评估准确。",
-    "wrong_reasons": "忽略价格波动和流动性评估。",
-    "reason_keywords_avoid": "单一平台信号, 溢价不匹配",
-    "reason_keywords_use": "多平台溢价, 稀缺性, 流动性"
+    "right_reasons": "强调多平台溢价，流动性评估准确。",
+    "wrong_reasons": "过度依赖单一ECO信号，忽略溢价不匹配。",
+    "reason_keywords_avoid": "单一信号，溢价不匹配",
+    "reason_keywords_use": "多平台信号，溢价合理性"
   },
   "lessons": [
     {
       "id": "L01",
       "category": "reason",
-      "lesson": "需综合考虑价格波动和流动性。",
-      "impact": "高",
-      "action": "引入价格波动和流动性指标。"
+      "lesson": "需更全面评估溢价与流动性。",
+      "impact": "中",
+      "action": "增加溢价与流动性分析。"
     },
     {
       "id": "L02",
       "category": "scoring",
-      "lesson": "ECO和BUFF权重需调整。",
+      "lesson": "ECO与BUFF权重需平衡。",
       "impact": "中",
-      "action": "根据市场反馈调整ECO和BUFF权重。"
+      "action": "调整ECO与BUFF权重。"
     },
     {
       "id": "L03",
-      "category": "timing",
-      "lesson": "推荐时机需优化。",
-      "impact": "中",
-      "action": "分析市场趋势，优化推荐时机。"
+      "category": "market/source",
+      "lesson": "关注市场动态与来源数据。",
+      "impact": "高",
+      "action": "加强市场动态与来源数据分析。"
     }
   ],
   "scoring_feedback": {
-    "eco_weight_advice": "+10%/不变",
-    "buff_weight_advice": "-10%/不变",
-    "premium_threshold_advice": "溢价率>100%需谨慎",
-    "liquidity_advice": "流动性权重+20%"
+    "eco_weight_advice": "+10%/-5%/不变",
+    "buff_weight_advice": "+5%/-10%/不变",
+    "premium_threshold_advice": "溢价率>50%需谨慎。",
+    "liquidity_advice": "流动性权重+20%。"
   },
-  "reason_prompt_tweak": "强调多平台溢价和稀缺性，避免过度依赖单一信号，关注价格波动和流动性。",
+  "reason_prompt_tweak": "强调溢价合理性、多平台信号，避免单一信号依赖，使用客观表述。",
   "meta": {
-    "total_tracks": 1153,
-    "date_range": "2026-06-15~2026-09-23",
-    "analyzed_at": "2026-09-23T05:02:48Z",
+    "total_tracks": 1183,
+    "date_range": "2026-06-15~2026-09-24",
+    "analyzed_at": "2026-09-23T17:03:43Z",
     "model": "glm-4-flash"
   }
 }
