@@ -1074,7 +1074,22 @@ html { scroll-behavior: smooth; }
 .hp-cell .v{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
 .hp-cell .s{font-size:10.5px;color:var(--text3);margin-top:2px;
   font-variant-numeric:tabular-nums}
-.hp-ops{display:flex;gap:8px;margin-top:16px}
+.hp-ops{display:flex;gap:8px;margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--border)}
+/* 详情操作按钮：与板块统一的发丝线风格，悬停才显语义色 */
+.hp-op{padding:5px 13px;font-size:12px;line-height:1.5;border-radius:7px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2);
+  cursor:pointer;font-family:inherit;white-space:nowrap;
+  transition:background .12s,border-color .12s,color .12s}
+.hp-op:hover{background:var(--surface3);color:var(--text)}
+.hp-op:active{transform:translateY(.5px)}
+.hp-op.sell:hover{border-color:rgba(248,113,113,.42);color:#f87171}
+.hp-op.star:hover{border-color:rgba(251,191,36,.42);color:var(--amber)}
+.hp-op.ai:hover{border-color:rgba(74,124,255,.42);color:var(--blue)}
+@media(max-width:640px){
+  .hp-ops{flex-wrap:wrap;gap:6px}
+  .hp-op{flex:1;min-width:84px;text-align:center}
+}
 @media(max-width:860px){
   .hp-split{grid-template-columns:1fr}
   .hp-side{border-right:0;border-bottom:1px solid var(--border)}
@@ -6449,10 +6464,9 @@ function hpSelect(idx){
    + '<div class="s">'+(noCost ? '需先录入成本' : ('到 ¥'+hpFmt(c)))+'</div></div>'
    + '</div>'
    + '<div class="hp-ops">'
-   + '<button class="btn" style="padding:7px 15px;background:var(--blue);color:#fff;'
-   + 'border:none;font-weight:600" onclick="hpSell('+idx+')">卖出此件</button>'
-   + '<button class="btn" style="padding:7px 15px" onclick="hpStar('+idx+')">加星关注</button>'
-   + '<button class="btn" style="padding:7px 15px" onclick="hpDetail('+idx+')">AI 分析</button>'
+   + '<button class="hp-op sell" onclick="hpSell('+idx+')">卖出此件</button>'
+   + '<button class="hp-op star" onclick="hpStar('+idx+')">加星关注</button>'
+   + '<button class="hp-op ai" onclick="hpDetail('+idx+')">AI 分析</button>'
    + '</div>';
   box.innerHTML = html;
   window._hpCur = idx;
