@@ -1074,10 +1074,12 @@ html { scroll-behavior: smooth; }
 .hp-cell .v{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
 .hp-cell .s{font-size:10.5px;color:var(--text3);margin-top:2px;
   font-variant-numeric:tabular-nums}
-.hp-ops{position:relative;display:flex;gap:8px;margin-top:14px;
-  padding:12px 0 4px;border-top:1px solid var(--border);
-  /* ★ 常驻详情区底部：无论滚到哪里，卖出/加星/AI 分析都可见 */
-  position:sticky;bottom:-1px;z-index:3;
+/* ★ 2026-09-24：操作按钮移到详情区顶部并吸顶。
+   矮视口（1050×608 这类）下详情区只露出前 200px 左右，
+   按钮若在最底部永远看不见；放顶部则第一眼可见，滚动时吸顶常驻。 */
+.hp-ops{position:sticky;top:0;z-index:4;
+  display:flex;gap:8px;margin:0 0 12px;
+  padding:2px 0 10px;border-bottom:1px solid var(--border);
   background:var(--surface)}
 /* 按钮浮起时上方留一段渐变，避免生硬切断内容（如走势图）*/
 .hp-ops::before{content:'';position:absolute;left:0;right:0;top:-20px;height:20px;
@@ -6545,6 +6547,10 @@ function hpSelect(idx){
    + '<span class="s '+cls+'">'+sg+'¥'+hpFmt(Math.abs(pnl))+'</span>'
    + '<span class="r">1 日 '+((r1>=0?'+':'')+r1.toFixed(1))+'%<br>7 日 '
    + ((r7>=0?'+':'')+r7.toFixed(1))+'%</span></div>'
+   + '<div class="hp-ops">'
+   + '<button class="hp-op sell" onclick="hpSell('+idx+')">卖出此件</button>'
+   + '<button class="hp-op star" onclick="hpStar('+idx+')">加星关注</button>'
+   + '<button class="hp-op ai" onclick="hpDetail('+idx+')">AI 分析</button>'
    + '<div class="hp-grid">'
    + '<div class="hp-cell"><div class="k">成本</div><div class="v mono">'
    + (noCost ? '<span style="color:var(--amber)">未录入</span>' : ('¥'+hpFmt(c)))+'</div>'
@@ -6565,10 +6571,6 @@ function hpSelect(idx){
    + (cv ? ('<div class="hp-axis"><span>30 天前</span><span>20 天前</span><span>10 天前</span>'
       + '<span>今天</span></div>'
       + '<div class="hp-lgd"><span><i></i>你的成本线 ¥'+hpFmt(c)+'</span></div>') : '')
-   + '<div class="hp-ops">'
-   + '<button class="hp-op sell" onclick="hpSell('+idx+')">卖出此件</button>'
-   + '<button class="hp-op star" onclick="hpStar('+idx+')">加星关注</button>'
-   + '<button class="hp-op ai" onclick="hpDetail('+idx+')">AI 分析</button>'
    + '</div>';
   box.innerHTML = html;
   window._hpCur = idx;
@@ -7141,7 +7143,7 @@ function hpFitDetail(){
   var r = D.getBoundingClientRect();
   var topAbs = r.top + window.pageYOffset;
   var avail = window.innerHeight - (topAbs - window.pageYOffset) - 14;
-  avail = Math.max(260, Math.round(avail));
+  avail = Math.max(160, Math.round(avail));   /* 160 兜底：视口极矮时不撑出视口 */
   D.style.maxHeight = avail + 'px';
 }
 window.addEventListener('resize', function(){ try { hpFitDetail(); } catch(e){} });
