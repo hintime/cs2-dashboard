@@ -1,65 +1,51 @@
 {
   "overview": {
-    "verdict": "推荐策略整体有效，但需调整信号权重。",
-    "success_pattern": "涨的推荐强调多平台溢价和AI优选。",
-    "failure_pattern": "跌的推荐忽略溢价不匹配和单一ECO信号。",
-    "confidence_trend": "上升",
-    "market_signal": "市场波动大，需关注流动性"
+    "verdict": "推荐准确度中等，需优化信号分析。",
+    "success_pattern": "多平台信号与溢价强劲为成功推荐关键。",
+    "failure_pattern": "忽略市场跌势与溢价不匹配为失败原因。",
+    "confidence_trend": "下降",
+    "market_signal": "市场波动大，需谨慎投资。"
   },
   "reason_analysis": {
-    "right_reasons": "强调多平台溢价、AI优选、稀缺性。",
-    "wrong_reasons": "过度依赖单一ECO信号、忽略溢价不匹配。",
-    "reason_keywords_avoid": "单一信号、忽略溢价",
-    "reason_keywords_use": "多平台、AI、稀缺性、溢价"
+    "right_reasons": "强调多平台溢价，流动性评估准确。",
+    "wrong_reasons": "过度依赖单一ECO信号，忽略溢价不匹配。",
+    "reason_keywords_avoid": "单一信号，溢价不匹配",
+    "reason_keywords_use": "多平台信号，溢价匹配，市场趋势"
   },
   "lessons": [
     {
       "id": "L01",
       "category": "reason",
-      "lesson": "推荐理由需平衡ECO和BUFF信号，关注溢价和流动性。",
-      "impact": "高",
-      "action": "引入溢价匹配和流动性评估指标。"
+      "lesson": "需综合考虑多平台信号与溢价。",
+      "impact": "中",
+      "action": "强化溢价与流动性分析。"
     },
     {
       "id": "L02",
       "category": "scoring",
-      "lesson": "评分体系需调整以反映市场动态。",
+      "lesson": "ECO与BUFF权重需平衡。",
       "impact": "中",
-      "action": "引入动态评分权重。"
+      "action": "调整ECO与BUFF权重，避免单一依赖。"
     },
     {
       "id": "L03",
       "category": "timing",
-      "lesson": "推荐时机需更灵活，考虑市场波动。",
-      "impact": "中",
-      "action": "优化推荐频率和时机。"
-    },
-    {
-      "id": "L04",
-      "category": "market",
-      "lesson": "需关注市场整体趋势和热点。",
+      "lesson": "市场趋势需及时调整。",
       "impact": "高",
-      "action": "加强市场趋势分析。"
-    },
-    {
-      "id": "L05",
-      "category": "source",
-      "lesson": "数据来源需多元化，减少单一数据源的风险。",
-      "impact": "中",
-      "action": "引入更多数据源。"
+      "action": "加强市场趋势分析，及时调整推荐。"
     }
   ],
   "scoring_feedback": {
-    "eco_weight_advice": "+10%/不变",
-    "buff_weight_advice": "-10%/不变",
+    "eco_weight_advice": "+10%/-10%/不变",
+    "buff_weight_advice": "+10%/-10%/不变",
     "premium_threshold_advice": "溢价率>50%需谨慎",
-    "liquidity_advice": "流动性权重+20%"
+    "liquidity_advice": "流动性权重提高至20%"
   },
-  "reason_prompt_tweak": "强调多平台溢价、AI分析、稀缺性和市场趋势，避免单一信号依赖，使用客观表述。",
+  "reason_prompt_tweak": "强调溢价匹配与市场趋势，避免单一信号依赖，使用客观表述。",
   "meta": {
     "total_tracks": 1213,
     "date_range": "2026-06-15~2026-09-25",
-    "analyzed_at": "2026-09-24T17:04:47Z",
+    "analyzed_at": "2026-09-24T23:06:17Z",
     "model": "glm-4-flash"
   }
 }

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 21,
+  "total_analyses": 22,
   "lessons": [
     {
       "id": "L01",
@@ -10,7 +10,7 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 25,
+      "confirmed": 26,
       "last_seen": "2026-09-25"
     },
     {
@@ -20,7 +20,7 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 25,
+      "confirmed": 26,
       "last_seen": "2026-09-25"
     },
     {
@@ -30,7 +30,7 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 24,
+      "confirmed": 25,
       "last_seen": "2026-09-25"
     },
     {
@@ -55,32 +55,8 @@
     }
   ],
   "history": [],
-  "last_updated": "2026-09-24T17:04:47Z",
+  "last_updated": "2026-09-24T23:06:17Z",
   "analysis_history": [
-    {
-      "seq": 2,
-      "ts": "2026-06-15T17:37:10Z",
-      "overview": {
-        "verdict": "短期信号偏保守，流动性优先",
-        "success_pattern": "高求售比、低溢价的ECO供需失衡推荐",
-        "failure_pattern": "高溢价但求售比低的BUFF信号推荐",
-        "confidence_trend": "持平",
-        "market_signal": "供需失衡主导，求购活跃但溢价空间有限"
-      },
-      "scoring_feedback": {
-        "eco_weight_advice": "+10%",
-        "buff_weight_advice": "-10%",
-        "premium_threshold_advice": "降低溢阈值至5%以下，避免追高",
-        "liquidity_advice": "提高流动性权重，侧重求售比>500%"
-      },
-      "prompt_tweak": "增加求售比和实际溢价率对比，减少单纯多平台热度描述",
-      "stats": {
-        "total": 30,
-        "priced": 30,
-        "profitable": 20,
-        "rate": 66.7
-      }
-    },
     {
       "seq": 3,
       "ts": "2026-06-15T19:35:32Z",
@@ -644,6 +620,36 @@
         "reason_keywords_use": "多平台、AI、稀缺性、溢价"
       },
       "prompt_tweak": "强调多平台溢价、AI分析、稀缺性和市场趋势，避免单一信号依赖，使用客观表述。",
+      "stats": {
+        "total": 1213,
+        "priced": 1206,
+        "profitable": 712,
+        "rate": 59.0
+      }
+    },
+    {
+      "seq": 22,
+      "ts": "2026-09-24T23:06:17Z",
+      "overview": {
+        "verdict": "推荐准确度中等，需优化信号分析。",
+        "success_pattern": "多平台信号与溢价强劲为成功推荐关键。",
+        "failure_pattern": "忽略市场跌势与溢价不匹配为失败原因。",
+        "confidence_trend": "下降",
+        "market_signal": "市场波动大，需谨慎投资。"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "+10%/-10%/不变",
+        "buff_weight_advice": "+10%/-10%/不变",
+        "premium_threshold_advice": "溢价率>50%需谨慎",
+        "liquidity_advice": "流动性权重提高至20%"
+      },
+      "reason_analysis": {
+        "right_reasons": "强调多平台溢价，流动性评估准确。",
+        "wrong_reasons": "过度依赖单一ECO信号，忽略溢价不匹配。",
+        "reason_keywords_avoid": "单一信号，溢价不匹配",
+        "reason_keywords_use": "多平台信号，溢价匹配，市场趋势"
+      },
+      "prompt_tweak": "强调溢价匹配与市场趋势，避免单一信号依赖，使用客观表述。",
       "stats": {
         "total": 1213,
         "priced": 1206,
