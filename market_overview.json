@@ -1,26 +1,26 @@
 {
   "index": {
     "name": "饰品指数",
-    "current": 788.89,
-    "change": -1.05,
-    "change_pct": -0.13,
-    "max": 792.29,
-    "min": 788.88,
-    "change_days": -1,
-    "latest_time": "2026-09-24 23:55"
+    "current": 789.21,
+    "change": 0.32,
+    "change_pct": 0.04,
+    "max": 789.21,
+    "min": 788.86,
+    "change_days": 2,
+    "latest_time": "2026-09-25 00:25"
   },
   "trade": {
-    "today_amount": 0,
-    "yesterday_amount": 57907895.71,
-    "today_volume": 0,
-    "yesterday_volume": 1358298,
-    "amount_mom": 0,
-    "volume_mom": 0
+    "today_amount": 216796.67,
+    "yesterday_amount": 59555881.16,
+    "today_volume": 22806,
+    "yesterday_volume": 1386315,
+    "amount_mom": -14.81,
+    "volume_mom": 10.03
   },
   "updown": {
-    "up": 2064,
-    "flat": 2127,
-    "down": 3303
+    "up": 2125,
+    "flat": 2091,
+    "down": 3278
   },
   "greedy": {
     "value": 39.82,
@@ -28,7 +28,6 @@
     "change": "1.9"
   },
   "trend_24h": [
-    790.47,
     790.89,
     790.85,
     791.01,
@@ -51,8 +50,9 @@
     789.66,
     789.41,
     789.11,
-    788.89
+    788.89,
+    789.21
   ],
-  "updated": "2026-09-24T16:02:08Z",
+  "updated": "2026-09-24T16:32:29Z",
   "source": "firepulse"
 }
