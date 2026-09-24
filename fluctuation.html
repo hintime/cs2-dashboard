@@ -211,17 +211,27 @@ function snapStats(snap) {
   var keys = Object.keys(snap || {}), buff = 0, yyyp = 0, steam = 0;
   for (var i = 0; i < keys.length; i++) {
     var e = snap[keys[i]] || {};
-    if ((e.buff_sell_num || 0) > 0) buff++;
-    if ((e.yyyp_sell_num || 0) > 0) yyyp++;
-    if ((e.steam_sell || 0) > 0) steam++;
+    if ((e[F('buff', 'num')] || 0) > 0) buff++;
+    if ((e[F('yyyp', 'num')] || 0) > 0) yyyp++;
+    if ((e.steam_sell || 0) > 0) steam++;   // mini 格式无此字段，恒 0
   }
   return { total: keys.length, buff: buff, yyyp: yyyp, steam: steam };
 }
 
 var MARKETS = [
-  { key: 'buff', label: 'BUFF', num: 'buff_sell_num', price: 'buff_sell' },
-  { key: 'yyyp', label: '悠悠', num: 'yyyp_sell_num', price: 'yyyp_sell' }
+  { key: 'buff', label: 'BUFF' },
+  { key: 'yyyp', label: '悠悠' }
 ];
+
+/* 字段映射：mini 格式（fluct_recent.json，b/bs/y/ys）与 full 格式
+   （buff_recent.json，全名字段）自动识别。full 仅作服务器未产出 mini
+   文件时的兜底，24 小时后可移除。 */
+var FIELDS = {
+  mini: { buff: { num: 'b',  price: 'bs' }, yyyp: { num: 'y',  price: 'ys' } },
+  full: { buff: { num: 'buff_sell_num', price: 'buff_sell' }, yyyp: { num: 'yyyp_sell_num', price: 'yyyp_sell' } }
+};
+var fmt = 'full';
+function F(mkt, kind) { return FIELDS[fmt][mkt][kind]; }
 
 /* 时点配对：只取小时级，从最近一期往回找第一个「规模可比」的期。
    ⚠ 不能取「重叠率最高」——上一期若是全量池（4805 件）而本期只有 200 件，
@@ -304,24 +314,25 @@ function classifySignal(c) {
   return { label: '增加', cls: 'badge-up', rank: 0 };
 }
 
-/* ── 入口 ── */
+/* ── 入口 ──
+   ★ 2026-09-24：改用微缩快照 fluct_recent.json（~80KB，最近 3 期 + 内嵌中文名）。
+   旧版拉 buff_recent.json(2.5MB) + eco_tracked.json(6.4MB) → 弱网十几秒打不开。 */
 function loadFluct() {
-  fetch('buff_recent.json?v=' + T)
-    .then(function (r) { return r.ok ? r.json() : null; })
+  fetch('fluct_recent.json?v=' + T)
+    .then(function (r) {
+      if (!r.ok) throw 0;
+      fmt = 'mini';
+      return r.json();
+    })
+    .catch(function () {
+      // 兜底：服务器尚未产出 mini 文件时退回大文件（全名字段）
+      fmt = 'full';
+      return fetch('buff_recent.json?v=' + T)
+        .then(function (r) { return r.ok ? r.json() : null; });
+    })
     .then(function (data) {
-      if (!data) { fail('未取到在售量快照（buff_recent.json）'); return; }
-      fetch('eco_tracked.json?v=' + T)
-        .then(function (r) { return r.ok ? r.json() : []; })
-        .then(function (eco) {
-          nameMap = {};
-          if (Array.isArray(eco)) {
-            eco.forEach(function (it) {
-              if (it && it.HashName) nameMap[it.HashName] = it.GoodsName || it.HashName;
-            });
-          }
-          build(data);
-        })
-        .catch(function () { build(data); });
+      if (!data) { fail('未取到在售量快照'); return; }
+      build(data);
     })
     .catch(function () { fail('加载失败：网络或数据文件不可用'); });
 }
@@ -342,6 +353,18 @@ function fail(msg) {
 
 function build(data) {
   state.raw = data;
+
+  // mini 格式：中文名内嵌在每条记录的 cn 字段，顺手填进 nameMap
+  if (fmt === 'mini') {
+    for (var k in data) {
+      var snap = data[k] || {};
+      for (var n in snap) {
+        var e = snap[n];
+        if (e && e.cn && !nameMap[n]) nameMap[n] = e.cn;
+      }
+    }
+  }
+
   var pair = pickPair(data);
 
   if (!pair.ok) {
@@ -388,7 +411,7 @@ function compute() {
   var rows = [];
 
   MARKETS.forEach(function (m) {
-    var numK = m.num, priceK = m.price;
+    var numK = F(m.key, 'num'), priceK = F(m.key, 'price');
     if (state.mktOk && !state.mktOk[m.key].ok) return;   // 该市场不可比 → 跳过，不造假
     for (var name in nowSnap) {
       if (!Object.prototype.hasOwnProperty.call(nowSnap, name)) continue;
@@ -603,7 +626,8 @@ function renderDiag(pair, st) {
     h.push('<div><span class="kv">本期样本 <code>' + st.now.total + '</code> 件</span>' +
            '<span class="kv">BUFF 有量 <code>' + st.now.buff + '</code></span>' +
            '<span class="kv">悠悠有量 <code>' + st.now.yyyp + '</code></span>' +
-           '<span class="kv">Steam 有价 <code>' + st.now.steam + '</code></span></div>');
+           (fmt === 'full' ? '<span class="kv">Steam 有价 <code>' + st.now.steam + '</code></span>' : '') +
+           '</div>');
     h.push('<div><span class="kv">上期样本 <code>' + st.prev.total + '</code> 件</span>' +
            '<span class="kv">BUFF 有量 <code>' + st.prev.buff + '</code></span>' +
            '<span class="kv">悠悠有量 <code>' + st.prev.yyyp + '</code></span></div>');

@@ -664,6 +664,36 @@ def save_buff_history(steamdt_prices):
         dirty_files.add('buff_recent.json')
         print(f'[HISTORY] buff_recent.json exported: {len(buff_recent)} hourly snapshots '
               f'({recent_keys[0] if recent_keys else "-"} ~ {recent_keys[-1] if recent_keys else "-"})')
+
+        # ★ 异动页专用微缩快照（2026-09-24）：fluctuation.html 之前拉 buff_recent.json
+        #   (2.5MB) + eco_tracked.json (6.4MB，只为中文名) → 弱网加载十几秒。
+        #   这里只导出最近 3 个 hourly 期、每件只留 4 个字段并内嵌中文名 → ~80KB。
+        #   字段名压缩：b=buff_sell_num bs=buff_sell y=yyyp_sell_num ys=yyyp_sell
+        _mini_keys = _hourly[-3:]
+        _nm_path = os.path.join(DATA_DIR, 'name_map.json')
+        _nm = {}
+        try:
+            _nm = json.load(open(_nm_path, encoding='utf-8'))
+        except Exception:
+            _nm = {}
+        mini = {}
+        for k in _mini_keys:
+            m = {}
+            for name, e in (history.get(k) or {}).items():
+                if not isinstance(e, dict):
+                    continue
+                _e = {'b': e.get('buff_sell_num', 0) or 0,
+                      'bs': e.get('buff_sell', 0) or 0,
+                      'y': e.get('yyyp_sell_num', 0) or 0,
+                      'ys': e.get('yyyp_sell', 0) or 0}
+                _cn = _nm.get(name)
+                if _cn:
+                    _e['cn'] = _cn
+                m[name] = _e
+            mini[k] = m
+        write_json(os.path.join(DATA_DIR, 'fluct_recent.json'), mini)
+        dirty_files.add('fluct_recent.json')
+        print(f'[HISTORY] fluct_recent.json exported: {len(mini)} snapshots (mini format)')
     except Exception as e:
         print(f'[HISTORY] buff_recent export failed: {e}', file=sys.stderr)
     y_c = sum(1 for v in history[hour_key].values() if v.get('yyyp_sell', 0) > 0)
