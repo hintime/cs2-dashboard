@@ -216,7 +216,7 @@ body::before{
 
 .mi-chart{height:400px;margin-bottom:16px}
 .news-section{margin-bottom:24px}
-.news-tabs-bar{grid-template-columns:repeat(2,minmax(0,150px));margin-bottom:0;justify-content:flex-start}
+/* news-tabs-bar 已随单 tab 条拆除（2026-09-24），无孤儿规则 */
 .news-card{display:flex;flex-direction:column;padding:16px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);transition:all .2s;cursor:pointer;min-height:140px}
 .news-card:hover{border-color:rgba(96,165,250,.3);background:rgba(30,35,48,.8);transform:translateY(-1px)}
 .news-card .nc-source{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
@@ -1325,9 +1325,9 @@ html { scroll-behavior: smooth; }
   #holdingsPanel .hp-cell .s{font-size:10px;margin-top:2px}
   #holdingsPanel .hp-ops{margin-top:8px;padding:8px 0 3px}
   #holdingsPanel .hp-op{padding:4px 11px;font-size:11.5px}
-  /* ③ 走势图给合理高度 */
+  /* ③ 走势图给合理高度（2026-09-24：76px 太局促，放大到 150px） */
   #holdingsPanel .hp-chart{margin:6px 0 4px}
-  #holdingsPanel .hp-chart svg{height:76px}
+  #holdingsPanel .hp-chart svg{height:150px}
   #holdingsPanel .hp-axis{margin-top:2px;font-size:9.5px}
   #holdingsPanel .hp-lgd{margin-top:3px;font-size:10px}
 }
@@ -1335,6 +1335,9 @@ html { scroll-behavior: smooth; }
 }
 
 /* ═══ 持仓板块视觉提升（2026-09-23）═══ */
+/* ⑤ 详情走势图放大（2026-09-24）：76px 看不清形态，统一 150px，
+   详情区自身可滚动，矮视口由 overflow-y 吸收 */
+#holdingsPanel .hp-chart svg{height:150px}
 /* ③ 数据格：标签弱化、数值强化，层级更清楚 */
 #holdingsPanel .hp-cell{padding:9px 11px;border-radius:8px;background:var(--surface2);
   border:1px solid var(--border);transition:border-color .15s,background .15s}
@@ -1572,13 +1575,10 @@ html { scroll-behavior: smooth; }
 
     <!-- CS2 新闻与情绪 -->
   <div class="panel" id="newsSection" style="display:none">
-    <div class="panel-head" style="flex-direction:column;align-items:stretch;gap:12px">
+    <div class="panel-head" style="flex-direction:column;align-items:stretch;gap:0">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <h2>CS2 资讯中心 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px">官方新闻 · 更新公告</span></h2>
         <span id="newsUpdateTime" style="font-size:10px;color:var(--text3)"></span>
-      </div>
-      <div class="tabs news-tabs-bar" id="newsTabs">
-        <button class="tab on" data-ntab="news">📰 CS资讯</button>
       </div>
     </div>
     <div id="newsContent" style="padding:16px 20px">
@@ -2821,7 +2821,8 @@ async function renderNews() {
     }
   }
   renderNewsTab('news');
-  setupNewsTabs();
+  /* 单 tab 条已随「市场情绪」移除一并拆除（2026-09-24）：
+     只剩一个「CS资讯」的 tab 条是多此一举，列表直接跟在标题下 */
 }
 
 function renderNewsTab(tab) {
@@ -3223,11 +3224,7 @@ document.addEventListener('ai-loaded', function() {
   }
 });
 function setupNewsTabs() {
-  var newsTabs = $('newsTabs');
-  if (!newsTabs || newsTabs._bound) return;
-  newsTabs._bound = 1;
-  // 仅剩「CS资讯」单个 tab，「市场情绪」已移除（2026-09-24），无需切换逻辑
-  newsTabs.onclick = function() {};
+  /* 单 tab 条已拆除（2026-09-24），保留空函数兼容旧调用点 */
 }
 
 function setupExportBtn() {

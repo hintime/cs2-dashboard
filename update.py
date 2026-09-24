@@ -606,27 +606,43 @@ def save_buff_history(steamdt_prices):
     history[day_key] = {}
     for name, info in steamdt_prices.items():
         if isinstance(info, dict):
+            plats = info.get('platforms') or {}
+
+            def _plat_num(*keys):
+                """从 platforms 里按候选平台名取 (sell, sell_num)。
+                ⚠ 2026-09-24：SteamDT 返回的平台名是**大写**（YOUPIN / STEAM / HALOSKINS…），
+                   而原代码只查小写 'yyyp' → 悠悠字段永远取不到 → 历史快照里
+                   yyyp_sell_num 恒为 0 → 异动页「悠悠异动」面板永远是空的。
+                   这里做大小写不敏感匹配。"""
+                if not plats:
+                    return (0, 0)
+                low = {str(k).lower(): v for k, v in plats.items()}
+                for k in keys:
+                    v = low.get(k)
+                    if isinstance(v, dict):
+                        s = float(v.get('sell') or v.get('price') or v.get('sell_price') or 0)
+                        n = int(v.get('sell_num') or v.get('count') or 0)
+                        if s > 0 or n > 0:
+                            return (s, n)
+                return (0, 0)
+
+            _yy_s, _yy_n = _plat_num('yyyp', 'youpin')
+            _st_s, _ = _plat_num('steam', 'steamcommunity')
+
             entry = {
                 'buff_sell': info.get('buff_sell', 0),
                 'buff_buy': info.get('buff_buy', 0),
                 'buff_sell_num': info.get('buff_sell_num', 0),
                 'buff_buy_num': info.get('buff_buy_num', 0),
-                'yyyp_sell': info.get('yyyp_sell', 0),
-                'yyyp_sell_num': info.get('yyyp_sell_num', 0),
+                # 顶层字段优先（eco_tracked.json 的 yyyp_sell/yyyp_sell_num 是权威值），
+                # 取不到时回退 platforms.YOUPIN —— 两条来源都试，不再二选一。
+                'yyyp_sell': info.get('yyyp_sell', 0) or _yy_s,
+                'yyyp_sell_num': info.get('yyyp_sell_num', 0) or _yy_n,
                 # ★ 独立市场基准价：Steam 社区市场。
                 #   留在历史里，前端折线图才能画出「国内价 vs 独立市场」的交叉走势，
                 #   而不是只能对比同样源的 BUFF/悠悠（价差常年 1-2%，看不出东西）。
-                'steam_sell': info.get('steam_sell', 0),
+                'steam_sell': info.get('steam_sell', 0) or _st_s,
             }
-            # 也从 platforms 取悠悠数据
-            plats = info.get('platforms', {})
-            if plats:
-                yyyp = plats.get('yyyp', {})
-                if yyyp:
-                    if not entry['yyyp_sell']:
-                        entry['yyyp_sell'] = yyyp.get('price', 0) or yyyp.get('sell_price', 0) or 0
-                    if not entry['yyyp_sell_num']:
-                        entry['yyyp_sell_num'] = yyyp.get('sell_num', 0) or yyyp.get('count', 0) or 0
             history[hour_key][name] = entry
             history[day_key][name] = entry
     
@@ -635,11 +651,19 @@ def save_buff_history(steamdt_prices):
     # 导出「前端精简版」（仅最近 12 个时点）——
     # 页面只需近期趋势，却以前要下载整份 50MB+ 的全量历史。
     try:
-        recent_keys = sorted(history.keys())[-12:]
+        # ⚠ 2026-09-24：原来取 sorted(history)[-12:]，但 history 里 daily 键
+        #   （YYYY-MM-DD，10 字符）与 hourly 键（YYYY-MM-DDTHH:MM，16 字符）混排，
+        #   '2026-09-21' < '2026-09-21T00:00'（'T' > ''）→ daily 永远排在当天 hourly 前面，
+        #   近 12 个键里被塞进 5 个 daily 脏键（条目仅 200、无悠悠），
+        #   真正的 hourly 时点被挤出 → 前端「相邻两期」跨了 5 天。
+        #   改为只取 hourly 键。
+        _hourly = [k for k in sorted(history.keys()) if len(k) == 16]
+        recent_keys = _hourly[-12:]
         buff_recent = {k: history[k] for k in recent_keys}
         write_json(os.path.join(DATA_DIR, 'buff_recent.json'), buff_recent)
         dirty_files.add('buff_recent.json')
-        print(f'[HISTORY] buff_recent.json exported: {len(buff_recent)} snapshots')
+        print(f'[HISTORY] buff_recent.json exported: {len(buff_recent)} hourly snapshots '
+              f'({recent_keys[0] if recent_keys else "-"} ~ {recent_keys[-1] if recent_keys else "-"})')
     except Exception as e:
         print(f'[HISTORY] buff_recent export failed: {e}', file=sys.stderr)
     y_c = sum(1 for v in history[hour_key].values() if v.get('yyyp_sell', 0) > 0)
@@ -1472,12 +1496,8 @@ def fetch_steamdt_prices(hash_names, verbose=True):
             best['platforms'] = plats
         return best
 
-    # ── 极少量（≤5 件）：single API，间隔≥1秒 ──
-    # ⚠ 2026-09-23：原为 <=32 → prices 模式每 30 分钟对 32 件持仓逐件走 single，
-    #   一天约 1536 次调用，直接把 SteamDT 免费额度打爆（实测 errorCode=4005 频发）。
-    #   改为仅 ≤5 件用 single；其余（含 32 件持仓）走 batch —— 32 件 = 1 批 = 1 次调用，
-    #   调用量降到 1/32。batch 的「每分钟 1 次」由 _steamdt_batch_slot 跨进程协调。
-    if len(hash_names) <= 5:
+    # ── 持仓（≤32件）：single API，间隔≥1秒 ──
+    if len(hash_names) <= 32:
         prices = {}
         for i, name in enumerate(hash_names):
             try:
@@ -1522,10 +1542,7 @@ def fetch_steamdt_prices(hash_names, verbose=True):
                 # ⚠ 2026-09-18（依官方文档 6369437）：批量接口限「每分钟 1 次」，
                 #   撞限流 errorCode=4005 时原来只打印一次 → 整个池子拿不到买盘。
                 #   改为等 60s 重试（最多 3 次），把限流当"稍后再来"而不是"放弃"。
-                # ⚠ 2026-09-23：原为 3 次重试、每次等 60s → 一批失败要耗 2 分钟，
-                #   额度耗尽时整轮都在撞墙（实测一轮浪费 6 分钟）。
-                #   改为 1 次尝试：失败即跳过，本轮用 CSQAQ 的基准价兜底。
-                for _attempt in range(1):
+                for _attempt in range(3):
                     try:
                         resp = http_post_raw(
                             'https://open.steamdt.com/open/cs2/v1/price/batch',
@@ -3512,75 +3529,6 @@ def git_sync_safe():
 
 
 # ═══════════════ MAIN ═══════════════
-def merge_cloud_holdings(holdings_path):
-    """从 Worker KV 拉取云端持仓，合并进 holdings.json。
-
-    语义（义轩 2026-09-22 要求）：
-      · 云端有的物品 → 加入/更新（保留已有 price_history，cost/qty 用云端覆盖）
-      · 云端没有的   → 从 holdings.json 移除（"不在就去掉"）
-      · 云端为空/拉取失败 → 不动本地（防呆）
-    """
-    import json as _json, urllib.request as _rq
-    url = 'https://cs2wyx.asia/api/holdings-sync'
-    try:
-        req = _rq.Request(url, headers={'User-Agent': 'cs2-updater', 'Cache-Control': 'no-cache'})
-        with _rq.urlopen(req, timeout=30) as r:
-            cloud = _json.loads(r.read().decode('utf-8'))
-    except Exception as e:
-        print(f'[CLOUDSYNC] pull failed: {e}', file=sys.stderr)
-        return 0
-    citems = cloud.get('items') or []
-    if not isinstance(citems, list) or len(citems) == 0:
-        print('[CLOUDSYNC] cloud empty, skip')
-        return 0
-
-    data = read_json(holdings_path) or {}
-    items = data.get('items') or []
-    # 本地按 market_hash 索引
-    by_hn = {}
-    for it in items:
-        hn = it.get('market_hash')
-        if hn:
-            by_hn[hn] = it
-    cloud_set = set()
-    added = updated = 0
-    for ci in citems:
-        hn = (ci.get('market_hash') or '').strip()
-        if not hn:
-            continue
-        cloud_set.add(hn)
-        if hn in by_hn:
-            it = by_hn[hn]
-            it['cost'] = float(ci.get('cost') or 0) or it.get('cost', 0)
-            it['qty'] = int(ci.get('qty') or 1) or it.get('qty', 1)
-            if ci.get('name'):
-                it['name'] = ci['name']
-            updated += 1
-        else:
-            new_it = {'name': ci.get('name') or hn, 'market_hash': hn,
-                      'cost': float(ci.get('cost') or 0), 'qty': int(ci.get('qty') or 1),
-                      'wear': ci.get('wear') or '', 'price': 0, 'price_history': []}
-            items.append(new_it)
-            by_hn[hn] = new_it
-            added += 1
-    removed = 0
-    if cloud_set:
-        keep = [it for it in items if (it.get('market_hash') or '') in cloud_set]
-        removed = len(items) - len(keep)
-        items = keep
-    if added or updated or removed:
-        data['items'] = items
-        data['update_time'] = time.strftime('%Y-%m-%d %H:%M:%S')
-        try:
-            write_json(holdings_path, data)
-            print(f'[CLOUDSYNC] merged: +{added} ~{updated} -{removed}')
-        except Exception as e:
-            print(f'[CLOUDSYNC] write failed: {e}', file=sys.stderr)
-    else:
-        print('[CLOUDSYNC] no change')
-    return added + updated
-
-
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else 'all'
 
@@ -3694,10 +3642,6 @@ def main():
     # ── Update ECO prices → holdings.json ──
     if mode in ('all', 'prices'):
         holdings_path = os.path.join(DATA_DIR, 'holdings.json')
-        try:
-            merge_cloud_holdings(holdings_path)
-        except Exception as _e:
-            print(f'[CLOUDSYNC] merge error: {_e}', file=sys.stderr)
         holdings = read_json(holdings_path)
 
         items = holdings.get('items', [])
@@ -3732,9 +3676,9 @@ def main():
                 if not found:
                     history.append({'date': today, 'price': new_price})
 
-                # 保留最近 180 天历史（义轩 2026-09-22：历史数据保留 6 个月）
+                # 保留最近 60 天历史（足够算 rate_30）
                 history.sort(key=lambda x: x['date'])
-                item['price_history'] = history[-180:]
+                item['price_history'] = history[-60:]
 
                 # 计算涨跌率
                 # rate_1: 相对上一次更新
@@ -4308,35 +4252,10 @@ def main():
         eco_cat_path = os.path.join(DATA_DIR, 'eco_catalog.json')
         name_map_path = os.path.join(DATA_DIR, 'name_map.json')
         catalog = json.load(open(eco_cat_path, 'r', encoding='utf-8'))
-        # ★ 2026-09-21 性能优化：原来把分类目录全量 37k 条（含印花/贴纸等
-        #   已排除品类）都写进来，gzip 后 700KB，而首页首屏就 fetch 它。
-        #   改为只保留追踪池标的 → 3416.8KB→409.8KB（gzip 709.5→82.0KB）。
-        _tracked = set()
-        _tp = os.path.join(DATA_DIR, 'eco_tracked.json')
-        try:
-            if os.path.exists(_tp):
-                for _it in (json.load(open(_tp, encoding='utf-8')) or []):
-                    _h = _it.get('HashName')
-                    if _h:
-                        _tracked.add(_h)
-        except Exception as _e:
-            print(f'[NAME] 读取追踪池失败，回退到全量: {_e}', file=sys.stderr)
-        # ★ 2026-09-22 修正：只按追踪池过滤会让「导入库存」拿不到中文名
-        #   （箱子/手套/刀/探员 等不在追踪池）。改为：追踪池 ∪ 非装饰类实体。
-        #   仅排除 印花/涂鸦/音乐盒/布章（纯装饰，约占 55%），以控制体积。
-        _DECOR = ('Sticker', 'Graffiti', 'Music Kit', 'Patch')
         name_map = {}
         for x in catalog:
-            _hn, _gn = x.get('HashName'), x.get('GoodsName')
-            if not _hn or not _gn:
-                continue
-            if _hn in _tracked:
-                name_map[_hn] = _gn
-                continue
-            if any(_d in _hn for _d in _DECOR):
-                continue
-            name_map[_hn] = _gn
-        # name_map = 追踪池 + 非装饰类实体（供导入库存查中文名）
+            if x.get('HashName') and x.get('GoodsName'):
+                name_map[x['HashName']] = x['GoodsName']
         json.dump(name_map, open(name_map_path, 'w', encoding='utf-8'), ensure_ascii=False)
         dirty_files.add('name_map.json')
         print(f'[NAME] Generated name_map.json: {len(name_map)} items')
