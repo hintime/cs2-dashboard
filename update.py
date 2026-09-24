@@ -4009,9 +4009,36 @@ def main():
                     # ⚠ 2026-09-18：全池扫描耗 48 批≈52 分钟且与买盘通道抢配额；
                     #   跨平台/买盘数据已改由 buy_fill 只对入选标的精确获取 → 上限 1400 降到 200。
                     _cap = int(os.environ.get('STEAMDT_MAX_ITEMS') or '200')
+                    # ⚠ 2026-09-24：固定观察名单 —— 在售量异动（fluctuation.html）需要
+                    #   "同一批饰品的前后对比"。原来按候选池动态排序取前 200 件，每轮抓的
+                    #   不是同一批（实测相邻快照交集 9.5%~68.5%），时间序列不成立，
+                    #   异动页永远出不了真数据。现在维护 fluct_watchlist.json 固定 200 件，
+                    #   每轮必含且排在最前（cap 截断后正好等于名单），交集 → 100%。
+                    #   配额不变（仍是 200 件/轮）；名单可用环境变量 FLUCT_WATCHLIST_RESET=1
+                    #   强制重建。
+                    _watch_path = os.path.join(DATA_DIR, 'fluct_watchlist.json')
+                    _watch = None
+                    if os.environ.get('FLUCT_WATCHLIST_RESET') != '1':
+                        try:
+                            _watch = read_json(_watch_path)
+                        except Exception:
+                            _watch = None      # 首次运行 / 文件损坏 → 走重建
+                    if not (isinstance(_watch, list) and _watch):
+                        _watch = all_hn[:_cap]      # 首次生成：候选池优先的前 200 件
+                        try:
+                            write_json(_watch_path, _watch)
+                            print('[SteamDT] 固定观察名单首次生成: %d 件 -> fluct_watchlist.json' % len(_watch))
+                        except Exception as _we:
+                            print('[SteamDT] 观察名单保存失败(本轮仍用内存名单): %s' % _we, file=sys.stderr)
+                    _watch = [h for h in _watch if h]                 # 去空
+                    _watch_seen = set()
+                    _watch = [h for h in _watch if not (h in _watch_seen or _watch_seen.add(h))]
+                    _watch_set = set(_watch)
+                    _others = [h for h in all_hn if h not in _watch_set]
+                    all_hn = _watch + _others
                     if len(all_hn) > _cap:
-                        print('[SteamDT] 批量限速 1次/分(≤100件) → 本轮取前 %d 件（候选池优先），其余下轮补 '
-                              '（STEAMDT_MAX_ITEMS 可调）' % _cap)
+                        print('[SteamDT] 批量限速 1次/分(≤100件) → 本轮取前 %d 件（固定观察名单 %d 件优先），其余下轮补 '
+                              '（STEAMDT_MAX_ITEMS 可调）' % (_cap, len(_watch)))
                         all_hn = all_hn[:_cap]
                     print('[SteamDT] Fetching multi-platform prices for %d tracked items (候选池优先 %d 件)...'
                           % (len(all_hn), len(_cand)))

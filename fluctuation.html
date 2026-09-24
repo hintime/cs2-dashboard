@@ -578,8 +578,8 @@ function renderNone(why) {
   document.getElementById('allList').innerHTML =
     '<tr><td colspan="8"><div class="empty"><div class="ico">◍</div>' +
     '<div class="t">暂无可比的在售量快照</div><div class="d">' + esc(why) +
-    '。<br>异动对比需要至少两个<b>小时级</b>快照，且两期饰品集合要有足够重叠。' +
-    '采集任务正常运行时，约 1 小时后即可积累出第一条可用对比。</div></div></td></tr>';
+    '。<br>异动对比需要至少两个<b>同一批饰品</b>的快照。采集端已启用固定观察名单，' +
+    '等固定名单下的快照累积出两期（历史节奏约 6 小时一轮）即可出第一条真实对比。</div></div></td></tr>';
   document.getElementById('rowCount').textContent = '';
   document.getElementById('moreBtn').hidden = true;
 }
@@ -596,11 +596,9 @@ function renderDiag(pair, st) {
            '使「相邻时点」实际跨越数日。</div>');
   }
   if (pair.common) {
-    h.push('<div style="color:var(--amber)">各期样本不一致：采集端每轮只抓 ' +
-           '<code>STEAMDT_MAX_ITEMS=200</code> 件，且按「候选池优先」动态排序，' +
-           '导致相邻快照抓到的不是同一批饰品（实测交集 4%~64%）。' +
-           '本页只对比两期都出现的饰品，异动结果不代表全池。' +
-           '要得到真正的小时级时间序列，需要固定观察名单。</div>');
+    h.push('<div style="color:var(--amber)">两期共同样本 ' + pair.common + ' 件。' +
+           '采集端已于 2026-09-24 启用固定观察名单（<code>fluct_watchlist.json</code>，每轮必抓同一批 200 件），' +
+           '名单生效后的新快照交集应为 100%；此前的历史快照仍来自动态轮换采样，交集偏低。</div>');
   }
   if (st) {
     h.push('<div><span class="kv">本期样本 <code>' + st.now.total + '</code> 件</span>' +
