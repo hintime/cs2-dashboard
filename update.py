@@ -670,6 +670,61 @@ def save_buff_history(steamdt_prices):
     print(f'[HISTORY] Hour {hour_key} + Day {day_key}: {len(steamdt_prices)} items, {y_c} with 悠悠')
     return history
 
+def run_fluct_watchlist_snapshot():
+    """★ 2026-09-24：异动固定观察名单快照（prices 高频线调用）。
+
+    背景：全量 SteamDT 分支只在 all 轮（6 小时）执行，prices 轮（30 分钟）只查
+    持仓 32 件 → buff_history 快照 6 小时才一个，"小时级异动"名存实亡。
+    本函数让 prices 轮也产出快照：读/生成 fluct_watchlist.json 固定 200 件 →
+    SteamDT 批量抓取 → save_buff_history。与 all 分支共享同一份名单文件，口径一致。
+    """
+    tracked_path = os.path.join(DATA_DIR, 'eco_tracked.json')
+    if not STEAM_KEY or not os.path.exists(tracked_path):
+        return
+    try:
+        tracked = read_json(tracked_path)
+        if not (isinstance(tracked, list) and tracked):
+            return
+        _cap = int(os.environ.get('STEAMDT_MAX_ITEMS') or '200')
+        _watch_path = os.path.join(DATA_DIR, 'fluct_watchlist.json')
+        _watch = None
+        if os.environ.get('FLUCT_WATCHLIST_RESET') != '1':
+            try:
+                _watch = read_json(_watch_path)
+            except Exception:
+                _watch = None            # 首次运行 / 文件损坏 → 重建
+        if not (isinstance(_watch, list) and _watch):
+            _cand, _rest = [], []
+            for it in tracked:
+                _h = it.get('HashName', '')
+                if not _h:
+                    continue
+                try:
+                    _is_cand = (float(it.get('Price') or 0) >= 20
+                                and int(it.get('SellingTotal') or 0) >= REC_MIN_SELLING)
+                except Exception:
+                    _is_cand = False
+                (_cand if _is_cand else _rest).append(_h)
+            _watch = (_cand + _rest)[:_cap]
+            try:
+                write_json(_watch_path, _watch)
+                print('[FluctWatch] 固定观察名单首次生成: %d 件 -> fluct_watchlist.json' % len(_watch))
+            except Exception as _we:
+                print('[FluctWatch] 名单保存失败(本轮仍用内存名单): %s' % _we, file=sys.stderr)
+        _watch = [h for h in _watch if h]
+        if not _watch:
+            return
+        print('[FluctWatch] 拉取固定名单 %d 件 ...' % len(_watch))
+        full_prices = fetch_steamdt_prices(_watch, verbose=False)
+        if full_prices:
+            save_buff_history(full_prices)
+            print('[FluctWatch] 快照已写入 buff_history: %d 件' % len(full_prices))
+        else:
+            print('[FluctWatch] 本轮未取到价格（限流/网络），快照跳过')
+    except Exception as e:
+        print('[FluctWatch] failed: %s' % e, file=sys.stderr)
+
+
 def compute_alerts(steamdt_prices):
     """Compute price change alerts from BUFF price history (replaces CSQAQ)
     
@@ -3778,6 +3833,11 @@ def main():
                 print(f'[SteamDT] Merged multi-platform prices for {merged}/{len(eco_items)} items into eco_tracked.json')
         except Exception as e:
             print(f'[SteamDT] BUFF prices failed: {e}', file=sys.stderr)
+
+    # ★ 异动固定观察名单快照：prices 高频线每 30 分钟写一次 buff_history
+    #   （全量分支只在 all 轮跑，之前异动页因此 6 小时才有一个快照点）
+    if mode == 'prices':
+        run_fluct_watchlist_snapshot()
 
     # ── Compute self-alerts from BUFF price history → market.json ──
     alerts_data = []
