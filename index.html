@@ -225,21 +225,6 @@ body::before{
 .news-card .nc-time{font-size:12px;color:var(--text3);margin-top:8px}
 .news-card .nc-link{font-size:12px;color:var(--blue);margin-top:4px;display:flex;align-items:center;gap:4px}
 .news-loading{display:flex;align-items:center;justify-content:center;padding:32px;color:var(--text2);font-size:13px;gap:8px}
-.sentiment-bar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.sentiment-label{font-size:12px;font-weight:600;min-width:60px}
-.sentiment-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
-.sentiment-fill{height:100%;border-radius:4px;transition:width .5s}
-.sentiment-val{font-size:12px;font-weight:700;font-family:monospace;min-width:44px;text-align:right}
-.sentiment-card{
-  padding:16px 16px;
-  background:linear-gradient(135deg,var(--surface),var(--surface2));
-  border-radius:12px;border:1px solid var(--border);
-  box-shadow:0 2px 16px rgba(0,0,0,.15);
-  transition:all .3s ease;
-}
-.sentiment-card:hover{border-color:var(--border-hi);box-shadow:0 6px 28px rgba(0,0,0,.2)}
-.sentiment-card h4{font-size:13px;font-weight:600;color:var(--text);margin:0 0 8px}
-.sentiment-card p{font-size:12px;color:var(--text2);line-height:1.6;margin:0}
 /* AI 洞察面板 */
 .ai-card{
   padding:16px 24px;
@@ -1589,12 +1574,11 @@ html { scroll-behavior: smooth; }
   <div class="panel" id="newsSection" style="display:none">
     <div class="panel-head" style="flex-direction:column;align-items:stretch;gap:12px">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <h2>CS2 资讯中心 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px">官方新闻 · 更新公告 · 市场情绪</span></h2>
+        <h2>CS2 资讯中心 <span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px">官方新闻 · 更新公告</span></h2>
         <span id="newsUpdateTime" style="font-size:10px;color:var(--text3)"></span>
       </div>
       <div class="tabs news-tabs-bar" id="newsTabs">
         <button class="tab on" data-ntab="news">📰 CS资讯</button>
-        <button class="tab" data-ntab="sentiment">📈 市场情绪</button>
       </div>
     </div>
     <div id="newsContent" style="padding:16px 20px">
@@ -2675,7 +2659,6 @@ function initDashboard() {
 
 // ═══════════════ CS2 NEWS CENTER ═══════════════
 let cs2NewsData = null;
-let newsTab = 'news';
 
 // ── 新闻关键词分类 ──
 function classifyNews(title, body) {
@@ -2727,49 +2710,6 @@ async function fetchCS2Updates() {
       type: 'update' }; });
   } catch(e) {}
   return [];
-}
-
-function calcSentiment() {
-  var signals = [];
-  var score = 50;
-  // 全量市场数据（从 market_scan.json）
-  var scan = window._marketScan || {};
-  if (scan.movers) {
-    var gainers = scan.movers.gainers || [], losers = scan.movers.losers || [];
-    var totalMovers = gainers.length + losers.length || 1;
-    var gainRatio = gainers.length / totalMovers;
-    // 涨跌比影响分数
-    if (gainRatio >= 0.7)       { score += 20; signals.push({emoji:'🚀', text:'涨跌比 '+gainers.length+':'+losers.length+'，市场强势'}); }
-    else if (gainRatio <= 0.3)  { score -= 20; signals.push({emoji:'📉', text:'涨跌比 '+gainers.length+':'+losers.length+'，市场普跌'}); }
-    else if (gainRatio >= 0.5)  { score += 8;  signals.push({emoji:'📈', text:'涨跌比 '+gainers.length+':'+losers.length+'，市场偏多'}); }
-    else                        { score -= 8;  signals.push({emoji:'📊', text:'涨跌比 '+gainers.length+':'+losers.length+'，市场承压'}); }
-    // 平均涨跌幅度
-    var avgGain = gainers.length ? gainers.reduce(function(s,g){return s+g.r7;},0)/gainers.length : 0;
-    var avgLoss = losers.length ? losers.reduce(function(s,l){return s+l.r7;},0)/losers.length : 0;
-    if (avgGain > 20)      { score += 10; signals.push({emoji:'🔥', text:'平均涨幅 +'+avgGain.toFixed(0)+'%，资金活跃'}); }
-    else if (avgGain > 5)  { score += 5;  signals.push({emoji:'📈', text:'平均涨幅 +'+avgGain.toFixed(0)+'%'}); }
-    if (avgLoss < -30)     { score -= 10; signals.push({emoji:'❄', text:'平均跌幅 '+avgLoss.toFixed(0)+'%，抛压明显'}); }
-    else if (avgLoss < -10){ score -= 5;  signals.push({emoji:'📉', text:'平均跌幅 '+avgLoss.toFixed(0)+'%'}); }
-  }
-  // 价格分布
-  if (scan.tiers) {
-    var t = scan.tiers, tierTotal = Object.values(t).reduce(function(a,b){return a+b;},0)||1;
-    var highEnd = (t['200-1000']||0) + (t['>1000']||0);
-    var highRatio = highEnd / tierTotal;
-    if (highRatio > 0.3) { score += 5; signals.push({emoji:'💎', text:'高端饰品占比'+(highRatio*100).toFixed(0)+'%，市场活跃'}); }
-  }
-  // 持仓对比
-  if (H && H.length) {
-    var upCount = 0, downCount = 0;
-    H.forEach(function(h){ if(h.pnl>=0) upCount++; else downCount++; });
-    var winRate = upCount/H.length;
-    if (winRate > 0.7)      { score += 10; signals.push({emoji:'🏆', text:'持仓胜率'+(winRate*100).toFixed(0)+'%，优于市场'}); }
-    else if (winRate < 0.3) { score -= 10; signals.push({emoji:'⚠', text:'持仓胜率'+(winRate*100).toFixed(0)+'%，需关注'}); }
-  }
-  score = Math.max(0, Math.min(100, score));
-  var vibe = score >= 65 ? '🐂 看多' : score <= 35 ? '🐻 看空' : '⚖ 中性';
-  var color = score >= 65 ? 'var(--rise)' : score <= 35 ? 'var(--fall)' : 'var(--text2)';
-  return { score: score, vibe: vibe, color: color, signals: signals };
 }
 
 // ── FirePulse 大盘条 ──
@@ -2880,12 +2820,11 @@ async function renderNews() {
       DOM.newsUpdateTime.textContent = new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
     }
   }
-  renderNewsTab(newsTab);
+  renderNewsTab('news');
   setupNewsTabs();
 }
 
 function renderNewsTab(tab) {
-  newsTab = tab;
   var grid = $('newsGrid');
   if (!grid) return;
   var html = '';
@@ -2914,63 +2853,6 @@ function renderNewsTab(tab) {
     if (!items.length) html = '<div class="news-loading">暂无数据</div>';
     grid.innerHTML = html;
     grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:12px';
-  } else if (tab === 'sentiment') {
-    var s = calcSentiment();
-    var upCount = H.filter(function(h){return (h.rate_7||0)>0;}).length;
-    var dnCount = H.filter(function(h){return (h.rate_7||0)<0;}).length;
-    var noData = H.length - upCount - dnCount;
-    var totalV = H.reduce(function(sum,h){var v=h.p*(h.q||1);return sum+(isNaN(v)?0:v);},0);
-    var totalC = H.reduce(function(sum,h){var c=h.c*(h.q||1);return sum+(isNaN(c)?0:c);},0);
-    var pnl = totalV - totalC;
-    var pnlPct = totalC>0?(pnl/totalC*100):0;
-    var winCount = H.filter(function(h){return h.pnl>=0;}).length;
-    var winRate = H.length?(winCount/H.length*100).toFixed(1):'0';
-    
-    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
-      // 左：情绪仪表盘
-      '<div class="sentiment-card">'+
-        '<h4>🎭 市场情绪</h4>'+
-        '<div style="text-align:center;padding:16px 0">'+
-          '<div style="font-size:48px;margin-bottom:4px">'+(s.score>=65?'🐂':s.score<=35?'🐻':'⚖')+'</div>'+
-          '<div style="font-size:20px;font-weight:700;color:'+s.color+'">'+s.score+'/100 · '+s.vibe+'</div>'+
-        '</div>'+
-        '<div class="sentiment-track" style="height:6px;margin-top:8px"><div class="sentiment-fill" style="width:'+s.score+'%;background:linear-gradient(90deg,#f87171,#fbbf24,#4ade80);border-radius:3px"></div></div>'+
-        '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:2px"><span>🐻 看空0</span><span>⚖ 中性50</span><span>🐂 看多100</span></div>'+
-      '</div>'+
-      // 右：持仓健康
-      '<div class="sentiment-card">'+
-        '<h4>💼 持仓健康</h4>'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">'+
-          '<div style="text-align:center"><div style="font-size:24px;font-weight:700;color:'+(pnlPct>=0?'var(--rise)':'var(--fall)')+'">'+(pnlPct>=0?'+':'')+pnlPct.toFixed(1)+'%</div><div style="font-size:10px;color:var(--text3);margin-top:2px">持仓盈亏率</div></div>'+
-          '<div style="text-align:center"><div style="font-size:24px;font-weight:700;color:var(--rise)">'+winRate+'%</div><div style="font-size:10px;color:var(--text3);margin-top:2px">胜率</div></div>'+
-          '<div style="text-align:center"><div style="font-size:24px;font-weight:700;color:var(--text)">'+H.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">持仓品种</div></div>'+
-          '<div style="text-align:center"><div style="font-size:24px;font-weight:700;color:'+(pnl>=0?'var(--rise)':'var(--fall)')+'">¥'+(pnl>=0?'+':'')+pnl.toFixed(0)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">总盈亏</div></div>'+
-        '</div>'+
-      '</div>'+
-    '</div>'+
-    // 涨跌分布 + 信号
-    '<div class="sentiment-card" style="margin-top:12px">'+
-      '<h4>📊 持仓涨跌分布 · '+H.length+'件</h4>'+
-      '<div style="margin-top:10px">'+
-        '<div style="display:flex;height:20px;background:var(--border);border-radius:10px;overflow:hidden">'+
-          '<div style="height:100%;width:'+(H.length?upCount/H.length*100:0)+'%;background:#4ade80;border-radius:10px 0 0 10px;transition:width .6s;"></div>'+
-          (noData>0?'<div style="height:100%;width:'+(H.length?noData/H.length*100:0)+'%;background:rgba(148,163,184,.4);position:relative;transition:width .6s"><span style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--text3);white-space:nowrap">'+noData+'件无数据</span></div>':'')+
-          '<div style="height:100%;width:'+(H.length?dnCount/H.length*100:0)+'%;background:#ef4444;border-radius:0 10px 10px 0;transition:width .6s"></div>'+
-        '</div>'+
-        '<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:4px;color:var(--text2)">'+
-          '<span style="color:#4ade80">📈 '+upCount+'只涨</span>'+
-          (noData>0?'<span style="color:var(--text3)">'+noData+'件无数据</span>':'')+
-          '<span style="color:#ef4444">📉 '+dnCount+'只跌</span>'+
-        '</div>'+
-      '</div>'+
-      '<div style="margin-top:12px;font-size:11px;color:var(--text2)">'+
-        s.signals.map(function(sig){return '<span style="margin-right:16px">'+sig.emoji+' '+sig.text+'</span>';}).join('')+
-      '</div>'+
-    // ── AI 洞察 ──
-    renderAIPanel(H) +
-    '</div>';
-    grid.innerHTML = html;
-    grid.style.cssText = '';
   }
 }
 
@@ -3344,13 +3226,8 @@ function setupNewsTabs() {
   var newsTabs = $('newsTabs');
   if (!newsTabs || newsTabs._bound) return;
   newsTabs._bound = 1;
-  newsTabs.onclick = function(e) {
-    var btn = e.target.closest('[data-ntab]');
-    if (!btn) return;
-    this.querySelectorAll('.tab').forEach(function(b) { b.classList.remove('on'); });
-    btn.classList.add('on');
-    renderNewsTab(btn.dataset.ntab);
-  };
+  // 仅剩「CS资讯」单个 tab，「市场情绪」已移除（2026-09-24），无需切换逻辑
+  newsTabs.onclick = function() {};
 }
 
 function setupExportBtn() {
