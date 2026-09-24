@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 964.64,
-    "change": -3.54,
-    "change_pct": -3.54,
-    "market_value": 296101038.03,
-    "total_items": 3957,
-    "updated": "2026-09-24T14:00:03+08:00",
+    "latest": 973.97,
+    "change": -2.6,
+    "change_pct": -2.6,
+    "market_value": 298962846.92,
+    "total_items": 3997,
+    "updated": "2026-09-24T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3739,8 +3739,8 @@
         "date": "2026-09-24",
         "dateFull": "2026-09-24 14:00",
         "open": 964.64,
-        "close": 964.64,
-        "high": 964.64,
+        "close": 973.97,
+        "high": 973.97,
         "low": 964.64
       }
     ],
@@ -11201,12 +11201,20 @@
         "index": 964.64,
         "change_pct": -3.54,
         "market_value": 296101038.03
+      },
+      {
+        "time": "16:00",
+        "date": "2026-09-24",
+        "timestamp": 1790236803,
+        "index": 973.97,
+        "change_pct": -2.6,
+        "market_value": 298962846.92
       }
     ],
     "selling": {
-      "total_selling": 1327013,
+      "total_selling": 1337600,
       "total_selling_prev": 0,
-      "total_selling_delta": 1327013,
+      "total_selling_delta": 1337600,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11214,7 +11222,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790229603712,
+  "index_updated": 1790236803789,
   "alerts": [
     {
       "name": "Prof. Shahmat | Elite Crew",
@@ -29817,7 +29825,7 @@
     "MP9 | 彩绘玻璃 (崭新出厂)",
     "MP9 | 彩绘玻璃 (略有磨损)"
   ],
-  "updated": "2026-09-24T07:31:35Z",
+  "updated": "2026-09-24T08:01:39Z",
   "steam_market_items": 10,
   "steam_market_recs": {
     "momentum": [],
