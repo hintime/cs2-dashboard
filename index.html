@@ -1391,6 +1391,108 @@ html { scroll-behavior: smooth; }
 /* AI 页脚 10px 太小 */
 #aiFooter{font-size:11px!important;color:var(--text3)!important;padding:6px 0 18px!important;
   line-height:1.6}
+
+/* ══ 矮视口头部压缩（<=700px，覆盖 935x483 / 1050x608 等实际窗口）══
+   实测 935 宽下视口仅 438px，而页头 47 + 导航 270 + 面板前段 140 = 457px，
+   分栏内容从 y=464 才开始 —— 整个详情区被挤出首屏。
+   此前只有 max-height:900 的面板内压缩，没压到 .header/.quick-nav。 */
+@media (max-height:700px){
+  .header{margin-bottom:12px;gap:8px}
+  .header h1{font-size:18px}
+  .quick-nav{padding:6px 0 4px;margin-bottom:8px;gap:3px}
+  .nav-btn{padding:5px 11px;font-size:11.5px}
+  #subPagesArea{padding:5px 0 0}
+  /* 面板前段（标题 / 分类 tab）也一起收 */
+  #holdingsPanel{margin-bottom:10px}
+  #holdingsPanel .panel-h{margin-bottom:6px;padding-bottom:6px}
+  #holdingsPanel .hp-tabs{gap:5px}
+  #holdingsPanel .hp-tab{padding:3px 10px;font-size:11.5px}
+  /* 分栏高度改为跟随视口，留够但不撑破 */
+  .hp-split{height:calc(100vh - 150px)!important;min-height:300px!important}
+  .foot{padding:14px 24px 12px!important}
+}
+@media (max-height:560px){
+  .header h1{font-size:16px}
+  .header{margin-bottom:8px}
+  .quick-nav{padding:4px 0 3px;margin-bottom:6px}
+  .hp-split{height:calc(100vh - 130px)!important;min-height:260px!important}
+}
+/* == 极矮视口（<=470px，义轩的 935x483 实测只有 438px）==
+   此时必须把「面板前段」整体收干：市场大盘折叠条 / 分类 tab 换行
+   都在吃高度，而详情区才是要看的东西。 */
+@media (max-height:470px){
+  .header{margin-bottom:6px}
+  .header h1{font-size:15px}
+  .header .sub{display:none}
+  .quick-nav{padding:3px 0 2px;margin-bottom:5px}
+  #subPagesArea{margin-top:2px}
+  .nav-btn{padding:4px 9px;font-size:11px}
+  #holdingsPanel .panel-h{margin-bottom:4px;padding-bottom:4px}
+  #holdingsPanel .hp-market{margin-bottom:5px}
+  #holdingsPanel .hp-market>summary{padding:4px 10px;font-size:11.5px}
+  #holdingsPanel .hp-tabs{margin-bottom:5px}
+  #holdingsPanel .hp-tools{margin-bottom:5px}
+  #holdingsPanel .hp-dh{margin-bottom:4px}
+  #holdingsPanel .hp-dh .t{font-size:13.5px}
+  #holdingsPanel .hp-big{margin-bottom:5px}
+  #holdingsPanel .hp-big .v{font-size:22px}
+  #holdingsPanel .hp-ops{margin-top:5px;padding-top:5px}
+  #holdingsPanel .hp-grid{gap:5px}
+  #holdingsPanel .hp-cell{padding:5px 8px}
+  .hp-split{height:calc(100vh - 120px)!important;min-height:240px!important}
+}
+/* == 矮视口：用 order 把操作按钮提到详情区最前 ==
+   435px 高的视口里，页头+导航+面板前段已占 367px，详情区只剩 ~300px，
+   而详情内容 542px —— 按钮原本排第 3 位，必然滚出首屏。
+   解法：把 .hp-detail 改成 flex 列容器，再用 order 重排视觉顺序。
+   **只改 CSS，不动 DOM**（符合"不动 DOM/JS"的项目约束）。
+   顺序：名称 → 盈亏 → 按钮 → 数据格 → 走势图 */
+@media (max-height:700px){
+  #holdingsPanel .hp-detail{
+    display:flex;flex-direction:column;
+  }
+  #holdingsPanel .hp-dh  {order:1}
+  #holdingsPanel .hp-big {order:2}
+  #holdingsPanel .hp-ops {order:3}
+  #holdingsPanel .hp-grid{order:4}
+  #holdingsPanel .hp-chart{order:5}
+  /* 详情区最后可能还有其它块（明细表/AI 等），排最后 */
+  #holdingsPanel .hp-detail>*{order:9}
+  #holdingsPanel .hp-dh  {order:1!important}
+  #holdingsPanel .hp-big {order:2!important}
+  #holdingsPanel .hp-ops {order:3!important}
+  #holdingsPanel .hp-grid{order:4!important}
+  #holdingsPanel .hp-chart{order:5!important}
+  /* ★ 关键：.hp-detail 变成 flex 列容器后，子项默认 flex-shrink:1，
+     而 .hp-detail 高度固定（316px）< 内容高（524px），
+     于是浏览器把可收缩的子项（.hp-grid 是 display:grid）压到了 2px。
+     必须显式禁止收缩，让溢出交给 .hp-detail 的 overflow-y:auto 处理。 */
+  #holdingsPanel .hp-detail>*{flex-shrink:0}
+}
+/* == 矮视口：把操作按钮固定在详情区可视区顶部 ==
+   y=368 起的详情区在 438px 视口里只剩 70px，名称+盈亏已占 124px，
+   按钮（order=3）必然在 526px 处滚出首屏。
+   order 重排对 sticky 无效（sticky 参照自身流位置），
+   故改为 absolute 定位到 .hp-detail 的 padding box 顶部：
+   只要详情区可见，按钮就可见。 */
+@media (max-height:560px){
+  #holdingsPanel .hp-detail{position:relative;padding-top:52px!important}
+  #holdingsPanel .hp-ops{
+    position:absolute!important;
+    top:0;left:0;right:0;
+    z-index:8;
+    margin:0!important;
+    padding:9px 24px 10px!important;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    border-top:0!important;
+    box-shadow:0 2px 10px -4px rgba(0,0,0,.6);
+  }
+}
+@media (max-height:470px){
+  #holdingsPanel .hp-detail{padding-top:48px!important}
+  #holdingsPanel .hp-ops{padding:7px 24px 8px!important}
+}
 @media (max-width:640px){
   .foot{padding:16px 14px!important;font-size:11.5px!important}
   #aiFooter{font-size:10.5px!important;padding:4px 10px 16px!important}
