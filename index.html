@@ -984,14 +984,9 @@ html { scroll-behavior: smooth; }
 .hp-signal-row>span:first-child{font-size:24px;line-height:1}
 .hp-perf{display:flex;gap:18px;flex-wrap:wrap;margin:-2px 0 12px;padding:0 2px;font-size:12px}
 .hp-market{border:1px solid var(--border);border-radius:10px;background:var(--surface2);margin-bottom:14px;overflow:hidden}
-.hp-market>summary{cursor:pointer;padding:9px 14px;font-size:12px;font-weight:600;color:var(--text2);
-  display:flex;align-items:center;gap:10px;list-style:none;user-select:none;transition:background .15s}
-.hp-market>summary::-webkit-details-marker{display:none}
-.hp-market>summary:hover{background:var(--surface)}
-.hp-market>summary::before{content:'▸';font-size:11px;color:var(--text3);transition:transform .2s;display:inline-block}
-.hp-market[open]>summary::before{transform:rotate(90deg)}
-.hp-fold-hint{font-weight:400;color:var(--text3);font-size:11px}
-.hp-market[open]>summary .hp-fold-hint{display:none}
+.hp-market-h{padding:9px 14px;font-size:12px;font-weight:600;color:var(--text2);
+  display:flex;align-items:center;gap:10px;user-select:none;cursor:default}
+.hp-market-sub{font-weight:400;color:var(--text3);font-size:11px}
 .hp-detail-head{flex-direction:column;align-items:stretch;gap:10px}
 .hp-head-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .hp-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -1157,7 +1152,7 @@ html { scroll-behavior: smooth; }
 #holdingsPanel .hp-summary{gap:9px}
 /* 市场大盘折叠区：与新风格对齐 */
 #holdingsPanel .hp-market{border-radius:9px;background:var(--surface)}
-#holdingsPanel .hp-market>summary{padding:9px 14px;font-size:12px;letter-spacing:0}
+#holdingsPanel .hp-market-h{padding:9px 14px;font-size:12px;letter-spacing:0}
 #holdingsPanel #fpOverview{gap:9px !important}
 
 /* ═══ 【B】左栏批量操作 ═══ */
@@ -1332,7 +1327,7 @@ html { scroll-behavior: smooth; }
   #holdingsPanel .k-value{font-size:17px}
   #holdingsPanel .k-sub{font-size:10.5px;margin-top:2px}
   #holdingsPanel .hp-market{margin-bottom:8px}
-  #holdingsPanel .hp-market>summary{padding:6px 12px}
+  #holdingsPanel .hp-market-h{padding:6px 12px}
   #holdingsPanel .hp-perf{margin:-2px 0 6px}
   /* ② 详情块内距收敛 */
   #holdingsPanel .hp-dh{margin-bottom:6px}
@@ -1416,6 +1411,12 @@ html { scroll-behavior: smooth; }
   .header{margin-bottom:8px}
   .quick-nav{padding:4px 0 3px;margin-bottom:6px}
   .hp-split{height:calc(100vh - 130px)!important;min-height:260px!important}
+  /* 市场大盘已改为常驻展开（原折叠态只占 ~68px，展开后 ~199px）
+     → 矮视口必须把它压薄，否则下方工具条/列表被挤到首屏外 */
+  #holdingsPanel #fpOverview{margin:8px 12px 10px!important;gap:7px!important}
+  #holdingsPanel #fpOverview .k-mini{padding:6px 10px!important}
+  #holdingsPanel #fpSpark{display:none!important}
+  #holdingsPanel #fpSectors{display:none!important}
 }
 /* == 极矮视口（<=470px，义轩的 935x483 实测只有 438px）==
    此时必须把「面板前段」整体收干：市场大盘折叠条 / 分类 tab 换行
@@ -1429,7 +1430,15 @@ html { scroll-behavior: smooth; }
   .nav-btn{padding:4px 9px;font-size:11px}
   #holdingsPanel .panel-h{margin-bottom:4px;padding-bottom:4px}
   #holdingsPanel .hp-market{margin-bottom:5px}
-  #holdingsPanel .hp-market>summary{padding:4px 10px;font-size:11.5px}
+  #holdingsPanel .hp-market-h{padding:4px 10px;font-size:11.5px}
+  #holdingsPanel .hp-market-sub{display:none}
+  #holdingsPanel #fpOverview{display:flex!important;gap:6px!important;margin:6px 10px 8px!important}
+  #holdingsPanel #fpOverview .k-mini{padding:5px 9px!important;flex:1 1 0;min-width:0}
+  #holdingsPanel #fpOverview .k-label{font-size:9px!important;margin-bottom:1px!important}
+  #holdingsPanel #fpOverview .k-value{font-size:14px!important}
+  #holdingsPanel #fpOverview .k-sub{font-size:9.5px!important;margin-top:1px!important}
+  #holdingsPanel #fpSpark{display:none!important}
+  #holdingsPanel #fpSectors{display:none!important}
   #holdingsPanel .hp-tabs{margin-bottom:5px}
   #holdingsPanel .hp-tools{margin-bottom:5px}
   #holdingsPanel .hp-dh{margin-bottom:4px}
@@ -1699,9 +1708,9 @@ html { scroll-behavior: smooth; }
       <span id="bestPerformer" class="kpi-sub" style="display:none"></span>
       <span id="worstPerformer" class="kpi-sub" style="display:none"></span>
     </div>
-    <!-- ② 市场大盘（与「持仓」主任务无关，默认折叠，需要时展开） -->
-    <details class="hp-market" id="hpMarketFold">
-      <summary>市场大盘<span class="hp-fold-hint">展开查看指数 / 成交额 / 涨跌分布 / 贪婪指数</span></summary>
+    <!-- ② 市场大盘（常驻展开，已取消折叠） -->
+    <section class="hp-market" id="hpMarketFold">
+      <div class="hp-market-h">市场大盘<span class="hp-market-sub">指数 / 成交额 / 涨跌分布 / 贪婪指数</span></div>
       <!-- FirePulse 大盘（数据源: market_overview.json） -->
       <div id="fpOverview" style="display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0">
         <div class="kpi-card k-mini">
@@ -1728,7 +1737,7 @@ html { scroll-behavior: smooth; }
       </div>
       <!-- FirePulse 板块 -->
       <div id="fpSectors" style="display:none;gap:8px;overflow-x:auto;padding:2px 0 10px;font-size:12px"></div>
-    </details>
+    </section>
     <!-- ③ 持仓明细（主任务，占主体） -->
     <div class="panel-head hp-detail-head">
       <div class="hp-head-row">
