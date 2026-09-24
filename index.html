@@ -1383,6 +1383,18 @@ html { scroll-behavior: smooth; }
 #holdingsPanel .hp-detail::-webkit-scrollbar-thumb{background:rgba(99,115,129,.35);
   border-radius:4px}
 #holdingsPanel .hp-detail::-webkit-scrollbar-thumb:hover{background:rgba(99,115,129,.55)}
+/* ── 页脚可读性修正（原 opacity:.6 + text3 过淡，被误认为空白） ── */
+.foot{color:var(--text2)!important;opacity:.92!important;padding:20px 24px 18px!important;
+  line-height:1.7}
+.foot span{transition:color .12s}
+.foot span:hover{color:var(--text)}
+/* AI 页脚 10px 太小 */
+#aiFooter{font-size:11px!important;color:var(--text3)!important;padding:6px 0 18px!important;
+  line-height:1.6}
+@media (max-width:640px){
+  .foot{padding:16px 14px!important;font-size:11.5px!important}
+  #aiFooter{font-size:10.5px!important;padding:4px 10px 16px!important}
+}
 </style>
   </div>
 
@@ -7143,6 +7155,7 @@ function hpFitDetail(){
 }
 window.addEventListener('resize', function(){ try { hpFitDetail(); } catch(e){} });
 </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"e34d77f0fa55473aa00ff1b45f1c0322","r":1,"spa":2}' crossorigin="anonymous"></script>
 </html>
 
 
