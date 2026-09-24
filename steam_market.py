@@ -27,7 +27,11 @@ def fetch_steam_market_items(max_items=500, min_price=10.0, max_pages=10):
     """Paginate Steam Community Market search API for top items."""
     print(f'[SM] Fetching top {max_items} items (min_price={min_price:.0f} CNY)...')
     items = []
-    page_size = 100
+    # ★ 2026-09-24 修正：Steam search/render 的 count 参数无效。
+    #   实测 count=10/20/50/100 一律只返回 pagesize=10（API 硬上限）。
+    #   原写 100 -> start=page*100 步进 100，而实际每页只有 10 条，
+    #   导致 start=0 拿 0-9 后直接跳到 100-109，中间 90% 商品永远抓不到。
+    page_size = 10
     
     for page in range(max_pages):
         if len(items) >= max_items:
@@ -220,7 +224,7 @@ def generate_recommendations(alerts, items_list=None):
     return recs
 
 if __name__ == '__main__':
-    items = fetch_steam_market_items(max_items=100, min_price=10.0, max_pages=2)
+    items = fetch_steam_market_items(max_items=100, min_price=10.0, max_pages=30)
     print(f'Got {len(items)} items')
     if items:
         hp = os.path.join(DATA_DIR, 'market_history.json')
