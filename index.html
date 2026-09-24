@@ -2042,6 +2042,36 @@ const CAT_LABELS = {
   'other':   '其他'
 };
 
+/* ★ 2026-09-24 新增：从物品名推断分类 key。
+   背景：本地自建持仓（手动添加 / 导入库存）只存 {n,w,c,p}，
+   没有 category 字段 → 合并进 H 时 t 为 undefined
+   → buildTabs 的 catCounts 只认 weapon/gloves/knives/sticker/music/other，
+     于是这些物品全部落进「其他」，出现「全部 N / 其他 N」的怪状。
+   这里按名称特征反推，覆盖 CS2 全部常见品类。 */
+function inferCatFromName(name) {
+  var s = String(name || '');
+  if (!s) return 'other';
+  // 印花 / 胶囊 / 涂鸦 / 布章 / 挂件
+  if (/^印花\s*\|/.test(s) || /印花/.test(s)) return 'sticker';
+  if (/胶囊|Capsule/.test(s)) return 'sticker';
+  if (/^涂鸦|^布章|^挂件|^Charm/.test(s)) return 'sticker';
+  // 音乐盒
+  if (/^音乐盒|Music Kit/.test(s)) return 'music';
+  // 匕首 / 刀
+  if (/^★/.test(s) && /刀|匕首|短剑|刺刀|爪刀|蝴蝶刀|折叠刀|猎刀|穿肠刀/.test(s)) return 'knives';
+  if (/^[^|]*\|\s*(军刀|匕首|刺刀|弯刀|短剑)$/.test(s)) return 'knives';
+  // 手套
+  if (/手套/.test(s)) return 'gloves';
+  // 武器（含枪械关键词）
+  if (/步枪|手枪|冲锋枪|机枪|霰弹枪|狙击枪/.test(s)) return 'weapon';
+  /* 枪械名兜底：CS2 里枪名前缀形如 "AK-47 | xxx" / "格洛克 18 型 | xxx" /
+     "M4A1消音版 | xxx" / "SSG 08 | xxx"，故用「名称首段是否像枪名」判断。 */
+  var head = s.split('|')[0].trim();
+  if (/^(AK-47|M4A1|M4A4|AWP|AUG|SG\s?553|FAMAS|法玛斯|加利尔|Galil|G3SG1|SCAR-20|SSG\s?08|M249|内格夫|Negev|MP9|MAC-10|MP7|MP5|UMP-45|P90|PP-野牛|PP-Bizon|P2000|USP|USP消音版|格洛克|Glock|P250|Five-SeveN|Tec-9|CZ75|R8|沙漠之鹰|Desert\s?Eagle|双持贝瑞塔|新星|Nova|XM1014|MAG-7|截短霰弹枪|Sawed-Off)/i.test(head)) return 'weapon';
+  if (/^(AK-47|M4A1|M4A4|AWP|AUG|SG\s?553|FAMAS|法玛斯|加利尔|Galil|G3SG1|SCAR-20|SSG\s?08|M249|内格夫|Negev|MP9|MAC-10|MP7|MP5|UMP-45|P90|PP-野牛|PP-Bizon|P2000|USP|USP消音版|格洛克|Glock|P250|Five-SeveN|Tec-9|CZ75|R8|沙漠之鹰|Desert\s?Eagle|双持贝瑞塔|新星|Nova|XM1014|MAG-7|截短霰弹枪|Sawed-Off)/i.test(s)) return 'weapon';
+  return 'other';
+}
+
 // ═══════════════ DOM CACHE ═══════════════
 const $ = id => document.getElementById(id);
 const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
@@ -5207,6 +5237,9 @@ function mergeCustomHoldings() {
     if (!exists) {
       H.push({
         n: c.n, w: c.w || 'FN', c: c.c || 0, p: c.p || 0,
+        /* ★ 2026-09-24：补分类字段。优先用存量 category，
+           否则按名称推断 —— 缺了它会让所有自建持仓掉进「其他」。 */
+        t: c.t || CAT_MAP[c.category] || inferCatFromName(c.n),
         gid: 0, mh: '', pnl: 0, pnlPct: 0,
         _custom: true
       });
@@ -5247,7 +5280,8 @@ if (addBtn) {
     var cost = parseFloat(document.getElementById('addItemCost').value) || 0;
     if (!name) { alert('请输入饰品名称'); return; }
     var customs = loadCustomHoldings();
-    customs.push({ n: name, w: wear, c: cost, p: cost });
+    customs.push({ n: name, w: wear, c: cost, p: cost,
+                   category: CAT_LABELS[inferCatFromName(name)] || '其他' });
     saveCustomHoldings(customs);
     overlay.classList.remove('show');
     // Clear inputs
