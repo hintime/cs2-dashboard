@@ -254,11 +254,10 @@ function pickPair(data) {
     var hit = 0, ck = Object.keys(data[cand]);
     for (var j = 0; j < ck.length; j++) if (nowSet[ck[j]]) hit++;
     var ov = hit / Math.max(nowKeys.length, 1);
-    // ⚠ 采集端每轮只抓 STEAMDT_MAX_ITEMS=200 件且按「候选池优先」动态排序，
-    //   各期抓到的不是同一批饰品（实测相邻期交集 4%~64%）。
-    //   所以不能要求高重叠，否则永远配不上；改为「只对比两期都出现的饰品」，
-    //   并把共同样本数如实标在页面上。低于 30% 直接判不可比。
-    if (ov < 0.3) continue;
+    // ⚠ 采集端为动态挑选（2026-09-24 义轩拍板：不做固定名单，保覆盖面），
+    //   各期抓的饰品部分轮换（实测相邻期交集 10%~68%）。门槛放宽到 15%，
+    //   尽量多出数据；只对比两期都出现的饰品，共同样本数如实标注在健康条。
+    if (ov < 0.15) continue;
 
     return {
       ok: true, now: now, prev: cand, overlap: ov, common: hit,
@@ -352,7 +351,7 @@ function build(data) {
     } else if (pair.reason === 'now_empty') {
       why = '最新一期快照是空的';
     } else {
-      why = '现有快照里没有与最新一期规模可比的上一期（样本规模相差一倍以上，或饰品集合重叠不足 30%）';
+      why = '现有快照里没有与最新一期规模可比的上一期（样本规模相差一倍以上，或饰品集合重叠不足 15%）';
     }
     document.getElementById('fluctDate').textContent = why;
     healthNone(why, pair);
@@ -541,11 +540,11 @@ function healthBar(pair, st) {
       '<div class="full" style="color:var(--amber)">采集中断：最新快照已滞后 ' + ageText(ageH) +
       '，异动对比失去时效意义，请检查采集进程。</div>');
   }
-  if (pair.common && pair.common < 50) {
+  if (pair.common && pair.common < 100) {
     hb.insertAdjacentHTML('beforeend',
-      '<div class="full" style="color:var(--amber)">两期共同样本仅 ' + pair.common +
-      ' 件（采集端每轮只抓 200 件且按候选池动态排序，各期不是同一批饰品）。' +
-      '异动结果只覆盖这批交集，不代表全池。</div>');
+      '<div class="full" style="color:var(--amber)">两期共同样本 ' + pair.common +
+      ' 件（采集端为动态挑选，每轮 200 件按热门程度轮换）。' +
+      '异动结果只覆盖这批重合饰品，不代表全池。</div>');
   }
   var okm = state.mktOk || {}, off = [];
   MARKETS.forEach(function (m) { if (okm[m.key] && !okm[m.key].ok) off.push(m.label); });
@@ -596,9 +595,9 @@ function renderDiag(pair, st) {
            '使「相邻时点」实际跨越数日。</div>');
   }
   if (pair.common) {
-    h.push('<div style="color:var(--amber)">两期共同样本 ' + pair.common + ' 件。' +
-           '采集端已于 2026-09-24 启用固定观察名单（<code>fluct_watchlist.json</code>，每轮必抓同一批 200 件），' +
-           '名单生效后的新快照交集应为 100%；此前的历史快照仍来自动态轮换采样，交集偏低。</div>');
+    h.push('<div>样本口径：采集端为动态挑选（2026-09-24 拍板，保覆盖面），' +
+           '每轮 200 件按热门程度轮换，相邻期交集 10%~68%。' +
+           '本页只对比两期都出现的饰品，异动结果仅代表重合部分。</div>');
   }
   if (st) {
     h.push('<div><span class="kv">本期样本 <code>' + st.now.total + '</code> 件</span>' +

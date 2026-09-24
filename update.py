@@ -671,12 +671,13 @@ def save_buff_history(steamdt_prices):
     return history
 
 def run_fluct_watchlist_snapshot():
-    """★ 2026-09-24：异动固定观察名单快照（prices 高频线调用）。
+    """异动快照（prices 高频线调用）。
 
-    背景：全量 SteamDT 分支只在 all 轮（6 小时）执行，prices 轮（30 分钟）只查
-    持仓 32 件 → buff_history 快照 6 小时才一个，"小时级异动"名存实亡。
-    本函数让 prices 轮也产出快照：读/生成 fluct_watchlist.json 固定 200 件 →
-    SteamDT 批量抓取 → save_buff_history。与 all 分支共享同一份名单文件，口径一致。
+    ⚠ 2026-09-24 义轩拍板：**不做固定名单，保持动态挑选**——固定 200 件等于只盯
+    一小片，覆盖面失去意义。代价是相邻快照交集仅 10%~70%，异动页只对比两期
+    共同的饰品并如实标注"共同样本 N 件"。
+    本函数解决的是另一个问题：全量分支只在 all 轮（6 小时）执行，prices 轮
+    也产出快照，把异动密度从 6 小时级拉回 30 分钟级。
     """
     tracked_path = os.path.join(DATA_DIR, 'eco_tracked.json')
     if not STEAM_KEY or not os.path.exists(tracked_path):
@@ -686,36 +687,23 @@ def run_fluct_watchlist_snapshot():
         if not (isinstance(tracked, list) and tracked):
             return
         _cap = int(os.environ.get('STEAMDT_MAX_ITEMS') or '200')
-        _watch_path = os.path.join(DATA_DIR, 'fluct_watchlist.json')
-        _watch = None
-        if os.environ.get('FLUCT_WATCHLIST_RESET') != '1':
+        # 动态挑选：候选池优先（与 all 分支同一口径），榜单每轮自然滚动
+        _cand, _rest = [], []
+        for it in tracked:
+            _h = it.get('HashName', '')
+            if not _h:
+                continue
             try:
-                _watch = read_json(_watch_path)
+                _is_cand = (float(it.get('Price') or 0) >= 20
+                            and int(it.get('SellingTotal') or 0) >= REC_MIN_SELLING)
             except Exception:
-                _watch = None            # 首次运行 / 文件损坏 → 重建
-        if not (isinstance(_watch, list) and _watch):
-            _cand, _rest = [], []
-            for it in tracked:
-                _h = it.get('HashName', '')
-                if not _h:
-                    continue
-                try:
-                    _is_cand = (float(it.get('Price') or 0) >= 20
-                                and int(it.get('SellingTotal') or 0) >= REC_MIN_SELLING)
-                except Exception:
-                    _is_cand = False
-                (_cand if _is_cand else _rest).append(_h)
-            _watch = (_cand + _rest)[:_cap]
-            try:
-                write_json(_watch_path, _watch)
-                print('[FluctWatch] 固定观察名单首次生成: %d 件 -> fluct_watchlist.json' % len(_watch))
-            except Exception as _we:
-                print('[FluctWatch] 名单保存失败(本轮仍用内存名单): %s' % _we, file=sys.stderr)
-        _watch = [h for h in _watch if h]
-        if not _watch:
+                _is_cand = False
+            (_cand if _is_cand else _rest).append(_h)
+        batch = (_cand + _rest)[:_cap]
+        if not batch:
             return
-        print('[FluctWatch] 拉取固定名单 %d 件 ...' % len(_watch))
-        full_prices = fetch_steamdt_prices(_watch, verbose=False)
+        print('[FluctWatch] 动态快照 %d 件（候选池优先）...' % len(batch))
+        full_prices = fetch_steamdt_prices(batch, verbose=False)
         if full_prices:
             save_buff_history(full_prices)
             print('[FluctWatch] 快照已写入 buff_history: %d 件' % len(full_prices))
@@ -4069,36 +4057,9 @@ def main():
                     # ⚠ 2026-09-18：全池扫描耗 48 批≈52 分钟且与买盘通道抢配额；
                     #   跨平台/买盘数据已改由 buy_fill 只对入选标的精确获取 → 上限 1400 降到 200。
                     _cap = int(os.environ.get('STEAMDT_MAX_ITEMS') or '200')
-                    # ⚠ 2026-09-24：固定观察名单 —— 在售量异动（fluctuation.html）需要
-                    #   "同一批饰品的前后对比"。原来按候选池动态排序取前 200 件，每轮抓的
-                    #   不是同一批（实测相邻快照交集 9.5%~68.5%），时间序列不成立，
-                    #   异动页永远出不了真数据。现在维护 fluct_watchlist.json 固定 200 件，
-                    #   每轮必含且排在最前（cap 截断后正好等于名单），交集 → 100%。
-                    #   配额不变（仍是 200 件/轮）；名单可用环境变量 FLUCT_WATCHLIST_RESET=1
-                    #   强制重建。
-                    _watch_path = os.path.join(DATA_DIR, 'fluct_watchlist.json')
-                    _watch = None
-                    if os.environ.get('FLUCT_WATCHLIST_RESET') != '1':
-                        try:
-                            _watch = read_json(_watch_path)
-                        except Exception:
-                            _watch = None      # 首次运行 / 文件损坏 → 走重建
-                    if not (isinstance(_watch, list) and _watch):
-                        _watch = all_hn[:_cap]      # 首次生成：候选池优先的前 200 件
-                        try:
-                            write_json(_watch_path, _watch)
-                            print('[SteamDT] 固定观察名单首次生成: %d 件 -> fluct_watchlist.json' % len(_watch))
-                        except Exception as _we:
-                            print('[SteamDT] 观察名单保存失败(本轮仍用内存名单): %s' % _we, file=sys.stderr)
-                    _watch = [h for h in _watch if h]                 # 去空
-                    _watch_seen = set()
-                    _watch = [h for h in _watch if not (h in _watch_seen or _watch_seen.add(h))]
-                    _watch_set = set(_watch)
-                    _others = [h for h in all_hn if h not in _watch_set]
-                    all_hn = _watch + _others
                     if len(all_hn) > _cap:
-                        print('[SteamDT] 批量限速 1次/分(≤100件) → 本轮取前 %d 件（固定观察名单 %d 件优先），其余下轮补 '
-                              '（STEAMDT_MAX_ITEMS 可调）' % (_cap, len(_watch)))
+                        print('[SteamDT] 批量限速 1次/分(≤100件) → 本轮取前 %d 件（候选池优先），其余下轮补 '
+                              '（STEAMDT_MAX_ITEMS 可调）' % _cap)
                         all_hn = all_hn[:_cap]
                     print('[SteamDT] Fetching multi-platform prices for %d tracked items (候选池优先 %d 件)...'
                           % (len(all_hn), len(_cand)))
