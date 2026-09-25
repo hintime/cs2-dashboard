@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 22,
+  "total_analyses": 23,
   "lessons": [
     {
       "id": "L01",
@@ -10,7 +10,7 @@
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
       "added_at": "2026-06-16",
-      "confirmed": 26,
+      "confirmed": 27,
       "last_seen": "2026-09-25"
     },
     {
@@ -20,7 +20,7 @@
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
       "added_at": "2026-06-16",
-      "confirmed": 26,
+      "confirmed": 27,
       "last_seen": "2026-09-25"
     },
     {
@@ -30,7 +30,7 @@
       "impact": "中",
       "action": "调整ECO和BUFF评分权重，平衡推荐结果",
       "added_at": "2026-06-16",
-      "confirmed": 25,
+      "confirmed": 26,
       "last_seen": "2026-09-25"
     },
     {
@@ -55,38 +55,8 @@
     }
   ],
   "history": [],
-  "last_updated": "2026-09-24T23:06:17Z",
+  "last_updated": "2026-09-25T05:06:01Z",
   "analysis_history": [
-    {
-      "seq": 3,
-      "ts": "2026-06-15T19:35:32Z",
-      "overview": {
-        "verdict": "多平台信号优于ECO信号",
-        "success_pattern": "强调多平台溢价和流动性，涨幅明显",
-        "failure_pattern": "纯ECO信号缺乏多平台支撑，多持平或下跌",
-        "confidence_trend": "持平",
-        "market_signal": "分化明显，多平台信号有效，ECO信号需谨慎"
-      },
-      "scoring_feedback": {
-        "eco_weight_advice": "-20%",
-        "buff_weight_advice": "+20%",
-        "premium_threshold_advice": "多平台溢价阈值提高至15%以上",
-        "liquidity_advice": "增加流动性评分权重至40%"
-      },
-      "reason_analysis": {
-        "right_reasons": "注重多平台溢价、流动性评估，结合求购活跃度",
-        "wrong_reasons": "过度依赖单一ECO供需比，忽略溢价不匹配和缺乏多平台验证",
-        "reason_keywords_avoid": "纯ECO信号, 缺乏多平台溢价, 待观察",
-        "reason_keywords_use": "多平台溢价, 流动性高, 求购活跃, 溢价匹配"
-      },
-      "prompt_tweak": "强调多平台溢价和流动性，避免单一供需比，理由需含具体溢价率和在售数量",
-      "stats": {
-        "total": 60,
-        "priced": 60,
-        "profitable": 43,
-        "rate": 71.7
-      }
-    },
     {
       "seq": 4,
       "ts": "2026-06-16T02:26:16Z",
@@ -655,6 +625,36 @@
         "priced": 1206,
         "profitable": 712,
         "rate": 59.0
+      }
+    },
+    {
+      "seq": 23,
+      "ts": "2026-09-25T05:06:01Z",
+      "overview": {
+        "verdict": "推荐策略需优化",
+        "success_pattern": "强调多平台溢价、流动性评估准确",
+        "failure_pattern": "过度依赖单一ECO信号、忽略溢价不匹配",
+        "confidence_trend": "下降",
+        "market_signal": "市场波动大，需谨慎投资"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "+10%/-10%/不变",
+        "buff_weight_advice": "+10%/-10%/不变",
+        "premium_threshold_advice": "溢价率阈值为50%",
+        "liquidity_advice": "流动性权重为30%"
+      },
+      "reason_analysis": {
+        "right_reasons": "强调多平台溢价、流动性评估准确",
+        "wrong_reasons": "过度依赖单一ECO信号、忽略溢价不匹配",
+        "reason_keywords_avoid": "单一平台信号, 忽略溢价",
+        "reason_keywords_use": "多平台信号, 溢价匹配"
+      },
+      "prompt_tweak": "强调多平台信号和溢价匹配，避免单一平台信号和溢价不匹配的判断，使用具体数据支持推荐理由",
+      "stats": {
+        "total": 1213,
+        "priced": 1206,
+        "profitable": 721,
+        "rate": 59.8
       }
     }
   ],

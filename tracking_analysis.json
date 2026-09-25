@@ -1,51 +1,51 @@
 {
   "overview": {
-    "verdict": "推荐准确度中等，需优化信号分析。",
-    "success_pattern": "多平台信号与溢价强劲为成功推荐关键。",
-    "failure_pattern": "忽略市场跌势与溢价不匹配为失败原因。",
+    "verdict": "推荐策略需优化",
+    "success_pattern": "强调多平台溢价、流动性评估准确",
+    "failure_pattern": "过度依赖单一ECO信号、忽略溢价不匹配",
     "confidence_trend": "下降",
-    "market_signal": "市场波动大，需谨慎投资。"
+    "market_signal": "市场波动大，需谨慎投资"
   },
   "reason_analysis": {
-    "right_reasons": "强调多平台溢价，流动性评估准确。",
-    "wrong_reasons": "过度依赖单一ECO信号，忽略溢价不匹配。",
-    "reason_keywords_avoid": "单一信号，溢价不匹配",
-    "reason_keywords_use": "多平台信号，溢价匹配，市场趋势"
+    "right_reasons": "强调多平台溢价、流动性评估准确",
+    "wrong_reasons": "过度依赖单一ECO信号、忽略溢价不匹配",
+    "reason_keywords_avoid": "单一平台信号, 忽略溢价",
+    "reason_keywords_use": "多平台信号, 溢价匹配"
   },
   "lessons": [
     {
       "id": "L01",
       "category": "reason",
-      "lesson": "需综合考虑多平台信号与溢价。",
-      "impact": "中",
-      "action": "强化溢价与流动性分析。"
+      "lesson": "推荐理由需综合考虑多平台信号和溢价匹配",
+      "impact": "高",
+      "action": "加强多平台信号和溢价匹配的评估"
     },
     {
       "id": "L02",
       "category": "scoring",
-      "lesson": "ECO与BUFF权重需平衡。",
+      "lesson": "ECO和BUFF权重需平衡",
       "impact": "中",
-      "action": "调整ECO与BUFF权重，避免单一依赖。"
+      "action": "调整ECO和BUFF权重，避免单一信号影响"
     },
     {
       "id": "L03",
       "category": "timing",
-      "lesson": "市场趋势需及时调整。",
+      "lesson": "关注市场波动，适时调整策略",
       "impact": "高",
-      "action": "加强市场趋势分析，及时调整推荐。"
+      "action": "建立市场预警机制，及时调整推荐策略"
     }
   ],
   "scoring_feedback": {
     "eco_weight_advice": "+10%/-10%/不变",
     "buff_weight_advice": "+10%/-10%/不变",
-    "premium_threshold_advice": "溢价率>50%需谨慎",
-    "liquidity_advice": "流动性权重提高至20%"
+    "premium_threshold_advice": "溢价率阈值为50%",
+    "liquidity_advice": "流动性权重为30%"
   },
-  "reason_prompt_tweak": "强调溢价匹配与市场趋势，避免单一信号依赖，使用客观表述。",
+  "reason_prompt_tweak": "强调多平台信号和溢价匹配，避免单一平台信号和溢价不匹配的判断，使用具体数据支持推荐理由",
   "meta": {
     "total_tracks": 1213,
     "date_range": "2026-06-15~2026-09-25",
-    "analyzed_at": "2026-09-24T23:06:17Z",
+    "analyzed_at": "2026-09-25T05:06:01Z",
     "model": "glm-4-flash"
   }
 }
