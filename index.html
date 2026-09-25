@@ -5487,7 +5487,7 @@ window.openSellConfirm = function (item) {
   if (!item) return;
   var sOverlay = document.getElementById('sellConfirmOverlay');
   if (!sOverlay) return;
-  document.getElementById('sellConfirmItem').textContent = item.n;
+  document.getElementById('sellConfirmItem').textContent = hpName(item);  // 中文名（查映射表，fallback 原名）
   document.getElementById('sellConfirmWear').textContent = item.w ? wearCN(item.w) : '--';
   document.getElementById('sellConfirmCost').textContent = '¥' + item.c.toFixed(2);
   document.getElementById('sellConfirmEco').textContent = '¥' + item.p.toFixed(2);
