@@ -718,6 +718,21 @@ def run_fluct_watchlist_snapshot():
         if not (isinstance(tracked, list) and tracked):
             return
         _cap = int(os.environ.get('STEAMDT_MAX_ITEMS') or '200')
+        # ★ 持仓入池（2026-09-25）：快照原本只覆盖动态热门 top200，
+        #   32 件持仓（多为印花/探员/冷门皮肤）只命中 1 件，
+        #   详情面板「在售量副图」对 31 件都是空盒 → 等于没做。
+        #   做法：持仓名排在最前，且不挤占热门名额（名额另加），
+        #   只在池内去重，避免同一件占两个名额。
+        _hold = []
+        try:
+            _hj = read_json(os.path.join(DATA_DIR, 'holdings.json'))
+            for _it in (_hj.get('items') or []):
+                _mh = (_it.get('market_hash') or '').strip()
+                if _mh and _mh not in _hold:
+                    _hold.append(_mh)
+        except Exception as _e:
+            print('[FluctWatch] holdings 读取失败，跳过持仓入池: %s' % _e)
+            _hold = []
         # 动态挑选：候选池优先（与 all 分支同一口径），榜单每轮自然滚动
         _cand, _rest = [], []
         for it in tracked:
@@ -730,10 +745,14 @@ def run_fluct_watchlist_snapshot():
             except Exception:
                 _is_cand = False
             (_cand if _is_cand else _rest).append(_h)
-        batch = (_cand + _rest)[:_cap]
+        _hs = set(_hold)
+        _cand = [x for x in _cand if x not in _hs]
+        _rest = [x for x in _rest if x not in _hs]
+        batch = (_hold + _cand + _rest)[:(_cap + len(_hold))]
         if not batch:
             return
-        print('[FluctWatch] 动态快照 %d 件（候选池优先）...' % len(batch))
+        print('[FluctWatch] 动态快照 %d 件（持仓 %d + 候选池优先 %d）...'
+              % (len(batch), len(_hold), _cap))
         full_prices = fetch_steamdt_prices(batch, verbose=False)
         if full_prices:
             save_buff_history(full_prices)

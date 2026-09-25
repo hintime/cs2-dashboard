@@ -6756,6 +6756,10 @@ function hpVolChart(name){
     labels.push(k.slice(11));
   });
   if (!vals.length || !vals.some(function (v) { return v > 0; })) return '';
+  /* 至少 2 期有值才画：只有一根柱子的"趋势图"没有意义（快照刚纳入该饰品时会这样） */
+  var nz = 0;
+  for (var vi = 0; vi < vals.length; vi++) if (vals[vi] > 0) nz++;
+  if (nz < 2) return '';
   var mxc = Math.max.apply(null, vals) || 1;
   var W = 780, H = 44, bw = Math.max(2, W / vals.length * 0.62);
   var bars = vals.map(function (v, i) {
