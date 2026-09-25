@@ -87,6 +87,23 @@ td.name{color:var(--text);max-width:240px;overflow:hidden;text-overflow:ellipsis
 .search::placeholder{color:var(--text3)}
 .toolbar2{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
 .toolbar2 .search{width:auto;flex:1 1 200px;margin-bottom:0}
+.btn.primary{background:rgba(88,166,255,.14);border-color:rgba(88,166,255,.5);color:var(--blue);font-weight:600}
+.btn.primary:hover{background:rgba(88,166,255,.22);color:var(--blue)}
+
+/* 手动添加卖出记录弹层 */
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50}
+.modal-mask.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;width:min(420px,92vw);box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.modal h3{font-size:14px;color:var(--text);margin-bottom:14px}
+.modal .fld{margin-bottom:10px}
+.modal .fld label{display:block;font-size:11px;color:var(--text3);margin-bottom:4px}
+.modal .fld input,.modal .fld select{width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.modal .fld input:focus,.modal .fld select:focus{border-color:rgba(88,166,255,.6)}
+.modal .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal .ft{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.modal .err{font-size:12px;color:var(--rise);min-height:16px;margin-top:6px}
 .btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s ease}
 .btn:hover{border-color:rgba(148,163,184,.5);color:var(--text)}
 
@@ -378,6 +395,7 @@ function render() {
     '</div>' +
     '<div style="margin-top:12px">' +
       '<div class="toolbar2"><input class="search" id="revSearch" placeholder="搜索饰品…" value="' + esc(state.q) + '">' +
+      '<button class="btn primary" id="revAdd">添加</button>' +
       '<span class="fchip" data-side="all" style="' + (state.side === 'all' ? '' : 'background:var(--surface2);border-color:var(--border);color:var(--text2)') + '">全部</span>' +
       '<span class="fchip" data-side="win" style="' + (state.side === 'win' ? '' : 'background:var(--surface2);border-color:var(--border);color:var(--text2)') + '">只看盈利</span>' +
       '<span class="fchip" data-side="lose" style="' + (state.side === 'lose' ? '' : 'background:var(--surface2);border-color:var(--border);color:var(--text2)') + '">只看亏损</span>' +
@@ -401,6 +419,7 @@ function render() {
     state.q = e.target.value; state.shown = 30; render();
   });
   document.getElementById('revCsv').addEventListener('click', function () { exportCsv(rows); });
+  document.getElementById('revAdd').addEventListener('click', openAddModal);
   var more = document.getElementById('revMore');
   if (more) more.addEventListener('click', function () { state.shown += 50; renderTable(rows); });
 
@@ -603,6 +622,91 @@ loadRev();
         if (ut && new Date(ut).getTime() > last) { last = new Date(ut).getTime(); loadRev(); }
       }).catch(function () {});
   }, 60000);
+})();
+</script>
+<!-- 手动添加卖出记录 -->
+<div class="modal-mask" id="addModal">
+  <div class="modal">
+    <h3>添加卖出记录</h3>
+    <div class="fld"><label>饰品名称 *</label><input id="addName" placeholder="例：M4A1消音版 | 苔藓石英 (崭新出厂)"></div>
+    <div class="row2">
+      <div class="fld"><label>磨损</label>
+        <select id="addWear">
+          <option value="">不区分</option>
+          <option value="FN">崭新出厂 (FN)</option>
+          <option value="MW">略有磨损 (MW)</option>
+          <option value="FT">久经沙场 (FT)</option>
+          <option value="WW">战地风云 (WW)</option>
+          <option value="BS">战痕累累 (BS)</option>
+        </select>
+      </div>
+      <div class="fld"><label>卖出日期</label><input id="addDate" type="date"></div>
+    </div>
+    <div class="row2">
+      <div class="fld"><label>买入成本 ¥ *</label><input id="addCost" type="number" step="0.01" min="0" placeholder="0.00"></div>
+      <div class="fld"><label>卖出价 ¥ *</label><input id="addPrice" type="number" step="0.01" min="0" placeholder="0.00"></div>
+    </div>
+    <div class="err" id="addErr"></div>
+    <div class="ft">
+      <button class="btn" id="addCancel">取消</button>
+      <button class="btn primary" id="addOk">保存</button>
+    </div>
+  </div>
+</div>
+<script>
+/* ── 手动添加卖出记录（补录历史卖出）──
+   与「卖出此件」写入同一数据源（localStorage + Worker /api/sold），
+   pnl/pnlPct 由买入/卖出价现算；日期缺省为今天。 */
+function openAddModal() {
+  var m = document.getElementById('addModal');
+  document.getElementById('addName').value = '';
+  document.getElementById('addCost').value = '';
+  document.getElementById('addPrice').value = '';
+  document.getElementById('addErr').textContent = '';
+  var d = new Date();
+  function p(n) { return n < 10 ? '0' + n : '' + n; }
+  document.getElementById('addDate').value = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  m.classList.add('show');
+  setTimeout(function () { var el = document.getElementById('addName'); if (el) el.focus(); }, 50);
+}
+(function () {
+  var m = document.getElementById('addModal');
+  if (!m) return;
+  document.getElementById('addCancel').onclick = function () { m.classList.remove('show'); };
+  m.addEventListener('click', function (e) { if (e.target === m) m.classList.remove('show'); });
+  document.getElementById('addOk').onclick = function () {
+    var name = document.getElementById('addName').value.trim();
+    var wear = document.getElementById('addWear').value;
+    var cost = parseFloat(document.getElementById('addCost').value);
+    var price = parseFloat(document.getElementById('addPrice').value);
+    var dateStr = document.getElementById('addDate').value;
+    var err = document.getElementById('addErr');
+    if (!name) { err.textContent = '请填写饰品名称'; return; }
+    if (!(cost > 0)) { err.textContent = '买入成本需大于 0'; return; }
+    if (!(price >= 0)) { err.textContent = '请填写卖出价'; return; }
+    var pnl = price - cost;
+    var rec = {
+      n: name, w: wear, c: cost, p: price,
+      pnl: pnl, pnlPct: cost > 0 ? pnl / cost * 100 : 0,
+      date: dateStr ? dateStr + ' ' + new Date().toTimeString().slice(0, 8) : new Date().toLocaleString('zh-CN'),
+      _manual: true
+    };
+    /* 写本地 + 推云端（与 saveSoldItems 同契约：POST 单条对象，Worker 端 push） */
+    var sold = loadLocal();
+    sold.push(rec);
+    try { localStorage.setItem('cs2_sold_items', JSON.stringify(sold)); } catch (e) {}
+    fetch(WORKER_BASE + '/api/sold', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rec)
+    }).then(function (r) {
+      if (!r.ok) err.textContent = '已存本地，云端同步失败（下次打开会重试）';
+    }).catch(function () {
+      err.textContent = '已存本地，云端同步失败（下次打开会重试）';
+    });
+    m.classList.remove('show');
+    state.cloudCount = -1;
+    loadRev();   // 重新拉取并渲染
+  };
 })();
 </script>
 </body>
