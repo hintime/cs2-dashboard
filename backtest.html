@@ -12,7 +12,7 @@
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#020617">
 <style>
-:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--hair:rgba(48,54,61,.6);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#58a6ff;--amber:#fbbf24;--radius:12px}
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--hair:rgba(48,54,61,.6);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#58a6ff;--amber:#fbbf24;--purple:#a855f7;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:1000px;margin:0 auto;padding:24px 16px 32px}
@@ -164,9 +164,10 @@ function loadBacktest() {
     document.getElementById('btInfo').textContent =
       items.length + ' 件持仓 · 价格历史 ' + items[0].hist.length + ' 个交易日';
     build(items);
-  }).catch(function () {
+  }).catch(function (e) {
     document.getElementById('backtestContent').innerHTML =
-      '<div class="empty"><div class="ico">⚠</div><div class="t">加载失败</div><div class="d">网络或数据文件不可用。</div></div>';
+      '<div class="empty"><div class="ico">⚠</div><div class="t">加载失败</div>' +
+      '<div class="d">' + esc((e && e.message) ? e.message : String(e)) + '</div></div>';
   });
 }
 
@@ -266,7 +267,6 @@ function render(series, items, totalCost, last, retPct, maxDD, vol, samples, ful
     '</div>';
 
   var chart = comboChart(series, totalCost);
-
   /* 单品贡献表 */
   var sort = state.sort;
   items.sort(function (a, b) {
@@ -297,6 +297,8 @@ function render(series, items, totalCost, last, retPct, maxDD, vol, samples, ful
     '<div class="bt-chart-wrap" style="margin-top:14px;position:relative">' + chart +
       '<div class="legend">' +
         '<span><i style="background:var(--blue)"></i>组合市值</span>' +
+        '<span><i style="background:#ff9f43"></i>5 日均线</span>' +
+        '<span><i style="background:#a855f7"></i>10 日均线</span>' +
         '<span><i style="background:var(--amber)"></i>总成本</span>' +
         '<span><i style="background:rgba(239,68,68,.35)"></i>回撤（峰值回落部分）</span>' +
         '<span>悬停查看每日明细</span>' +
@@ -335,16 +337,33 @@ function render(series, items, totalCost, last, retPct, maxDD, vol, samples, ful
       var s = series[i];
       tip.style.display = 'block';
       tip.style.left = (e.clientX - rect.left) + 'px';
-      tip.innerHTML = s.d + ' · 市值 <b>¥' + s.value.toFixed(0) + '</b> · 浮盈 ' + money(s.pnl);
+      tip.innerHTML = s.d + ' · 市值 <b>¥' + s.value.toFixed(0) + '</b> · 浮盈 ' + money(s.pnl) +
+        '<br>MA5 ' + (ma5[i] !== null && ma5[i] !== undefined ? '¥' + ma5[i].toFixed(0) : '—') +
+        ' · MA10 ' + (ma10[i] !== null && ma10[i] !== undefined ? '¥' + ma10[i].toFixed(0) : '—');
     });
     svg.addEventListener('mouseleave', function () { tip.style.display = 'none'; });
   }
 }
 
-/* ── 组合市值大图：市值线 + 成本水平线 + 回撤水下阴影 ── */
+/* ── 组合市值大图：市值线 + 5/10 日均线 + 成本水平线 + 回撤水下阴影 ──
+   均线颜色：MA5 橙、MA10 紫（与成本线 amber 虚线、市值线蓝区分） */
 function comboChart(series, totalCost) {
   var cw = 960, ch = 300, pad = { t: 16, r: 14, b: 28, l: 64 }, pW = cw - pad.l - pad.r, pH = ch - pad.t - pad.b;
-  var vals = series.map(function (s) { return s.value; });
+  /* 均线：MA5 / MA10（不足窗口的天数不画） */
+  function ma(series, n) {
+    var out = [];
+    for (var i = 0; i < series.length; i++) {
+      if (i < n - 1) { out.push(null); continue; }
+      var s = 0;
+      for (var k = i - n + 1; k <= i; k++) s += series[k].value;
+      out.push(s / n);
+    }
+    return out;
+  }
+  var ma5 = ma(series, 5), ma10 = ma(series, 10);
+  var vals = series.map(function (s) { return s.value; })
+    .concat(ma5.filter(function (v) { return v !== null; }))
+    .concat(ma10.filter(function (v) { return v !== null; }));
   var mn = Math.min.apply(null, vals.concat([totalCost])), mx = Math.max.apply(null, vals.concat([totalCost]));
   var rg = (mx - mn) || 1;
   mn -= rg * 0.06; mx += rg * 0.06; rg = mx - mn;
@@ -363,17 +382,10 @@ function comboChart(series, totalCost) {
     }
   });
 
-  var path = '', peak = -Infinity, ddPath = '', ddStarted = false;
+  var path = '';
   series.forEach(function (s, i) {
     var x = X(i).toFixed(1), y = Y(s.value).toFixed(1);
     path += (i ? 'L' : 'M') + x + ',' + y;
-    if (s.value >= peak) {
-      peak = s.value;
-      ddStarted = false;
-    } else {
-      if (!ddStarted) { ddPath += 'M' + x + ',' + Y(peak).toFixed(1); ddStarted = true; }
-      ddPath += 'L' + x + ',' + y;
-    }
   });
   /* 回撤区域闭合到峰值线（近似：对每段回撤，用峰值水平线封顶） */
   var ddArea = '';
@@ -394,6 +406,17 @@ function comboChart(series, totalCost) {
               'L' + seg.pts[0].split(',')[1] * 0 + ',' + seg.top + 'Z" fill="var(--rise)" opacity=".12"/>';
   });
 
+  /* 均线 polyline（跳过 null 前段） */
+  function maPath(arr) {
+    var d = '', started = false;
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] === null) continue;
+      d += (started ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(arr[i]).toFixed(1);
+      started = true;
+    }
+    return d;
+  }
+
   var costY = Y(totalCost).toFixed(1);
   var last = series[series.length - 1];
   return '<svg class="bt-chart-svg" viewBox="0 0 ' + cw + ' ' + ch + '" style="height:280px">' +
@@ -404,6 +427,8 @@ function comboChart(series, totalCost) {
     ddArea +
     '<path d="' + path + 'L' + (pad.l + pW).toFixed(1) + ',' + (pad.t + pH).toFixed(1) + 'L' + pad.l + ',' + (pad.t + pH).toFixed(1) + 'Z" fill="url(#btG)"/>' +
     '<line x1="' + pad.l + '" y1="' + costY + '" x2="' + (cw - pad.r) + '" y2="' + costY + '" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="6 4" opacity=".85"/>' +
+    '<path d="' + maPath(ma10) + '" fill="none" stroke="var(--purple,#a855f7)" stroke-width="1.5" opacity=".9"/>' +
+    '<path d="' + maPath(ma5) + '" fill="none" stroke="#ff9f43" stroke-width="1.5" opacity=".9"/>' +
     '<path d="' + path + '" class="bt-chart-line" stroke="var(--blue)"/>' +
     '<circle cx="' + X(series.length - 1).toFixed(1) + '" cy="' + Y(last.value).toFixed(1) + '" r="3.5" fill="var(--blue)"/>' +
     '</svg>' +
