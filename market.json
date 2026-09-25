@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 985.62,
-    "change": -1.44,
-    "change_pct": -1.44,
-    "market_value": 302539754.32,
-    "total_items": 4071,
-    "updated": "2026-09-25T06:00:03+08:00",
+    "latest": 986.41,
+    "change": -1.36,
+    "change_pct": -1.36,
+    "market_value": 302781585.1,
+    "total_items": 4091,
+    "updated": "2026-09-25T08:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3771,8 +3771,8 @@
         "date": "2026-09-25",
         "dateFull": "2026-09-25 06:00",
         "open": 985.62,
-        "close": 985.62,
-        "high": 985.62,
+        "close": 986.41,
+        "high": 986.41,
         "low": 985.62
       }
     ],
@@ -11297,12 +11297,20 @@
         "index": 985.62,
         "change_pct": -1.44,
         "market_value": 302539754.32
+      },
+      {
+        "time": "08:00",
+        "date": "2026-09-25",
+        "timestamp": 1790294403,
+        "index": 986.41,
+        "change_pct": -1.36,
+        "market_value": 302781585.1
       }
     ],
     "selling": {
-      "total_selling": 1398038,
+      "total_selling": 1394964,
       "total_selling_prev": 0,
-      "total_selling_delta": 1398038,
+      "total_selling_delta": 1394964,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11310,7 +11318,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790287203939,
+  "index_updated": 1790294403416,
   "alerts": [
     {
       "name": "M4A1-S | Moss Quartz (Factory New)",
@@ -29887,7 +29895,7 @@
     "MP9 | Starlight Protector (Field-Tested)",
     "MP9 | Starlight Protector (Minimal Wear)"
   ],
-  "updated": "2026-09-24T23:33:22Z",
+  "updated": "2026-09-25T00:03:15Z",
   "steam_market_items": 71,
   "steam_market_recs": {
     "momentum": [],
