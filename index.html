@@ -6607,10 +6607,13 @@ function hpChart(vals, cost, reason, days){
   }
   /* ★ 技术指标：参与 Y 轴范围计算，避免布林带被裁掉 */
   var tk = hpTech(vals);
-  var ext = [cost];
+  /* ⚠ 未录入成本时 cost=0，若参与取值范围会把 Y 轴下界硬拉到 0 → 整条曲线被压到顶部。
+     成本线同理：cost<=0 时不画，避免画到画布外。 */
+  var hasCost = (typeof cost === 'number') && cost > 0;
+  var ext = hasCost ? [cost] : [];
   if (tk){ for (var ti=0;ti<tk.up.length;ti++){ if (tk.up[ti]!=null) ext.push(tk.up[ti]); if (tk.dn[ti]!=null) ext.push(tk.dn[ti]); } }
   var W=780,H=112, mx=Math.max.apply(null,vals.concat(ext)),
-      mn=Math.min.apply(null,vals.concat([cost*0.9],ext)), rng=(mx-mn)||1, pts=[];
+      mn=Math.min.apply(null,vals.concat(hasCost?[cost*0.9]:[],ext)), rng=(mx-mn)||1, pts=[];
   /* ★ X 轴按真实日期差计算；日期缺失或全空时退回等距 */
   var xs = [];
   var t0 = NaN, t1 = NaN;
@@ -6689,8 +6692,8 @@ function hpChart(vals, cost, reason, days){
     +   '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'
     + '</linearGradient></defs>'
     + boll
-    + '<line x1="0" x2="'+W+'" y1="'+cy+'" y2="'+cy+'" stroke="var(--amber)" '
-    + 'stroke-width="1.2" stroke-dasharray="5 4" opacity=".8"/>'
+    + (hasCost ? ('<line x1="0" x2="'+W+'" y1="'+cy+'" y2="'+cy+'" stroke="var(--amber)" '
+    + 'stroke-width="1.2" stroke-dasharray="5 4" opacity=".8"/>') : '')
     + '<polygon fill="url(#'+uid+')" points="'+area+'"/>'
     + maLine(tk && tk.ma20, '#a855f7', 1.4)
     + maLine(tk && tk.ma5, '#ff9f43', 1.4)
@@ -6702,14 +6705,18 @@ function hpChart(vals, cost, reason, days){
 }
 
 /* 技术面徽章：结论 + 悬停/点击看判定依据（规则完全可解释） */
-function hpTechBadge(cv){
+function hpTechBadge(cv, idx){
   if (!cv) return '';
   var tk = hpTech(cv.p || cv);
   if (!tk) return '';
   var cls = tk.verdict === '偏多' ? 'tb-up' : (tk.verdict === '偏空' ? 'tb-dn' : 'tb-flat');
   var why = tk.reasons.join('；');
+  /* ⚠ idx 必须显式传入：徽章是在 innerHTML 字符串拼接阶段求值的，
+     而 window._hpCur 要到 innerHTML 写回之后（hpSelect 末尾）才赋值 ——
+     用它会拿到「上一件」的索引，悬停弹出的是上一件的技术面。 */
+  var ix = (typeof idx === 'number') ? idx : (window._hpCur || 0);
   return '<span class="hp-tech ' + cls + '" title="技术面判定依据：' + esc(why) + '" '
-    + 'onmouseenter="hpTechTip(this,' + (window._hpCur || 0) + ')" onmouseleave="hpPopHide()">'
+    + 'onmouseenter="hpTechTip(this,' + ix + ')" onmouseleave="hpPopHide()">'
     + tk.verdict + '</span>';
 }
 function hpTechTip(el, idx){
@@ -6725,7 +6732,7 @@ function hpTechTip(el, idx){
     + '<div class="hp-pop-row"><span class="pf">距高点</span><b>' + tk.drawdown.toFixed(1) + '%</b></div>'
     + (tk.cross ? '<div class="hp-pop-row"><span class="pf">交叉</span><b>' + (tk.cross.type==='gold'?'金叉（第'+ (tk.cross.i+1) +'点）':'死叉（第'+(tk.cross.i+1)+'点）') + '</b></div>' : '')
     + '<div class="hp-pop-ft">依据：' + esc(tk.reasons.join('；')) + '</div>'
-    + '<div class="hp-pop-ft2">均基于真实日线现算，含预测成分</div>';
+    + '<div class="hp-pop-ft2">均基于真实日线现算，不含任何预测成分</div>';
   hpPopAt(el, '<div class="hp-pop-h">技术面</div><div class="hp-pop-sub">' + esc(hpName(h)) + '</div>' + body);
 }
 
@@ -6749,6 +6756,10 @@ function hpVolChart(name){
     labels.push(k.slice(11));
   });
   if (!vals.length || !vals.some(function (v) { return v > 0; })) return '';
+  /* 至少 2 期有值才画：只有一根柱子的"趋势图"没有意义（快照刚纳入该饰品时会这样） */
+  var nz = 0;
+  for (var vi = 0; vi < vals.length; vi++) if (vals[vi] > 0) nz++;
+  if (nz < 2) return '';
   var mxc = Math.max.apply(null, vals) || 1;
   var W = 780, H = 44, bw = Math.max(2, W / vals.length * 0.62);
   var bars = vals.map(function (v, i) {
@@ -6792,9 +6803,34 @@ function hpSelect(idx){
   var noCost = (c <= 0);
   var r7 = Number(h.rate_7)||0, r1 = Number(h.rate_1)||0;
   var need = (c>0 && p>0) ? ((c/p*100-100).toFixed(1)) : null;
+  /* 天数按真实序列算：price_summary 的序列可能只有 28~29 天，
+     写死「30 天前」会与实际不符（宁可少说，不多说）。 */
+  var _np = (cv && cv.p) ? cv.p.length : 0;
+  var _spanD = 0;
+  if (cv && cv.d && cv.d.length === _np && _np >= 2){
+    var _ta = Date.parse(cv.d[0]), _tb = Date.parse(cv.d[_np-1]);
+    if (!isNaN(_ta) && !isNaN(_tb)) _spanD = Math.round((_tb - _ta) / 86400000) + 1;
+  }
+  var _dTxt = _spanD || _np || 30;
+  /* ★ 轴标签必须取「该位置对应点的真实日期」，不能按点数折算：
+     X 坐标是按真实日期差排的（中间缺采样日时不均匀），按点数算会错位。
+     序列里没有日期时（老数据）才退回「N 天前」。 */
+  var _now = new Date();
+  var _mmdd = ('0' + (_now.getMonth() + 1)).slice(-2) + '/' + ('0' + _now.getDate()).slice(-2);
+  var _fmtD = function (s) { return s ? s.slice(5, 10).replace('-', '/') : ''; };
+  var _ax = function (f) {
+    var pi = Math.round(f * (_np - 1));
+    if (cv && cv.d && cv.d[pi]) {
+      var md = _fmtD(cv.d[pi]);
+      return (f >= 1 && md === _mmdd) ? '今天' : md;
+    }
+    var d = Math.round((_np - 1) * (1 - f));
+    return d <= 0 ? '今天' : (d + ' 天前');
+  };
   var html = ''
-   + '<div class="hp-dh"><div><div class="n">'+esc(hpName(h))+wear+hpTechBadge(cv)+'</div>'
-   + '<div class="s">30 日走势 · 成本 ¥'+hpFmt(c)+' → 现价 ¥'+hpFmt(p)+'</div></div></div>'
+   + '<div class="hp-dh"><div><div class="n">'+esc(hpName(h))+wear+hpTechBadge(cv, idx)+'</div>'
+   + '<div class="s">'+_dTxt+' 天走势 · 成本 '+(noCost ? '未录入' : ('¥'+hpFmt(c)))
+   + ' → 现价 ¥'+hpFmt(p)+'</div></div></div>'
    + '<div class="hp-big"><span class="v '+cls+'">'+sg+Math.abs(pct).toFixed(1)+'%</span>'
    + '<span class="s '+cls+'">'+sg+'¥'+hpFmt(Math.abs(pnl))+'</span>'
    + '<span class="r">1 日 '+((r1>=0?'+':'')+r1.toFixed(1))+'%<br>7 日 '
@@ -6821,12 +6857,14 @@ function hpSelect(idx){
    + '<div class="s">'+(noCost ? '需先录入成本' : ('到 ¥'+hpFmt(c)))+'</div></div>'
    + '</div>'
    + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)))+'</div>'
-   + (cv ? ('<div class="hp-axis"><span>30 天前</span><span>20 天前</span><span>10 天前</span>'
+   + (cv ? ('<div class="hp-axis"><span>'+_ax(0)+'</span><span>'+_ax(1/3)+'</span><span>'+_ax(2/3)+'</span>'
       + '<span>今天</span></div>'
-      + '<div class="hp-lgd"><span><i class="l-cost"></i>成本线 ¥'+hpFmt(c)+'</span>'
+      + '<div class="hp-lgd">'+(noCost ? '' : '<span><i class="l-cost"></i>成本线 ¥'+hpFmt(c)+'</span>')
       + '<span><i class="l-ma5"></i>MA5</span><span><i class="l-ma20"></i>MA20</span>'
       + '<span><i class="l-boll"></i>布林带</span></div>'
-      + '<div class="hp-vol" id="hpVolBox"><div class="hp-vol-t">在售量（近 12 小时，与上方日线尺度不同）</div>'
+      /* ⚠ 默认隐藏：快照只覆盖动态 top200 热门，多数持仓不在其中。
+         有数据才显示，避免对每个饰品都吊一个空盒子。 */
+      + '<div class="hp-vol" id="hpVolBox" style="display:none"><div class="hp-vol-t">在售量（近 12 小时，与上方日线尺度不同）</div>'
       + '<div id="hpVolInner"></div></div>') : '');
   box.innerHTML = html;
   window._hpCur = idx;
@@ -6834,9 +6872,12 @@ function hpSelect(idx){
   try {
     hpVolEnsure().then(function () {
       var vbox = document.getElementById('hpVolInner');
+      var wrap = document.getElementById('hpVolBox');
       if (!vbox) return;
       var svg = hpVolChart(h.mh || h.n);
-      vbox.innerHTML = svg || '<div style="font-size:11px;color:var(--text3);padding:2px 0">该饰品不在近期在售量快照中</div>';
+      if (!svg){ if (wrap) wrap.style.display = 'none'; return; }   /* 无数据：整块收起，不留空盒 */
+      vbox.innerHTML = svg;
+      if (wrap) wrap.style.display = '';
     });
   } catch (e) {}
   /* ★ 走势图鼠标跟随 tooltip（TradingView 模式）*/
