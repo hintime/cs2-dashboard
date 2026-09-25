@@ -2221,7 +2221,13 @@ def generate_ai_market_insight():
         print(f'[AI] Market insight failed: {e}')
 
 def generate_ai_news_impact():
-    """AI 空投监控 — 解读 CS2 最新公告对饰品市场的影响"""
+    """AI 空投监控 — 解读 CS2 最新公告对饰品市场的影响。
+
+    2026-09-26 透彻化（义轩：分析要透彻）：只喂"标题+100字"必然产出空话。
+    现在喂公告全文 + 统计引擎算好的市场事实，要求 AI 逐条公告分析、
+    每条结论必须引用具体数字/点名具体饰品，禁写"提升游戏热度"式空话。
+    红线：数字全部来自喂入的统计，AI 只做组织。
+    """
     if not _ai_provider_ready(quality=False): return
     try:
         news_path = os.path.join(DATA_DIR, 'news.json')
@@ -2229,40 +2235,72 @@ def generate_ai_news_impact():
         news_data = read_json(news_path)
         news_items = (news_data.get('announcements', []) or news_data.get('news', []) or news_data) if isinstance(news_data, dict) else news_data
         if isinstance(news_items, list):
-            items = news_items[:5]
+            items = news_items[:3]
         elif isinstance(news_items, dict):
-            items = list(news_items.values())[:5]
+            items = list(news_items.values())[:3]
         else:
             return
         if not items: return
-        # 构建新闻摘要
+        # 公告全文（深度优先于广度：3 条 × 800 字）
         headlines = []
         for n in items:
             if isinstance(n, dict):
                 title = n.get('title', '') or n.get('headline', '')
-                body = (n.get('contents', '') or n.get('body', '') or '')[:100]
-                headlines.append(f"- {title}: {body}")
+                body = (n.get('contents', '') or n.get('body', '') or '')[:800]
+                headlines.append(f"- {title}\n  正文：{body}")
             elif isinstance(n, str):
-                headlines.append(f"- {n[:120]}")
+                headlines.append(f"- {n[:400]}")
         if not headlines: return
-        news_text = '\n'.join(headlines[:5])
+        news_text = '\n'.join(headlines)
+
+        # 市场事实（统计引擎算好，AI 只引用）
+        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json')) or {}
+        movers = scan.get('movers', {}) or {}
+        gainers = movers.get('gainers', [])[:5]
+        losers = movers.get('losers', [])[:5]
+        tiers = scan.get('tiers', {})
+        tiers_text = '，'.join('%s元:%s件' % (k, v) for k, v in tiers.items())
+        gainer_text = '；'.join([g.get('n','')[:22] + ' 7日' + ('+' if float(g.get('r7',0) or 0) >= 0 else '') + str(g.get('r7','')) + '%(现价¥' + str(g.get('p','')) + ')' for g in gainers])
+        loser_text = '；'.join([l.get('n','')[:22] + ' 7日' + str(l.get('r7','')) + '%(现价¥' + str(l.get('p','')) + ')' for l in losers])
+        dr = read_json(os.path.join(DATA_DIR, 'daily_report.json')) or {}
+        pf = dr.get('portfolio', {}) or {}
+        pnl = pf.get('pnl', 0); pnl_pct = pf.get('pnl_pct', 0); cnt = pf.get('count', 0)
+        held_txt = '持仓%d件，浮动盈亏%+.2f元(%+.2f%%)' % (cnt, pnl, pnl_pct) if cnt else '无持仓数据'
+
         prompt = (
-            f'你是CS2饰品市场分析师。以下是Steam CS2最新公告，请分析对饰品市场的影响：\n'
-            f'{news_text}\n\n'
-            f'用中文给出：1)一句话核心影响 2)利好哪些品类 3)利空哪些品类 4)持仓建议。总计120字以内。'
-            f'若公告与饰品无关，回复"本期公告对饰品市场无直接影响。"'
-        )
+            '你是CS2饰品市场分析师。以下是 Steam CS2 最新公告全文，以及统计引擎算好的当前市场事实。\n'
+            '【公告】\n%s\n\n'
+            '【市场事实（写作时必须直接引用，不得编造或改动数字）】\n'
+            '- 全市场 %d 件，均价 ¥%.2f，中位价 ¥%.2f，价格分布：%s\n'
+            '- 7日涨幅TOP：%s\n'
+            '- 7日跌幅TOP：%s\n'
+            '- %s\n\n'
+            '请逐条公告深度分析（每条公告独立一小节），每节必须：\n'
+            '1) 核心影响：结合公告具体内容说明影响什么品类\n'
+            '2) 利好：点名涨幅榜里符合该主题的具体饰品及其真实涨幅数字\n'
+            '3) 利空：点名跌幅榜里可能受压的具体饰品及其真实跌幅数字\n'
+            '4) 持仓参考：结合当前浮动盈亏给一句可执行建议\n'
+            '禁止写"提升游戏热度""关注后续"之类不落地的话；公告与饰品市场无关的部分直接说明无直接影响。总计 450 字以内。'
+        ) % (news_text, scan.get('total', 0), scan.get('avg_p', 0), scan.get('median_p', 0),
+             tiers_text, gainer_text, loser_text, held_txt)
+
+        stats = {
+            'total': scan.get('total', 0), 'avg_p': scan.get('avg_p', 0), 'median_p': scan.get('median_p', 0),
+            'tiers': tiers, 'gainers': gainers, 'losers': losers,
+            'portfolio': {'count': cnt, 'pnl': pnl, 'pnl_pct': pnl_pct}
+        }
         data = json.dumps({
             'model': 'glm-4-flash',
             'messages': [{'role': 'user', 'content': prompt}],
-            'max_tokens': 2000, 'temperature': 0.5
+            'max_tokens': 1500, 'temperature': 0.4
         }).encode('utf-8')
-        r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=30)
+        r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=60)
         impact = r['choices'][0]['message']['content'].strip()
         result = {
             'date': time.strftime('%Y-%m-%d %H:%M'),
             'impact': impact,
-            'headlines': [h[:80] for h in headlines[:3]]
+            'headlines': [h.split('\n')[0][:80] for h in headlines],
+            'stats': stats
         }
         write_json(os.path.join(DATA_DIR, 'ai_news_impact.json'), result)
         print(f'[AI] News impact generated ({len(impact)} chars)')

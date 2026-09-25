@@ -1602,8 +1602,9 @@ html { scroll-behavior: smooth; }
       </div>
     </div>
     <div id="newsContent" style="padding:16px 20px">
-      <div id="aiNewsImpact" style="display:none;margin:0 0 14px;padding:10px 14px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(234,179,8,.05));border:1px solid rgba(234,179,8,.2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.7">
-        <span style="color:#eab308;font-weight:700">🪂 AI 空投监控</span> · <span id="aiNewsImpactText">加载中...</span>
+      <div id="aiNewsImpact" style="display:none;margin:0 0 14px;padding:10px 14px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(234,179,8,.05));border:1px solid rgba(234,179,8,.2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.8">
+        <div style="margin-bottom:6px"><span style="color:#eab308;font-weight:700">🪂 AI 空投监控</span> · <span style="font-size:10px;color:var(--text3)">AI 注记 · 数字来自统计引擎</span></div>
+        <div id="aiNewsImpactText" style="white-space:pre-line">加载中...</div>
       </div>
       <div id="newsGrid"></div>
     </div>
@@ -5487,7 +5488,7 @@ window.openSellConfirm = function (item) {
   if (!item) return;
   var sOverlay = document.getElementById('sellConfirmOverlay');
   if (!sOverlay) return;
-  document.getElementById('sellConfirmItem').textContent = item.n;
+  document.getElementById('sellConfirmItem').textContent = hpName(item);  // 中文名（查映射表，fallback 原名）
   document.getElementById('sellConfirmWear').textContent = item.w ? wearCN(item.w) : '--';
   document.getElementById('sellConfirmCost').textContent = '¥' + item.c.toFixed(2);
   document.getElementById('sellConfirmEco').textContent = '¥' + item.p.toFixed(2);
