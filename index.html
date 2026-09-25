@@ -6643,9 +6643,16 @@ function hpChartTooltip(idx){
   var base = prices[0] || 0;                       /* 序列起点，用于算相对涨跌 */
 
   function move(e){
+    /* ★ 2026-09-25 修复「悬停点不贴线」：原来以 .hp-chart 容器为定位基准，
+       但容器有 padding:12px 0 4px，且高度换算用的是容器总高（含 padding），
+       → Y 坐标少加 padding-top、又被放大 6.7%，点悬空在曲线上方。
+       现在全部改以 svg 自身的 rect 为基准，再换算回容器坐标。 */
     var rect = holder.getBoundingClientRect();
-    var w = rect.width || 1, hgt = rect.height || 1;
-    var mx = e.clientX - rect.left;
+    var srect = svg.getBoundingClientRect();
+    var offX = srect.left - rect.left;
+    var offY = srect.top - rect.top;
+    var w = srect.width || 1, hgt = srect.height || 1;
+    var mx = e.clientX - srect.left;
     var vx = mx / w * vbW;
     /* 最近采样点 */
     var best = 0, bestD = Infinity;
@@ -6660,15 +6667,16 @@ function hpChartTooltip(idx){
     box.innerHTML = '<b>¥' + hpFmt(pr) + '</b>'
       + '<span>' + dt + '</span>'
       + '<span class="' + cls + '">' + (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%</span>';
-    /* 屏幕坐标（CSS px） */
-    var cx = xs[best] / vbW * w;
-    var cy = ys[best] / vbH * hgt;
+    /* 屏幕坐标（CSS px，svg 内），再平移回容器坐标系 */
+    var cx = xs[best] / vbW * w + offX;
+    var cy = ys[best] / vbH * hgt + offY;
     /* 准线 */
     line.style.left = cx.toFixed(1) + 'px';
     line.style.display = 'block';
     /* tooltip 水平跟随鼠标但不出界 */
     var half = 58;
-    var tx = Math.max(half, Math.min(w - half, mx));
+    var mtx = e.clientX - rect.left;
+    var tx = Math.max(half, Math.min(rect.width - half, mtx));
     box.style.left = tx + 'px';
     /* 垂直避让数据点：优先放上方 34px，顶部不够则放下方 */
     var ty = cy - 34;
