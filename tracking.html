@@ -12,537 +12,585 @@
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#020617">
 <style>
-:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#60a5fa;--amber:#fbbf24;--radius:12px;--shadow:0 2px 16px rgba(0,0,0,.25)}
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--hair:rgba(48,54,61,.6);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#58a6ff;--amber:#fbbf24;--purple:#a855f7;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:1000px;margin:0 auto;padding:24px 16px 32px}
 h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sub{font-size:12px;color:var(--text3);margin-top:4px}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
-.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}.header .nav a:hover{text-decoration:underline}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
-.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:12px;letter-spacing:.3px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:16px}
-.kpi{background:var(--surface2);border-radius:8px;padding:12px 12px;text-align:center}.kpi-l{font-size:12px;color:var(--text3);margin-bottom:4px}
-.kpi-v{font-size:20px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
-.kpi-v.rise{color:var(--rise)}.kpi-v.fall{color:var(--fall)}.kpi-v.blue{color:var(--blue)}
-.kpi-sub{font-size:12px;color:var(--text3);margin-top:4px}
-.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(55,65,81,.08);font-size:12px;align-items:center}
-.row:last-child{border-bottom:none}.row .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)}
-.row .v{min-width:50px;text-align:right;font-weight:600;font-family:'DM Mono',monospace}.empty{text-align:center;padding:24px;color:var(--text3);font-size:12px}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{padding:4px 8px;color:var(--text3);font-size:12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:4px 8px;border-bottom:1px solid rgba(55,65,81,.08);color:var(--text2)}
-.loading{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin-right:4px;vertical-align:middle}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:640px){.container{padding:18px 12px 28px}.kpis{grid-template-columns:repeat(2,1fr)}.card{overflow-x:auto;-webkit-overflow-scrolling:touch}table{font-size:12px!important;min-width:520px}}
+.sub{font-size:12px;color:var(--text3);margin-top:4px;line-height:1.6}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}
+.header .nav a:hover{text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px}
+.card h2{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px;letter-spacing:.3px}
+.badge-mini{font-size:9px;background:rgba(88,166,250,.15);color:var(--blue);padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px;vertical-align:1px}
+.badge-mini.gold{background:rgba(251,191,36,.15);color:var(--amber)}
+.badge-mini.green{background:rgba(34,197,94,.15);color:var(--fall)}
 
-/* ══════ 板块优化 2026-09-16 ══════ */
-/* ① 交互反馈：列表行 / 条目 / 药丸 / KPI / 卡片 统一的 hover */
-.row,.bt-item,.stat-pill{transition:background .18s ease,border-color .18s ease;border-radius:8px}
-.row:hover{background:rgba(96,165,250,.07)}
-.bt-item:hover{border-color:rgba(148,163,184,.45);transform:translateY(-2px)}
-.stat-pill:hover{border-color:rgba(148,163,184,.45)}
-.kpi,.bt-kpi{transition:transform .18s cubic-bezier(.16,1,.3,1),background .18s ease}
-.kpi:hover,.bt-kpi:hover{transform:translateY(-2px);background:rgba(96,165,250,.08)}
-.card{transition:border-color .25s ease}
-.card:hover{border-color:rgba(148,163,184,.45)}
-/* ② 可读性：数字紧凑、空状态放宽 */
-.kpi-v,.bt-kpi-v{letter-spacing:-.02em}
-.empty{padding:32px 16px;line-height:1.6}
-/* ③ 响应式：补齐/扩展 */
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:6px}
+.kpi{background:var(--surface2);border:1px solid var(--hair);border-radius:8px;padding:10px 12px;text-align:center;transition:all .18s ease}
+.kpi:hover{transform:translateY(-2px);background:rgba(88,166,255,.06);border-color:rgba(148,163,184,.45)}
+.kpi-l{font-size:11px;color:var(--text3);margin-bottom:4px}
+.kpi-v{font-size:19px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace;letter-spacing:-.02em}
+.kpi-v.rise{color:var(--rise)}.kpi-v.fall{color:var(--fall)}.kpi-v.blue{color:var(--blue)}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 过滤条 */
+.fbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.fchip{display:inline-flex;align-items:center;gap:5px;background:rgba(88,166,255,.12);border:1px solid rgba(88,166,255,.45);
+  color:var(--blue);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;user-select:none;transition:all .15s ease}
+.fchip:hover{background:rgba(88,166,255,.2)}
+.fchip .x{opacity:.7;font-size:11px}
+.fchip.dim{background:var(--surface2);border-color:var(--border);color:var(--text2)}
+.fchip.on2{background:rgba(88,166,255,.14);border-color:rgba(88,166,255,.5);color:var(--blue);font-weight:600}
+.fclear{background:var(--surface2);border:1px solid var(--border);color:var(--text3);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;transition:all .15s ease}
+.fclear:hover{color:var(--text);border-color:rgba(148,163,184,.5)}
+.search{width:auto;flex:1 1 200px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-family:inherit;outline:none}
+.search:focus{border-color:rgba(88,166,255,.6)}
+.search::placeholder{color:var(--text3)}
+
+/* 表格 */
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+th{padding:8px 10px;color:var(--text3);font-size:11px;letter-spacing:.4px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;user-select:none}
+th.sortable{cursor:pointer;transition:color .15s ease}
+th.sortable:hover{color:var(--text)}
+th .arw{opacity:.45;font-size:10px;margin-left:2px}
+th.act{color:var(--blue)}th.act .arw{opacity:1}
+td{padding:8px 10px;border-bottom:1px solid var(--hair);color:var(--text2)}
+tbody tr{transition:background .15s ease}
+tbody tr:hover{background:rgba(88,166,255,.05)}
+td.num{font-family:'DM Mono',monospace;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.rise{color:var(--rise);font-weight:700}td.fall{color:var(--fall);font-weight:700}
+td.name{color:var(--text);max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip-tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:6px;background:rgba(148,163,184,.12);color:var(--text3)}
+.more{display:block;width:100%;margin-top:10px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit}
+.more:hover{border-color:rgba(148,163,184,.5);color:var(--text)}
+.empty{padding:36px 20px;text-align:center}
+.empty .ico{font-size:26px;opacity:.5;margin-bottom:8px}
+.empty .t{font-size:13px;color:var(--text2);font-weight:600;margin-bottom:6px}
+.empty .d{font-size:12px;color:var(--text3);line-height:1.7;max-width:520px;margin:0 auto}
+.loading{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* AI / 教训 / 进化卡内容 */
+.ov-card{background:var(--surface2);border:1px solid var(--hair);border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.ov-card .t{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px}
+.ov-line{font-size:12px;color:var(--text2);line-height:1.7}
+.ov-line b{color:var(--text)}
+.hint{font-size:11px;color:var(--blue);line-height:1.5;padding:8px 12px;background:rgba(88,166,250,.08);border-radius:8px}
+.lesson{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--hair)}
+.lesson:last-child{border-bottom:none}
+.lesson .cat{min-width:86px;font-size:10.5px;color:var(--text2)}
+.lesson .txt{flex:1;font-size:12px;color:var(--text);line-height:1.6}
+.lesson .txt .act{color:var(--text3);font-size:11px}
+.lesson .imp{font-size:10px;min-width:22px;text-align:right}
+.ew-row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.ew-row .lb{font-size:10px;color:var(--text3);min-width:38px}
+.ew-row .trackbar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.ew-row .fill{height:100%;border-radius:3px}
+.ew-row .vv{font-size:10px;min-width:44px;text-align:right}
+.evo-hist{font-size:10.5px;line-height:1.8;color:var(--text3)}
+.evo-hist b{color:var(--text2)}
+
 @media(max-width:640px){
-  div[style*="grid-template-columns:1fr 1fr"],div[style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
   .container{padding:18px 12px 28px}
-  .row{flex-wrap:wrap;gap:4px}
-  .card{padding:12px 16px}
-  .kpi-v{font-size:18px}
-  .timeline{padding-left:20px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .card{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:560px}
 }
-#trackWrap.collapsed > table > tbody > tr:nth-child(n+9){display:none}
-.track-toggle{margin-top:10px;text-align:center;font-size:12px;color:var(--blue);
-  cursor:pointer;padding:8px;border:1px dashed var(--border);border-radius:8px;
-  user-select:none;transition:background .15s,border-color .15s}
-.track-toggle:hover{background:rgba(96,165,250,.07);border-color:var(--blue)}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div><h1>推荐追踪</h1><div class="sub" id="trackDate">加载中...</div></div>
+    <div><h1>推荐追踪</h1><div class="sub" id="trackDate">加载中…</div></div>
     <div class="nav"><a href="/">← 返回看板</a></div>
   </div>
+
   <div class="card">
     <div class="kpis" id="trackKpis">
       <div class="kpi"><div class="kpi-l">加载中</div><div class="kpi-v"><span class="loading"></span></div></div>
     </div>
   </div>
+
   <div class="card">
-    <h2>📋 推荐记录 (按当前价格实时计算)<span id="trackCount" style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px"></span></h2>
-    <div id="trackWrap" class="collapsed">
-      <table><thead><tr><th style="width:42%">饰品</th><th>推荐日</th><th>推荐价</th><th>当前价</th><th style="text-align:right">收益</th></tr></thead><tbody id="trackList"></tbody></table>
-    </div>
-    <div id="trackToggle" class="track-toggle" style="display:none" role="button" tabindex="0"></div>
+    <h2>推荐记录 <span id="trackCount" style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px"></span></h2>
+    <div class="fbar" id="trackFbar"></div>
+    <table><thead><tr>
+      <th class="sortable" data-sort="name">饰品<span class="arw">↕</span></th>
+      <th class="sortable" data-sort="date">推荐日<span class="arw">↕</span></th>
+      <th class="sortable" data-sort="ch">通道<span class="arw">↕</span></th>
+      <th class="sortable" data-sort="recPrice">推荐价<span class="arw">↕</span></th>
+      <th class="sortable" data-sort="nowPrice">当前价<span class="arw">↕</span></th>
+      <th class="sortable" data-sort="ret" style="text-align:right">收益<span class="arw">↕</span></th>
+    </tr></thead><tbody id="trackList"></tbody></table>
+    <button class="more" id="trackMore" hidden></button>
   </div>
+
+  <div class="card" id="scoreCard" style="display:none">
+    <h2>📊 推荐战绩 <span class="badge-mini green">含大盘超额</span><span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px" id="scoreMeta"></span></h2>
+    <div id="scoreContent"></div>
+  </div>
+
   <div class="card" id="aiTrackCard" style="display:none">
-    <h2>🧠 AI 追踪分析 <span style="font-size:9px;background:rgba(96,165,250,.15);color:#60a5fa;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px">智谱 GLM-4</span><span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px" id="aiMeta"></span></h2>
+    <h2>🧠 AI 追踪分析 <span class="badge-mini">智谱 GLM-4</span><span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px" id="aiMeta"></span></h2>
     <div id="aiTrackContent"></div>
   </div>
+
   <div class="card" id="evolutionCard" style="display:none">
-    <h2>📈 进化轨迹 <span style="font-size:9px;background:rgba(96,165,250,.15);color:#60a5fa;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px">评分权重演变</span></h2>
+    <h2>📈 进化轨迹 <span class="badge-mini">评分权重演变</span></h2>
     <div id="evolutionContent"></div>
   </div>
+
   <div class="card" id="lessonsCard" style="display:none">
-    <h2>📖 经验教训 <span style="font-size:9px;background:rgba(251,191,36,.15);color:#fbbf24;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px" id="lessonCount"></span></h2>
+    <h2>📖 经验教训 <span class="badge-mini gold" id="lessonCount"></span></h2>
     <div id="lessonsContent"></div>
-  </div>
-  <div class="card" id="scoreCard" style="display:none">
-    <h2>📊 推荐战绩 <span style="font-size:9px;background:rgba(34,197,94,.15);color:#22c55e;padding:1px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px;margin-left:6px">含大盘超额</span><span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:4px" id="scoreMeta"></span></h2>
-    <div id="scoreContent"></div>
   </div>
 </div>
 <script src="ai-badge.js"></script>
 <script>
-function esc(s) { if (!s) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
+/* ══════════════════════════════════════════════════════════════════
+   推荐追踪 —— 2026-09-25 重写
+   优化点（相对旧版）：
+     ① 加载并行化 + 感知提速：先渲染本地记录，现价到位后二次渲染；
+        去掉 6.4MB 的 eco_tracked.json，中文名改用 name_map.json
+     ② 推荐记录表：排序 / 搜索 / 通道筛选 / 盈亏筛选 / 分页，
+        去掉旧的 collapsed 折叠 hack
+     ③ 联动模型（同卖出复盘页）：筛选后 KPI 与表格基于同一份记录计算
+     ④ AI 分析 / 进化轨迹 / 经验教训 / 推荐战绩 四卡渲染逻辑保留，样式统一
+   数据源：localStorage cs2_rec_tracks（{name,date,recPrice,channel}）
+           + market.json / price_summary.json（现价）+ name_map.json（中文名）
+   ══════════════════════════════════════════════════════════════════ */
 
+function esc(s) { if (s === null || s === undefined) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
+
+var state = {
+  raw: [], prices: {}, nameMap: {},
+  filterDays: 0, q: '', ch: 'all', side: 'all',
+  sort: { key: 'date', dir: -1 }, shown: 30
+};
+
+/* ── 加载：本地先渲染，现价并行补 ── */
 function loadTracks() {
-  try {
-    var raw = localStorage.getItem('cs2_rec_tracks');
-    var tracks = raw ? JSON.parse(raw) : [];
+  try { state.raw = JSON.parse(localStorage.getItem('cs2_rec_tracks') || '[]'); } catch (e) { state.raw = []; }
+  render();   // 先渲染本地（现价待补）
 
-    // 同时拉取市场数据获取当前价格
-    fetch('market.json?v=' + Date.now())
-      .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(marketData) {
-        var nowPrices = {};
-        if (marketData && marketData.recommendations && marketData.recommendations.all) {
-          marketData.recommendations.all.forEach(function(rec) {
-            var p = rec.price || rec.eco_price || 0;
-            if (rec.name) nowPrices[rec.name] = p;
-            if (rec.hash_name) nowPrices[rec.hash_name] = p;
-          });
-        }
-
-        // 也从 eco_tracked 补充价格和中文名映射（用 HashName + GoodsName 双匹配）
-        return fetch('eco_tracked.json?v=' + Date.now())
-          .then(function(r) { return r.ok ? r.json() : []; })
-          .catch(function() { return []; })
-          .then(function(ecoData) {
-            var nameMap = {};
-            if (Array.isArray(ecoData)) {
-              ecoData.forEach(function(item) {
-                var hn = item.HashName || '';
-                var gn = item.GoodsName || '';
-                var p = item.Price || item.eco_price || 0;
-                if (hn && gn) nameMap[hn] = gn;
-                if (p > 0) {
-                  if (hn && !nowPrices[hn]) nowPrices[hn] = p;
-                  if (gn && !nowPrices[gn]) nowPrices[gn] = p;
-                }
-              });
-            }
-            // 再加 price_summary 兜底
-            return fetch('price_summary.json?v=' + Date.now())
-              .then(function(r){ return r.ok ? r.json() : {}; })
-              .catch(function(){ return {}; })
-              .then(function(ps){
-                for (var key in ps) {
-                  if (!nowPrices[key] && ps[key] && ps[key].last > 0) {
-                    nowPrices[key] = ps[key].last;
-                  }
-                }
-                renderTracks(tracks, nowPrices, marketData, nameMap);
-              });
-          });
-      })
-      .catch(function() {
-        renderTracks(tracks, {}, null, {});
+  var t0 = Math.floor(Date.now() / 900000);
+  Promise.all([
+    fetch('name_map.json?v=' + t0).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+    fetch('price_summary.json?v=' + t0).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+    fetch('market.json?v=' + t0).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+  ]).then(function (res) {
+    state.nameMap = res[0] || {};
+    var ps = res[1] || {};
+    var prices = {};
+    for (var key in ps) {
+      if (ps[key] && ps[key].last > 0) prices[key] = ps[key].last;
+    }
+    var md = res[2];
+    if (md && md.recommendations && md.recommendations.all) {
+      md.recommendations.all.forEach(function (rec) {
+        var p = rec.price || rec.eco_price || 0;
+        if (rec.name) prices[rec.name] = p;
+        if (rec.hash_name) prices[rec.hash_name] = p;
       });
-  } catch(e) {
-    document.getElementById('trackKpis').innerHTML = '<div class="kpi"><div class="kpi-l">错误</div><div class="kpi-v" style="font-size:12px">读取本地数据失败</div></div>';
-  }
+    }
+    state.prices = prices;
+    render();
+  });
 }
 
-function renderTracks(tracks, nowPrices, marketData, nameMap) {
-  var timeStr = marketData && (marketData.updated || marketData.update_time)
-    ? '数据更新: ' + new Date(marketData.updated || marketData.update_time).toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})
-    : '共 ' + tracks.length + ' 条记录';
+/* ── 过滤（全板块共用）── */
+function filtered() {
+  var q = state.q.trim().toLowerCase();
+  var now = Date.now();
+  return state.raw.filter(function (t) {
+    if (state.filterDays > 0 && now - new Date(t.date).getTime() > state.filterDays * 86400000) return false;
+    if (state.ch !== 'all' && (t.channel || 'eco') !== state.ch) return false;
+    var e = enrich(t);
+    if (state.side === 'win' && !(e.ret !== null && e.ret > 0)) return false;
+    if (state.side === 'lose' && !(e.ret !== null && e.ret < 0)) return false;
+    if (q) {
+      var dn = dispName(t.name).toLowerCase();
+      if (dn.indexOf(q) < 0 && String(t.name).toLowerCase().indexOf(q) < 0) return false;
+    }
+    return true;
+  });
+}
 
-  document.getElementById('trackDate').textContent = timeStr;
+function dispName(n) { return state.nameMap[n] || n; }
 
-  if (!tracks.length) {
-    document.getElementById('trackKpis').innerHTML = '<div class="kpi"><div class="kpi-l">暂无数据</div><div class="kpi-v" style="font-size:12px">访问主页面后自动记录</div></div>';
-    document.getElementById('trackList').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">暂无记录</td></tr>';
+function enrich(t) {
+  var cp = state.prices[t.name] || 0;
+  var rp = t.recPrice || t.ecoPrice || 0;
+  var ret = (rp > 0 && cp > 0) ? (cp - rp) / rp * 100 : null;
+  return { name: t.name, date: t.date, ch: t.channel || 'eco', recPrice: rp, nowPrice: cp, ret: ret };
+}
+
+/* ── KPI（基于过滤后的记录）── */
+function renderKpis(rows) {
+  var total = rows.length;
+  var daily = {}, profited = 0, sumRet = 0, sumAbs = 0;
+  var best = null, worst = null;
+  rows.forEach(function (e) {
+    daily[e.date] = (daily[e.date] || 0) + 1;
+    if (e.ret !== null) {
+      sumRet += e.ret; sumAbs += (e.nowPrice - e.recPrice);
+      if (e.ret > 0) profited++;
+      if (!best || e.ret > best.ret) best = e;
+      if (!worst || e.ret < worst.ret) worst = e;
+    }
+  });
+  var uniqueDays = Object.keys(daily).length;
+  var avgRet = total ? sumRet / rows.filter(function (e) { return e.ret !== null; }).length : 0;
+  var wr = rows.filter(function (e) { return e.ret !== null; }).length;
+  var winRate = wr ? profited / wr * 100 : 0;
+
+  document.getElementById('trackKpis').innerHTML =
+    '<div class="kpi"><div class="kpi-l">累计推荐</div><div class="kpi-v blue">' + total + '</div>' +
+      '<div class="kpi-sub">' + uniqueDays + ' 天记录</div></div>' +
+    '<div class="kpi"><div class="kpi-l">胜率（有价样本）</div><div class="kpi-v ' + (winRate >= 50 ? 'rise' : 'fall') + '">' + (wr ? winRate.toFixed(0) + '%' : '—') + '</div>' +
+      '<div class="kpi-sub">' + profited + ' / ' + wr + ' 盈利</div></div>' +
+    '<div class="kpi"><div class="kpi-l">平均收益</div><div class="kpi-v ' + (avgRet >= 0 ? 'rise' : 'fall') + '">' + (wr ? (avgRet >= 0 ? '+' : '') + avgRet.toFixed(1) + '%' : '—') + '</div>' +
+      '<div class="kpi-sub">总盈亏 ' + (sumAbs >= 0 ? '+' : '') + '¥' + sumAbs.toFixed(0) + '</div></div>' +
+    '<div class="kpi"><div class="kpi-l">最佳</div><div class="kpi-v" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+      esc((best ? dispName(best.name) : '--').slice(0, 14)) + '</div>' +
+      '<div class="kpi-sub">' + (best && best.ret !== null ? (best.ret >= 0 ? '+' : '') + best.ret.toFixed(1) + '%' : '--') + '</div></div>' +
+    '<div class="kpi"><div class="kpi-l">最差</div><div class="kpi-v" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+      esc((worst ? dispName(worst.name) : '--').slice(0, 14)) + '</div>' +
+      '<div class="kpi-sub">' + (worst && worst.ret !== null ? (worst.ret >= 0 ? '+' : '') + worst.ret.toFixed(1) + '%' : '--') + '</div></div>';
+}
+
+/* ── 过滤条 ── */
+function renderFbar(rows) {
+  var channels = {};
+  state.raw.forEach(function (t) { channels[t.channel || 'eco'] = 1; });
+  var f = document.getElementById('trackFbar');
+  var chips = [];
+  function sideChip(v, label) {
+    return '<span class="fchip' + (state.side === v ? ' on2' : ' dim') + '" data-side="' + v + '">' + label + '</span>';
+  }
+  chips.push(sideChip('all', '全部方向'));
+  chips.push(sideChip('win', '只看盈利'));
+  chips.push(sideChip('lose', '只看亏损'));
+  Object.keys(channels).sort().forEach(function (c) {
+    chips.push('<span class="fchip' + (state.ch === c ? ' on2' : ' dim') + '" data-ch="' + c + '">通道：' + esc(c) + '</span>');
+  });
+  if (state.q.trim()) chips.push('<span class="fchip" data-fn="q">' + esc('搜索：' + state.q.trim()) + '<span class="x">✕</span></span>');
+  f.innerHTML = chips.join(' ');
+
+  f.querySelectorAll('.fchip[data-side]').forEach(function (el) {
+    el.addEventListener('click', function () { state.side = this.getAttribute('data-side'); state.shown = 30; render(); });
+  });
+  f.querySelectorAll('.fchip[data-ch]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var c = this.getAttribute('data-ch');
+      state.ch = (state.ch === c) ? 'all' : c;
+      state.shown = 30; render();
+    });
+  });
+  var qc = f.querySelector('.fchip[data-fn="q"]');
+  if (qc) qc.addEventListener('click', function () { state.q = ''; state.shown = 30; render(); });
+}
+
+/* ── 主渲染 ── */
+function render() {
+  var rows = filtered().map(enrich);
+  renderKpis(rows);
+  renderFbar(rows);
+
+  var updated = '';
+  document.getElementById('trackDate').textContent =
+    '共 ' + state.raw.length + ' 条推荐记录，当前筛选 ' + rows.length + ' 条' + (updated ? ' · ' + updated : '');
+
+  var body = document.getElementById('trackList');
+  var more = document.getElementById('trackMore');
+  if (!state.raw.length) {
+    body.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="ico">◍</div>' +
+      '<div class="t">暂无推荐记录</div><div class="d">访问看板首页后，每日推荐会自动记录到这里，' +
+      '并跟踪之后的涨跌表现。</div></div></td></tr>';
+    if (more) more.hidden = true;
+    document.getElementById('trackCount').textContent = '';
     return;
   }
 
-  // ── 计算统计数据 ──
-  var total = tracks.length;
-  var dailyCounts = {};
-  var profited = 0, allProfitable = 0;
-  var totalRetPct = 0, totalRetAbs = 0;
-  var bestRet = -Infinity, worstRet = Infinity;
-  var bestName = '', worstName = '';
-
-  tracks.forEach(function(t) {
-    dailyCounts[t.date] = (dailyCounts[t.date] || 0) + 1;
-    var cp = nowPrices[t.name] || 0;
-    var rp = t.recPrice || t.ecoPrice || 0;
-    if (rp > 0 && cp > 0) {
-      var ret = (cp - rp) / rp * 100;
-      totalRetPct += ret;
-      totalRetAbs += (cp - rp);
-      if (ret > 0) profited++;
-      if (ret > 2) allProfitable++;
-      if (ret > bestRet) { bestRet = ret; bestName = t.name; }
-      if (ret < worstRet) { worstRet = ret; worstName = t.name; }
+  var s = state.sort;
+  rows.sort(function (a, b) {
+    var va, vb;
+    if (s.key === 'name') { va = dispName(a.name); vb = dispName(b.name); return va < vb ? -s.dir : (va > vb ? s.dir : 0); }
+    if (s.key === 'date') { va = a.date; vb = b.date; return va < vb ? -s.dir : (va > vb ? s.dir : 0); }
+    if (s.key === 'ch') { va = a.ch; vb = b.ch; return va < vb ? -s.dir : (va > vb ? s.dir : 0); }
+    if (s.key === 'ret') {
+      if (a.ret === null && b.ret === null) return 0;
+      if (a.ret === null) return 1;
+      if (b.ret === null) return -1;
+      return (vb - a.ret) * (s.dir > 0 ? -1 : 1) * -1 * -1;
     }
+    va = a[s.key] || 0; vb = b[s.key] || 0;
+    return (vb - va) * (s.dir > 0 ? -1 : 1);
   });
 
-  var uniqueDays = Object.keys(dailyCounts).length;
-  var avgRet = total > 0 ? totalRetPct / total : 0;
-  var sorted = tracks.slice().sort(function(a, b) { return a.date < b.date ? 1 : -1; });
-  var todayCount = dailyCounts[sorted[0] ? sorted[0].date : ''] || 0;
-
-  // ── KPI ──
-  document.getElementById('trackKpis').innerHTML =
-    '<div class="kpi"><div class="kpi-l">累计推荐</div><div class="kpi-v blue">' + total + '</div></div>' +
-    '<div class="kpi"><div class="kpi-l">记录天数</div><div class="kpi-v">' + uniqueDays + '</div></div>' +
-    '<div class="kpi"><div class="kpi-l">今日推荐</div><div class="kpi-v">' + todayCount + '</div></div>' +
-    '<div class="kpi ' + (profited > total / 2 ? 'rise' : 'fall') + '"><div class="kpi-l">盈利数</div><div class="kpi-v">' + profited + '/' + total + '</div><div class="kpi-sub">' + (total > 0 ? (profited/total*100).toFixed(0) : 0) + '%</div></div>' +
-    '<div class="kpi"><div class="kpi-l">平均收益</div><div class="kpi-v ' + (avgRet >= 0 ? 'rise' : 'fall') + '">' + (avgRet >= 0 ? '+' : '') + avgRet.toFixed(1) + '%</div><div class="kpi-sub">总盈亏 ' + (totalRetAbs >= 0 ? '+' : '') + '¥' + totalRetAbs.toFixed(0) + '</div></div>' +
-    '<div class="kpi ' + (bestRet > 0 ? 'rise' : 'fall') + '"><div class="kpi-l">最佳</div><div class="kpi-v" style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + ((bestName || '--').substring(0,14)) + '</div><div class="kpi-sub">' + (bestRet > -Infinity ? (bestRet >= 0 ? '+' : '') + bestRet.toFixed(1) + '%' : '--') + '</div></div>';
-
-  // ── 详情列表 (按收益排序) ──
-  var enriched = tracks.map(function(t) {
-    var cp = nowPrices[t.name] || 0;
-    var rp = t.recPrice || t.ecoPrice || 0;
-    var ret = (rp > 0 && cp > 0) ? ((cp - rp) / rp * 100) : null;
-    return { name: t.name, date: t.date, recPrice: rp, nowPrice: cp, ret: ret };
-  });
-
-  enriched.sort(function(a, b) {
-    var ra = a.ret, rb = b.ret;
-    if (ra === null && rb === null) return 0;
-    if (ra === null) return 1;
-    if (rb === null) return -1;
-    return rb - ra;
-  });
-
-  var rows = enriched.map(function(e) {
+  var slice = rows.slice(0, state.shown);
+  body.innerHTML = slice.map(function (e) {
     var retStr = e.ret !== null ? (e.ret >= 0 ? '+' : '') + e.ret.toFixed(1) + '%' : '--';
-    var cls = e.ret !== null ? (e.ret > 0 ? 'rise' : 'fall') : '';
-    var displayName = (nameMap && nameMap[e.name]) ? nameMap[e.name] : e.name;
-    return '<tr><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + esc(displayName) + '">' + esc(displayName) + '</td><td>' + e.date + '</td><td>¥' + e.recPrice.toFixed(1) + '</td><td style="color:var(--text3)">' + (e.nowPrice > 0 ? '¥' + e.nowPrice.toFixed(1) : '--') + '</td><td style="text-align:right;font-weight:600;color:var(--' + cls + ');color:' + (e.ret !== null ? (e.ret >= 0 ? 'var(--rise)' : 'var(--fall)') : 'var(--text3)') + '">' + retStr + '</td></tr>';
-  }).join('');
+    var cls = e.ret !== null ? (e.ret > 0 ? 'rise' : (e.ret < 0 ? 'fall' : '')) : '';
+    var nowStr = e.nowPrice > 0 ? '¥' + e.nowPrice.toFixed(1) : '—';
+    return '<tr>' +
+      '<td class="name" title="' + esc(dispName(e.name)) + '">' + esc(dispName(e.name)) + '</td>' +
+      '<td class="num">' + esc(e.date) + '</td>' +
+      '<td><span class="chip-tag">' + esc(e.ch) + '</span></td>' +
+      '<td class="num">¥' + e.recPrice.toFixed(1) + '</td>' +
+      '<td class="num">' + nowStr + '</td>' +
+      '<td class="num ' + cls + '" style="text-align:right">' + retStr + '</td></tr>';
+  }).join('') || '<tr><td colspan="6"><div class="empty" style="padding:20px">当前筛选下没有记录</div></td></tr>';
 
-  document.getElementById('trackList').innerHTML = rows || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">暂无记录</td></tr>';
+  document.getElementById('trackCount').textContent =
+    '显示 ' + slice.length + ' / ' + rows.length + ' 条 · 按当前价格实时计算';
+  if (more) {
+    more.hidden = slice.length >= rows.length;
+    more.textContent = '显示更多（还有 ' + (rows.length - slice.length) + ' 条）';
+  }
 
-  // ── 折叠：默认只显示前 8 条，底部「展开全部」（状态跨定时刷新保持）──
-  (function(){
-    var wrap = document.getElementById('trackWrap');
-    var tg = document.getElementById('trackToggle');
-    var cnt = document.getElementById('trackCount');
-    var n = document.querySelectorAll('#trackList tr').length;
-    if (cnt) cnt.textContent = n ? ('共 ' + n + ' 条 · 按收益排序') : '';
-    if (!wrap || !tg) return;
-    if (n > 8) {
-      tg.style.display = '';
-      wrap.classList.toggle('collapsed', !window._trackExpanded);
-      tg.textContent = window._trackExpanded ? '▲ 收起（仅看前 8 条）' : ('▼ 展开全部 ' + n + ' 条');
-    } else {
-      tg.style.display = 'none';
-      wrap.classList.remove('collapsed');
-    }
-  })();
-
-  // ⚠ 2026-09-18 修复：这些统计量原来是 renderTracks 内的 var，
-  //   而 runAITrackAnalysis 在其外部直接引用 → Uncaught ReferenceError: total is not defined
-  //   → AI 追踪分析 / 进化轨迹 / 经验教训 三张卡片全部不渲染。此处导出到 window.TK。
   window.TK = {
-    total: total, uniqueDays: uniqueDays, profited: profited, avgRet: avgRet,
-    bestName: bestName, bestRet: bestRet, worstName: worstName, worstRet: worstRet
+    total: rows.length,
+    uniqueDays: Object.keys(rows.reduce(function (m, e) { m[e.date] = 1; return m; }, {})).length,
+    profited: rows.filter(function (e) { return e.ret !== null && e.ret > 0; }).length,
+    avgRet: rows.filter(function (e) { return e.ret !== null; }).length
+      ? rows.filter(function (e) { return e.ret !== null; }).reduce(function (a, e) { return a + e.ret; }, 0) / rows.filter(function (e) { return e.ret !== null; }).length
+      : 0,
+    bestName: '', bestRet: 0, worstName: '', worstRet: 0
   };
-  // ⚠ 2026-09-18：runAITrackAnalysis 原来只在脚本加载时调一次（那时 TK 还没生成、total=0 →
-  //   直接 return）→ AI 追踪分析/进化轨迹/经验教训 三卡永远不显示。必须在数据渲染完成后调用。
-  try { runAITrackAnalysis(); } catch (e) { console.warn("[track] AI 分析渲染失败", e); }
+  rows.forEach(function (e) {
+    if (e.ret !== null) {
+      if (!window.TK.bestName || e.ret > window.TK.bestRet) { window.TK.bestName = dispName(e.name); window.TK.bestRet = e.ret; }
+      if (!window.TK.worstName || e.ret < window.TK.worstRet) { window.TK.worstName = dispName(e.name); window.TK.worstRet = e.ret; }
+    }
+  });
+  try { runAITrackAnalysis(); } catch (e2) { console.warn('[track] AI 分析渲染失败', e2); }
 }
 
-// 推荐记录折叠开关
-(function(){
-  var tg = document.getElementById('trackToggle');
-  if (!tg) return;
-  tg.addEventListener('click', function(){
-    window._trackExpanded = !window._trackExpanded;
-    var wrap = document.getElementById('trackWrap');
-    if (wrap) wrap.classList.toggle('collapsed', !window._trackExpanded);
-    var n = document.querySelectorAll('#trackList tr').length;
-    this.textContent = window._trackExpanded ? '▲ 收起（仅看前 8 条）' : ('▼ 展开全部 ' + n + ' 条');
+/* ── 事件 ── */
+document.getElementById('trackMore').addEventListener('click', function () { state.shown += 50; render(); });
+document.querySelectorAll('th.sortable').forEach(function (th) {
+  th.addEventListener('click', function () {
+    var k = this.getAttribute('data-sort');
+    if (state.sort.key === k) state.sort.dir = -state.sort.dir;
+    else { state.sort.key = k; state.sort.dir = -1; }
+    document.querySelectorAll('th.sortable').forEach(function (t) {
+      t.classList.remove('act'); var a = t.querySelector('.arw'); if (a) a.textContent = '↕';
+    });
+    this.classList.add('act');
+    var arw = this.querySelector('.arw'); if (arw) arw.textContent = state.sort.dir < 0 ? '↓' : '↑';
+    render();
   });
-})();
+});
 
-loadTracks();
-(function(){var _l=Date.now();setInterval(function(){fetch('data_status.json?ts='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){var ut=d.updated||'';if(ut&&new Date(ut).getTime()>_l){_l=new Date(ut).getTime();loadTracks();}}).catch(function(){})},60000)})();
-  // ── AI 追踪分析（双源：CI端全量分析 + 本地简要总结）──
-  function runAITrackAnalysis() {
-    // 从 window.TK 取回统计量（见 renderTracks 末尾；修复 ReferenceError）
-    var _TK = window.TK || {};
-    var total = _TK.total || 0, uniqueDays = _TK.uniqueDays || 0,
-        profited = _TK.profited || 0, avgRet = _TK.avgRet || 0,
-        bestName = _TK.bestName || '', bestRet = _TK.bestRet || 0,
-        worstName = _TK.worstName || '', worstRet = _TK.worstRet || 0;
-    var card = document.getElementById('aiTrackCard');
-    var el = document.getElementById('aiTrackContent');
-    if (!el || total < 3) return;
-    card.style.display = '';
+/* ── AI 追踪分析（双源：CI 端全量分析 + 本地简要总结；渲染逻辑保留自旧版，样式统一）── */
+function runAITrackAnalysis() {
+  var _TK = window.TK || {};
+  var total = _TK.total || 0, uniqueDays = _TK.uniqueDays || 0,
+      profited = _TK.profited || 0, avgRet = _TK.avgRet || 0,
+      bestName = _TK.bestName || '', bestRet = _TK.bestRet || 0,
+      worstName = _TK.worstName || '', worstRet = _TK.worstRet || 0;
+  var card = document.getElementById('aiTrackCard');
+  var el = document.getElementById('aiTrackContent');
+  if (!el || total < 3) return;
+  card.style.display = '';
 
-    // ① 优先加载 CI 端全量分析（tracking_analysis.json）
-    fetch('tracking_analysis.json?v=' + Date.now())
-      .then(function(r) { return r.ok ? r.json() : null; })
-      .catch(function() { return null; })
-      .then(function(analysis) {
-        if (analysis && analysis.overview) {
-          var ov = analysis.overview;
-          var meta = analysis.meta || {};
-          var metaEl = document.getElementById('aiMeta');
-          if (metaEl) metaEl.textContent = '(分析于' + (meta.date_range || '') + ')';
+  fetch('tracking_analysis.json?v=' + Date.now())
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .catch(function () { return null; })
+    .then(function (analysis) {
+      if (analysis && analysis.overview) {
+        var ov = analysis.overview;
+        var meta = analysis.meta || {};
+        var metaEl = document.getElementById('aiMeta');
+        if (metaEl) metaEl.textContent = '(分析于' + (meta.date_range || '') + ')';
 
-          var html = '';
-          // 总评
-          html += '<div style="background:var(--surface2);border-radius:10px;padding:14px 16px;margin-bottom:12px">';
-          html += '<div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--text)">📊 ' + esc(ov.verdict || '') + '</div>';
-          html += '<div style="font-size:11px;color:var(--text2);line-height:1.6">';
-          html += '<div>✅ 成功模式: ' + esc(ov.success_pattern || '...') + '</div>';
-          html += '<div>❌ 失败模式: ' + esc(ov.failure_pattern || '...') + '</div>';
-          html += '<div style="margin-top:4px">📈 趋势: ' + esc(ov.confidence_trend || '?') + ' | 🏷 信号: ' + esc(ov.market_signal || '?') + '</div>';
-          html += '</div></div>';
+        var html = '<div class="ov-card"><div class="t">📊 ' + esc(ov.verdict || '') + '</div>' +
+          '<div class="ov-line">✅ 成功模式：<b>' + esc(ov.success_pattern || '...') + '</b></div>' +
+          '<div class="ov-line">❌ 失败模式：<b>' + esc(ov.failure_pattern || '...') + '</b></div>' +
+          '<div class="ov-line" style="margin-top:4px">📈 趋势: ' + esc(ov.confidence_trend || '?') + ' | 🏷 信号: ' + esc(ov.market_signal || '?') + '</div></div>';
 
-          // 评分反馈
-          if (analysis.scoring_feedback) {
-            var sf = analysis.scoring_feedback;
-            html += '<div style="font-size:10px;color:var(--text3);line-height:1.6;margin-bottom:12px">';
-            html += '<span style="color:var(--text2)">评分建议:</span> ';
-            html += 'ECO' + esc(sf.eco_weight_advice || '?') + ' · ';
-            html += 'BUFF' + esc(sf.buff_weight_advice || '?') + ' · ';
-            html += '溢价' + esc(sf.premium_threshold_advice || '?');
-            html += '</div>';
-          }
-
-          // 推荐Prompt优化建议
-          if (analysis.recommendation_prompt_tweak) {
-            html += '<div style="font-size:11px;color:var(--blue);line-height:1.5;padding:8px 12px;background:rgba(96,165,250,.08);border-radius:8px">';
-            html += '💡 ' + esc(analysis.recommendation_prompt_tweak);
-            html += '</div>';
-          }
-
-          el.innerHTML = html;
-
-          // ② 教训面板 + 进化轨迹
-          fetch('tracking_lessons.json?v=' + Date.now())
-            .then(function(r) { return r.ok ? r.json() : null; })
-            .catch(function() { return null; })
-            .then(function(lessons) {
-              if (!lessons) return;
-              
-              // ── 进化轨迹（评分权重演变 + 成功率对比）──
-              var ah = lessons.analysis_history || [];
-              if (ah.length > 0) {
-                var evCard = document.getElementById('evolutionCard');
-                var evEl = document.getElementById('evolutionContent');
-                evCard.style.display = '';
-                
-                var latest = ah[ah.length-1];
-                var sf = latest.scoring_feedback || {};
-                var st = latest.stats || {};
-                
-                // 成功率对比卡
-                var evhtml = '<div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:10px">';
-                
-                if (ah.length >= 2) {
-                  var first = ah[0];
-                  var firstSt = first.stats || {};
-                  var rateChange = (st.rate||0) - (firstSt.rate||0);
-                  var direction = rateChange >= 0 ? '↑' : '↓';
-                  var color = rateChange >= 0 ? 'var(--fall)' : 'var(--rise)';
-                  
-                  evhtml += '<div style="display:flex;gap:16px;align-items:center;margin-bottom:8px">';
-                  evhtml += '<div style="flex:1;text-align:center">';
-                  evhtml += '<div style="font-size:9px;color:var(--text3)">吸取教训前</div>';
-                  evhtml += '<div style="font-size:22px;font-weight:800;color:var(--text2)">' + (firstSt.rate||0) + '%</div>';
-                  evhtml += '<div style="font-size:9px;color:var(--text3)">' + (firstSt.profitable||0) + '/' + (firstSt.priced||0) + ' 盈利</div>';
-                  evhtml += '</div>';
-                  evhtml += '<div style="font-size:18px;color:' + color + '">' + direction + '</div>';
-                  evhtml += '<div style="flex:1;text-align:center">';
-                  evhtml += '<div style="font-size:9px;color:var(--text3)">优化后</div>';
-                  evhtml += '<div style="font-size:22px;font-weight:800;color:' + (rateChange>=0?'var(--fall)':'var(--rise)') + '">' + (st.rate||0) + '%</div>';
-                  evhtml += '<div style="font-size:9px;color:var(--text3)">' + (st.profitable||0) + '/' + (st.priced||0) + ' 盈利</div>';
-                  evhtml += '</div>';
-                  evhtml += '<div style="flex:1;text-align:center">';
-                  evhtml += '<div style="font-size:9px;color:var(--text3)">进步</div>';
-                  evhtml += '<div style="font-size:18px;font-weight:800;color:' + color + '">' + (rateChange>=0?'+':'') + rateChange.toFixed(1) + '%</div>';
-                  evhtml += '<div style="font-size:9px;color:var(--text3)">' + lessons.total_analyses + '次分析</div>';
-                  evhtml += '</div>';
-                  evhtml += '</div>';
-                  
-                  // 简洁趋势线
-                  if (ah.length >= 2) {
-                    evhtml += '<div style="display:flex;align-items:flex-end;gap:4px;height:32px;padding:0 4px">';
-                    ah.forEach(function(a) {
-                      var r = (a.stats||{}).rate || 0;
-                      var h = Math.max(4, r * 0.25);
-                      evhtml += '<div style="flex:1;background:' + (r>=50?'var(--fall)':'var(--rise)') + ';height:' + h + 'px;border-radius:2px 2px 1px 1px;opacity:.7" title="#' + a.seq + ': ' + r + '%"></div>';
-                    });
-                    evhtml += '</div>';
-                  }
-                } else {
-                  evhtml += '<div style="text-align:center">';
-                  evhtml += '<div style="font-size:9px;color:var(--text3)">当前成功率</div>';
-                  evhtml += '<div style="font-size:28px;font-weight:800;color:var(--fall)">' + (st.rate||0) + '%</div>';
-                  evhtml += '<div style="font-size:10px;color:var(--text3)">' + (st.profitable||0) + '/' + (st.priced||0) + ' 盈利 · 再分析1次后出对比</div>';
-                  evhtml += '</div>';
-                }
-                evhtml += '</div>';
-                
-                // 最新一次的建议
-                evhtml += '<div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:8px">';
-                evhtml += '<div style="font-size:11px;font-weight:700;margin-bottom:6px;color:var(--text)">🎯 当前推荐策略';
-                if (ah.length >= 2) {
-                  var prev = ah[ah.length-2].scoring_feedback || {};
-                  var ecoChange = sf.eco_weight_advice !== prev.eco_weight_advice;
-                  var buffChange = sf.buff_weight_advice !== prev.buff_weight_advice;
-                  if (ecoChange || buffChange) evhtml += ' <span style="font-size:9px;color:#fbbf24">← 已调整</span>';
-                }
-                evhtml += '</div>';
-                
-                // 权重条
-                var ecoW = parseFloat(sf.eco_weight_advice) || 0;
-                var buffW = parseFloat(sf.buff_weight_advice) || 0;
-                evhtml += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">';
-                evhtml += '<span style="font-size:9px;color:var(--text3);min-width:36px">ECO</span>';
-                evhtml += '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">';
-                evhtml += '<div style="height:100%;width:'+Math.abs(ecoW)*4+'%;background:'+(ecoW>0?'var(--rise)':'var(--fall)')+';border-radius:3px"></div></div>';
-                evhtml += '<span style="font-size:9px;color:'+(ecoW>0?'var(--rise)':'var(--fall)')+';min-width:36px;text-align:right">'+(ecoW>0?'+':'')+ecoW+'%</span></div>';
-                
-                evhtml += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">';
-                evhtml += '<span style="font-size:9px;color:var(--text3);min-width:36px">BUFF</span>';
-                evhtml += '<div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden">';
-                evhtml += '<div style="height:100%;width:'+Math.abs(buffW)*4+'%;background:'+(buffW>0?'var(--fall)':'var(--rise)')+';border-radius:3px"></div></div>';
-                evhtml += '<span style="font-size:9px;color:'+(buffW>0?'var(--fall)':'var(--rise)')+';min-width:36px;text-align:right">'+(buffW>0?'+':'')+buffW+'%</span></div>';
-                
-                evhtml += '<div style="font-size:9px;color:var(--text2);margin-top:4px">溢价阈值: ' + esc(sf.premium_threshold_advice||'?') + ' · 流动性: ' + esc(sf.liquidity_advice||'?') + '</div>';
-                evhtml += '</div>';
-                
-                // 历史趋势
-                if (ah.length >= 2) {
-                  evhtml += '<div style="font-size:9px;color:var(--text3);margin-bottom:4px">📈 评分权重演变</div>';
-                  evhtml += '<div style="background:var(--surface2);border-radius:8px;padding:10px">';
-                  ah.forEach(function(a, i) {
-                    var s = a.scoring_feedback || {};
-                    var stats = a.stats || {};
-                    var ts = (a.ts||'').slice(5,16).replace('T',' ');
-                    evhtml += '<div style="display:flex;align-items:center;gap:6px;font-size:9px;margin-bottom:3px">';
-                    evhtml += '<span style="color:var(--text3);min-width:70px">#' + a.seq + ' ' + ts + '</span>';
-                    evhtml += '<span style="color:'+(parseFloat(s.eco_weight_advice)>0?'var(--fall)':'var(--rise)')+'">ECO' + esc(s.eco_weight_advice||'?') + '</span>';
-                    evhtml += '<span style="color:var(--text3)">·</span>';
-                    evhtml += '<span style="color:'+(parseFloat(s.buff_weight_advice)>0?'var(--rise)':'var(--fall)')+'">BUFF' + esc(s.buff_weight_advice||'?') + '</span>';
-                    if (stats.rate) evhtml += '<span style="color:var(--text3)">·</span><span style="color:'+(stats.rate>=50?'var(--fall)':'var(--rise)')+'">成功率' + stats.rate + '%</span>';
-                    if (i > 0) {
-                      var prevS = ah[i-1].scoring_feedback || {};
-                      if (s.eco_weight_advice !== prevS.eco_weight_advice) evhtml += ' <span style="color:#fbbf24">↻</span>';
-                    }
-                    evhtml += '</div>';
-                  });
-                  evhtml += '</div>';
-                }
-                
-                // Prompt 优化方向
-                if (latest.prompt_tweak) {
-                  evhtml += '<div style="font-size:10px;color:var(--blue);margin-top:8px;padding:6px 10px;background:rgba(96,165,250,.06);border-radius:6px">';
-                  evhtml += '💡 ' + esc(latest.prompt_tweak);
-                  evhtml += '</div>';
-                }
-                
-                evEl.innerHTML = evhtml;
-              }
-              
-              // ── 教训面板 ──
-              if (lessons.lessons && lessons.lessons.length) {
-                var lCard = document.getElementById('lessonsCard');
-                var lEl = document.getElementById('lessonsContent');
-                var lCount = document.getElementById('lessonCount');
-                lCard.style.display = '';
-                if (lCount) lCount.textContent = lessons.lessons.length + '条教训 · ' + (lessons.total_analyses||0) + '次分析';
-                var lhtml = '<div style="font-size:10px;color:var(--text3);margin-bottom:8px">AI从追踪数据中提炼的涨跌规律</div>';
-                lessons.lessons.slice(0, 8).forEach(function(l, i) {
-                  var cat = {timing:'⏰时机', market:'📈市场', source:'📡数据源', scoring:'📊评分'}[l.category] || '📌' + l.category;
-                  var impactColor = l.impact === '高' ? 'var(--rise)' : l.impact === '中' ? 'var(--amber)' : 'var(--text3)';
-                  var conf = l.confirmed || 1;
-                  var confStars = '⭐'.repeat(Math.min(conf, 5));
-                  var isNew = conf <= 1 ? ' <span style=\"font-size:8px;color:#fbbf24\">NEW</span>' : '';
-                  var confNote = conf >= 3 ? ' <span style=\"font-size:8px;color:var(--fall)\">已验证×'+conf+'</span>' : '';
-                  lhtml += '<div class="row" style="align-items:flex-start;padding:8px 0">';
-                  lhtml += '<span style="color:var(--text2);min-width:80px;font-size:10px">' + cat + ' ' + confStars + isNew + '</span>';
-                  lhtml += '<span style="flex:1;font-size:10px;color:var(--text);line-height:1.5">' + esc(l.lesson) + '<br><span style="color:var(--text3)">→ ' + esc(l.action || '') + confNote + '</span></span>';
-                  lhtml += '<span style="font-size:9px;color:' + impactColor + ';min-width:20px;text-align:right">' + (l.impact||'?') + '</span>';
-                  lhtml += '</div>';
-                });
-                lEl.innerHTML = lhtml;
-              }
-            });
-        } else {
-          // ③ 无 CI 分析数据时的简要统计展示
-          var summary = '累计推荐'+total+'件，'+uniqueDays+'天，盈利率'+(total>0?(profited/total*100).toFixed(0):0)+'%，平均收益'+(avgRet>=0?'+':'')+avgRet.toFixed(1)+'%';
-          if (bestName) summary += '，最佳'+bestName.slice(0,15)+'+'+bestRet.toFixed(1)+'%';
-          if (worstName) summary += '，最差'+worstName.slice(0,15)+worstRet.toFixed(1)+'%';
-
-          el.innerHTML = '<div style="font-size:11px;color:var(--text3);margin-bottom:6px">📡 等待CI管线生成深度分析...</div>' +
-            '<div style="font-size:12px;line-height:1.7;color:var(--text2);padding:8px 0">' + esc(summary) + '</div>' +
-            '<div style="font-size:10px;color:var(--text3);margin-top:4px">AI分析将在下次CI运行时自动生成</div>';
+        if (analysis.scoring_feedback) {
+          var sf = analysis.scoring_feedback;
+          html += '<div style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:10px">' +
+            '<span style="color:var(--text2)">评分建议：</span>ECO ' + esc(sf.eco_weight_advice || '?') + ' · BUFF ' +
+            esc(sf.buff_weight_advice || '?') + ' · 溢价阈值 ' + esc(sf.premium_threshold_advice || '?') + '</div>';
         }
-      });
-  }
-  runAITrackAnalysis();
+        if (analysis.recommendation_prompt_tweak) {
+          html += '<div class="hint">💡 ' + esc(analysis.recommendation_prompt_tweak) + '</div>';
+        }
+        el.innerHTML = html;
+
+        fetch('tracking_lessons.json?v=' + Date.now())
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .catch(function () { return null; })
+          .then(function (lessons) {
+            if (!lessons) return;
+            var ah = lessons.analysis_history || [];
+            if (ah.length > 0) {
+              var evCard = document.getElementById('evolutionCard');
+              var evEl = document.getElementById('evolutionContent');
+              evCard.style.display = '';
+              var latest = ah[ah.length - 1];
+              var sf2 = latest.scoring_feedback || {};
+              var st = latest.stats || {};
+              var evhtml = '<div class="ov-card">';
+              if (ah.length >= 2) {
+                var firstSt = (ah[0].stats || {});
+                var rateChange = (st.rate || 0) - (firstSt.rate || 0);
+                var color = rateChange >= 0 ? 'var(--fall)' : 'var(--rise)';
+                evhtml += '<div style="display:flex;gap:14px;align-items:center;margin-bottom:8px">' +
+                  '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">吸取教训前</div>' +
+                  '<div style="font-size:22px;font-weight:800;color:var(--text2)">' + (firstSt.rate || 0) + '%</div>' +
+                  '<div style="font-size:10px;color:var(--text3)">' + (firstSt.profitable || 0) + '/' + (firstSt.priced || 0) + ' 盈利</div></div>' +
+                  '<div style="font-size:18px;color:' + color + '">' + (rateChange >= 0 ? '↑' : '↓') + '</div>' +
+                  '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">优化后</div>' +
+                  '<div style="font-size:22px;font-weight:800;color:' + (rateChange >= 0 ? 'var(--fall)' : 'var(--rise)') + '">' + (st.rate || 0) + '%</div>' +
+                  '<div style="font-size:10px;color:var(--text3)">' + (st.profitable || 0) + '/' + (st.priced || 0) + ' 盈利</div></div>' +
+                  '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">进步</div>' +
+                  '<div style="font-size:18px;font-weight:800;color:' + color + '">' + (rateChange >= 0 ? '+' : '') + rateChange.toFixed(1) + '%</div>' +
+                  '<div style="font-size:10px;color:var(--text3)">' + lessons.total_analyses + ' 次分析</div></div></div>';
+                evhtml += '<div style="display:flex;align-items:flex-end;gap:4px;height:32px;padding:0 4px">';
+                ah.forEach(function (a) {
+                  var r = (a.stats || {}).rate || 0;
+                  evhtml += '<div style="flex:1;background:' + (r >= 50 ? 'var(--fall)' : 'var(--rise)') + ';height:' + Math.max(4, r * 0.25) + 'px;border-radius:2px;opacity:.7" title="#' + a.seq + ': ' + r + '%"></div>';
+                });
+                evhtml += '</div>';
+              } else {
+                evhtml += '<div style="text-align:center"><div style="font-size:10px;color:var(--text3)">当前成功率</div>' +
+                  '<div style="font-size:26px;font-weight:800;color:var(--fall)">' + (st.rate || 0) + '%</div>' +
+                  '<div style="font-size:10px;color:var(--text3)">' + (st.profitable || 0) + '/' + (st.priced || 0) + ' 盈利 · 再分析 1 次后出对比</div></div>';
+              }
+              evhtml += '</div>';
+
+              evhtml += '<div class="ov-card"><div class="t">🎯 当前推荐策略</div>';
+              var ecoW = parseFloat(sf2.eco_weight_advice) || 0;
+              var buffW = parseFloat(sf2.buff_weight_advice) || 0;
+              evhtml += '<div class="ew-row"><span class="lb">ECO</span><div class="trackbar"><div class="fill" style="width:' + Math.abs(ecoW) * 4 + '%;background:' + (ecoW > 0 ? 'var(--rise)' : 'var(--fall)') + '"></div></div><span class="vv" style="color:' + (ecoW > 0 ? 'var(--rise)' : 'var(--fall)') + '">' + (ecoW > 0 ? '+' : '') + ecoW + '%</span></div>';
+              evhtml += '<div class="ew-row"><span class="lb">BUFF</span><div class="trackbar"><div class="fill" style="width:' + Math.abs(buffW) * 4 + '%;background:' + (buffW > 0 ? 'var(--fall)' : 'var(--rise)') + '"></div></div><span class="vv" style="color:' + (buffW > 0 ? 'var(--fall)' : 'var(--rise)') + '">' + (buffW > 0 ? '+' : '') + buffW + '%</span></div>';
+              evhtml += '<div style="font-size:10px;color:var(--text2);margin-top:4px">溢价阈值: ' + esc(sf2.premium_threshold_advice || '?') + ' · 流动性: ' + esc(sf2.liquidity_advice || '?') + '</div></div>';
+
+              if (ah.length >= 2) {
+                evhtml += '<div style="font-size:10px;color:var(--text3);margin-bottom:4px">📈 评分权重演变</div><div class="ov-card" style="padding:10px">';
+                ah.forEach(function (a) {
+                  var s2 = a.scoring_feedback || {};
+                  var stats2 = a.stats || {};
+                  var ts = (a.ts || '').slice(5, 16).replace('T', ' ');
+                  evhtml += '<div style="display:flex;align-items:center;gap:6px;font-size:10px;margin-bottom:2px">' +
+                    '<span style="min-width:74px">#' + a.seq + ' ' + ts + '</span>' +
+                    '<span>ECO ' + esc(s2.eco_weight_advice || '?') + '</span><span>·</span>' +
+                    '<span>BUFF ' + esc(s2.buff_weight_advice || '?') + '</span>' +
+                    (stats2.rate ? '<span>· 成功率 ' + stats2.rate + '%</span>' : '') + '</div>';
+                });
+                evhtml += '</div>';
+              }
+              if (latest.prompt_tweak) {
+                evhtml += '<div class="hint" style="margin-top:8px">💡 ' + esc(latest.prompt_tweak) + '</div>';
+              }
+              evEl.innerHTML = evhtml;
+            }
+
+            if (lessons.lessons && lessons.lessons.length) {
+              var lCard = document.getElementById('lessonsCard');
+              var lEl = document.getElementById('lessonsContent');
+              var lCount = document.getElementById('lessonCount');
+              lCard.style.display = '';
+              if (lCount) lCount.textContent = lessons.lessons.length + ' 条教训 · ' + (lessons.total_analyses || 0) + ' 次分析';
+              var lhtml = '<div style="font-size:10px;color:var(--text3);margin-bottom:6px">AI 从追踪数据中提炼的涨跌规律</div>';
+              lessons.lessons.slice(0, 8).forEach(function (l) {
+                var cat = { timing: '⏰ 时机', market: '📈 市场', source: '📡 数据源', scoring: '📊 评分' }[l.category] || ('📌 ' + l.category);
+                var impactColor = l.impact === '高' ? 'var(--rise)' : l.impact === '中' ? 'var(--amber)' : 'var(--text3)';
+                var conf = l.confirmed || 1;
+                var stars = '⭐'.repeat(Math.min(conf, 5));
+                var isNew = conf <= 1 ? ' <span style="font-size:9px;color:var(--amber)">NEW</span>' : '';
+                var confNote = conf >= 3 ? ' <span style="font-size:9px;color:var(--fall)">已验证×' + conf + '</span>' : '';
+                lhtml += '<div class="lesson">' +
+                  '<span class="cat">' + cat + ' ' + stars + isNew + '</span>' +
+                  '<span class="txt">' + esc(l.lesson) + '<br><span class="act">→ ' + esc(l.action || '') + confNote + '</span></span>' +
+                  '<span class="imp" style="color:' + impactColor + '">' + (l.impact || '?') + '</span></div>';
+              });
+              lEl.innerHTML = lhtml;
+            }
+          });
+      } else {
+        var summary = '累计推荐 ' + total + ' 件，覆盖 ' + uniqueDays + ' 天，盈利率 ' + (total ? (profited / total * 100).toFixed(0) : 0) + '%，平均收益 ' + (avgRet >= 0 ? '+' : '') + avgRet.toFixed(1) + '%';
+        if (bestName) summary += '，最佳 ' + bestName.slice(0, 15) + ' +' + bestRet.toFixed(1) + '%';
+        if (worstName) summary += '，最差 ' + worstName.slice(0, 15) + ' ' + worstRet.toFixed(1) + '%';
+        el.innerHTML = '<div style="font-size:11px;color:var(--text3);margin-bottom:6px">📡 等待 CI 管线生成深度分析…</div>' +
+          '<div style="font-size:12px;line-height:1.7;color:var(--text2);padding:8px 0">' + esc(summary) + '</div>';
+      }
+    });
+}
+
+/* ── 推荐战绩（渲染逻辑保留，样式统一）── */
 function loadScorecard() {
   fetch('rec_scorecard.json?v=' + Date.now())
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .catch(function(){ return null; })
-    .then(function(d){
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .catch(function () { return null; })
+    .then(function (d) {
       if (!d) return;
       var card = document.getElementById('scoreCard');
       var box = document.getElementById('scoreContent');
       if (!card || !box) return;
       var meta = document.getElementById('scoreMeta');
       if (meta) meta.textContent = '样本 ' + (d.n || 0) + ' 条 · ' + (d.generated || '');
-      function pct(x){ return (x === null || x === undefined) ? '—' : (x > 0 ? '+' : '') + Number(x).toFixed(2) + '%'; }
-      function col(x){ return x > 0 ? 'var(--rise)' : (x < 0 ? 'var(--fall)' : 'var(--text2)'); }
-      var labels = {'r7': '+7 天', 'r14': '+14 天', 'r30': '+30 天'};
+      function pct(x) { return (x === null || x === undefined) ? '—' : (x > 0 ? '+' : '') + Number(x).toFixed(2) + '%'; }
+      function col(x) { return x > 0 ? 'var(--rise)' : (x < 0 ? 'var(--fall)' : 'var(--text2)'); }
+      var labels = { r7: '+7 天', r14: '+14 天', r30: '+30 天' };
       var h = '<table><thead><tr><th>周期</th><th>样本</th><th>命中率</th><th>均值</th><th>中位</th><th style="text-align:right">超额(vs 大盘)</th></tr></thead><tbody>';
-      ['r7','r14','r30'].forEach(function(k){
+      ['r7', 'r14', 'r30'].forEach(function (k) {
         var o = (d.overall || {})[k]; if (!o) return;
-        var exc = (d.excess || {})[k], bm = (d.benchmark || {})[k.replace('r','')];
-        h += '<tr><td>' + labels[k] + '</td><td>' + o.n + '</td><td>' + o.hit + '%</td>' +
-             '<td style="color:' + col(o.avg) + '">' + pct(o.avg) + '</td>' +
-             '<td style="color:' + col(o.med) + '">' + pct(o.med) + '</td>' +
-             '<td style="text-align:right;color:' + col(exc) + '">' + pct(exc) +
+        var exc = (d.excess || {})[k], bm = (d.benchmark || {})[k.replace('r', '')];
+        h += '<tr><td>' + labels[k] + '</td><td class="num">' + o.n + '</td><td class="num">' + o.hit + '%</td>' +
+             '<td class="num" style="color:' + col(o.avg) + '">' + pct(o.avg) + '</td>' +
+             '<td class="num" style="color:' + col(o.med) + '">' + pct(o.med) + '</td>' +
+             '<td class="num" style="text-align:right;color:' + col(exc) + '">' + pct(exc) +
              ' <span style="color:var(--text3);font-size:11px">(大盘 ' + pct(bm) + ')</span></td></tr>';
       });
       h += '</tbody></table>';
       if (d.by_tag) {
         h += '<div style="margin-top:14px;font-size:12px;color:var(--text2);margin-bottom:6px">按通道（+14 天）</div>' +
              '<table><thead><tr><th>通道</th><th>样本</th><th>命中率</th><th>均值</th></tr></thead><tbody>';
-        Object.keys(d.by_tag).forEach(function(t){
+        Object.keys(d.by_tag).forEach(function (t) {
           var o = d.by_tag[t]; if (!o) return;
-          h += '<tr><td>' + esc(t) + '</td><td>' + o.n + '</td><td>' + o.hit + '%</td>' +
-               '<td style="color:' + col(o.avg) + '">' + pct(o.avg) + '</td></tr>';
+          h += '<tr><td>' + esc(t) + '</td><td class="num">' + o.n + '</td><td class="num">' + o.hit + '%</td>' +
+               '<td class="num" style="color:' + col(o.avg) + '">' + pct(o.avg) + '</td></tr>';
         });
         h += '</tbody></table>';
       }
       h += '<div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.7">口径：每条推荐视为一个开仓点，入场=推荐当时价，出场=+7/14/30 天真实价（±4 天就近取点）；超额=推荐均值−全池等权收益。' +
-           '<br>注：样本为“被推荐过的标的”，非全市场随机抽样，结论作方向参考。</div>';
+           '<br>注：样本为"被推荐过的标的"，非全市场随机抽样，结论作方向参考。</div>';
       box.innerHTML = h;
       card.style.display = '';
     });
 }
+
+/* ── 搜索框（fbar 内动态创建，事件委托在容器上）── */
+document.getElementById('trackFbar').addEventListener('input', function (e) {
+  if (e.target && e.target.classList && e.target.classList.contains('search')) {
+    state.q = e.target.value; state.shown = 30; render();
+    /* render 会重建 fbar → 恢复焦点 */
+    var s = document.querySelector('#trackFbar .search');
+    if (s) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
+  }
+});
+
+loadTracks();
 loadScorecard();
+(function () {
+  var _l = Date.now();
+  setInterval(function () {
+    fetch('data_status.json?ts=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var ut = d.updated || '';
+        if (ut && new Date(ut).getTime() > _l) { _l = new Date(ut).getTime(); loadTracks(); }
+      }).catch(function () {});
+  }, 60000);
+})();
 </script>
 </body>
 </html>
