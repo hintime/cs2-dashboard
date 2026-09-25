@@ -5461,6 +5461,29 @@ function buildItemAnalysisHTML(item) {
 }
 
 // Setup sell buttons via event delegation on tbody
+/* ★ 2026-09-25：打开卖出确认弹窗抽成全局函数 —— 详情面板的「卖出此件」(hpSell)
+   之前走原生 confirm + 直接移除持仓，**完全不写卖出记录** → 卖出复盘页永远缺数据。
+   现在两个入口统一走 openSellConfirm：记录 + 移除由确认弹窗的 OK handler 统一处理。 */
+window.openSellConfirm = function (item) {
+  if (!item) return;
+  var sOverlay = document.getElementById('sellConfirmOverlay');
+  if (!sOverlay) return;
+  document.getElementById('sellConfirmItem').textContent = item.n;
+  document.getElementById('sellConfirmWear').textContent = item.w ? wearCN(item.w) : '--';
+  document.getElementById('sellConfirmCost').textContent = '¥' + item.c.toFixed(2);
+  document.getElementById('sellConfirmEco').textContent = '¥' + item.p.toFixed(2);
+  document.getElementById('sellConfirmMulti').textContent = item.buff_sell > 0 ? '¥' + item.buff_sell.toFixed(2) : '--';
+  var pnl = item.pnl || 0;
+  var pnlPct = item.pnlPct || 0;
+  var pnlCls = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
+  document.getElementById('sellConfirmPnl').style.borderLeftColor = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
+  document.getElementById('sellConfirmPnlVal').textContent = (pnl >= 0 ? '+' : '') + '¥' + pnl.toFixed(2);
+  document.getElementById('sellConfirmPnlVal').style.color = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
+  document.getElementById('sellConfirmPnlPct').textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+  document.getElementById('sellConfirmPnlPct').style.color = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
+  sOverlay._sellItem = item;
+  sOverlay.classList.add('show');
+};
 var tbody = document.getElementById('tbody');
 if (tbody) {
   tbody.addEventListener('click', function(e) {
@@ -5478,24 +5501,7 @@ if (tbody) {
       }
     }
     if (!item) return;
-    // Show sell confirm modal with P&L stats
-    var sOverlay = document.getElementById('sellConfirmOverlay');
-    if (!sOverlay) return;
-    document.getElementById('sellConfirmItem').textContent = item.n;
-    document.getElementById('sellConfirmWear').textContent = item.w ? wearCN(item.w) : '--';
-    document.getElementById('sellConfirmCost').textContent = '¥' + item.c.toFixed(2);
-    document.getElementById('sellConfirmEco').textContent = '¥' + item.p.toFixed(2);
-    document.getElementById('sellConfirmMulti').textContent = item.buff_sell > 0 ? '¥' + item.buff_sell.toFixed(2) : '--';
-    var pnl = item.pnl || 0;
-    var pnlPct = item.pnlPct || 0;
-    var pnlCls = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
-    document.getElementById('sellConfirmPnl').style.borderLeftColor = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
-    document.getElementById('sellConfirmPnlVal').textContent = (pnl >= 0 ? '+' : '') + '¥' + pnl.toFixed(2);
-    document.getElementById('sellConfirmPnlVal').style.color = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
-    document.getElementById('sellConfirmPnlPct').textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
-    document.getElementById('sellConfirmPnlPct').style.color = pnl >= 0 ? 'var(--rise)' : 'var(--fall)';
-    sOverlay._sellItem = item;
-    sOverlay.classList.add('show');
+    window.openSellConfirm(item);
     } // end if(btn)
   });
 }
@@ -5524,6 +5530,14 @@ if (tbody) {
       customs = customs.filter(function(c) { return c.n !== item.n || c.w !== item.w; });
       saveCustomHoldings(customs);
     } else {
+      /* ★ 2026-09-25：KV 同步持仓（myHoldings）卖出时要从 KV 里真正移除并同步，
+         否则只进隐藏列表，换台设备它又会出现。 */
+      var my = loadMyHoldings();
+      var mi = -1;
+      for (var k = 0; k < my.length; k++) {
+        if ((item.mh && my[k].market_hash === item.mh) || my[k].name === item.n) { mi = k; break; }
+      }
+      if (mi >= 0) { my.splice(mi, 1); saveMyHoldings(my); }
       var hidden = loadHiddenItems();
       hidden.push({ n: item.n, w: item.w });
       saveHiddenItems(hidden);
@@ -6706,9 +6720,12 @@ function hpChartTooltip(idx){
   svg.addEventListener('mouseleave', leave);
 }
 function hpSell(idx){
+  /* ★ 2026-09-25：原来这里用原生 confirm + removeMyHolding 直接移除持仓，
+     **不写卖出记录** → 卖出复盘页永远看不到这类卖出。现统一走确认弹窗：
+     记录（localStorage + Worker）与移除都在弹窗 OK 里完成。 */
   var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H||[]);
   var h = arr[idx]; if(!h) return;
-  if (typeof sellItem === 'function') { sellItem(h); return; }
+  if (typeof window.openSellConfirm === 'function') { window.openSellConfirm(h); return; }
   if (confirm('确认卖出「'+hpName(h)+'」？')) {
     if (typeof removeMyHolding === 'function') removeMyHolding(h.n, h.w);
   }

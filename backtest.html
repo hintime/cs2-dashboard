@@ -6,284 +6,422 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CS2 持仓回测</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='%2360a5fa' stroke-width='2'/%3E%3Ctext x='20' y='27' font-size='22' text-anchor='middle' fill='%2360a5fa' font-family='Georgia,serif'%3E%CE%B1%3C/text%3E%3C/svg%3E">
-<meta name="description" content="AlphaTrack · CS2 持仓回测：基于历史价格模拟买入持有策略收益，验证饰品投资策略的胜率与回撤。">
+<meta name="description" content="AlphaTrack · CS2 持仓回测：组合市值曲线、最大回撤、单品贡献分析。">
 <meta property="og:title" content="CS2 持仓回测">
-<meta property="og:description" content="AlphaTrack · CS2 持仓回测：基于历史价格模拟买入持有策略收益，验证饰品投资策略的胜率与回撤。">
+<meta property="og:description" content="AlphaTrack · CS2 持仓回测：组合市值曲线、最大回撤、单品贡献分析。">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#020617">
 <style>
-:root{--bg:#0d1117;--surface:rgba(22,27,34,.85);--surface2:rgba(30,36,46,.7);--border:rgba(55,65,81,.4);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#60a5fa;--amber:#fbbf24;--radius:12px;--shadow:0 2px 16px rgba(0,0,0,.25)}
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--hair:rgba(48,54,61,.6);--text:#d1d5db;--text2:#9ca3af;--text3:#6b7280;--rise:#ef4444;--fall:#22c55e;--blue:#58a6ff;--amber:#fbbf24;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .container{max-width:1000px;margin:0 auto;padding:24px 16px 32px}
 h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#e2e8f0,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sub{font-size:12px;color:var(--text3);margin-top:4px}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
-.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}.header .nav a:hover{text-decoration:underline}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
-.card h2{font-size:14px;font-weight:700;color:var(--text2);margin-bottom:12px;letter-spacing:.3px}
-.empty{text-align:center;padding:32px;color:var(--text3);font-size:12px}
+.sub{font-size:12px;color:var(--text3);margin-top:4px;line-height:1.6}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.header .nav a{color:var(--blue);text-decoration:none;font-size:12px;margin-left:12px}
+.header .nav a:hover{text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px}
+.card h2{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px;letter-spacing:.3px}
+.empty{padding:40px 20px;text-align:center}
+.empty .ico{font-size:26px;opacity:.5;margin-bottom:8px}
+.empty .t{font-size:13px;color:var(--text2);font-weight:600;margin-bottom:6px}
+.empty .d{font-size:12px;color:var(--text3);line-height:1.7;max-width:520px;margin:0 auto}
+.loading{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── KPI ── */
-.bt-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:16px}
-.bt-kpi{background:var(--surface2);border-radius:8px;padding:12px 12px;text-align:center}
-.bt-kpi-l{font-size:12px;color:var(--text3);margin-bottom:4px;letter-spacing:.3px}
-.bt-kpi-v{font-size:18px;font-weight:800;font-family:'DM Mono','JetBrains Mono',monospace}
-.bt-kpi.rise .bt-kpi-v{color:var(--rise)}
-.bt-kpi.fall .bt-kpi-v{color:var(--fall)}
-.bt-kpi .bt-kpi-sub{font-size:12px;color:var(--text3);margin-top:4px;font-weight:400}
+.hero{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.hero .big{font-size:30px;font-weight:800;font-family:'DM Mono','JetBrains Mono',ui-monospace,monospace;letter-spacing:-.03em;line-height:1.1}
+.hero .big.rise{color:var(--rise)}.hero .big.fall{color:var(--fall)}
+.hero .cap{font-size:12px;color:var(--text3)}
+.hero .sub2{font-size:12px;color:var(--text2);margin-top:2px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.m{background:var(--surface2);border:1px solid var(--hair);border-radius:8px;padding:9px 12px}
+.m .k{font-size:11px;color:var(--text3);margin-bottom:3px}
+.m .v{font-size:15px;font-weight:750;font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
+.m .s{font-size:11px;color:var(--text3);margin-top:2px}
+.m .v.rise{color:var(--rise)}.m .v.fall{color:var(--fall)}.m .v.blue{color:var(--blue)}.m .v.amber{color:var(--amber)}
 
-/* ── Chart ── */
 .bt-chart-wrap{width:100%}
-.bt-chart-svg{width:100%;height:auto;background:var(--surface2);border-radius:8px;cursor:crosshair}
-.bt-chart-area{opacity:.12}
-.bt-chart-line{fill:none;stroke-width:2;stroke-linejoin:round}
-.bt-zero-line{stroke:rgba(255,255,255,.08);stroke-width:1;stroke-dasharray:4,3}
+.bt-chart-svg{width:100%;height:auto;background:var(--surface2);border:1px solid var(--hair);border-radius:8px;cursor:crosshair}
+.bt-tip{position:absolute;top:8px;transform:translateX(-50%);background:rgba(13,17,23,.92);border:1px solid var(--border);
+  border-radius:6px;padding:5px 9px;font-size:11px;color:var(--text);white-space:nowrap;pointer-events:none;
+  font-family:'DM Mono',monospace;display:none;z-index:5}
+.bt-tip b{color:var(--blue)}
+.legend{display:flex;gap:14px;font-size:11px;color:var(--text3);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:4px;border-radius:1px}
 
-/* ── Items ── */
-.bt-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
-.bt-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 12px}
-.bt-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.bt-item-name{font-size:12px;font-weight:600;color:var(--text);max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bt-item-pnl{font-size:13px;font-weight:700;font-family:'DM Mono','JetBrains Mono',monospace}
-.bt-item-chart{margin-top:4px;height:40px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+th{padding:8px 10px;color:var(--text3);font-size:11px;letter-spacing:.4px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;user-select:none}
+th.sortable{cursor:pointer;transition:color .15s ease}
+th.sortable:hover{color:var(--text)}
+th .arw{opacity:.45;font-size:10px;margin-left:2px}
+th.act{color:var(--blue)}th.act .arw{opacity:1}
+td{padding:8px 10px;border-bottom:1px solid var(--hair);color:var(--text2)}
+tbody tr{transition:background .15s ease}
+tbody tr:hover{background:rgba(88,166,255,.05)}
+td.num{font-family:'DM Mono',monospace;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.rise{color:var(--rise);font-weight:700}td.fall{color:var(--fall);font-weight:700}
+td.name{color:var(--text);max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-cell{position:relative;min-width:90px}
+.bar-cell .bar{position:absolute;right:0;top:50%;transform:translateY(-50%);height:8px;border-radius:2px;opacity:.55}
+.bar-cell .bv{position:relative;z-index:1}
+.contrib-bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin-top:4px}
+.contrib-bar i{display:block;height:100%;border-radius:3px}
 
 @media(max-width:640px){
-  .bt-kpis{grid-template-columns:repeat(2,1fr)!important}
-  .bt-items{grid-template-columns:1fr!important}
   .container{padding:18px 12px 28px}
-}
-
-/* ══════ 板块优化 2026-09-16 ══════ */
-/* ① 交互反馈：列表行 / 条目 / 药丸 / KPI / 卡片 统一的 hover */
-.row,.bt-item,.stat-pill{transition:background .18s ease,border-color .18s ease;border-radius:8px}
-.row:hover{background:rgba(96,165,250,.07)}
-.bt-item:hover{border-color:rgba(148,163,184,.45);transform:translateY(-2px)}
-.stat-pill:hover{border-color:rgba(148,163,184,.45)}
-.kpi,.bt-kpi{transition:transform .18s cubic-bezier(.16,1,.3,1),background .18s ease}
-.kpi:hover,.bt-kpi:hover{transform:translateY(-2px);background:rgba(96,165,250,.08)}
-.card{transition:border-color .25s ease}
-.card:hover{border-color:rgba(148,163,184,.45)}
-/* ② 可读性：数字紧凑、空状态放宽 */
-.kpi-v,.bt-kpi-v{letter-spacing:-.02em}
-.empty{padding:32px 16px;line-height:1.6}
-/* ③ 响应式：补齐/扩展 */
-@media(max-width:640px){
-  div[style*="grid-template-columns:1fr 1fr"],div[style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}
-  .container{padding:18px 12px 28px}
-  .row{flex-wrap:wrap;gap:4px}
-  .card{padding:12px 16px}
-  .kpi-v{font-size:18px}
-  .timeline{padding-left:20px}
+  .card{padding:12px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:560px}
+  .hero .big{font-size:26px}
 }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div><h1>持仓回测</h1><div class="sub" id="btInfo">加载中...</div></div>
+    <div><h1>持仓回测</h1><div class="sub" id="btInfo">加载中…</div></div>
     <div class="nav"><a href="/">← 返回看板</a></div>
   </div>
   <div class="card">
-    <div id="backtestContent">
-      <div class="empty">加载中...</div>
-    </div>
+    <div id="backtestContent"><div class="empty"><span class="loading"></span></div></div>
   </div>
 </div>
 
 <script src="ai-badge.js"></script>
 <script>
-var H = [];
-var WORKER_BASE = 'https://cs2wyx.asia';
+/* ══════════════════════════════════════════════════════════════════
+   持仓回测 —— 2026-09-25 完全重写
+   修掉的旧版 bug：
+     ① 组合市值直接把各件「单价」相加，没乘 qty（法玛斯 qty=2 只算 1 件）
+     ② price_summary 补数据时把 {prices,days} 对象直接塞进 price_history，
+        后续按 entry.date/entry.price 读全是 undefined → 那些饰品实际没进曲线
+     ③ 不同饰品历史长度不同时，早期日期只有部分饰品计入 → 市值曲线因
+        "样本进出"跳变。现在：按日期对齐 + 前值填充，每件从其首个有价日纳入。
+   新增：回撤水下阴影、市值悬停 tooltip、单品贡献表（可排序，含贡献占比）。
+   数据源：holdings.json 的 price_history（[{date,price}]，真实采集约 60 天）。
+   ══════════════════════════════════════════════════════════════════ */
 
-// ── 从 index.html 移植的 sparkline ──
-window.sparkline = function(vals, color, w, h) {
-  if (!vals || vals.length < 2) return '';
-  var n = vals.length, min = Math.min.apply(null, vals), max = Math.max.apply(null, vals), r = max - min || 1;
-  var pts = vals.map(function(v, i) { var x = (i / (n - 1 || 1)) * (w - 4) + 2; var y = h - 2 - ((v - min) / r) * (h - 4); return x.toFixed(1) + ',' + y.toFixed(1); }).join(' ');
-  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" style="display:block"><polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>';
-};
+var WORKER_BASE = 'https://cs2wyx.asia';
+var state = { items: [], series: [], sort: { key: 'pnl', dir: -1 } };
 
 function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function money(v) { return (v >= 0 ? '+' : '−') + '¥' + Math.abs(v).toFixed(2); }
+
+/* price_summary 的 {prices,days} → [{date,price}]；已是数组则原样 */
+function normalizeHistory(ph) {
+  if (Array.isArray(ph) && ph.length && ph[0] && typeof ph[0] === 'object' && 'price' in ph[0]) return ph;
+  if (ph && Array.isArray(ph.prices) && Array.isArray(ph.days)) {
+    var out = [];
+    for (var i = 0; i < ph.prices.length; i++) {
+      var v = Number(ph.prices[i]);
+      if (v > 0 && ph.days[i]) out.push({ date: ph.days[i], price: v });
+    }
+    return out;
+  }
+  return [];
 }
 
-// ── 加载持仓 + 渲染回测（优先用 localStorage，保持一致） ──
 function loadBacktest() {
-  // 缓存键：15 分钟时间窗（数据约每 30 分钟更新一次）。同一窗口内，所有访问与各个页面
-// 共用同一批 URL → 命中浏览器缓存；跨窗口自动换新 URL 拉取最新数据。
-var t0 = Math.floor(Date.now() / 900000);
-  H = [];
-  // 直接从 holdings.json 读取真实持仓
+  var t0 = Math.floor(Date.now() / 900000);
   Promise.all([
-    fetch('holdings.json?v=' + t0).then(function(r){return r.ok?r.json():null}).catch(function(){return null}),
-    fetch('eco_tracked.json?v=' + t0).then(function(r){return r.ok?r.json():[]}).catch(function(){return []}),
-    fetch('buff_recent.json?v=' + t0).then(function(r){return r.ok?r.json():{}}).catch(function(){return {}})
-  ]).then(function(results) {
-    var holdingsR = results[0];
-    var ecoData = results[1];
-    var bh = results[2] || {};
-    window._buffHistory = bh;
-
-    if (holdingsR && Array.isArray(holdingsR.items)) {
-      holdingsR.items.forEach(function(item) {
-        var q = item.qty || 1;
-        var costTotal = item.cost;
-        var cp = costTotal / q;
-        var wearCode = item.wear || '';
-        for (var i = 0; i < q; i++) {
-          H.push({
-            n: item.name, w: wearCode === 'other' ? '' : wearCode,
-            c: cp, p: item.price, pnl: item.price - cp,
-            pnlPct: cp > 0 ? (item.price - cp) / cp * 100 : 0,
-            mh: item.market_hash, price_history: item.price_history || []
-          });
-        }
-      });
-    } else {
-      // 兜底：holdings.json 无数据，降级到 localStorage
-      try {
-        var raw = localStorage.getItem('cs2_holdings');
-        if (raw) {
-          var localH = JSON.parse(raw);
-          if (localH && localH.length) {
-            localH.forEach(function(item) {
-              var q = item.q || item.qty || 1, c = item.c || item.cost || 0;
-              var cp = q > 0 ? c / q : 0;
-              H.push({ n:item.n||item.name, w:item.w||item.wear||'', c:cp, p:item.p||item.price||0,
-                pnl:item.pnl||0, pnlPct:item.pnlPct||0, mh:item.mh||item.market_hash||item.n,
-                price_history:item.price_history||[] });
-            });
-          }
-        }
-      } catch(_) {}
-    }
-    if (H.length === 0) {
-      document.getElementById('backtestContent').innerHTML = '<div class="empty">暂无持仓数据</div>';
+    fetch('holdings.json?v=' + t0).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+    fetch('price_summary.json?v=' + t0).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+  ]).then(function (res) {
+    var hr = res[0], ps = res[1] || {};
+    if (!hr || !Array.isArray(hr.items) || !hr.items.length) {
+      document.getElementById('backtestContent').innerHTML =
+        '<div class="empty"><div class="ico">◍</div><div class="t">暂无持仓数据</div>' +
+        '<div class="d">持仓面板有数据后，这里会画出组合市值曲线与回撤。</div></div>';
       document.getElementById('btInfo').textContent = '无数据';
       return;
     }
-
-    // 用 price_summary.json 补充缺失的价格历史
-    return fetch('price_summary.json?v=' + t0)
-      .then(function(r) { return r.ok ? r.json() : {}; })
-      .catch(function() { return {}; })
-      .then(function(ps) {
-        window._priceSummary = ps;
-        // 补全各持仓的价格历史
-        H.forEach(function(h) {
-          var key = h.mh || h.n;
-          if (ps[key] && (!h.price_history || h.price_history.length < 5)) {
-            h.price_history = ps[key];
-          }
-        });
-        var totalHoldings = H.length;
-        H = H.filter(function(h) {
-          return h.c > 0 && (h.price_history || []).length > 0;
-        });
-        document.getElementById('btInfo').textContent = '共 ' + totalHoldings + ' 件持仓，' + H.length + ' 件可回测';
-        if (H.length === 0) {
-          document.getElementById('backtestContent').innerHTML = '<div class="empty">没有含价格历史的持仓数据，请先积累数据</div>';
-          return;
-        }
-        renderBacktest();
+    var items = [];
+    hr.items.forEach(function (it) {
+      var ph = normalizeHistory(it.price_history);
+      if (!ph.length && it.market_hash && ps[it.market_hash]) ph = normalizeHistory(ps[it.market_hash]);
+      if (!ph.length && it.name && ps[it.name]) ph = normalizeHistory(ps[it.name]);
+      if (!ph.length) return;
+      var q = it.qty || 1;
+      items.push({
+        n: it.name || it.n || '', q: q,
+        cUnit: (Number(it.cost) || 0) / q,
+        p: Number(it.price) || 0,
+        hist: ph.map(function (e) { return { d: String(e.date || '').slice(0, 10), v: Number(e.price) || 0 }; })
+                .filter(function (e) { return e.d && e.v > 0; })
       });
-  }).catch(function() {
-    document.getElementById('backtestContent').innerHTML = '<div class="empty">加载失败，请检查网络</div>';
+    });
+    if (!items.length) {
+      document.getElementById('btInfo').textContent = '0 件可分析';
+      document.getElementById('backtestContent').innerHTML =
+        '<div class="empty"><div class="ico">◍</div><div class="t">没有含价格历史的持仓</div>' +
+        '<div class="d">价格历史由采集任务每日记录，积累几天后这里就能画出组合市值曲线。</div></div>';
+      return;
+    }
+    document.getElementById('btInfo').textContent =
+      items.length + ' 件持仓 · 价格历史 ' + items[0].hist.length + ' 个交易日';
+    build(items);
+  }).catch(function () {
+    document.getElementById('backtestContent').innerHTML =
+      '<div class="empty"><div class="ico">⚠</div><div class="t">加载失败</div><div class="d">网络或数据文件不可用。</div></div>';
   });
 }
 
-function renderBacktest() {
-  var container = document.getElementById('backtestContent');
-  if (!container || !H || H.length === 0) return;
-
-  var timeline = {}, totalCost = 0;
-  H.forEach(function(h) {
-    var ph = h.price_history || [];
-    if (ph.length === 0) return;
-    var cost = h.c || 0;
-    ph.forEach(function(entry) {
-      var d = entry.date;
-      if (!timeline[d]) timeline[d] = {value: 0, cost: 0};
-      timeline[d].value += entry.price;
-      timeline[d].cost += cost;
-    });
-    totalCost += cost;
+/* ── 组合时间线：逐日对齐 + 前值填充 ── */
+function build(items) {
+  items.forEach(function (it) {
+    it.hist.sort(function (a, b) { return a.d < b.d ? -1 : 1; });
+    it.map = {};
+    it.hist.forEach(function (e) { it.map[e.d] = e.v; });
+    it.start = it.hist[0].d;
+    it.cost = it.cUnit * it.q;
   });
 
-  var dates = Object.keys(timeline).sort();
+  var allDates = {};
+  items.forEach(function (it) { it.hist.forEach(function (e) { allDates[e.d] = 1; }); });
+  var dates = Object.keys(allDates).sort();
   if (dates.length < 2) {
-    container.innerHTML = '<div class="empty">数据不足，需要至少2天的价格历史才能生成回测</div>';
+    document.getElementById('backtestContent').innerHTML =
+      '<div class="empty"><div class="ico">◍</div><div class="t">数据不足</div>' +
+      '<div class="d">需要至少 2 个交易日的价格历史。</div></div>';
     return;
   }
 
-  var chartData = dates.map(function(d) {
-    var v = timeline[d].value, c = timeline[d].cost;
-    return {date: d, value: v, cost: c, pnl: v - c, pnlPct: c > 0 ? ((v - c) / c * 100) : 0};
+  var series = [], lastVal = {}, peak = 0, maxDD = 0, ddSeries = [];
+  var dailyRet = [];
+  var totalCost = 0;
+  items.forEach(function (it) { totalCost += it.cost; });
+
+  dates.forEach(function (d) {
+    var value = 0, cost = 0, covered = 0;
+    items.forEach(function (it) {
+      if (it.start > d) return;                    // 该饰品此日还没历史 → 未纳入
+      if (it.map[d] !== undefined) lastVal[it.n + it.start] = it.map[d];   // 前值填充
+      var v = lastVal[it.n + it.start];
+      if (v === undefined) return;
+      value += v * it.q;
+      cost += it.cost;
+      covered++;
+    });
+    var pnl = value - cost;
+    if (value > peak) peak = value;
+    var dd = peak > 0 ? (peak - value) / peak : 0;
+    if (series.length && series[series.length - 1].value > 0) {
+      dailyRet.push((value - series[series.length - 1].value) / series[series.length - 1].value);
+    }
+    if (dd > maxDD) maxDD = dd;
+    series.push({ d: d, value: value, cost: cost, pnl: pnl, dd: dd, covered: covered });
   });
 
-  var firstCost = chartData[0].cost, lastVal = chartData[chartData.length - 1].value;
-  var totalReturn = firstCost > 0 ? ((lastVal - firstCost) / firstCost * 100) : 0;
-  var curPnl = chartData[chartData.length - 1].pnl, curPnlPct = chartData[chartData.length - 1].pnlPct;
+  /* 浮动盈亏只在「全覆盖」的日期上才真实——标注覆盖开始日 */
+  var fullFrom = null;
+  for (var i = 0; i < series.length; i++) {
+    if (series[i].covered === items.length) { fullFrom = series[i].d; break; }
+  }
 
-  var peak = chartData[0].value, maxDDPct = 0;
-  chartData.forEach(function(d) { if (d.value > peak) peak = d.value; var ddPct = peak > 0 ? (peak - d.value) / peak * 100 : 0; if (ddPct > maxDDPct) maxDDPct = ddPct; });
+  var last = series[series.length - 1];
+  var firstFull = fullFrom ? series.filter(function (s) { return s.d >= fullFrom; })[0] : null;
+  var retPct = (firstFull && firstFull.cost > 0)
+    ? (last.value - firstFull.cost) / firstFull.cost * 100
+    : (totalCost > 0 ? (last.value - totalCost) / totalCost * 100 : 0);
+  var avgR = dailyRet.length ? dailyRet.reduce(function (a, b) { return a + b; }, 0) / dailyRet.length : 0;
+  var vol = dailyRet.length
+    ? Math.sqrt(dailyRet.reduce(function (s, r) { return s + (r - avgR) * (r - avgR); }, 0) / dailyRet.length) * 100
+    : 0;
 
-  var dailyRet = [];
-  for (var i = 1; i < chartData.length; i++) { var prev = chartData[i - 1].value; if (prev > 0) dailyRet.push((chartData[i].value - prev) / prev); }
-  var avgR = dailyRet.length ? dailyRet.reduce(function(a, b) { return a + b; }, 0) / dailyRet.length : 0;
-  var vol = Math.sqrt(dailyRet.reduce(function(s, r) { return s + (r - avgR) * (r - avgR); }, 0) / dailyRet.length) * 100;
+  /* 单品贡献（按当前价 vs 成本） */
+  items.forEach(function (it) {
+    it.pnlNow = (it.p > 0 ? it.p : (it.map[last.d] || 0)) * it.q - it.cost;
+    it.pnlPctNow = it.cost > 0 ? it.pnlNow / it.cost * 100 : 0;
+  });
 
-  var bestItem = '', bestPct = -Infinity, worstItem = '', worstPct = Infinity;
-  H.forEach(function(h) { var p = h.c > 0 ? ((h.p - h.c) / h.c * 100) : 0; if (p > bestPct) { bestPct = p; bestItem = h.n; } if (p < worstPct) { worstPct = p; worstItem = h.n; } });
+  state.items = items;
+  state.series = series;
+  render(series, items, totalCost, last, retPct, maxDD, vol, dailyRet.length, fullFrom, ddSeries);
+}
 
-  var kpiHtml = '<div class="bt-kpis">' +
-    '<div class="bt-kpi"><div class="bt-kpi-l">总收益率</div><div class="bt-kpi-v ' + (totalReturn >= 0 ? 'rise' : 'fall') + '">' + (totalReturn >= 0 ? '+' : '') + totalReturn.toFixed(1) + '%</div><div class="bt-kpi-sub">成本¥' + firstCost.toFixed(0) + '</div></div>' +
-    '<div class="bt-kpi ' + (curPnl >= 0 ? 'rise' : 'fall') + '"><div class="bt-kpi-l">当前盈亏</div><div class="bt-kpi-v">' + (curPnl >= 0 ? '+' : '') + '¥' + curPnl.toFixed(0) + '</div><div class="bt-kpi-sub">' + (curPnlPct >= 0 ? '+' : '') + curPnlPct.toFixed(1) + '%</div></div>' +
-    '<div class="bt-kpi fall"><div class="bt-kpi-l">最大回撤</div><div class="bt-kpi-v">' + maxDDPct.toFixed(1) + '%</div></div>' +
-    '<div class="bt-kpi"><div class="bt-kpi-l">日波动率</div><div class="bt-kpi-v">' + vol.toFixed(1) + '%</div><div class="bt-kpi-sub">' + dailyRet.length + '个样本</div></div>' +
-    '<div class="bt-kpi rise"><div class="bt-kpi-l">最佳</div><div class="bt-kpi-v" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (bestItem ? bestItem.substring(0, 16) : '--') + '</div><div class="bt-kpi-sub">+' + bestPct.toFixed(1) + '%</div></div>' +
-    '<div class="bt-kpi fall"><div class="bt-kpi-l">最差</div><div class="bt-kpi-v" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (worstItem ? worstItem.substring(0, 16) : '--') + '</div><div class="bt-kpi-sub">' + worstPct.toFixed(1) + '%</div></div></div>';
+function render(series, items, totalCost, last, retPct, maxDD, vol, samples, fullFrom) {
+  var pc = last.pnl >= 0 ? 'rise' : 'fall';
+  var hero =
+    '<div class="hero">' +
+      '<div><div class="cap">组合当前市值（' + items.length + ' 件）</div>' +
+      '<div class="big">¥' + last.value.toFixed(0) + '</div>' +
+      '<div class="sub2">成本 ¥' + totalCost.toFixed(0) + ' · 浮动盈亏 <b class="' + pc + '" style="font-family:\'DM Mono\',monospace">' + money(last.pnl) + '</b>' +
+      '（' + (retPct >= 0 ? '+' : '') + retPct.toFixed(1) + '%）</div></div>' +
+    '</div>';
+  var metrics =
+    '<div class="metrics">' +
+    '<span class="m"><div class="k">最大回撤</div><div class="v fall">−' + (maxDD * 100).toFixed(1) + '%</div>' +
+      '<div class="s">峰值到谷底</div></span>' +
+    '<span class="m"><div class="k">日波动率</div><div class="v amber">' + vol.toFixed(1) + '%</div>' +
+      '<div class="s">' + samples + ' 个交易日样本</div></span>' +
+    '<span class="m"><div class="k">市值区间</div><div class="v blue">' +
+      '¥' + series[0].value.toFixed(0) + ' → ¥' + last.value.toFixed(0) + '</div>' +
+      '<div class="s">' + series[0].d + ' 起</div></span>' +
+    '<span class="m"><div class="k">全覆盖自</div><div class="v">' + (fullFrom || '—') + '</div>' +
+      '<div class="s">' + (fullFrom ? '此前部分饰品未纳入' : '尚未全覆盖') + '</div></span>' +
+    '</div>';
 
-  // ── SVG 累计盈亏走势图 ──
-  var vals = chartData.map(function(d) { return d.pnl; });
-  var yMin = Math.min(0, Math.min.apply(null, vals)), yMax = Math.max(0, Math.max.apply(null, vals)), yR = yMax - yMin || 1;
-  var cw = 600, ch = 200, pad = {t: 24, r: 20, b: 30, l: 65}, pW = cw - pad.l - pad.r, pH = ch - pad.t - pad.b;
-  var yL = '', yi;
-  for (yi = 0; yi <= 4; yi++) { var v = yMin + yR * yi / 4; var yy = pad.t + pH - (yi / 4) * pH; yL += '<text x="' + (pad.l - 8) + '" y="' + (yy + 4) + '" text-anchor="end" fill="var(--text3)" font-size="10">' + (v >= 0 ? '+' : '') + '¥' + v.toFixed(0) + '</text>'; }
-  var xL = '', xS = Math.max(1, Math.floor(chartData.length / 7));
-  chartData.forEach(function(d, i) { if (i % xS === 0 || i === chartData.length - 1) { var x = pad.l + (i / (chartData.length - 1 || 1)) * pW; xL += '<text x="' + x + '" y="' + (ch - 6) + '" text-anchor="middle" fill="var(--text3)" font-size="9">' + d.date.slice(5) + '</text>'; } });
-  var lD = ''; chartData.forEach(function(d, i) { var x = pad.l + (i / (chartData.length - 1 || 1)) * pW; var y = pad.t + pH - ((d.pnl - yMin) / yR) * pH; lD += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1); });
-  var aD = lD + 'L' + (pad.l + pW) + ',' + (pad.t + pH) + 'L' + pad.l + ',' + (pad.t + pH) + 'Z';
-  var zY = pad.t + pH - ((0 - yMin) / yR) * pH;
-  var chartHtml = '<svg width="100%" height="' + ch + '" viewBox="0 0 ' + cw + ' ' + ch + '" class="bt-chart-svg"><defs><linearGradient id="btG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--blue)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--blue)" stop-opacity="0.02"/></linearGradient></defs>' +
-    (yMin < 0 && yMax > 0 ? '<line x1="' + pad.l + '" y1="' + zY.toFixed(1) + '" x2="' + (cw - pad.r) + '" y2="' + zY.toFixed(1) + '" class="bt-zero-line"/>' : '') + yL + xL +
-    '<path d="' + aD + '" fill="url(#btG)" class="bt-chart-area"/><path d="' + lD + '" class="bt-chart-line" stroke="var(--blue)"/>' +
-    chartData.map(function(d, i) { var x = pad.l + (i / (chartData.length - 1 || 1)) * pW; var y = pad.t + pH - ((d.pnl - yMin) / yR) * pH; return '<circle cx="' + x + '" cy="' + y + '" r="2.5" fill="' + (d.pnl >= 0 ? 'var(--rise)' : 'var(--fall)') + '" stroke="var(--surface2)" stroke-width="1.5" opacity="0.8"/>'; }).join('') +
-    '</svg><div style="text-align:center;font-size:10px;color:var(--text3);margin-top:4px">累计盈亏走势</div>';
+  var chart = comboChart(series, totalCost);
 
-  // ── 单品详情 ──
-  var itemHtml = H.map(function(h) {
-    var ph = h.price_history || [];
-    if (ph.length < 2) return '';
-    var prices = ph.map(function(p) { return p.price; }), ip = h.pnl || 0, ipPct = h.pnlPct || 0, ic = ip >= 0 ? 'var(--rise)' : 'var(--fall)';
-    var svg = window.sparkline ? window.sparkline(prices, ic, 260, 36) : '';
-    return '<div class="bt-item"><div class="bt-item-header"><span class="bt-item-name" title="' + esc(h.n) + '">' + esc(h.n) + window.aiBadge(h.n) + '</span><span class="bt-item-pnl" style="color:' + ic + '">' + (ip >= 0 ? '+' : '') + '¥' + ip.toFixed(0) + '</span></div><div style="display:flex;gap:12px;font-size:10px;color:var(--text3)"><span>成本¥' + (h.c || 0).toFixed(0) + '</span><span>现价¥' + (h.p || 0).toFixed(0) + '</span><span style="color:' + ic + '">' + (ipPct >= 0 ? '+' : '') + ipPct.toFixed(1) + '%</span><span>' + ph.length + '个点</span></div>' + (svg ? '<div class="bt-item-chart">' + svg + '</div>' : '') + '</div>';
+  /* 单品贡献表 */
+  var sort = state.sort;
+  items.sort(function (a, b) {
+    var va, vb;
+    if (sort.key === 'n') { va = a.n; vb = b.n; return va < vb ? -sort.dir : (va > vb ? sort.dir : 0); }
+    if (sort.key === 'pct') { va = a.pnlPctNow; vb = b.pnlPctNow; }
+    else { va = a.pnlNow; vb = b.pnlNow; }
+    return (vb - va) * (sort.dir > 0 ? -1 : 1);
+  });
+  var maxAbs = Math.max.apply(null, items.map(function (it) { return Math.abs(it.pnlNow); })) || 1;
+  var rows = items.map(function (it) {
+    var cls = it.pnlNow >= 0 ? 'rise' : 'fall';
+    var w = Math.abs(it.pnlNow) / maxAbs * 100;
+    var col = it.pnlNow >= 0 ? 'var(--rise)' : 'var(--fall)';
+    return '<tr>' +
+      '<td class="name" title="' + esc(it.n) + '">' + esc(it.n) + (it.q > 1 ? ' <span class="mkt-tag">×' + it.q + '</span>' : '') + '</td>' +
+      '<td class="num">¥' + it.cost.toFixed(0) + '</td>' +
+      '<td class="num">¥' + (it.p > 0 ? it.p : (it.map && 0) || 0).toFixed(0) + '</td>' +
+      '<td class="num ' + cls + '">' + money(it.pnlNow) + '</td>' +
+      '<td class="num ' + cls + '">' + (it.pnlPctNow >= 0 ? '+' : '') + it.pnlPctNow.toFixed(1) + '%</td>' +
+      '<td class="bar-cell"><div class="contrib-bar"><i style="width:' + w.toFixed(0) + '%;background:' + col + '"></i></div></td>' +
+    '</tr>';
   }).join('');
 
-  container.innerHTML = kpiHtml + '<div class="bt-chart-wrap" style="margin-top:16px">' + chartHtml + '</div>' + (itemHtml ? '<div style="padding:8px 0;font-size:11px;color:var(--text3)">单品详情</div><div class="bt-items">' + itemHtml + '</div>' : '');
+  var container = document.getElementById('backtestContent');
+  container.innerHTML =
+    hero + metrics +
+    '<div class="bt-chart-wrap" style="margin-top:14px;position:relative">' + chart +
+      '<div class="legend">' +
+        '<span><i style="background:var(--blue)"></i>组合市值</span>' +
+        '<span><i style="background:var(--amber)"></i>总成本</span>' +
+        '<span><i style="background:rgba(239,68,68,.35)"></i>回撤（峰值回落部分）</span>' +
+        '<span>悬停查看每日明细</span>' +
+      '</div>' +
+    '</div>' +
+    '<div style="margin-top:14px"><h2 style="font-size:13px;color:var(--text2);margin-bottom:8px">单品贡献' +
+      '<span style="font-weight:400;color:var(--text3);font-size:11px;margin-left:8px">按当前浮动盈亏，点表头排序</span></h2>' +
+      '<table><thead><tr>' +
+        '<th class="sortable" data-sort="n">饰品<span class="arw">↕</span></th>' +
+        '<th class="sortable" data-sort="cost">成本<span class="arw">↕</span></th>' +
+        '<th class="sortable" data-sort="price">现价<span class="arw">↕</span></th>' +
+        '<th class="sortable" data-sort="pnl">浮动盈亏<span class="arw">↕</span></th>' +
+        '<th class="sortable" data-sort="pct">盈亏率<span class="arw">↕</span></th>' +
+        '<th>占比</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+  container.querySelectorAll('th.sortable').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var k = this.getAttribute('data-sort');
+      if (state.sort.key === k) state.sort.dir = -state.sort.dir;
+      else { state.sort.key = k; state.sort.dir = -1; }
+      render(series, items, totalCost, last, retPct, maxDD, vol, samples, fullFrom);
+    });
+  });
+  var act = container.querySelector('th[data-sort="' + state.sort.key + '"]');
+  if (act) act.classList.add('act');
+
+  /* 悬停 tooltip */
+  var svg = container.querySelector('.bt-chart-svg');
+  var tip = container.querySelector('.bt-tip');
+  if (svg && tip) {
+    svg.addEventListener('mousemove', function (e) {
+      var rect = svg.getBoundingClientRect();
+      var frac = (e.clientX - rect.left) / rect.width;
+      var i = Math.max(0, Math.min(series.length - 1, Math.round(frac * (series.length - 1))));
+      var s = series[i];
+      tip.style.display = 'block';
+      tip.style.left = (e.clientX - rect.left) + 'px';
+      tip.innerHTML = s.d + ' · 市值 <b>¥' + s.value.toFixed(0) + '</b> · 浮盈 ' + money(s.pnl);
+    });
+    svg.addEventListener('mouseleave', function () { tip.style.display = 'none'; });
+  }
+}
+
+/* ── 组合市值大图：市值线 + 成本水平线 + 回撤水下阴影 ── */
+function comboChart(series, totalCost) {
+  var cw = 960, ch = 300, pad = { t: 16, r: 14, b: 28, l: 64 }, pW = cw - pad.l - pad.r, pH = ch - pad.t - pad.b;
+  var vals = series.map(function (s) { return s.value; });
+  var mn = Math.min.apply(null, vals.concat([totalCost])), mx = Math.max.apply(null, vals.concat([totalCost]));
+  var rg = (mx - mn) || 1;
+  mn -= rg * 0.06; mx += rg * 0.06; rg = mx - mn;
+  var X = function (i) { return pad.l + i / (series.length - 1 || 1) * pW; };
+  var Y = function (v) { return pad.t + pH - (v - mn) / rg * pH; };
+
+  var yL = '';
+  for (var yi = 0; yi <= 4; yi++) {
+    var v = mn + rg * yi / 4;
+    yL += '<text x="' + (pad.l - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '" text-anchor="end" fill="var(--text3)" font-size="9">¥' + v.toFixed(0) + '</text>';
+  }
+  var xL = '', step = Math.max(1, Math.floor(series.length / 8));
+  series.forEach(function (s, i) {
+    if (i % step === 0 || i === series.length - 1) {
+      xL += '<text x="' + X(i).toFixed(1) + '" y="' + (ch - 6) + '" text-anchor="middle" fill="var(--text3)" font-size="9">' + s.d.slice(5) + '</text>';
+    }
+  });
+
+  var path = '', peak = -Infinity, ddPath = '', ddStarted = false;
+  series.forEach(function (s, i) {
+    var x = X(i).toFixed(1), y = Y(s.value).toFixed(1);
+    path += (i ? 'L' : 'M') + x + ',' + y;
+    if (s.value >= peak) {
+      peak = s.value;
+      ddStarted = false;
+    } else {
+      if (!ddStarted) { ddPath += 'M' + x + ',' + Y(peak).toFixed(1); ddStarted = true; }
+      ddPath += 'L' + x + ',' + y;
+    }
+  });
+  /* 回撤区域闭合到峰值线（近似：对每段回撤，用峰值水平线封顶） */
+  var ddArea = '';
+  var segs = [];
+  var cur = null, pk = series[0].value, pkX = X(0);
+  series.forEach(function (s, i) {
+    if (s.value >= pk) {
+      if (cur && cur.pts.length > 1) segs.push(cur);
+      cur = null; pk = s.value; pkX = X(i);
+    } else {
+      if (!cur) cur = { top: Y(pk), pts: ['M' + pkX.toFixed(1) + ',' + Y(pk).toFixed(1)] };
+      cur.pts.push('L' + X(i).toFixed(1) + ',' + Y(s.value).toFixed(1));
+    }
+  });
+  if (cur && cur.pts.length > 1) segs.push(cur);
+  segs.forEach(function (seg) {
+    ddArea += '<path d="' + seg.pts.join(' ') + 'L' + seg.pts[seg.pts.length - 1].split(',')[0] + ',' + seg.top +
+              'L' + seg.pts[0].split(',')[1] * 0 + ',' + seg.top + 'Z" fill="var(--rise)" opacity=".12"/>';
+  });
+
+  var costY = Y(totalCost).toFixed(1);
+  var last = series[series.length - 1];
+  return '<svg class="bt-chart-svg" viewBox="0 0 ' + cw + ' ' + ch + '" style="height:280px">' +
+    '<defs><linearGradient id="btG" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0%" stop-color="var(--blue)" stop-opacity=".18"/><stop offset="100%" stop-color="var(--blue)" stop-opacity=".02"/>' +
+    '</linearGradient></defs>' +
+    yL + xL +
+    ddArea +
+    '<path d="' + path + 'L' + (pad.l + pW).toFixed(1) + ',' + (pad.t + pH).toFixed(1) + 'L' + pad.l + ',' + (pad.t + pH).toFixed(1) + 'Z" fill="url(#btG)"/>' +
+    '<line x1="' + pad.l + '" y1="' + costY + '" x2="' + (cw - pad.r) + '" y2="' + costY + '" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="6 4" opacity=".85"/>' +
+    '<path d="' + path + '" class="bt-chart-line" stroke="var(--blue)"/>' +
+    '<circle cx="' + X(series.length - 1).toFixed(1) + '" cy="' + Y(last.value).toFixed(1) + '" r="3.5" fill="var(--blue)"/>' +
+    '</svg>' +
+    '<div class="bt-tip"></div>';
 }
 
 loadBacktest();
 
-// 自动检测数据更新
-(function(){
-  var _last = Date.now();
-  setInterval(function(){
-    fetch('data_status.json?ts=' + Date.now(), {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
-      var ut = d.updated || '';
-      if (ut && new Date(ut).getTime() > _last) { _last = new Date(ut).getTime(); loadBacktest(); }
-    }).catch(function(){});
+/* 数据更新后自动重载 */
+(function () {
+  var last = Date.now();
+  setInterval(function () {
+    fetch('data_status.json?ts=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var ut = d && d.updated;
+        if (ut && new Date(ut).getTime() > last) { last = new Date(ut).getTime(); loadBacktest(); }
+      }).catch(function () {});
   }, 60000);
 })();
 </script>

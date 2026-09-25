@@ -259,6 +259,9 @@ function pickPair(data, spanH) {
   var nowSet = {};
   nowKeys.forEach(function (k) { nowSet[k] = 1; });
 
+  /* 遍历所有候选，取「间隔最接近目标跨度」且合格的期。
+     （不能遇到第一个合格的就返回——12h 档会误选 5h 前的期） */
+  var best = null;
   for (var i = hourly.length - 2; i >= 0; i--) {
     var cand = hourly[i];
     var gap = gapHours(cand, now);
@@ -278,9 +281,17 @@ function pickPair(data, spanH) {
     //   尽量多出数据；只对比两期都出现的饰品，共同样本数如实标注在健康条。
     if (ov < 0.15) continue;
 
+    var dist = Math.abs(gap - spanH);
+    if (!best || dist < best.dist) {
+      best = { prev: cand, overlap: ov, common: hit, gap: gap, dist: dist };
+    }
+  }
+
+  if (best) {
     return {
-      ok: true, now: now, prev: cand, overlap: ov, common: hit,
-      gapHours: gap, hourly: hourly, skippedDaily: skippedDaily
+      ok: true, now: now, prev: best.prev, overlap: best.overlap,
+      common: best.common, gapHours: best.gap,
+      hourly: hourly, skippedDaily: skippedDaily
     };
   }
   return { ok: false, reason: 'no_comparable', hourly: hourly, skippedDaily: skippedDaily, stNow: stNow };
