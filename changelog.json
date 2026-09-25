@@ -1,6 +1,54 @@
 [
   {
     "date": "2026-09-25",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-25 19:00",
+    "desc": "wip: local snapshot 2026-09-25 19:00"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "chore(lessons): 归档 5 条 2026-06 老空话教训（移入 history，不删数据）",
+    "desc": "chore(lessons): 归档 5 条 2026-06 老空话教训（移入 history，不删数据）"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "feat(engine+tracking): 让\"权重进化\"真正落地 + 进化轨迹配色统一",
+    "desc": "feat(engine+tracking): 让\"权重进化\"真正落地 + 进化轨迹配色统一"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-25 18:15",
+    "desc": "wip: local snapshot 2026-09-25 18:15"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json 2026-09-25 18:06"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "feat(tracking): 经验教训改中文分类+正文分行，修「新教训被元老挤掉」",
+    "desc": "feat(tracking): 经验教训改中文分类+正文分行，修「新教训被元老挤掉」"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "feat(tracking): 追踪分析改为统计引擎算事实、AI 只做注记",
+    "desc": "feat(tracking): 追踪分析改为统计引擎算事实、AI 只做注记"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "feat(tracking): 追踪分析改为统计引擎算事实、AI 只做注记",
+    "desc": "feat(tracking): 追踪分析改为统计引擎算事实、AI 只做注记"
+  },
+  {
+    "date": "2026-09-25",
     "tag": "chore",
     "title": "update buff_history.json, buff_recent.json, changelog.json,",
     "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json 2026-09-25 17:34"
@@ -70,53 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-25 16:00",
     "desc": "wip: local snapshot 2026-09-25 16:00"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(tracking): 推荐追踪页重写",
-    "desc": "feat(tracking): 推荐追踪页重写"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(holdings): 详情面板「卖出此件」不写卖出记录的修复",
-    "desc": "fix(holdings): 详情面板「卖出此件」不写卖出记录的修复"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json 2026-09-25 15:33"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-25 15:30",
-    "desc": "wip: local snapshot 2026-09-25 15:30"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(changelog): 日志页重写 —— 左右两列主从布局 + 中文说明",
-    "desc": "feat(changelog): 日志页重写 —— 左右两列主从布局 + 中文说明"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(revenue): 卖出复盘页完全重写",
-    "desc": "feat(revenue): 卖出复盘页完全重写"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-25 15:15",
-    "desc": "wip: local snapshot 2026-09-25 15:15"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(backtest): 持仓回测页完全重写",
-    "desc": "feat(backtest): 持仓回测页完全重写"
   }
 ]
