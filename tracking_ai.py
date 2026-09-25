@@ -312,6 +312,36 @@ def _pick_action(v, ai_act):
     return base
 
 
+# 分类 → 中文标签。存**中文**而不是英文枚举：
+# ⚠ 历史数据里出现过 category='timing/market/source/scoring'（一整串塞进一个字段），
+#   前端映射不到就原样显示成长串。所以改成直接存中文，彻底避开映射失败。
+_CAT_CN = {
+    'timing': '时机', 'market': '市场', 'source': '数据源',
+    'scoring': '评分', 'reason': '推荐理由', 'risk': '风控',
+}
+
+
+def _cat_cn(cat):
+    """把任意历史脏值（含 "a/b/c" 串）归一到中文标签"""
+    if not cat:
+        return '其他'
+    c = str(cat)
+    if c in _CAT_CN:
+        return _CAT_CN[c]
+    # 幂等：吃掉自己早期产出过的中间态（"综合（时机、市场…）"）
+    if c.startswith('综合'):
+        return '综合'
+    _hit = [_CAT_CN[x] for x in c.replace('/', '|').replace(',', '|').split('|')
+            if x in _CAT_CN]
+    if not _hit:
+        return c if any('\u4e00' <= ch <= '\u9fff' for ch in c) else '其他'
+    if len(_hit) == 1:
+        return _hit[0]
+    # 命中多个（历史脏数据把一整串枚举塞进 category）→ 归成"综合"即可，
+    # 展开列举只会让标签长得没法看（前端本来也要再截断一次）
+    return '综合'
+
+
 def _auto_lessons(S):
     """★ 教训由真实统计生成（不经过 AI），每条都能追溯到具体数字。
 
@@ -323,8 +353,8 @@ def _auto_lessons(S):
     tags = S.get('tags') or {}
 
     def add(lid, cat, lesson, impact, action):
-        L.append({'id': lid, 'category': cat, 'lesson': lesson,
-                  'impact': impact, 'action': action, 'auto': True})
+        L.append({'id': lid, 'category': _cat_cn(cat), 'category_key': cat,
+                  'lesson': lesson, 'impact': impact, 'action': action, 'auto': True})
 
     # 1) 通道差异 —— 必须用**同批次**证据，否则可能是"某批次行情好"的假象
     if 'eco' in tags and 'buff' in tags:
@@ -1098,15 +1128,33 @@ def extract_lessons(analysis):
                     existing['last_seen'] = time.strftime('%Y-%m-%d')
                     break
     
-    # 排序：确认次数高的排前面
-    lessons_db['lessons'].sort(key=lambda l: l.get('confirmed', 1), reverse=True)
+    # ── 排序 ★ 2026-09-25 ──
+    # 旧逻辑按 confirmed 降序：06-16 的 4 条元老每天被确认一次（confirmed=14），
+    # 永远霸占前 4 名，**新生成的教训永远挤不进去**（页面又只显示 8 条）。
+    # 改为：新增日期分组（新在前）+ 组内按 impact 排；confirmed 仅作组内次级依据。
+    _IMP = {'高': 0, '中': 1, '低': 2}
+    lessons_db['lessons'].sort(
+        key=lambda l: (str(l.get('added_at') or ''), -_IMP.get(l.get('impact'), 3),
+                       -(l.get('confirmed') or 1)),
+        reverse=True)
+
+    # 活跃位从 10 扩到 14，并按 date 保底：至少保留 6 条最新批次
+    _all = lessons_db['lessons']
+    _newest = _all[0].get('added_at') if _all else None
+    _fresh = [l for l in _all if l.get('added_at') == _newest]
+    _keep = max(14, len(_fresh) + 4)
+    if len(_all) > _keep:
+        lessons_db['history'].extend(_all[_keep:])
+        lessons_db['lessons'] = _all[:_keep]
     
-    # 保留最近10条活跃，其余归档
-    if len(lessons_db['lessons']) > 10:
-        archived = lessons_db['lessons'][10:]
-        lessons_db['history'].extend(archived)
-        lessons_db['lessons'] = lessons_db['lessons'][:10]
-    
+    # 顺手把历史脏分类（含 "a/b/c" 长串）统一成中文
+    for _l in lessons_db['lessons'] + lessons_db.get('history', []):
+        _c = _l.get('category')
+        if _c not in ('时机', '市场', '数据源', '评分', '推荐理由', '风控'):
+            _l['category'] = _cat_cn(_c)
+        if not _l.get('added_at'):
+            _l['added_at'] = lessons_db.get('accumulated_since') or time.strftime('%Y-%m-%d')
+
     _save_json(LESSONS_PATH, lessons_db)
     print(f'[TRACK-AI] Lessons: {len(lessons_db["lessons"])} active, {len(lessons_db["history"])} archived')
 
