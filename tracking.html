@@ -577,29 +577,36 @@ function runAITrackAnalysis() {
               var evhtml = '<div class="ov-card">';
               if (ah.length >= 2) {
                 var firstSt = (ah[0].stats || {});
-                var rateChange = (st.rate || 0) - (firstSt.rate || 0);
-                var color = rateChange >= 0 ? 'var(--rise)' : 'var(--fall)';
+                /* 成功率口径统一为「跑赢大盘」（beat），涨了就算赢（rate）降为小字注释 */
+                var beatChange = (st.beat != null ? st.beat : st.rate || 0) - (firstSt.beat != null ? firstSt.beat : firstSt.rate || 0);
+                var color = beatChange >= 0 ? 'var(--rise)' : 'var(--fall)';
+                function statCell(label, s, big) {
+                  var b = (s.beat != null ? s.beat : s.rate || 0);
+                  var r = (s.rate != null ? s.rate : null);
+                  return '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">' + label + '</div>' +
+                    '<div style="font-size:' + (big ? 22 : 22) + 'px;font-weight:800;color:' + (big ? (beatChange >= 0 ? 'var(--rise)' : 'var(--fall)') : 'var(--text2)') + '">' + b + '%</div>' +
+                    '<div style="font-size:10px;color:var(--text3)">' + (r != null ? '涨了就算赢 ' + r + '% · ' : '') + (s.profitable || 0) + '/' + (s.priced || 0) + ' 盈利</div></div>';
+                }
                 evhtml += '<div style="display:flex;gap:14px;align-items:center;margin-bottom:8px">' +
-                  '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">吸取教训前</div>' +
-                  '<div style="font-size:22px;font-weight:800;color:var(--text2)">' + (firstSt.rate || 0) + '%</div>' +
-                  '<div style="font-size:10px;color:var(--text3)">' + (firstSt.profitable || 0) + '/' + (firstSt.priced || 0) + ' 盈利</div></div>' +
-                  '<div style="font-size:18px;color:' + color + '">' + (rateChange >= 0 ? '↑' : '↓') + '</div>' +
-                  '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">优化后</div>' +
-                  '<div style="font-size:22px;font-weight:800;color:' + (rateChange >= 0 ? 'var(--rise)' : 'var(--fall)') + '">' + (st.rate || 0) + '%</div>' +
-                  '<div style="font-size:10px;color:var(--text3)">' + (st.profitable || 0) + '/' + (st.priced || 0) + ' 盈利</div></div>' +
+                  statCell('吸取教训前', firstSt, false) +
+                  '<div style="font-size:18px;color:' + color + '">' + (beatChange >= 0 ? '↑' : '↓') + '</div>' +
+                  statCell('优化后', st, true) +
                   '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">进步</div>' +
-                  '<div style="font-size:18px;font-weight:800;color:' + color + '">' + (rateChange >= 0 ? '+' : '') + rateChange.toFixed(1) + '%</div>' +
+                  '<div style="font-size:18px;font-weight:800;color:' + color + '">' + (beatChange >= 0 ? '+' : '') + beatChange.toFixed(1) + '%</div>' +
                   '<div style="font-size:10px;color:var(--text3)">' + lessons.total_analyses + ' 次分析</div></div></div>';
+                evhtml += '<div style="font-size:10px;color:var(--text3);margin-bottom:2px">★跑赢大盘（推荐收益跑赢全市场中位 ' + (st.mkt_med != null ? (st.mkt_med >= 0 ? '+' : '') + st.mkt_med + '%' : '—') + ' 才算赢）</div>';
                 evhtml += '<div style="display:flex;align-items:flex-end;gap:4px;height:32px;padding:0 4px">';
                 ah.forEach(function (a) {
-                  var r = (a.stats || {}).rate || 0;
-                  evhtml += '<div style="flex:1;background:' + (r >= 50 ? 'var(--rise)' : 'var(--fall)') + ';height:' + Math.max(4, r * 0.25) + 'px;border-radius:2px;opacity:.7" title="#' + a.seq + ': ' + r + '%"></div>';
+                  var s = a.stats || {};
+                  var b = (s.beat != null ? s.beat : s.rate || 0);
+                  evhtml += '<div style="flex:1;background:' + (b >= 50 ? 'var(--rise)' : 'var(--fall)') + ';height:' + Math.max(4, b * 0.25) + 'px;border-radius:2px;opacity:.7" title="#' + a.seq + ': 跑赢大盘 ' + b + '%"></div>';
                 });
                 evhtml += '</div>';
               } else {
-                evhtml += '<div style="text-align:center"><div style="font-size:10px;color:var(--text3)">当前成功率</div>' +
-                  '<div style="font-size:26px;font-weight:800;color:var(--rise)">' + (st.rate || 0) + '%</div>' +
-                  '<div style="font-size:10px;color:var(--text3)">' + (st.profitable || 0) + '/' + (st.priced || 0) + ' 盈利 · 再分析 1 次后出对比</div></div>';
+                var _b = (st.beat != null ? st.beat : st.rate || 0);
+                evhtml += '<div style="text-align:center"><div style="font-size:10px;color:var(--text3)">★当前跑赢大盘</div>' +
+                  '<div style="font-size:26px;font-weight:800;color:var(--rise)">' + _b + '%</div>' +
+                  '<div style="font-size:10px;color:var(--text3)">' + (st.rate != null ? '涨了就算赢 ' + st.rate + '% · ' : '') + (st.profitable || 0) + '/' + (st.priced || 0) + ' 盈利 · 再分析 1 次后出对比</div></div>';
               }
               evhtml += '</div>';
 
@@ -639,7 +646,7 @@ function runAITrackAnalysis() {
                     '<span>BUFF ' + esc(s2.buff_weight_advice || '—') + '</span><span>·</span>' +
                     '<span>流通 ' + esc(s2.flow_weight_advice || '—') + '</span><span>·</span>' +
                     '<span>悠悠 ' + esc(s2.yy_weight_advice || '—') + '</span>' +
-                    (stats2.rate ? '<span>· 成功率 ' + stats2.rate + '%</span>' : '') + '</div>';
+                    (stats2.beat != null ? '<span>· 跑赢大盘 ' + stats2.beat + '%</span>' : (stats2.rate ? '<span>· 成功率 ' + stats2.rate + '%</span>' : '')) + '</div>';
                 });
                 evhtml += '</div>';
               }
