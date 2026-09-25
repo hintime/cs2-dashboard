@@ -114,14 +114,9 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
     <div class="ai-meta" id="aiDailyMeta"></div>
   </div>
 
-  <!-- ═══ ③ 逐物品 AI 评级 ═══ -->
-  <div class="card" id="aiReportSection">
-    <h2>🔬 逐物品 AI 评级 <span class="badge-mini">AI 生成 · 仅供参考</span></h2>
-    <div id="aiReportContent" class="empty">加载中...</div>
-  </div>
+
 </div>
 
-<script src="ai-badge.js"></script>
 <script>
 function esc(s) {
   if (!s) return '';
@@ -217,28 +212,6 @@ function renderAiDaily(a) {
     '<span>生成于 ' + esc((a.generated || '').slice(0, 16)) + '</span>' +
     '<span>涨跌榜为 market_scan 统计引擎算出的 7 日涨幅，AI 文本仅为其注记</span>';
 }
-
-/* ── ③ 逐物品 AI 评级 ── */
-function renderAI() {
-  var el = document.getElementById('aiReportContent');
-  if (!el) return;
-  var data = window._aiAnalysis || {};
-  var keys = Object.keys(data);
-  if (!keys.length) { el.innerHTML = '<div class="empty">暂无逐物品评级，等待数据更新后生成</div>'; return; }
-  var html = '';
-  keys.slice(0, 10).forEach(function (name) {
-    var text = data[name] || '';
-    var v = window.aiVerdict(text) || '';
-    var c = window.aiConfidence(text) || 0;
-    var color = v.indexOf('买入') >= 0 || v.indexOf('加仓') >= 0 ? 'var(--rise)' : (v.indexOf('减仓') >= 0 || v.indexOf('卖出') >= 0 ? 'var(--fall)' : 'var(--amber)');
-    html += '<div class="ai-item"><span class="nm" title="' + esc(name) + '">' + esc(name) + '</span>' +
-      '<span class="vd" style="color:' + color + '">' + esc(v) + (c ? ' · ' + c + '%' : '') + '</span></div>';
-  });
-  if (keys.length > 10) html += '<div style="font-size:10px;color:var(--text3);text-align:center;margin-top:6px">还有 ' + (keys.length - 10) + ' 件已分析</div>';
-  el.innerHTML = html;
-}
-document.addEventListener('ai-loaded', renderAI);
-if (Object.keys(window._aiAnalysis || {}).length) renderAI();
 
 /* ── 加载 ── */
 function renderAll(report) {
