@@ -68,9 +68,14 @@ def main():
 
     # ── 市场概览 ──
     scan = read_json(os.path.join(DATA_DIR, 'market_scan.json')) or {}
+    movers = scan.get('movers', {}) or {}
     market_summary = {
         'total': scan.get('total', 0),
         'avg_p': scan.get('avg_p', 0),
+        'median_p': scan.get('median_p', 0),
+        'tiers': scan.get('tiers', {}),
+        'gainers': (movers.get('gainers') or [])[:5],
+        'losers': (movers.get('losers') or [])[:5],
         'top_sell': (scan.get('top_sell') or [])[:5]
     }
 

@@ -2044,30 +2044,63 @@ def generate_ai_analysis():
             print(f'[AI] Saved {len(results)} (fallback mode)')
 
 def generate_ai_daily_report():
-    """AI 自动生成每日市场报告"""
+    """AI 自动生成每日市场报告。
+
+    2026-09-25 升级：喂入统计事实（Python 算好），要求 AI 引用具体数字、分三段叙述；
+    同时把 stats 存进 ai_daily_report.json——前端可直接渲染数据榜，AI 文本只是注记。
+    （红线：数字全部来自喂入的统计，AI 不得编造；flash 弱模型只做短文本组织。）
+    """
     if not _ai_provider_ready(quality=False): return
     try:
-        # 收集市场数据作为上下文
-        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json'))
+        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json')) or {}
         total_items = scan.get('total', 0); avg_p = scan.get('avg_p', 0)
-        gainers = scan.get('movers', {}).get('gainers', [])[:5]
-        losers = scan.get('movers', {}).get('losers', [])[:5]
-        gainer_text = ' | '.join([g.get('n','')[:20] + (' +' + str(g.get('r7','')) + '%' if g.get('r7') else '') for g in gainers])
-        loser_text = ' | '.join([l.get('n','')[:20] + (' ' + str(l.get('r7','')) + '%' if l.get('r7') else '') for l in losers])
-        prompt = f'CS2饰品市场日报。全市场{total_items}件追踪品，均价¥{avg_p:.0f}。涨幅TOP: {gainer_text}。跌幅TOP: {loser_text}。请用中文写一段150字市场总结。'
+        median_p = scan.get('median_p', 0)
+        movers = scan.get('movers', {}) or {}
+        gainers = movers.get('gainers', [])[:5]
+        losers = movers.get('losers', [])[:5]
+        tiers = scan.get('tiers', {})
+        tiers_text = '，'.join('%s元:%s件' % (k, v) for k, v in tiers.items())
+
+        gainer_text = '；'.join([g.get('n','')[:22] + ' 7日' + ('+' if float(g.get('r7',0) or 0) >= 0 else '') + str(g.get('r7','')) + '%(现价¥' + str(g.get('p','')) + ')' for g in gainers])
+        loser_text = '；'.join([l.get('n','')[:22] + ' 7日' + str(l.get('r7','')) + '%(现价¥' + str(l.get('p','')) + ')' for l in losers])
+
+        # 持仓视角（当日日报里算好的事实）
+        dr = read_json(os.path.join(DATA_DIR, 'daily_report.json')) or {}
+        pf = dr.get('portfolio', {}) or {}
+        pnl = pf.get('pnl', 0); pnl_pct = pf.get('pnl_pct', 0); cnt = pf.get('count', 0)
+        held_txt = '当前持仓%d件，浮动盈亏%+.2f元(%+.2f%%)' % (cnt, pnl, pnl_pct) if cnt else '当前无持仓数据'
+
+        prompt = (
+            'CS2饰品市场日报。以下是统计引擎算好的事实，写作时必须直接引用这些数字，不得编造或改动数字：\n'
+            '- 全市场追踪 %d 件，均价 ¥%.2f，中位价 ¥%.2f\n'
+            '- 价格分布：%s\n'
+            '- 7日涨幅TOP：%s\n'
+            '- 7日跌幅TOP：%s\n'
+            '- 持仓：%s\n'
+            '请写 250 字以内的日报，分三小段：①市场概况（引用均价/中位价/价格分布）'
+            '②涨跌结构（点名涨幅榜与跌幅榜的具体饰品和百分比）③持仓视角与操作参考（引用浮动盈亏）。'
+            '语气专业克制，不写"需求旺盛"之类空话。'
+        ) % (total_items, avg_p, median_p, tiers_text, gainer_text, loser_text, held_txt)
+
+        stats = {
+            'total': total_items, 'avg_p': avg_p, 'median_p': median_p, 'tiers': tiers,
+            'gainers': gainers, 'losers': losers,
+            'portfolio': {'count': cnt, 'pnl': pnl, 'pnl_pct': pnl_pct}
+        }
         data = json.dumps({
             'model': 'glm-4-flash',
             'messages': [
-                {'role': 'system', 'content': '你是CS2饰品市场日报编辑。写简洁专业的市场分析。'},
+                {'role': 'system', 'content': '你是CS2饰品市场日报编辑。只引用给出的统计数字，禁止编造数字。写简洁专业的市场分析。'},
                 {'role': 'user', 'content': prompt}
             ],
-            'max_tokens': 500, 'temperature': 0.5
+            'max_tokens': 600, 'temperature': 0.4
         }).encode('utf-8')
         r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=30)
         report = r['choices'][0]['message']['content']
         write_json(os.path.join(DATA_DIR, 'ai_daily_report.json'), {
             'date': time.strftime('%Y-%m-%d'),
             'report': report,
+            'stats': stats,
             'generated': time.strftime('%Y-%m-%d %H:%M:%S')
         })
         print(f'[AI] Daily report generated ({len(report)} chars)')
