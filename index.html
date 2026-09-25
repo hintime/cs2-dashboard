@@ -1043,9 +1043,24 @@ html { scroll-behavior: smooth; }
 .hp-chart svg{display:block;width:100%;height:auto}
 .hp-axis{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);
   padding:2px 0 12px;border-bottom:1px solid var(--border)}
-.hp-lgd{display:flex;gap:16px;font-size:10.5px;color:var(--text3);padding:8px 0 0}
+.hp-lgd{display:flex;gap:12px;flex-wrap:wrap;font-size:10.5px;color:var(--text3);padding:8px 0 0}
 .hp-lgd i{display:inline-block;width:14px;height:1.5px;background:var(--amber);
-  opacity:.85;margin-right:6px;vertical-align:2px}
+  opacity:.85;margin-right:5px;vertical-align:2px}
+.hp-lgd i.l-ma5{background:#ff9f43}
+.hp-lgd i.l-ma20{background:#a855f7}
+.hp-lgd i.l-boll{background:var(--blue);height:6px;opacity:.35;vertical-align:-1px}
+/* 技术面徽章：结论可点开看判定依据 */
+.hp-tech{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:5px;
+  font-size:10.5px;font-weight:700;letter-spacing:.3px;vertical-align:2px;cursor:help;
+  border:1px solid transparent;transition:all .15s ease}
+.hp-tech.tb-up{background:rgba(239,68,68,.14);color:var(--rise);border-color:rgba(239,68,68,.35)}
+.hp-tech.tb-dn{background:rgba(34,197,94,.14);color:var(--fall);border-color:rgba(34,197,94,.35)}
+.hp-tech.tb-flat{background:rgba(148,163,184,.13);color:var(--text3);border-color:rgba(148,163,184,.3)}
+.hp-tech:hover{filter:brightness(1.15)}
+/* 在售量副图 */
+.hp-vol{margin-top:10px;padding:8px 10px 6px;background:var(--surface2);
+  border:1px solid var(--hair);border-radius:8px}
+.hp-vol-t{font-size:10.5px;color:var(--text3);margin-bottom:4px}
 .hp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
   background:var(--border);border:1px solid var(--border);border-radius:7px;
   overflow:hidden;margin-top:14px}
@@ -6502,6 +6517,77 @@ function hpCurve(h){
        （上面两个数据源仍为真实数据：price_history / price_summary）*/
     return null;
 }
+/* ═══════════════ 单品技术指标（2026-09-25）═══════════════
+   全部基于真实日线价格现算，无任何拟合/预测：
+   MA5/MA20、布林带(20±2σ)、RSI14、金叉死叉、区间高低、回撤。
+   数据不足时对应指标返回 null（前端显示「—」，不编造）。 */
+function hpTech(v){
+  if (!Array.isArray(v) || v.length < 5) return null;
+  var n = v.length;
+  function sma(arr, k, idx){
+    if (idx < k - 1) return null;
+    var s = 0;
+    for (var i = idx - k + 1; i <= idx; i++) s += arr[i];
+    return s / k;
+  }
+  var ma5 = [], ma20 = [], bollUp = [], bollDn = [];
+  for (var i = 0; i < n; i++){
+    var a5 = sma(v, 5, i), a20 = sma(v, 20, i);
+    ma5.push(a5); ma20.push(a20);
+    if (a20 === null){ bollUp.push(null); bollDn.push(null); continue; }
+    var sd = 0;
+    for (var j = i - 19; j <= i; j++){ var d = v[j] - a20; sd += d * d; }
+    sd = Math.sqrt(sd / 20);
+    bollUp.push(a20 + 2 * sd); bollDn.push(a20 - 2 * sd);
+  }
+  /* RSI14（Wilder 平滑）*/
+  var rsi = null, gains = 0, losses = 0;
+  if (n >= 15){
+    for (var i2 = 1; i2 <= 14; i2++){
+      var ch = v[i2] - v[i2 - 1];
+      if (ch >= 0) gains += ch; else losses -= ch;
+    }
+    gains /= 14; losses /= 14;
+    for (var i3 = 15; i3 < n; i3++){
+      var ch2 = v[i3] - v[i3 - 1];
+      gains = (gains * 13 + (ch2 > 0 ? ch2 : 0)) / 14;
+      losses = (losses * 13 + (ch2 < 0 ? -ch2 : 0)) / 14;
+    }
+    rsi = losses === 0 ? 100 : 100 - 100 / (1 + gains / losses);
+  }
+  /* 金叉/死叉：MA5 上穿 / 下穿 MA20 */
+  var cross = null;
+  for (var i4 = 20; i4 < n; i4++){
+    if (ma5[i4] === null || ma20[i4] === null || ma5[i4 - 1] === null || ma20[i4 - 1] === null) continue;
+    var prevD = ma5[i4 - 1] - ma20[i4 - 1], curD = ma5[i4] - ma20[i4];
+    if (prevD <= 0 && curD > 0) cross = { i: i4, type: 'gold' };
+    else if (prevD >= 0 && curD < 0) cross = { i: i4, type: 'dead' };
+  }
+  var hi = Math.max.apply(null, v), lo = Math.min.apply(null, v);
+  var hiIdx = v.indexOf(hi), loIdx = v.indexOf(lo);
+  var last = v[n - 1];
+  var drawdown = hi > 0 ? (last - hi) / hi * 100 : 0;          // 距区间高点
+  var offLow = lo > 0 ? (last - lo) / lo * 100 : 0;            // 距区间低点
+  var ma20Last = ma20[n - 1], ma5Last = ma5[n - 1];
+  /* 技术面判定（规则可解释）*/
+  var verdict = '震荡', reasons = [];
+  if (ma20Last !== null){
+    if (last > ma20Last) { reasons.push('现价在 20 日均线之上'); } else { reasons.push('现价在 20 日均线之下'); }
+  }
+  var recent = n >= 6 ? (last - v[n - 6]) / v[n - 6] * 100 : null;
+  if (recent !== null) reasons.push('近 5 日' + (recent >= 0 ? '涨 ' : '跌 ') + Math.abs(recent).toFixed(1) + '%');
+  if (rsi !== null) reasons.push('RSI ' + rsi.toFixed(0) + (rsi >= 70 ? '（超买）' : rsi <= 30 ? '（超卖）' : ''));
+  reasons.push('距区间高点 ' + drawdown.toFixed(1) + '%');
+  if (cross) reasons.push((cross.type === 'gold' ? '金叉' : '死叉') + '于第 ' + (cross.i + 1) + ' 个数据点');
+
+  if (ma20Last !== null && last > ma20Last && (recent === null || recent >= 0)) verdict = '偏多';
+  else if (ma20Last !== null && last < ma20Last && (recent === null || recent < 0)) verdict = '偏空';
+
+  return { ma5: ma5, ma20: ma20, up: bollUp, dn: bollDn, rsi: rsi, cross: cross,
+           hi: hi, hiIdx: hiIdx, lo: lo, loIdx: loIdx, drawdown: drawdown, offLow: offLow,
+           verdict: verdict, reasons: reasons, n: n };
+}
+
 function hpChart(vals, cost, reason, days){
   /* vals 现为 {p:[], d:[]}；兼容旧的纯数组写法 */
   var pts0 = vals, dts = days;
@@ -6519,8 +6605,12 @@ function hpChart(vals, cost, reason, days){
       + '<span style="font-size:11px;opacity:.75">该品类平台未采集历史价格</span>'
       + '</div>';
   }
-  var W=780,H=112, mx=Math.max.apply(null,vals.concat([cost])),
-      mn=Math.min.apply(null,vals.concat([cost*0.9])), rng=(mx-mn)||1, pts=[];
+  /* ★ 技术指标：参与 Y 轴范围计算，避免布林带被裁掉 */
+  var tk = hpTech(vals);
+  var ext = [cost];
+  if (tk){ for (var ti=0;ti<tk.up.length;ti++){ if (tk.up[ti]!=null) ext.push(tk.up[ti]); if (tk.dn[ti]!=null) ext.push(tk.dn[ti]); } }
+  var W=780,H=112, mx=Math.max.apply(null,vals.concat(ext)),
+      mn=Math.min.apply(null,vals.concat([cost*0.9],ext)), rng=(mx-mn)||1, pts=[];
   /* ★ X 轴按真实日期差计算；日期缺失或全空时退回等距 */
   var xs = [];
   var t0 = NaN, t1 = NaN;
@@ -6552,18 +6642,124 @@ function hpChart(vals, cost, reason, days){
   /* ★ 渐变面积填充（area chart 观感）：颜色随涨跌取 rise/fall */
   var uid = 'hpG' + Math.random().toString(36).slice(2, 8);
   var area = '0,' + H + ' ' + pts.join(' ') + ' ' + W + ',' + H;
+  var Y = function(vy){ return H-14-((vy-mn)/rng)*(H-30); };
+
+  /* ① 布林带通道（20 日 ±2σ）*/
+  var boll = '';
+  if (tk){
+    var upPts = [], dnPts = [];
+    for (var bi=0;bi<tk.up.length;bi++){
+      if (tk.up[bi] == null) continue;
+      upPts.push(xs[bi].toFixed(1)+','+Y(tk.up[bi]).toFixed(1));
+      dnPts.push(xs[bi].toFixed(1)+','+Y(tk.dn[bi]).toFixed(1));
+    }
+    if (upPts.length > 1){
+      boll = '<polygon fill="var(--blue)" opacity=".07" points="'+upPts.concat(dnPts.slice().reverse()).join(' ')+'"/>'
+        + '<polyline fill="none" stroke="var(--blue)" stroke-width="1" opacity=".35" points="'+upPts.join(' ')+'"/>'
+        + '<polyline fill="none" stroke="var(--blue)" stroke-width="1" opacity=".35" points="'+dnPts.join(' ')+'"/>';
+    }
+  }
+  /* ② MA5 / MA20 */
+  var maLine = function(arr, color, w){
+    if (!arr) return '';
+    var p2 = [];
+    for (var mi=0;mi<arr.length;mi++){
+      if (arr[mi] == null) continue;
+      p2.push(xs[mi].toFixed(1)+','+Y(arr[mi]).toFixed(1));
+    }
+    return p2.length > 1 ? '<polyline fill="none" stroke="'+color+'" stroke-width="'+w+'" opacity=".9" points="'+p2.join(' ')+'"/>' : '';
+  };
+  /* ③ 区间高低点标记 */
+  var marks = '';
+  if (tk){
+    marks += '<circle cx="'+xs[tk.hiIdx].toFixed(1)+'" cy="'+Y(tk.hi).toFixed(1)+'" r="2.6" fill="var(--rise)" opacity=".85"/>'
+      + '<circle cx="'+xs[tk.loIdx].toFixed(1)+'" cy="'+Y(tk.lo).toFixed(1)+'" r="2.6" fill="var(--fall)" opacity=".85"/>';
+  }
+  /* ④ 金叉 / 死叉标记 */
+  var crossMark = '';
+  if (tk && tk.cross){
+    var cx2 = xs[tk.cross.i], cy2 = Y(tk.ma20[tk.cross.i]);
+    crossMark = '<circle cx="'+cx2.toFixed(1)+'" cy="'+cy2.toFixed(1)+'" r="4.5" fill="none" stroke="'
+      + (tk.cross.type === 'gold' ? 'var(--rise)' : 'var(--fall)') + '" stroke-width="1.5" opacity=".9"/>';
+  }
+
   return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'
     + '<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="0" y2="1">'
     +   '<stop offset="0%" stop-color="'+col+'" stop-opacity=".26"/>'
     +   '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'
     + '</linearGradient></defs>'
+    + boll
     + '<line x1="0" x2="'+W+'" y1="'+cy+'" y2="'+cy+'" stroke="var(--amber)" '
     + 'stroke-width="1.2" stroke-dasharray="5 4" opacity=".8"/>'
     + '<polygon fill="url(#'+uid+')" points="'+area+'"/>'
+    + maLine(tk && tk.ma20, '#a855f7', 1.4)
+    + maLine(tk && tk.ma5, '#ff9f43', 1.4)
     + '<polyline fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round" '
     + 'points="'+pts.join(' ')+'"/>'
+    + marks + crossMark
     + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="3.5" fill="'+col+'"/>'
     + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="7" fill="'+col+'" opacity=".18"/></svg>';
+}
+
+/* 技术面徽章：结论 + 悬停/点击看判定依据（规则完全可解释） */
+function hpTechBadge(cv){
+  if (!cv) return '';
+  var tk = hpTech(cv.p || cv);
+  if (!tk) return '';
+  var cls = tk.verdict === '偏多' ? 'tb-up' : (tk.verdict === '偏空' ? 'tb-dn' : 'tb-flat');
+  var why = tk.reasons.join('；');
+  return '<span class="hp-tech ' + cls + '" title="技术面判定依据：' + esc(why) + '" '
+    + 'onmouseenter="hpTechTip(this,' + (window._hpCur || 0) + ')" onmouseleave="hpPopHide()">'
+    + tk.verdict + '</span>';
+}
+function hpTechTip(el, idx){
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+  var h = arr[idx]; if (!h) return;
+  var cv = hpCurve(h); if (!cv) return;
+  var tk = hpTech(cv.p || cv); if (!tk) return;
+  var body = '<div class="hp-pop-row"><span class="pf">均线</span>MA5 <b>¥'
+    + (tk.ma5[tk.n-1]!=null?tk.ma5[tk.n-1].toFixed(1):'—') + '</b> · MA20 <b>¥'
+    + (tk.ma20[tk.n-1]!=null?tk.ma20[tk.n-1].toFixed(1):'—') + '</b></div>'
+    + '<div class="hp-pop-row"><span class="pf">RSI14</span><b>' + (tk.rsi!=null?tk.rsi.toFixed(0):'—') + '</b></div>'
+    + '<div class="hp-pop-row"><span class="pf">区间高/低</span><b>¥' + tk.hi.toFixed(1) + ' / ¥' + tk.lo.toFixed(1) + '</b></div>'
+    + '<div class="hp-pop-row"><span class="pf">距高点</span><b>' + tk.drawdown.toFixed(1) + '%</b></div>'
+    + (tk.cross ? '<div class="hp-pop-row"><span class="pf">交叉</span><b>' + (tk.cross.type==='gold'?'金叉（第'+ (tk.cross.i+1) +'点）':'死叉（第'+(tk.cross.i+1)+'点）') + '</b></div>' : '')
+    + '<div class="hp-pop-ft">依据：' + esc(tk.reasons.join('；')) + '</div>'
+    + '<div class="hp-pop-ft2">均基于真实日线现算，含预测成分</div>';
+  hpPopAt(el, '<div class="hp-pop-h">技术面</div><div class="hp-pop-sub">' + esc(hpName(h)) + '</div>' + body);
+}
+
+/* 在售量副图（近 12 小时，来自 fluct_recent.json；与上方日线尺度不同，如实标注）*/
+window._hpMini = null;
+function hpVolEnsure(){
+  if (window._hpMini) return Promise.resolve(window._hpMini);
+  return fetch('fluct_recent.json?v=' + Math.floor(Date.now() / 900000))
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { window._hpMini = d; return d; })
+    .catch(function () { return null; });
+}
+function hpVolChart(name){
+  var d = window._hpMini;
+  if (!d) return '';
+  var ks = Object.keys(d).filter(function (k) { return k.length === 16 && k.charAt(10) === 'T'; }).sort();
+  var vals = [], labels = [];
+  ks.forEach(function (k) {
+    var e = (d[k] || {})[name];
+    vals.push(e ? (e.b || 0) : 0);
+    labels.push(k.slice(11));
+  });
+  if (!vals.length || !vals.some(function (v) { return v > 0; })) return '';
+  var mxc = Math.max.apply(null, vals) || 1;
+  var W = 780, H = 44, bw = Math.max(2, W / vals.length * 0.62);
+  var bars = vals.map(function (v, i) {
+    var h = Math.max(1, v / mxc * (H - 12));
+    var x = (i + 0.5) / vals.length * W;
+    return '<rect x="' + (x - bw / 2).toFixed(1) + '" y="' + (H - 6 - h).toFixed(1) + '" width="'
+      + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="var(--blue)" opacity=".55" rx="1">'
+      + '<title>' + labels[i] + ' 在售 ' + v + ' 件</title></rect>';
+  }).join('');
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" style="width:100%;height:52px;display:block">'
+    + bars + '</svg>';
 }
 window.hpName = hpName;   /* 供其它 script 块（如 AI 分析弹窗）复用中文名 */
 document.addEventListener('click', function(e){
@@ -6597,7 +6793,7 @@ function hpSelect(idx){
   var r7 = Number(h.rate_7)||0, r1 = Number(h.rate_1)||0;
   var need = (c>0 && p>0) ? ((c/p*100-100).toFixed(1)) : null;
   var html = ''
-   + '<div class="hp-dh"><div><div class="n">'+esc(hpName(h))+wear+'</div>'
+   + '<div class="hp-dh"><div><div class="n">'+esc(hpName(h))+wear+hpTechBadge(cv)+'</div>'
    + '<div class="s">30 日走势 · 成本 ¥'+hpFmt(c)+' → 现价 ¥'+hpFmt(p)+'</div></div></div>'
    + '<div class="hp-big"><span class="v '+cls+'">'+sg+Math.abs(pct).toFixed(1)+'%</span>'
    + '<span class="s '+cls+'">'+sg+'¥'+hpFmt(Math.abs(pnl))+'</span>'
@@ -6627,9 +6823,22 @@ function hpSelect(idx){
    + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)))+'</div>'
    + (cv ? ('<div class="hp-axis"><span>30 天前</span><span>20 天前</span><span>10 天前</span>'
       + '<span>今天</span></div>'
-      + '<div class="hp-lgd"><span><i></i>你的成本线 ¥'+hpFmt(c)+'</span></div>') : '');
+      + '<div class="hp-lgd"><span><i class="l-cost"></i>成本线 ¥'+hpFmt(c)+'</span>'
+      + '<span><i class="l-ma5"></i>MA5</span><span><i class="l-ma20"></i>MA20</span>'
+      + '<span><i class="l-boll"></i>布林带</span></div>'
+      + '<div class="hp-vol" id="hpVolBox"><div class="hp-vol-t">在售量（近 12 小时，与上方日线尺度不同）</div>'
+      + '<div id="hpVolInner"></div></div>') : '');
   box.innerHTML = html;
   window._hpCur = idx;
+  /* 在售量副图：按需加载 fluct_recent.json（一次），再按饰品名取序列 */
+  try {
+    hpVolEnsure().then(function () {
+      var vbox = document.getElementById('hpVolInner');
+      if (!vbox) return;
+      var svg = hpVolChart(h.mh || h.n);
+      vbox.innerHTML = svg || '<div style="font-size:11px;color:var(--text3);padding:2px 0">该饰品不在近期在售量快照中</div>';
+    });
+  } catch (e) {}
   /* ★ 走势图鼠标跟随 tooltip（TradingView 模式）*/
   try { hpChartTooltip(idx); } catch(e) {}
   /* ★ 详情区高度按视口自适应（每次渲染后重算）*/
