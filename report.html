@@ -6,9 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CS2 日报 · 投资分析</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='18' fill='none' stroke='%2360a5fa' stroke-width='2'/%3E%3Ctext x='20' y='27' font-size='22' text-anchor='middle' fill='%2360a5fa' font-family='Georgia,serif'%3E%CE%B1%3C/text%3E%3C/svg%3E">
-<meta name="description" content="AlphaTrack · CS2 每日投资分析：持仓体检、推荐通道战绩、市场概览与 AI 日报。">
+<meta name="description" content="AlphaTrack · CS2 每日投资分析：持仓体检、市场概览与 AI 日报。">
 <meta property="og:title" content="CS2 日报 · 投资分析">
-<meta property="og:description" content="AlphaTrack · CS2 每日投资分析：持仓体检、推荐通道战绩、市场概览与 AI 日报。">
+<meta property="og:description" content="AlphaTrack · CS2 每日投资分析：持仓体检、市场概览与 AI 日报。">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#020617">
 <style>
@@ -96,15 +96,7 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
     <div class="note" id="pftNote"></div>
   </div>
 
-  <!-- ═══ ② 推荐通道战绩 ═══ -->
-  <div class="card" id="recSection">
-    <h2>🎯 推荐通道战绩（累计口径）</h2>
-    <div class="kpis" id="recKpis"></div>
-    <div id="recBarChart" style="margin-top:10px"></div>
-    <div id="recHonest"></div>
-  </div>
-
-  <!-- ═══ ③ 市场概览 ═══ -->
+  <!-- ═══ ② 市场概览 ═══ -->
   <div class="card" id="marketSection">
     <h2>🌐 市场概览</h2>
     <div class="kpis" id="marketKpis"></div>
@@ -114,14 +106,14 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
     </div>
   </div>
 
-  <!-- ═══ ④ AI 市场日报 ═══ -->
+  <!-- ═══ ③ AI 市场日报 ═══ -->
   <div class="card" id="aiDailySection" style="display:none">
     <h2>🧠 AI 市场日报 <span class="badge-mini">AI 生成 · 仅供参考</span></h2>
     <div id="aiDailyBox" class="ai-box"></div>
     <div class="ai-meta" id="aiDailyMeta"></div>
   </div>
 
-  <!-- ═══ ⑤ 逐物品 AI 评级 ═══ -->
+  <!-- ═══ ④ 逐物品 AI 评级 ═══ -->
   <div class="card" id="aiReportSection">
     <h2>🔬 逐物品 AI 评级 <span class="badge-mini">AI 生成 · 仅供参考</span></h2>
     <div id="aiReportContent" class="empty">加载中...</div>
@@ -191,34 +183,7 @@ function renderPortfolio(p, date) {
     '口径：涨跌幅为近 7 日价格变化（r7）；总市值按最新价 × 持有量，未计手续费。';
 }
 
-/* ── ② 推荐通道战绩 ── */
-function renderRec(rec) {
-  var sec = document.getElementById('recSection');
-  if (!rec || !rec.eco || !rec.buff) { sec.style.display = 'none'; return; }
-  var e = rec.eco, b = rec.buff;
-  var eW = e.win_rate || 0, bW = b.win_rate || 0;
-  var nTotal = (e.count || 0) + (b.count || 0);
-  document.getElementById('recKpis').innerHTML =
-    kpi('ECO 通道', e.count + ' 条', 'blue', '胜率 ' + eW + '% · 均收益 ' + sgn(e.avg_ret || 0) + '%') +
-    kpi('BUFF 通道', b.count + ' 条', 'amber', '胜率 ' + bW + '% · 均收益 ' + sgn(b.avg_ret || 0) + '%') +
-    kpi('合计样本', nTotal + ' 条', '', '盈利 ' + ((e.up || 0) + (b.up || 0)) + ' 条') +
-    kpi('胜率差（ECO−BUFF）', sgn(+(eW - bW).toFixed(1)) + '%', eW - bW >= 0 ? 'rise' : 'fall', '正 = ECO 更高');
-
-  var maxV = Math.max(eW, bW, 1);
-  document.getElementById('recBarChart').innerHTML =
-    '<div class="brow"><span class="bl">ECO</span><div class="btrack"><div class="bfill" style="width:' + (eW / maxV * 80) + '%;background:var(--blue)"></div></div><span class="bv" style="color:var(--blue)">胜率 ' + eW + '% · n=' + e.count + '</span></div>' +
-    '<div class="brow"><span class="bl">BUFF</span><div class="btrack"><div class="bfill" style="width:' + (bW / maxV * 80) + '%;background:var(--amber)"></div></div><span class="bv" style="color:var(--amber)">胜率 ' + bW + '% · n=' + b.count + '</span></div>';
-
-  /* 诚实提示：小样本 / 口径说明 */
-  var tips = [];
-  if (nTotal < 100) tips.push('累计样本仅 ' + nTotal + ' 条，胜率差异参考价值有限');
-  if ((e.count || 0) < 30) tips.push('ECO 样本 n=' + e.count + '（<30），其胜率不具统计意义');
-  if ((b.count || 0) < 30) tips.push('BUFF 样本 n=' + b.count + '（<30），其胜率不具统计意义');
-  tips.push('口径：推荐价 → 最新价的累计收益，未按批次/持有天数分层；跨批次比较详见推荐追踪页的统计引擎。');
-  document.getElementById('recHonest').innerHTML = tips.length ? '<div class="warn-line">⚠ ' + tips.join('；') + '</div>' : '';
-}
-
-/* ── ③ 市场概览 ── */
+/* ── ② 市场概览 ── */
 function renderMarket(m) {
   var sec = document.getElementById('marketSection');
   if (!m) { sec.style.display = 'none'; return; }
@@ -241,7 +206,7 @@ function renderMarket(m) {
   }).join('');
 }
 
-/* ── ④ AI 市场日报（文本） ── */
+/* ── ③ AI 市场日报（文本） ── */
 function renderAiDaily(a) {
   if (!a || !a.report) { document.getElementById('aiDailySection').style.display = 'none'; return; }
   document.getElementById('aiDailySection').style.display = '';
@@ -252,7 +217,7 @@ function renderAiDaily(a) {
     '<span>基于当日 market / portfolio 统计，无隐藏数据</span>';
 }
 
-/* ── ⑤ 逐物品 AI 评级 ── */
+/* ── ④ 逐物品 AI 评级 ── */
 function renderAI() {
   var el = document.getElementById('aiReportContent');
   if (!el) return;
@@ -280,7 +245,6 @@ function renderAll(report) {
   document.getElementById('reportDate').textContent =
     '📅 ' + report.date + ' · 生成于 ' + (report.generated || '').replace('T', ' ').slice(0, 16);
   renderPortfolio(report.portfolio, report.date);
-  renderRec(report.recommendations);
   renderMarket(report.market);
 }
 loadReport().then(renderAll).catch(function () {});
