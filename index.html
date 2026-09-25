@@ -2051,13 +2051,14 @@ function inferCatFromName(name) {
   if (!s) return 'other';
   // 印花 / 胶囊 / 涂鸦 / 布章 / 挂件
   if (/^印花\s*\|/.test(s) || /印花/.test(s)) return 'sticker';
-  if (/胶囊|Capsule/.test(s)) return 'sticker';
+  if (/胶囊|武器箱|Capsule|Case$/i.test(s)) return 'sticker';
   if (/^涂鸦|^布章|^挂件|^Charm/.test(s)) return 'sticker';
   // 音乐盒
   if (/^音乐盒|Music Kit/.test(s)) return 'music';
-  // 匕首 / 刀
+  // 匕首 / 刀（真刀几乎都带 ★ 前缀）
   if (/^★/.test(s) && /刀|匕首|短剑|刺刀|爪刀|蝴蝶刀|折叠刀|猎刀|穿肠刀/.test(s)) return 'knives';
-  if (/^[^|]*\|\s*(军刀|匕首|刺刀|弯刀|短剑)$/.test(s)) return 'knives';
+  /* ⚠ 2026-09-25：删掉了无 ★ 的 "|军刀/匕首/刺刀..." 兜底——
+     "Rezan The Ready | Sabre（军刀）"是探员不是刀，会被误判进匕首。探员归「其他」。 */
   // 手套
   if (/手套/.test(s)) return 'gloves';
   // 武器（含枪械关键词）
@@ -2481,7 +2482,10 @@ async function loadAll() {
 /* ★ 2026-09-22：把 getFiltered 暴露给其它 script 块（主从列表要用它做搜索/排序/tab 过滤）*/
 window.__hpGetFiltered = function(){ try { return getFiltered(); } catch(e) { return window.H || []; } };
     holdingsR.items.forEach(item => {
-      const catKey = CAT_MAP[item.category] || 'other';
+      /* ★ 2026-09-25：KV 同步/手动添加的持仓 category 为空串，
+         原来直接落「其他」→ 出现「全部 74 / 其他 74」的怪状。
+         映射不上时按名称推断（inferCatFromName 覆盖枪械/印花/手套/音乐盒等）。 */
+      const catKey = CAT_MAP[item.category] || inferCatFromName(item.name || item.n) || 'other';
       const wearCode = item.wear || '';  // FN/MW/FT/WW/BS/other/'' 
       const q = item.qty || 1;
       // cost: single number per item (total for qty)
