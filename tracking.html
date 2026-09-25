@@ -183,7 +183,8 @@ td.name{color:var(--text);max-width:230px;overflow:hidden;text-overflow:ellipsis
      ③ 联动模型（同卖出复盘页）：筛选后 KPI 与表格基于同一份记录计算
      ④ AI 分析 / 进化轨迹 / 经验教训 / 推荐战绩 四卡渲染逻辑保留，样式统一
    数据源：localStorage cs2_rec_tracks（{name,date,recPrice,channel}）
-           + market.json / price_summary.json（现价）+ name_map.json（中文名）
+           + track_view.json（中文名→最新价，~30KB 轻量首屏）
+           + rec_tag_map.json（真实通道台账）
    ══════════════════════════════════════════════════════════════════ */
 
 function esc(s) { if (s === null || s === undefined) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
@@ -200,32 +201,22 @@ function loadTracks() {
   render();   // 先渲染本地（现价待补）
 
   var t0 = Math.floor(Date.now() / 900000);
+  /* 首屏只拉 track_view.json(~30KB) + rec_tag_map.json(15KB)。
+     原 name_map(1.8MB)/price_summary(3.4MB)/market(0.8MB) 移除——实测 price_summary
+     key 是英文 hash 且无 last 字段，前端按中文名查 0 命中，3.4MB 纯浪费；
+     track_view 以中文名为主 key 直接给最新价，覆盖全部历史推荐名（非仅当日池） */
   Promise.all([
-    fetch('name_map.json?v=' + t0).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
-    fetch('price_summary.json?v=' + t0).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
-    fetch('rec_tag_map.json?v=' + t0).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
-    fetch('market.json?v=' + t0).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+    fetch('track_view.json?v=' + t0).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+    fetch('rec_tag_map.json?v=' + t0).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
   ]).then(function (res) {
-    state.nameMap = res[0] || {};
-    var ps = res[1] || {};
     var prices = {};
-    for (var key in ps) {
-      if (ps[key] && ps[key].last > 0) prices[key] = ps[key].last;
+    var tv = res[0] || {};
+    for (var cn in tv) {
+      var v = tv[cn] || {};
+      if (v.p > 0) { prices[cn] = v.p; if (v.h) prices[v.h] = v.p; }
     }
-    /* 权威全量 tag 映射：rec_tag_map.json（历史台账，304 名）为基础，
-       market.json 当日推荐池覆盖（最新真实 tag） */
-    var tagMap = res[2] || {};
-    var md = res[3];
-    if (md && md.recommendations && md.recommendations.all) {
-      md.recommendations.all.forEach(function (rec) {
-        var p = rec.price || rec.eco_price || 0;
-        if (rec.name) {
-          prices[rec.name] = p;
-          if (rec.tag) tagMap[rec.name] = rec.tag;   // 当日池覆盖历史
-        }
-        if (rec.hash_name) prices[rec.hash_name] = p;
-      });
-    }
+    /* 权威全量 tag 映射：rec_tag_map.json（历史台账，304 名） */
+    var tagMap = res[1] || {};
     state.tagMap = tagMap;
     /* 修复「通道全 eco」历史假数据：用真实 tag 回填 localStorage 记录
        （仅回填确定值；历史台账查不到且原值确为默认 eco 的 → 标记「未知」，不写死） */
