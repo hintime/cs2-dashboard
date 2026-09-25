@@ -92,6 +92,19 @@ td.name{color:var(--text);max-width:230px;overflow:hidden;text-overflow:ellipsis
 .ew-row .vv{font-size:10px;min-width:44px;text-align:right}
 .evo-hist{font-size:10.5px;line-height:1.8;color:var(--text3)}
 .evo-hist b{color:var(--text2)}
+/* ── 2026-09-25：统计引擎实测区块（因子表 / 门槛回测）── */
+.mini-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.mini-tbl th{text-align:left;color:var(--text3);font-weight:600;padding:5px 6px;border-bottom:1px solid var(--hair);white-space:nowrap}
+.mini-tbl td{padding:5px 6px;border-bottom:1px solid var(--hair);color:var(--text2);vertical-align:top}
+.mini-tbl td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.vtag{display:inline-block;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap}
+.v-eff{background:rgba(239,68,68,.15);color:var(--rise)}
+.v-weak{background:rgba(88,166,255,.15);color:var(--blue)}
+.v-inv{background:rgba(107,114,128,.18);color:var(--text3)}
+.v-rev{background:rgba(251,191,36,.15);color:var(--amber)}
+.sec-t{font-size:10px;color:var(--text3);margin:10px 0 4px}
+.warn-line{font-size:10px;color:var(--amber);line-height:1.5;margin-top:4px}
+@media(max-width:640px){.mini-tbl{font-size:10px}.mini-tbl th,.mini-tbl td{padding:4px 3px}}
 
 @media(max-width:640px){
   .container{padding:18px 12px 28px}
@@ -415,9 +428,98 @@ function runAITrackAnalysis() {
 
         if (analysis.scoring_feedback) {
           var sf = analysis.scoring_feedback;
-          html += '<div style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:10px">' +
-            '<span style="color:var(--text2)">评分建议：</span>ECO ' + esc(sf.eco_weight_advice || '?') + ' · BUFF ' +
-            esc(sf.buff_weight_advice || '?') + ' · 溢价阈值 ' + esc(sf.premium_threshold_advice || '?') + '</div>';
+          html += '<div style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:6px">' +
+            '<span style="color:var(--text2)">评分建议：</span>ECO ' + esc(sf.eco_weight_advice || '不变') +
+            ' · BUFF ' + esc(sf.buff_weight_advice || '不变') +
+            ' · 流通 ' + esc(sf.flow_weight_advice || '不变') +
+            ' · 悠悠 ' + esc(sf.yy_weight_advice || '不变') + '</div>';
+          if (sf.premium_threshold_advice || sf.liquidity_advice) {
+            html += '<div style="font-size:10px;color:var(--text3);line-height:1.6;margin-bottom:10px">' +
+              '溢价阈值 ' + esc(sf.premium_threshold_advice || '—') +
+              ' ｜ 流动性 ' + esc(sf.liquidity_advice || '—') + '</div>';
+          }
+        }
+
+        /* ★ 实测数据条：数字由统计引擎算好存在 meta.stats 里，不经过 AI 转述 */
+        var mst = meta.stats || {};
+        if (mst.n_base) {
+          var pos = function (x) { return x >= 0 ? 'var(--rise)' : 'var(--fall)'; };
+          var sg = function (x) { return (x >= 0 ? '+' : '') + x; };
+          html += '<div class="ov-card" style="padding:10px"><div class="t" style="margin-bottom:6px">📐 实测数据（统计引擎算出，非 AI 推断）</div>';
+          html += '<div style="display:flex;flex-wrap:wrap;gap:4px 16px;font-size:11px;color:var(--text2);line-height:1.7">';
+          html += '<span>基准组 <b>' + mst.n_base + '</b> 条（持有≥' + Math.max(0, (mst.window || 9) - 3) + '天，涨幅已定型）</span>';
+          html += '<span>涨了就算赢 <b>' + mst.base_wr + '%</b></span>';
+          html += '<span>平均 <b style="color:' + pos(mst.base_avg) + '">' + sg(mst.base_avg) + '%</b></span>';
+          if (mst.mkt_med !== undefined && mst.mkt_med !== null) {
+            html += '<span>大盘中位 <b style="color:' + pos(mst.mkt_med) + '">' + sg(mst.mkt_med) + '%</b>（' + mst.mkt_n + ' 件）</span>';
+            html += '<span>★跑赢大盘 <b style="color:var(--rise)">' + mst.beat + '%</b></span>';
+          }
+          html += '</div>';
+          if (mst.factor_n && mst.factor_cov < 50) {
+            html += '<div class="warn-line">⚠ 维度数据只覆盖 ' + mst.factor_n + '/' + mst.n_all +
+              ' 条（' + mst.factor_cov + '%），因子分层实际样本 n=' + mst.factor_n +
+              '、中位持有 ' + mst.factor_held + ' 天 → 下面的因子结论<b>强度有限，暂不作为改权重依据</b></div>';
+          }
+          html += '</div>';
+        }
+
+        /* ★ 因子有效性：判定由区分度规则给出，AI 只补"动作" */
+        var fvs = analysis.factor_verdicts || [];
+        if (fvs.length) {
+          html += '<div class="sec-t">🔬 因子有效性检验（按各维度分三档，比较高档 vs 低档收益）</div>';
+          html += '<table class="mini-tbl"><thead><tr><th>维度</th><th>判定</th><th class="n">区分度</th><th class="n">样本</th><th>证据（低档 → 高档）</th><th>建议动作</th></tr></thead><tbody>';
+          fvs.forEach(function (v) {
+            var vc = { '有效': 'v-eff', '偏弱': 'v-weak', '无效': 'v-inv', '反向': 'v-rev' }[v.v] || 'v-inv';
+            html += '<tr><td>' + esc(v.f) + '</td>' +
+              '<td><span class="vtag ' + vc + '">' + esc(v.v) + '</span>' +
+              (v.weak ? ' <span style="font-size:9px;color:var(--amber)">样本不足</span>' : '') + '</td>' +
+              '<td class="n" style="color:' + (v.spread >= 0 ? 'var(--rise)' : 'var(--fall)') + '">' +
+              (v.spread >= 0 ? '+' : '') + v.spread + '%</td>' +
+              '<td class="n">' + (v.n || '—') + '</td>' +
+              '<td>' + esc(v.evidence || '') + '</td>' +
+              '<td>' + esc(v.action || '—') + '</td></tr>';
+          });
+          html += '</tbody></table>';
+        }
+
+        /* ★ 候选门槛回测：子集是真实筛出来的，AI 只给"采用/不采用" */
+        var wif = analysis.what_if || [];
+        if (wif.length) {
+          html += '<div class="sec-t">🧪 候选门槛回测（在基准组内真实筛子集；vs基准 = 子集均值 − 基准组均值）</div>';
+          html += '<table class="mini-tbl"><thead><tr><th>候选门槛</th><th class="n">条数</th><th class="n">胜率</th><th class="n">均值</th><th class="n">vs基准</th><th>建议</th><th>理由</th></tr></thead><tbody>';
+          wif.forEach(function (w) {
+            var ac = w.adopt === '采用' ? 'var(--rise)' : (w.adopt === '不采用' ? 'var(--text3)' : 'var(--amber)');
+            html += '<tr><td>' + esc(w.rule) + '</td>' +
+              '<td class="n">' + w.n + '</td>' +
+              '<td class="n">' + w.wr + '%</td>' +
+              '<td class="n" style="color:' + (w.avg >= 0 ? 'var(--rise)' : 'var(--fall)') + '">' +
+              (w.avg >= 0 ? '+' : '') + w.avg + '%</td>' +
+              '<td class="n" style="color:' + (w.vs_base >= 0 ? 'var(--rise)' : 'var(--fall)') + ';font-weight:700">' +
+              (w.vs_base >= 0 ? '+' : '') + w.vs_base + '</td>' +
+              '<td style="color:' + ac + '">' + esc(w.adopt || '观察') + '</td>' +
+              '<td>' + esc(w.note || (w.auto ? '（AI 未评价，按 vs基准 符号自动判定）' : '—')) + '</td></tr>';
+          });
+          html += '</tbody></table>';
+        }
+
+        /* ★ 同批次对比：排除"某批次整体行情好"的假象 */
+        var chs = mst.cohort || [];
+        if (chs.length) {
+          html += '<div class="sec-t">🧭 同批次内对比（只在同一个推荐月内比，抗混杂）</div>';
+          html += '<table class="mini-tbl"><thead><tr><th>推荐月</th><th>通道</th><th>价位</th></tr></thead><tbody>';
+          chs.forEach(function (c) {
+            function cells(box) {
+              return Object.keys(box).sort().map(function (k) {
+                var v = box[k];
+                return k + ' n=' + v.n + ' 胜' + v.wr + '% 均' + (v.avg >= 0 ? '+' : '') + v.avg + '%';
+              }).join('　');
+            }
+            html += '<tr><td>' + esc(c.m) + '<br><span style="font-size:9px;color:var(--text3)">共 ' + c.n + ' 条</span></td>' +
+              '<td>' + esc(cells(c.tags || {})) + '</td>' +
+              '<td>' + esc(cells(c.bands || {})) + '</td></tr>';
+          });
+          html += '</tbody></table>';
+          html += '<div class="warn-line">只有<b>每个月都同向</b>的差异才算真信号；只在总体成立、批次内不一致的，是批次行情造成的假象。</div>';
         }
         if (analysis.recommendation_prompt_tweak) {
           html += '<div class="hint">💡 ' + esc(analysis.recommendation_prompt_tweak) + '</div>';
@@ -467,10 +569,18 @@ function runAITrackAnalysis() {
               evhtml += '</div>';
 
               evhtml += '<div class="ov-card"><div class="t">🎯 当前推荐策略</div>';
-              var ecoW = parseFloat(sf2.eco_weight_advice) || 0;
-              var buffW = parseFloat(sf2.buff_weight_advice) || 0;
-              evhtml += '<div class="ew-row"><span class="lb">ECO</span><div class="trackbar"><div class="fill" style="width:' + Math.abs(ecoW) * 4 + '%;background:' + (ecoW > 0 ? 'var(--rise)' : 'var(--fall)') + '"></div></div><span class="vv" style="color:' + (ecoW > 0 ? 'var(--rise)' : 'var(--fall)') + '">' + (ecoW > 0 ? '+' : '') + ecoW + '%</span></div>';
-              evhtml += '<div class="ew-row"><span class="lb">BUFF</span><div class="trackbar"><div class="fill" style="width:' + Math.abs(buffW) * 4 + '%;background:' + (buffW > 0 ? 'var(--fall)' : 'var(--rise)') + '"></div></div><span class="vv" style="color:' + (buffW > 0 ? 'var(--fall)' : 'var(--rise)') + '">' + (buffW > 0 ? '+' : '') + buffW + '%</span></div>';
+              /* 四个维度都要显示 —— 之前只画 ECO/BUFF，悠悠和流通的权重建议一直没露出来 */
+              function wRow(label, txt) {
+                var w = parseFloat(txt) || 0;
+                var c = w > 0 ? 'var(--rise)' : 'var(--fall)';
+                return '<div class="ew-row"><span class="lb">' + label + '</span>' +
+                  '<div class="trackbar"><div class="fill" style="width:' + Math.abs(w) * 4 + '%;background:' + c + '"></div></div>' +
+                  '<span class="vv" style="color:' + c + '">' + (w > 0 ? '+' : '') + w + '%</span></div>';
+              }
+              evhtml += wRow('ECO', sf2.eco_weight_advice);
+              evhtml += wRow('BUFF', sf2.buff_weight_advice);
+              evhtml += wRow('流通', sf2.flow_weight_advice);
+              evhtml += wRow('悠悠', sf2.yy_weight_advice);
               evhtml += '<div style="font-size:10px;color:var(--text2);margin-top:4px">溢价阈值: ' + esc(sf2.premium_threshold_advice || '?') + ' · 流动性: ' + esc(sf2.liquidity_advice || '?') + '</div></div>';
 
               if (ah.length >= 2) {
@@ -481,8 +591,10 @@ function runAITrackAnalysis() {
                   var ts = (a.ts || '').slice(5, 16).replace('T', ' ');
                   evhtml += '<div style="display:flex;align-items:center;gap:6px;font-size:10px;margin-bottom:2px">' +
                     '<span style="min-width:74px">#' + a.seq + ' ' + ts + '</span>' +
-                    '<span>ECO ' + esc(s2.eco_weight_advice || '?') + '</span><span>·</span>' +
-                    '<span>BUFF ' + esc(s2.buff_weight_advice || '?') + '</span>' +
+                    '<span>ECO ' + esc(s2.eco_weight_advice || '—') + '</span><span>·</span>' +
+                    '<span>BUFF ' + esc(s2.buff_weight_advice || '—') + '</span><span>·</span>' +
+                    '<span>流通 ' + esc(s2.flow_weight_advice || '—') + '</span><span>·</span>' +
+                    '<span>悠悠 ' + esc(s2.yy_weight_advice || '—') + '</span>' +
                     (stats2.rate ? '<span>· 成功率 ' + stats2.rate + '%</span>' : '') + '</div>';
                 });
                 evhtml += '</div>';
