@@ -96,17 +96,7 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
     <div class="note" id="pftNote"></div>
   </div>
 
-  <!-- ═══ ② 市场概览 ═══ -->
-  <div class="card" id="marketSection">
-    <h2>🌐 市场概览</h2>
-    <div class="kpis" id="marketKpis"></div>
-    <div style="margin-top:12px">
-      <div class="col-t" style="color:var(--text2)">📦 全市场在售量 TOP 5 <span style="color:var(--text3);font-weight:400">· 供给最充裕的标的</span></div>
-      <div id="topSellList"></div>
-    </div>
-  </div>
-
-  <!-- ═══ ③ AI 市场日报 ═══ -->
+  <!-- ═══ ② AI 市场日报 ═══ -->
   <div class="card" id="aiDailySection" style="display:none">
     <h2>🧠 AI 市场日报 <span class="badge-mini">AI 注记 · 数字来自统计引擎</span></h2>
     <div id="aiDailyBox" class="ai-box"></div>
@@ -124,7 +114,7 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
     <div class="ai-meta" id="aiDailyMeta"></div>
   </div>
 
-  <!-- ═══ ④ 逐物品 AI 评级 ═══ -->
+  <!-- ═══ ③ 逐物品 AI 评级 ═══ -->
   <div class="card" id="aiReportSection">
     <h2>🔬 逐物品 AI 评级 <span class="badge-mini">AI 生成 · 仅供参考</span></h2>
     <div id="aiReportContent" class="empty">加载中...</div>
@@ -194,30 +184,7 @@ function renderPortfolio(p, date) {
     '口径：涨跌幅为近 7 日价格变化（r7）；总市值按最新价 × 持有量，未计手续费。';
 }
 
-/* ── ② 市场概览 ── */
-function renderMarket(m) {
-  var sec = document.getElementById('marketSection');
-  if (!m) { sec.style.display = 'none'; return; }
-  document.getElementById('marketKpis').innerHTML =
-    kpi('全市场追踪', (m.total || 0).toLocaleString() + ' 件', 'blue') +
-    kpi('市场均价', '¥' + (m.avg_p || 0).toFixed(2), '', '全池简单平均，非中位数');
-  var list = m.top_sell || [];
-  if (!list.length) {
-    document.getElementById('topSellList').innerHTML = '<div class="empty">暂无在售量数据</div>';
-    return;
-  }
-  var maxS = 1;
-  list.forEach(function (x) { maxS = Math.max(maxS, x.s || 0); });
-  document.getElementById('topSellList').innerHTML = list.map(function (x, i) {
-    var s = x.s || 0;
-    return '<div class="brow"><span class="idx">' + (i + 1) + '</span>' +
-      '<span class="n" title="' + esc(x.n) + '">' + esc(x.n) + '</span>' +
-      '<div class="btrack" style="max-width:150px"><div class="bfill" style="width:' + (s / maxS * 100) + '%;background:var(--blue);opacity:.75"></div></div>' +
-      '<span class="bv">在售 ' + s.toLocaleString() + ' 件 · ¥' + (x.p || 0).toFixed(2) + '</span></div>';
-  }).join('');
-}
-
-/* ── ③ AI 市场日报（文本 + 统计引擎数据榜）── */
+/* ── ② AI 市场日报（文本 + 统计引擎数据榜）── */
 function renderAiDaily(a) {
   if (!a || !a.report) { document.getElementById('aiDailySection').style.display = 'none'; return; }
   document.getElementById('aiDailySection').style.display = '';
@@ -251,7 +218,7 @@ function renderAiDaily(a) {
     '<span>涨跌榜为 market_scan 统计引擎算出的 7 日涨幅，AI 文本仅为其注记</span>';
 }
 
-/* ── ④ 逐物品 AI 评级 ── */
+/* ── ③ 逐物品 AI 评级 ── */
 function renderAI() {
   var el = document.getElementById('aiReportContent');
   if (!el) return;
@@ -279,7 +246,6 @@ function renderAll(report) {
   document.getElementById('reportDate').textContent =
     '📅 ' + report.date + ' · 生成于 ' + (report.generated || '').replace('T', ' ').slice(0, 16);
   renderPortfolio(report.portfolio, report.date);
-  renderMarket(report.market);
 }
 loadReport().then(renderAll).catch(function () {});
 loadAiDaily().then(renderAiDaily);
