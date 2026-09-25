@@ -187,7 +187,7 @@ td.name{color:var(--text);max-width:230px;overflow:hidden;text-overflow:ellipsis
 function esc(s) { if (s === null || s === undefined) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
 
 var state = {
-  raw: [], prices: {}, nameMap: {},
+  raw: [], prices: {}, nameMap: {}, tagMap: {},
   filterDays: 0, q: '', ch: 'all', side: 'all',
   sort: { key: 'date', dir: -1 }, shown: 30
 };
@@ -217,6 +217,18 @@ function loadTracks() {
         if (rec.hash_name) prices[rec.hash_name] = p;
       });
     }
+    /* 修复「通道全 eco」历史假数据：用 market.json 真实 tag 回填 localStorage 记录 */
+    var tagMap = {};
+    if (md && md.recommendations && md.recommendations.all) {
+      md.recommendations.all.forEach(function (rec) { if (rec.name && rec.tag) tagMap[rec.name] = rec.tag; });
+    }
+    state.tagMap = tagMap;
+    var _fixedCh = false;
+    state.raw.forEach(function (t) {
+      var tg = tagMap[t.name];
+      if (tg && tg !== t.channel) { t.channel = tg; _fixedCh = true; }
+    });
+    if (_fixedCh) { try { localStorage.setItem('cs2_rec_tracks', JSON.stringify(state.raw)); } catch (e) {} }
     state.prices = prices;
     render();
   });
@@ -228,7 +240,7 @@ function filtered() {
   var now = Date.now();
   return state.raw.filter(function (t) {
     if (state.filterDays > 0 && now - new Date(t.date).getTime() > state.filterDays * 86400000) return false;
-    if (state.ch !== 'all' && (t.channel || 'eco') !== state.ch) return false;
+    if (state.ch !== 'all' && (state.tagMap[t.name] || t.channel || 'eco') !== state.ch) return false;
     var e = enrich(t);
     if (state.side === 'win' && !(e.ret !== null && e.ret > 0)) return false;
     if (state.side === 'lose' && !(e.ret !== null && e.ret < 0)) return false;
@@ -246,7 +258,7 @@ function enrich(t) {
   var cp = state.prices[t.name] || 0;
   var rp = t.recPrice || t.ecoPrice || 0;
   var ret = (rp > 0 && cp > 0) ? (cp - rp) / rp * 100 : null;
-  return { name: t.name, date: t.date, ch: t.channel || 'eco', recPrice: rp, nowPrice: cp, ret: ret };
+  return { name: t.name, date: t.date, ch: state.tagMap[t.name] || t.channel || 'eco', recPrice: rp, nowPrice: cp, ret: ret };
 }
 
 /* ── KPI（基于过滤后的记录）── */
@@ -286,7 +298,7 @@ function renderKpis(rows) {
 /* ── 过滤条 ── */
 function renderFbar(rows) {
   var channels = {};
-  state.raw.forEach(function (t) { channels[t.channel || 'eco'] = 1; });
+  state.raw.forEach(function (t) { channels[state.tagMap[t.name] || t.channel || 'eco'] = 1; });
   var f = document.getElementById('trackFbar');
   var chips = [];
   function sideChip(v, label) {
@@ -576,20 +588,29 @@ function runAITrackAnalysis() {
               }
               evhtml += '</div>';
 
-              evhtml += '<div class="ov-card"><div class="t">🎯 当前推荐策略</div>';
-              /* 四个维度都要显示 —— 之前只画 ECO/BUFF，悠悠和流通的权重建议一直没露出来 */
-              function wRow(label, txt) {
-                var w = parseFloat(txt) || 0;
-                var c = w > 0 ? 'var(--rise)' : 'var(--fall)';
-                return '<div class="ew-row"><span class="lb">' + label + '</span>' +
-                  '<div class="trackbar"><div class="fill" style="width:' + Math.abs(w) * 4 + '%;background:' + c + '"></div></div>' +
-                  '<span class="vv" style="color:' + c + '">' + (w > 0 ? '+' : '') + w + '%</span></div>';
+              evhtml += '<div class="ov-card"><div class="t">🎯 当前推荐策略（最终生效权重）</div>';
+              /* 最终权重 = 基线(40/30/15/15) 应用最新一次分析的评分建议，夹取[10%,50%]后归一化，
+                 与 update.py _get_effective_weights() 同算法；展示的是真实生效值，不是 AI 增量建议 */
+              function effectiveWeights(sf) {
+                var base = {eco:0.40, buff:0.30, flow:0.15, yy:0.15};
+                function parsePct(s){ if(!s || (''+s).indexOf('不变')>=0) return 0; var m=(''+s).match(/([+-]?\d+(?:\.\d+)?)/); return m?parseFloat(m[1])/100:0; }
+                var raw={}, k; for(k in base){ raw[k]=base[k]*(1+parsePct(sf[k+'_weight_advice'])); }
+                for(k in raw){ raw[k]=Math.max(0.10, Math.min(0.50, raw[k])); }
+                var s=0; for(k in raw) s+=raw[k]; var eff={}; for(k in raw) eff[k]=raw[k]/s; return eff;
               }
-              evhtml += wRow('ECO', sf2.eco_weight_advice);
-              evhtml += wRow('BUFF', sf2.buff_weight_advice);
-              evhtml += wRow('流通', sf2.flow_weight_advice);
-              evhtml += wRow('悠悠', sf2.yy_weight_advice);
-              evhtml += '<div style="font-size:10px;color:var(--text2);margin-top:4px">溢价阈值: ' + esc(sf2.premium_threshold_advice || '?') + ' · 流动性: ' + esc(sf2.liquidity_advice || '?') + '</div></div>';
+              function wFinalRow(label, pct){
+                var c = 'var(--blue)';
+                return '<div class="ew-row"><span class="lb">' + label + '</span>' +
+                  '<div class="trackbar"><div class="fill" style="width:' + (pct/0.50*100) + '%;background:' + c + '"></div></div>' +
+                  '<span class="vv" style="color:var(--text)">' + (pct*100).toFixed(0) + '%</span></div>';
+              }
+              var _ew = effectiveWeights(sf2);
+              evhtml += wFinalRow('ECO', _ew.eco);
+              evhtml += wFinalRow('BUFF', _ew.buff);
+              evhtml += wFinalRow('流通', _ew.flow);
+              evhtml += wFinalRow('悠悠', _ew.yy);
+              evhtml += '<div style="font-size:10px;color:var(--text2);margin-top:4px">基线 40/30/15/15 · 与后端打分引擎同算法（夹取[10%,50%]并归一化），非 AI 增量建议</div>' +
+                '<div style="font-size:10px;color:var(--text2)">溢价阈值: ' + esc(sf2.premium_threshold_advice || '?') + ' · 流动性: ' + esc(sf2.liquidity_advice || '?') + '</div></div>';
 
               if (ah.length >= 2) {
                 evhtml += '<div style="font-size:10px;color:var(--text3);margin-bottom:4px">📈 评分权重演变</div><div class="ov-card" style="padding:10px">';

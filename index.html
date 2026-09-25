@@ -2590,7 +2590,7 @@ window.__hpGetFiltered = function(){ try { return getFiltered(); } catch(e) { re
         var key = (r.name||'') + '_' + today;
         if (!existing[key]) {
           existing[key] = true;
-          prev.push({name: r.name||'', date: today, recPrice: r.price||r.eco_price||0, channel: r.channel||'eco'});
+          prev.push({name: r.name||'', date: today, recPrice: r.price||r.eco_price||0, channel: r.tag||'eco'});
           added = true;
         }
       });
