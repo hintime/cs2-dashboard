@@ -2,8 +2,44 @@
   {
     "date": "2026-09-25",
     "tag": "fix",
+    "title": "fix(revenue): 修复服务器磁盘上被污染的revenue.html(内容曾是tracking副本) + 口径说",
+    "desc": "改「卖出即自动写入卖出复盘」"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "fix(tracking): docs(revenue): 口径说明改「卖出即自动写入卖出复盘」",
+    "desc": "fix(tracking): docs(revenue): 口径说明改「卖出即自动写入卖出复盘」"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-25 21:15",
+    "desc": "wip: local snapshot 2026-09-25 21:15"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "fix(tracking): 成功率口径改跑赢大盘(beat)——头条/进化对比/柱状图/逐条演变全部切换，涨了就算赢降",
+    "desc": "小字注释"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-25 21:04"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-25 21:00",
     "desc": "wip: local snapshot 2026-09-25 21:00"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "fix(tracking): 成功率口径改跑赢大盘(beat)——头条/进化对比/柱状图/逐条演变全部切换，涨了就算赢降",
+    "desc": "小字注释"
   },
   {
     "date": "2026-09-25",
@@ -82,41 +118,5 @@
     "tag": "fix",
     "title": "fix(tracking): 修「通道全eco」假数据(r.channel→r.tag，并用market.json ta",
     "desc": "回填127条记录) + 权重显示最终生效值(38/32/15/15，与后端引擎同算法)"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-25 19:15",
-    "desc": "wip: local snapshot 2026-09-25 19:15"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_daily_report.json, ai_market_ins",
-    "desc": "ght.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, csqaq_boards.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, news.json, rec_tracks.json, sectors.json 2026-09-25 19:13"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json 2026-09-25 19:05"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, tracking_analysis.json, tracking_lessons.json 2026-09-25 19:01"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-25 19:00",
-    "desc": "wip: local snapshot 2026-09-25 19:00"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "chore(lessons): 归档 5 条 2026-06 老空话教训（移入 history，不删数据）",
-    "desc": "chore(lessons): 归档 5 条 2026-06 老空话教训（移入 history，不删数据）"
   }
 ]
