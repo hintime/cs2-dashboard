@@ -551,14 +551,14 @@ function runAITrackAnalysis() {
               if (ah.length >= 2) {
                 var firstSt = (ah[0].stats || {});
                 var rateChange = (st.rate || 0) - (firstSt.rate || 0);
-                var color = rateChange >= 0 ? 'var(--fall)' : 'var(--rise)';
+                var color = rateChange >= 0 ? 'var(--rise)' : 'var(--fall)';
                 evhtml += '<div style="display:flex;gap:14px;align-items:center;margin-bottom:8px">' +
                   '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">吸取教训前</div>' +
                   '<div style="font-size:22px;font-weight:800;color:var(--text2)">' + (firstSt.rate || 0) + '%</div>' +
                   '<div style="font-size:10px;color:var(--text3)">' + (firstSt.profitable || 0) + '/' + (firstSt.priced || 0) + ' 盈利</div></div>' +
                   '<div style="font-size:18px;color:' + color + '">' + (rateChange >= 0 ? '↑' : '↓') + '</div>' +
                   '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">优化后</div>' +
-                  '<div style="font-size:22px;font-weight:800;color:' + (rateChange >= 0 ? 'var(--fall)' : 'var(--rise)') + '">' + (st.rate || 0) + '%</div>' +
+                  '<div style="font-size:22px;font-weight:800;color:' + (rateChange >= 0 ? 'var(--rise)' : 'var(--fall)') + '">' + (st.rate || 0) + '%</div>' +
                   '<div style="font-size:10px;color:var(--text3)">' + (st.profitable || 0) + '/' + (st.priced || 0) + ' 盈利</div></div>' +
                   '<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--text3)">进步</div>' +
                   '<div style="font-size:18px;font-weight:800;color:' + color + '">' + (rateChange >= 0 ? '+' : '') + rateChange.toFixed(1) + '%</div>' +
@@ -566,12 +566,12 @@ function runAITrackAnalysis() {
                 evhtml += '<div style="display:flex;align-items:flex-end;gap:4px;height:32px;padding:0 4px">';
                 ah.forEach(function (a) {
                   var r = (a.stats || {}).rate || 0;
-                  evhtml += '<div style="flex:1;background:' + (r >= 50 ? 'var(--fall)' : 'var(--rise)') + ';height:' + Math.max(4, r * 0.25) + 'px;border-radius:2px;opacity:.7" title="#' + a.seq + ': ' + r + '%"></div>';
+                  evhtml += '<div style="flex:1;background:' + (r >= 50 ? 'var(--rise)' : 'var(--fall)') + ';height:' + Math.max(4, r * 0.25) + 'px;border-radius:2px;opacity:.7" title="#' + a.seq + ': ' + r + '%"></div>';
                 });
                 evhtml += '</div>';
               } else {
                 evhtml += '<div style="text-align:center"><div style="font-size:10px;color:var(--text3)">当前成功率</div>' +
-                  '<div style="font-size:26px;font-weight:800;color:var(--fall)">' + (st.rate || 0) + '%</div>' +
+                  '<div style="font-size:26px;font-weight:800;color:var(--rise)">' + (st.rate || 0) + '%</div>' +
                   '<div style="font-size:10px;color:var(--text3)">' + (st.profitable || 0) + '/' + (st.priced || 0) + ' 盈利 · 再分析 1 次后出对比</div></div>';
               }
               evhtml += '</div>';

@@ -1120,7 +1120,8 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
 
     all_recs = []
     # 追踪教训权重：整轮只算一次（原实现放在循环内，4500 条 → 4500 次读文件）
-    eco_mult, buff_mult = _get_scoring_weights_from_lessons()
+    W = _get_effective_weights()
+    _W = (('eco', W['eco']), ('buff', W['buff']), ('flow', W['flow']), ('yy', W['yy']))
 
     for item in tracked:
         hn = item.get('HashName', '')
@@ -1265,9 +1266,8 @@ def generate_recommendations(alerts=None, steamdt_prices=None):
         flow_missing = (0 if d1 is not None else 1) + (0 if d2 is not None else 1)
 
         # 维度权重（缺子项已在维度内按中性计，故此处不再需要"缺维度不参与"）
-        # 2026-09-18：新增「流通/供给」维度，权重从 ECO 匀出（0.50→0.40）
-        _W = (('eco', 0.40 * eco_mult), ('buff', 0.30 * buff_mult),
-              ('flow', 0.15), ('yy', 0.15))
+        # 2026-09-25：_W 不再硬编码，改为 _get_effective_weights() 反哺（进化轨迹真正生效）。
+        #   计算一次放在循环外（1123 行），这里直接复用同名的 _W。
         _vals = {'eco': eco_score_val, 'buff': buff_score_val,
                  'flow': flow_val, 'yy': y_val}
         final_score = round(sum(v * w for (k, w), v in zip(_W, _vals.values()))
@@ -2179,50 +2179,63 @@ def _get_tracking_feedback():
         print(f'[WARN] 读取 AI 历史教训失败: {_e}', file=sys.stderr)
         return ''
 
-def _get_scoring_weights_from_lessons():
-    """从追踪教训中提取评分权重调整（反哺推荐引擎）
-    返回 (eco_multiplier, buff_multiplier)，默认 (1.0, 1.0)
+def _get_effective_weights():
+    """从追踪教训【最新一次】分析反哺推荐引擎的打分权重（让"进化"真正落地，不再是摆设）。
+
+    基准：ECO 0.40 / BUFF 0.30 / 流通 0.15 / 悠悠 0.15。
+    ⚠ 只套用【最新一次】建议，绝不累加：每次建议都是"相对当前基准"说的，
+      累加 23 次 −5% 会得到 ECO −30%（荒谬）。
+    ⚠ 幅度 ±5% 是建议里的步长，不是数据推出来的最优值；本函数只负责如实落地，
+      不做二次放大。护栏：单维夹在 [0.10, 0.50]，四项重新归一到 1.0。
+    ⚠ 数据支撑：方向来自实测（BUFF 通道胜率 74.6% n=917 vs ECO 21.1% n=109）；
+      幅度是启发式，故保持小。
+    开关：REC_USE_LESSON_WEIGHTS=1 启用（默认开；解析失败/无数据退回基准）。
     """
+    BASE = {'eco': 0.40, 'buff': 0.30, 'flow': 0.15, 'yy': 0.15}
     try:
-        import json, os
-        # ⚠ 2026-09-18：lessons 权重（eco×0.8/buff×1.2）由 AI 叙述生成、**无实测依据**
-        #   （记分卡显示"稀缺"类信号实测为负贡献）→ 默认中性；dims 样本够了再按实测标定。
-        #   启用：REC_USE_LESSON_WEIGHTS=1
-        if str(os.environ.get('REC_USE_LESSON_WEIGHTS', '0')).strip() != '1':
-            return 1.0, 1.0
+        import json, os, re
+        if str(os.environ.get('REC_USE_LESSON_WEIGHTS', '1')).strip() != '1':
+            return dict(BASE)
         lessons_path = os.path.join(DATA_DIR, 'tracking_lessons.json')
         if not os.path.exists(lessons_path):
-            return 1.0, 1.0
+            return dict(BASE)
         with open(lessons_path, 'r', encoding='utf-8') as f:
             db = json.load(f)
         ah = db.get('analysis_history', [])
         if not ah:
-            return 1.0, 1.0
-        latest = ah[-1].get('scoring_feedback', {})
-        eco_advice = latest.get('eco_weight_advice', '').strip()
-        buff_advice = latest.get('buff_weight_advice', '').strip()
-        
+            return dict(BASE)
+        sf = ah[-1].get('scoring_feedback', {})
+        if not sf:
+            return dict(BASE)
+
         def parse_pct(s):
             if not s or '不变' in s:
-                return 1.0
-            try:
-                import re
-                m = re.search(r'([+-]?\d+)', s)
-                if m:
-                    pct = int(m.group(1)) / 100.0
-                    return 1.0 + pct
-            except Exception as _e:
-                print(f'[WARN] 解析权重反馈系数失败: {_e}', file=sys.stderr)
-            return 1.0
-        
-        eco_m = parse_pct(eco_advice)
-        buff_m = parse_pct(buff_advice)
-        if eco_m != 1.0 or buff_m != 1.0:
-            print(f'[REC] AI反馈: ECO×{eco_m:.2f} BUFF×{buff_m:.2f} (from tracking lessons)')
-        return eco_m, buff_m
+                return 0.0
+            m = re.search(r'([+-]?\d+(?:\.\d+)?)', str(s))
+            if m:
+                return float(m.group(1)) / 100.0
+            return 0.0
+
+        raw = {
+            'eco': parse_pct(sf.get('eco_weight_advice', '')),
+            'buff': parse_pct(sf.get('buff_weight_advice', '')),
+            'flow': parse_pct(sf.get('flow_weight_advice', '')),
+            'yy': parse_pct(sf.get('yy_weight_advice', '')),
+        }
+        new = {k: BASE[k] * (1.0 + v) for k, v in raw.items()}
+        new = {k: max(0.10, min(0.50, v)) for k, v in new.items()}
+        s = sum(new.values())
+        if s <= 0:
+            return dict(BASE)
+        eff = {k: round(v / s, 4) for k, v in new.items()}
+        print(f"[REC] 权重进化落地: ECO {BASE['eco']:.2f}->{eff['eco']:.2f} "
+              f"BUFF {BASE['buff']:.2f}->{eff['buff']:.2f} "
+              f"流通 {BASE['flow']:.2f}->{eff['flow']:.2f} 悠悠 {BASE['yy']:.2f}->{eff['yy']:.2f} "
+              f"(来源: 第{ah[-1].get('seq')}次分析)")
+        return eff
     except Exception as _e:
-        print(f'[WARN] 计算推荐权重失败: {_e}', file=sys.stderr)
-        return 1.0, 1.0
+        print(f'[WARN] 计算有效权重失败，退回基准: {_e}', file=sys.stderr)
+        return {'eco': 0.40, 'buff': 0.30, 'flow': 0.15, 'yy': 0.15}
 
 def _get_reason_enhancements():
     """从追踪教训中提取推荐理由优化建议
@@ -2862,9 +2875,11 @@ def generate_ai_recommendations():
                               'reviewed_by_cloud': str(os.environ.get('AI_REC_REVIEW_CLOUD', '1')).strip() != '0'}
             print('[AI] 差异化校验：最大两两重合率 %.2f%s，空话词残留 %d' % (ds, '（偏高）' if ds > 0.45 else '（通过）', banned_hits))
         try:
-            eco_m, buff_m = _get_scoring_weights_from_lessons()
-            if eco_m != 1.0 or buff_m != 1.0:
-                out['scoring_weights'] = {'eco': round((eco_m - 1) * 100), 'buff': round((buff_m - 1) * 100)}
+            _ew = _get_effective_weights()
+            _deltas = {k: round((_ew[k] - v) * 100) for k, v in
+                       {'eco': 0.40, 'buff': 0.30, 'flow': 0.15, 'yy': 0.15}.items()}
+            if any(_deltas.values()):
+                out['scoring_weights'] = _deltas
         except Exception as _e:
             print('[WARN] 写 AI 推荐前处理失败: %s' % _e, file=sys.stderr)
         write_json(os.path.join(DATA_DIR, 'ai_recommendations.json'), out)
