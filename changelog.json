@@ -1,6 +1,30 @@
 [
   {
     "date": "2026-09-25",
+    "tag": "fix",
+    "title": "fix(tracking): 修「通道全eco」假数据(r.channel→r.tag，并用market.json ta",
+    "desc": "回填127条记录) + 权重显示最终生效值(38/32/15/15，与后端引擎同算法)"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "fix(tracking): 修「通道全eco」假数据(r.channel→r.tag，并用market.json ta",
+    "desc": "回填127条记录) + 权重显示最终生效值(38/32/15/15，与后端引擎同算法)"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-25 19:15",
+    "desc": "wip: local snapshot 2026-09-25 19:15"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_daily_report.json, ai_market_ins",
+    "desc": "ght.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, csqaq_boards.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, news.json, rec_tracks.json, sectors.json 2026-09-25 19:13"
+  },
+  {
+    "date": "2026-09-25",
     "tag": "chore",
     "title": "update buff_history.json, buff_recent.json, changelog.json,",
     "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json 2026-09-25 19:05"
@@ -94,29 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-25 16:28",
     "desc": "wip: local snapshot 2026-09-25 16:28"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(fluct): 在售量快照纳入持仓（原 32 件只命中 1 件）",
-    "desc": "fix(fluct): 在售量快照纳入持仓（原 32 件只命中 1 件）"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(holdings): 单品技术指标体检后的 5 处尾巴修复",
-    "desc": "fix(holdings): 单品技术指标体检后的 5 处尾巴修复"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-25 16:15",
-    "desc": "wip: local snapshot 2026-09-25 16:15"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(holdings): 单品技术指标全套（8 项，全部真实日线现算）",
-    "desc": "feat(holdings): 单品技术指标全套（8 项，全部真实日线现算）"
   }
 ]
