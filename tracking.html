@@ -229,14 +229,15 @@ function loadTracks() {
     state.prices = prices;
     render();
   });
+}
 
-/* 通道解析（统一出口）：真实 tag 优先；历史台账查不到且原值为默认 eco 假数据的 → 未知 */
+/* 通道解析（统一出口）：真实 tag 优先；历史台账查不到且原值为默认 eco 假数据的 → 未知
+   ⚠ 必须是顶层函数：render/filtered/enrich 都要调它（曾误嵌进 loadTracks 导致页面首屏崩溃） */
 function chOf(t) {
   var real = state.tagMap[t.name];
   if (real) return real;
   if (t.channel && t.channel !== 'eco') return t.channel;
   return '未知';
-}
 }
 
 /* ── 过滤（全板块共用）── */
