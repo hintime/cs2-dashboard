@@ -1736,6 +1736,7 @@ html { scroll-behavior: smooth; }
           <button class="export-btn hp-tool hp-tool-primary" id="addItemBtn" title="手动记录一笔买入（可填磨损与买入价）">＋ 添加</button>
           <button class="export-btn hp-tool" id="exportBtn" title="导出成本覆盖配置 cost-overrides.json">导出配置</button>
           <button class="export-btn hp-tool" id="csvBtn" title="把当前持仓导出为 CSV 表格" onclick="exportCSV()">导出 CSV</button>
+          <a class="export-btn hp-tool" href="revenue.html" title="卖出记录与盈亏复盘：胜率、盈亏比、每笔期望" style="text-decoration:none;display:inline-flex;align-items:center">卖出复盘</a>
           <span class="sync-status" id="syncStatus"></span>
         </div>
       </div>
@@ -1882,11 +1883,14 @@ html { scroll-behavior: smooth; }
         <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace" id="sellConfirmMulti">--</div>
       </div>
     </div>
-    <div id="sellConfirmPnl" style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:16px;text-align:center;border-left:3px solid var(--text2)">
+    <div id="sellConfirmPnl" style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:12px;text-align:center;border-left:3px solid var(--text2)">
       <div style="font-size:11px;color:var(--text3);margin-bottom:2px">盈亏统计</div>
       <div style="font-size:20px;font-weight:800;font-family:'DM Mono',monospace" id="sellConfirmPnlVal">--</div>
       <div style="font-size:12px;font-weight:600" id="sellConfirmPnlPct">--</div>
     </div>
+    <p style="font-size:11px;color:var(--text3);margin:-6px 0 12px;text-align:center">
+      确认后此笔将记录到 <a href="revenue.html" target="_blank" style="color:var(--blue);text-decoration:none">卖出复盘</a>（胜率 / 盈亏统计）
+    </p>
     <div class="modal-btns">
       <button class="btn-secondary" id="sellConfirmCancel">取消</button>
       <button class="btn-primary" id="sellConfirmOk" style="background:var(--rise);border:none">确认卖出</button>
