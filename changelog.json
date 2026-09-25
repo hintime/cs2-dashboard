@@ -2,6 +2,60 @@
   {
     "date": "2026-09-26",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-26 00:30",
+    "desc": "wip: local snapshot 2026-09-26 00:30"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(report): 日报页全面重设计——市场概览/AI日报文本/推荐战绩样本量诚实提示/涨跌口径标注",
+    "desc": "feat(report): 日报页全面重设计——市场概览/AI日报文本/推荐战绩样本量诚实提示/涨跌口径标注"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(report): 日报页全面重设计(修正上一次误推到revenue路径的提交)",
+    "desc": "feat(report): 日报页全面重设计(修正上一次误推到revenue路径的提交)"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "fix(revenue): 恢复被误覆盖的卖出复盘页(上一次误将report内容推到revenue路径)",
+    "desc": "fix(revenue): 恢复被误覆盖的卖出复盘页(上一次误将report内容推到revenue路径)"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-26 00:15",
+    "desc": "wip: local snapshot 2026-09-26 00:15"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "fix(news): 空投监控条分段显示+AI注记徽章",
+    "desc": "fix(news): 空投监控条分段显示+AI注记徽章"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(news): AI空投监控透彻化(公告全文+市场事实逐条分析)",
+    "desc": "feat(news): AI空投监控透彻化(公告全文+市场事实逐条分析)"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 00:06"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "fix(holdings): 卖出确认弹窗饰品名显示中文(查name_map映射，fallback原名)",
+    "desc": "fix(holdings): 卖出确认弹窗饰品名显示中文(查name_map映射，fallback原名)"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 00:00",
     "desc": "wip: local snapshot 2026-09-26 00:00"
   },
@@ -64,59 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-25 23:15",
     "desc": "wip: local snapshot 2026-09-25 23:15"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(report): 日报页全面重设计(修正上一次误推到revenue路径的提交)",
-    "desc": "feat(report): 日报页全面重设计(修正上一次误推到revenue路径的提交)"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(revenue): 恢复被误覆盖的卖出复盘页(上一次误将report内容推到revenue路径)",
-    "desc": "fix(revenue): 恢复被误覆盖的卖出复盘页(上一次误将report内容推到revenue路径)"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-25 23:04"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(report): AI日报升级(统计事实+stats)",
-    "desc": "feat(report): AI日报升级(统计事实+stats)"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(report): 日报扩充市场涨跌榜/价格分布",
-    "desc": "feat(report): 日报扩充市场涨跌榜/价格分布"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-25 23:00",
-    "desc": "wip: local snapshot 2026-09-25 23:00"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(report): 日报页全面重设计(修正上一次误推到revenue路径的提交)",
-    "desc": "feat(report): 日报页全面重设计(修正上一次误推到revenue路径的提交)"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(revenue): 恢复被误覆盖的卖出复盘页(上一次误将report内容推到revenue路径)",
-    "desc": "fix(revenue): 恢复被误覆盖的卖出复盘页(上一次误将report内容推到revenue路径)"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "feat(report): 日报页全面重设计(与服务器 428f8fd 同内容)",
-    "desc": "feat(report): 日报页全面重设计(与服务器 428f8fd 同内容)"
   }
 ]
