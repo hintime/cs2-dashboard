@@ -1822,6 +1822,72 @@ def generate_price_summary():
     except Exception as e:
         print(f'[SUMMARY] generate_price_summary failed: {e}', file=sys.stderr)
 
+def build_track_view():
+    """tracking 页专用轻量数据（2026-09-25）：仅 rec_tracks 出现过的名字 × 最新价。
+
+    背景：tracking.html 首屏原来拉 price_summary.json(3.4MB)+name_map.json(1.8MB)
+    +market.json(0.8MB)，实测 price_summary 的 key 是英文 hash、且无 last 字段，
+    前端按中文名查 → 0 命中，3.4MB 纯浪费；页面现价实际全靠 market.json 当日池。
+    这里以中文名为主 key 直接给 last（prices[-1]），~20KB 替代 ~6MB，
+    现价覆盖率从当日 30 条池提升到全部历史推荐名。
+    同源：价格取自同轮刚生成的 price_summary.json，不重复计算、口径一致。
+    名字集合单调增长（∪ 上一次 track_view 的名字）：即使 rec_tracks 意外回滚也不缩水。
+    """
+    try:
+        tv_path = os.path.join(DATA_DIR, 'track_view.json')
+        rec = read_json(os.path.join(DATA_DIR, 'rec_tracks.json')) or {}
+        ps = read_json(os.path.join(DATA_DIR, 'price_summary.json')) or {}
+        if not isinstance(rec, dict):
+            rec = {}
+        if not isinstance(ps, dict):
+            ps = {}
+        names = {}  # 中文名 -> hash_name
+        # ① 上一次 track_view 的名字（单调增长，防 rec_tracks 回滚缩水）
+        if os.path.exists(tv_path):
+            old = read_json(tv_path) or {}
+            if isinstance(old, dict):
+                for k, v in old.items():
+                    if isinstance(v, dict):
+                        names[k] = v.get('h', '') or ''
+                    elif isinstance(v, (int, float)):
+                        names[k] = ''
+        # ② rec_tracks 全量历史推荐名
+        for _d, day in rec.items():
+            if not isinstance(day, dict):
+                continue
+            for _n, it in day.items():
+                if not isinstance(it, dict):
+                    continue
+                cn = it.get('name') or _n
+                if cn and cn not in names:
+                    names[cn] = it.get('hash_name', '') or ''
+
+        def _last(key):
+            d = ps.get(key)
+            if isinstance(d, dict):
+                pr = d.get('prices') or []
+                if pr and pr[-1]:
+                    try:
+                        return float(pr[-1])
+                    except Exception:
+                        pass
+            return 0
+
+        out = {}
+        hit = 0
+        for cn, h in names.items():
+            p = _last(h) if h else 0
+            if not p:
+                p = _last(cn)
+            if p > 0:
+                hit += 1
+            out[cn] = {'p': p, 'h': h}
+        write_json(tv_path, out)
+        print(f'[TRACKVIEW] track_view.json: {len(out)} names ({hit} priced), {os.path.getsize(tv_path)} bytes')
+    except Exception as e:
+        print(f'[TRACKVIEW] build failed: {e}', file=sys.stderr)
+
+
 def _seed_db_if_needed(price_db):
     """首次运行或DB数据稀疏时，从buff_history.json种子历史数据"""
     try:
@@ -4553,6 +4619,7 @@ def main():
 
     # ── 衍生 price_summary + AI 分析 ──
     generate_price_summary()
+    build_track_view()   # tracking 页首屏轻量数据（~20KB 替代 6MB，30min 轮随价格刷新）
     
     # ═══════════════ AI 分析（限流保护：每次调用间隔≥8秒） ═══════════════
     _last_ai_call = [0]  # mutable for closure
