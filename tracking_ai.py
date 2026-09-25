@@ -265,6 +265,53 @@ def _auto_verdicts(S):
     return out
 
 
+def _auto_verdict_line(S):
+    """一句话结论：必须由统计生成。
+
+    实测 AI 会把不同子集的数串在一起（"Buff通道胜率83.0%"——83.0% 其实是
+    "推荐价≥¥200"子集的胜率，BUFF 通道是 74.6%），一句话结论错了最误导人。
+    """
+    S = S or {}
+    if not S.get('n_base'):
+        return ''
+    parts = ['基准组 %d 条：涨了就算赢 %.1f%%，平均 %+.2f%%'
+             % (S['n_base'], S.get('base_wr', 0), S.get('base_avg', 0))]
+    if S.get('mkt_med') is not None:
+        parts.append('跑赢大盘 %.1f%%（大盘中位 %+.2f%%）' % (S.get('beat', 0), S['mkt_med']))
+    tags = S.get('tags') or {}
+    if 'buff' in tags and 'eco' in tags:
+        parts.append('BUFF 通道 %.1f%% vs ECO 通道 %.1f%%'
+                     % (tags['buff']['wr'], tags['eco']['wr']))
+    return '；'.join(parts)
+
+
+def _pick_action(v, ai_act):
+    """动作文案：规则按区分度方向生成；AI 的建议只在**方向一致**时才附在后面。
+
+    ⚠ 实测 flash 会给 10 个因子输出几乎同一句"权重由0.25提到0.35"，
+      连判定为「反向」（该维度越高、收益反而越差）的因子也这么说 ——
+      直接采信就是把结论说反。所以规则文案为主，AI 文案只做同向补充。
+    """
+    sp = v.get('spread') or 0.0
+    name = v.get('f', '该维度')
+    if sp < -1.0:
+        base = '方向相反：%s 越高收益反而越差 → 降权或反向使用' % name
+    elif abs(sp) < 1.0:
+        base = '区分度≈0，%s 不预测收益 → 维持现状，等样本' % name
+    elif sp < 3.0:
+        base = '区分度 %+.2f%%（偏弱）→ %s 可小幅上调，但先别当硬条件' % (sp, name)
+    else:
+        base = '区分度 %+.2f%%（有效）→ %s 上调权重，或写进推荐门槛' % (sp, name)
+    ai_act = (ai_act or '').strip()
+    if not ai_act:
+        return base
+    up = any(k in ai_act for k in ('提到', '上调', '提高', '增加', '提升', '加'))
+    dn = any(k in ai_act for k in ('降到', '下调', '降低', '减少', '排除', '移除', '移出', '减'))
+    if (up and sp > 0) or (dn and sp < 0):
+        return base + '（AI 同向建议：%s）' % ai_act
+    return base
+
+
 def _auto_lessons(S):
     """★ 教训由真实统计生成（不经过 AI），每条都能追溯到具体数字。
 
@@ -477,7 +524,7 @@ def analyze_performance(tracks, price_context=None):
         acts = _parse_pipe(txt2, 2)
         for v in verdicts:
             a = acts.get(v['f']) or ['']
-            v['action'] = a[0] if isinstance(a, list) else str(a)
+            v['action'] = _pick_action(v, a[0] if isinstance(a, list) else str(a))
 
     # ── ③ 权重建议（页面要解析开头的数字，所以必须 +N% / -N% 开头）──
     tg_txt = ('；'.join('%s 胜率%.1f%% 均值%+.2f%%' % (k, v['wr'], v['avg'])
@@ -537,11 +584,26 @@ def analyze_performance(tracks, price_context=None):
           % ('OK' if ov.get('verdict') else 'FAIL', len(verdicts),
              len(what_if), len(lessons), time.time() - t0))
 
+    # 成功/失败模式：AI 的可用，但**必须含数字**；不含就用统计兜底（"空话检测"）
+    import re as _re
+    _hasnum = lambda t: bool(t) and bool(_re.search(r'\d', t))
+    _tg = nS.get('tags') or {}
+    _sp = ov.get('success_pattern') or ''
+    _fp = ov.get('failure_pattern') or ''
+    if not _hasnum(_sp) and 'buff' in _tg:
+        _sp = 'BUFF 通道 n=%d 胜率 %.1f%% 均值 %+.2f%%' % (
+            _tg['buff']['n'], _tg['buff']['wr'], _tg['buff']['avg'])
+    if not _hasnum(_fp) and 'eco' in _tg:
+        _fp = 'ECO 通道 n=%d 胜率 %.1f%% 均值 %+.2f%%' % (
+            _tg['eco']['n'], _tg['eco']['wr'], _tg['eco']['avg'])
+
     analysis = {
         'overview': {
-            'verdict': ov.get('verdict') or '',
-            'success_pattern': ov.get('success_pattern') or '',
-            'failure_pattern': ov.get('failure_pattern') or '',
+            # 一句话结论用统计引擎的（AI 会把不同子集的数串错，实测过）
+            'verdict': _auto_verdict_line(nS) or ov.get('verdict') or '',
+            'ai_verdict': ov.get('verdict') or '',
+            'success_pattern': _sp,
+            'failure_pattern': _fp,
             'confidence_trend': _trend,
             'market_signal': ov.get('market_signal') or '',
         },
