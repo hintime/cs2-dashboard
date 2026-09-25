@@ -184,30 +184,7 @@ function renderPortfolio(p, date) {
     '口径：涨跌幅为近 7 日价格变化（r7）；总市值按最新价 × 持有量，未计手续费。';
 }
 
-/* ── ② 市场概览 ── */
-function renderMarket(m) {
-  var sec = document.getElementById('marketSection');
-  if (!m) { sec.style.display = 'none'; return; }
-  document.getElementById('marketKpis').innerHTML =
-    kpi('全市场追踪', (m.total || 0).toLocaleString() + ' 件', 'blue') +
-    kpi('市场均价', '¥' + (m.avg_p || 0).toFixed(2), '', '全池简单平均，非中位数');
-  var list = m.top_sell || [];
-  if (!list.length) {
-    document.getElementById('topSellList').innerHTML = '<div class="empty">暂无在售量数据</div>';
-    return;
-  }
-  var maxS = 1;
-  list.forEach(function (x) { maxS = Math.max(maxS, x.s || 0); });
-  document.getElementById('topSellList').innerHTML = list.map(function (x, i) {
-    var s = x.s || 0;
-    return '<div class="brow"><span class="idx">' + (i + 1) + '</span>' +
-      '<span class="n" title="' + esc(x.n) + '">' + esc(x.n) + '</span>' +
-      '<div class="btrack" style="max-width:150px"><div class="bfill" style="width:' + (s / maxS * 100) + '%;background:var(--blue);opacity:.75"></div></div>' +
-      '<span class="bv">在售 ' + s.toLocaleString() + ' 件 · ¥' + (x.p || 0).toFixed(2) + '</span></div>';
-  }).join('');
-}
-
-/* ── ③ AI 市场日报（文本 + 统计引擎数据榜）── */
+/* ── ② AI 市场日报（文本 + 统计引擎数据榜）── */
 function renderAiDaily(a) {
   if (!a || !a.report) { document.getElementById('aiDailySection').style.display = 'none'; return; }
   document.getElementById('aiDailySection').style.display = '';
