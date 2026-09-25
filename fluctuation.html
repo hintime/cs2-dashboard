@@ -128,6 +128,11 @@ td.name{color:var(--text);max-width:280px;overflow:hidden;text-overflow:ellipsis
       <span class="chip" data-f="mkt" data-v="buff">BUFF</span>
       <span class="chip" data-f="mkt" data-v="yyyp">悠悠</span>
     </div>
+    <div class="tgroup"><span class="tlabel">对比跨度</span>
+      <span class="chip on" data-f="span" data-v="1">1小时</span>
+      <span class="chip" data-f="span" data-v="6">6小时</span>
+      <span class="chip" data-f="span" data-v="12">12小时</span>
+    </div>
     <div class="tgroup"><span class="tlabel">方向</span>
       <span class="chip on" data-f="dir" data-v="all">全部</span>
       <span class="chip" data-f="dir" data-v="down">减少</span>
@@ -190,7 +195,7 @@ var state = {
   raw: null, now: null, prev: null,
   gapHours: 0, overlap: 0, stats: null,
   rows: [], shown: 60,
-  f: { mkt: 'all', dir: 'all', th: 10, mb: 20, q: '' },
+  f: { mkt: 'all', dir: 'all', th: 10, mb: 20, span: 1, q: '' },
   sort: { key: 'pct', dir: -1 }
 };
 
@@ -233,12 +238,13 @@ var FIELDS = {
 var fmt = 'full';
 function F(mkt, kind) { return FIELDS[fmt][mkt][kind]; }
 
-/* 时点配对：只取小时级，从最近一期往回找第一个「规模可比」的期。
+/* 时点配对：只取小时级，按「对比跨度」往前找规模可比的期。
    ⚠ 不能取「重叠率最高」——上一期若是全量池（4805 件）而本期只有 200 件，
    单向重叠仍是 100%，但两期根本不是同一批样本，算出来的变化全是假的
    （实测会把悠悠 4740→0 当成 197 条「疑似扫货 -100%」）。
-   所以硬门槛是样本规模比值，其次才是集合重叠。 */
-function pickPair(data) {
+   所以硬门槛是样本规模比值，其次才是集合重叠。
+   spanH=1 → 最近的可比期；6/12 → 找距 now 最接近该跨度的期（容差 ×0.4~×1.6）。 */
+function pickPair(data, spanH) {
   var all = Object.keys(data || {});
   var hourly = all.filter(isHourlyKey).sort();
   var skippedDaily = all.filter(function (k) { return !isHourlyKey(k); });
@@ -255,6 +261,9 @@ function pickPair(data) {
 
   for (var i = hourly.length - 2; i >= 0; i--) {
     var cand = hourly[i];
+    var gap = gapHours(cand, now);
+    if (gap > spanH * 1.6) break;                  // 超出跨度容差，再往前只会更远，停
+    if (spanH > 1 && gap < spanH * 0.4) continue;  // 比目标跨度近太多的跳过（要的就是这个跨度）
     var stC = snapStats(data[cand]);
     if (!stC.total) continue;
 
@@ -271,7 +280,7 @@ function pickPair(data) {
 
     return {
       ok: true, now: now, prev: cand, overlap: ov, common: hit,
-      gapHours: gapHours(cand, now), hourly: hourly, skippedDaily: skippedDaily
+      gapHours: gap, hourly: hourly, skippedDaily: skippedDaily
     };
   }
   return { ok: false, reason: 'no_comparable', hourly: hourly, skippedDaily: skippedDaily, stNow: stNow };
@@ -353,8 +362,15 @@ function fail(msg) {
 
 function build(data) {
   state.raw = data;
+  refresh();
+}
 
-  // mini 格式：中文名内嵌在每条记录的 cn 字段，顺手填进 nameMap
+/* 重新配对 + 渲染（对比跨度切换时也会走这里） */
+function refresh() {
+  var data = state.raw;
+  if (!data) return;
+
+  // mini 格式：中文名内嵌在每条记录的 cn 字段，顺手填进 nameMap（幂等）
   if (fmt === 'mini') {
     for (var k in data) {
       var snap = data[k] || {};
@@ -365,7 +381,8 @@ function build(data) {
     }
   }
 
-  var pair = pickPair(data);
+  var spanH = state.f.span || 1;
+  var pair = pickPair(data, spanH);
 
   if (!pair.ok) {
     var why;
@@ -374,7 +391,9 @@ function build(data) {
     } else if (pair.reason === 'now_empty') {
       why = '最新一期快照是空的';
     } else {
-      why = '现有快照里没有与最新一期规模可比的上一期（样本规模相差一倍以上，或饰品集合重叠不足 15%）';
+      why = (spanH > 1
+        ? '「' + spanH + ' 小时」跨度内没有规模可比的上一期（样本规模相差一倍以上，或集合重叠不足 15%）——可以换 1 小时档试试'
+        : '现有快照里没有与最新一期规模可比的上一期（样本规模相差一倍以上，或饰品集合重叠不足 15%）');
     }
     document.getElementById('fluctDate').textContent = why;
     healthNone(why, pair);
@@ -672,8 +691,10 @@ document.getElementById('toolbar').addEventListener('click', function (e) {
   var sib = this.querySelectorAll('.chip[data-f="' + f + '"]');
   for (var i = 0; i < sib.length; i++) sib[i].classList.remove('on');
   el.classList.add('on');
-  state.f[f] = (f === 'th' || f === 'mb') ? parseInt(v, 10) : v;
-  if (f === 'th' || f === 'mb') compute(); else renderTable();
+  state.f[f] = (f === 'th' || f === 'mb' || f === 'span') ? parseInt(v, 10) : v;
+  if (f === 'th' || f === 'mb') compute();
+  else if (f === 'span') refresh();   // 跨度变了要重新配对
+  else renderTable();
 });
 
 document.getElementById('searchBox').addEventListener('input', function (e) {

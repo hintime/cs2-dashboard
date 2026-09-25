@@ -667,9 +667,10 @@ def save_buff_history(steamdt_prices):
 
         # ★ 异动页专用微缩快照（2026-09-24）：fluctuation.html 之前拉 buff_recent.json
         #   (2.5MB) + eco_tracked.json (6.4MB，只为中文名) → 弱网加载十几秒。
-        #   这里只导出最近 3 个 hourly 期、每件只留 4 个字段并内嵌中文名 → ~80KB。
-        #   字段名压缩：b=buff_sell_num bs=buff_sell y=yyyp_sell_num ys=yyyp_sell
-        _mini_keys = _hourly[-3:]
+        #   2026-09-25：从 3 期扩到 12 期 —— 异动页新增「12 小时对比」跨度，
+        #   hourly 保留 12 个，正好覆盖 12h。字段名压缩：
+        #   b=buff_sell_num bs=buff_sell y=yyyp_sell_num ys=yyyp_sell
+        _mini_keys = _hourly[-12:]
         _nm_path = os.path.join(DATA_DIR, 'name_map.json')
         _nm = {}
         try:
