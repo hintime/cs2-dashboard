@@ -2,6 +2,30 @@
   {
     "date": "2026-09-25",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-25 22:00",
+    "desc": "wip: local snapshot 2026-09-25 22:00"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "feat(report): 日报页全面重设计——市场概览/AI日报文本/推荐战绩样本量诚实提示/涨跌口径标注",
+    "desc": "feat(report): 日报页全面重设计——市场概览/AI日报文本/推荐战绩样本量诚实提示/涨跌口径标注"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "fix(revenue): 口径说明改「卖出即自动写入卖出复盘」(与服务器 c1c07bc 同内容)",
+    "desc": "fix(revenue): 口径说明改「卖出即自动写入卖出复盘」(与服务器 c1c07bc 同内容)"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-25 21:34"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
     "title": "fix(revenue): 修复服务器磁盘上被污染的revenue.html(内容曾是tracking副本) + 口径说",
     "desc": "改「卖出即自动写入卖出复盘」"
   },
@@ -94,29 +118,5 @@
     "tag": "fix",
     "title": "fix(tracking): 新增 rec_tag_map.json(全量真实通道台账) + 通道解析改 chOf(未知",
     "desc": "底)，修复「通道全eco」假数据"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(tracking): 新增 rec_tag_map.json(全量真实通道台账) + 通道解析改 chOf(未知",
-    "desc": "底)，修复「通道全eco」假数据"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json 2026-09-25 19:34"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(tracking): 修「通道全eco」假数据(r.channel→r.tag，并用market.json ta",
-    "desc": "回填127条记录) + 权重显示最终生效值(38/32/15/15，与后端引擎同算法)"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(tracking): 修「通道全eco」假数据(r.channel→r.tag，并用market.json ta",
-    "desc": "回填127条记录) + 权重显示最终生效值(38/32/15/15，与后端引擎同算法)"
   }
 ]

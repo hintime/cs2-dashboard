@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 962.58,
-    "change": -3.74,
-    "change_pct": -3.74,
-    "market_value": 295467175.26,
-    "total_items": 4036,
-    "updated": "2026-09-25T20:00:02+08:00",
+    "latest": 990.3,
+    "change": -0.97,
+    "change_pct": -0.97,
+    "market_value": 303977141.09,
+    "total_items": 4061,
+    "updated": "2026-09-25T22:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3798,6 +3798,14 @@
         "close": 962.58,
         "high": 981.31,
         "low": 962.58
+      },
+      {
+        "date": "2026-09-25",
+        "dateFull": "2026-09-25 22:00",
+        "open": 990.3,
+        "close": 990.3,
+        "high": 990.3,
+        "low": 990.3
       }
     ],
     "volBar": [],
@@ -11377,12 +11385,20 @@
         "index": 962.58,
         "change_pct": -3.74,
         "market_value": 295467175.26
+      },
+      {
+        "time": "22:00",
+        "date": "2026-09-25",
+        "timestamp": 1790344802,
+        "index": 990.3,
+        "change_pct": -0.97,
+        "market_value": 303977141.09
       }
     ],
     "selling": {
-      "total_selling": 1375774,
+      "total_selling": 1377344,
       "total_selling_prev": 0,
-      "total_selling_delta": 1375774,
+      "total_selling_delta": 1377344,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11390,7 +11406,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790337602852,
+  "index_updated": 1790344803061,
   "alerts": [
     {
       "name": "M4A1-S | Moss Quartz (Factory New)",
@@ -29966,7 +29982,7 @@
     "MP9 | Urban Sovereign (Factory New)",
     "MP9 | Urban Sovereign (Minimal Wear)"
   ],
-  "updated": "2026-09-25T13:34:23Z",
+  "updated": "2026-09-25T14:04:23Z",
   "steam_market_items": 57,
   "steam_market_recs": {
     "momentum": [],
