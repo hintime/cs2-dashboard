@@ -2,8 +2,44 @@
   {
     "date": "2026-09-25",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-25 22:30",
+    "desc": "wip: local snapshot 2026-09-25 22:30"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-25 22:15",
+    "desc": "wip: local snapshot 2026-09-25 22:15"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "feat(report): 日报页全面重设计(修正上一次误推到revenue路径的提交)",
+    "desc": "feat(report): 日报页全面重设计(修正上一次误推到revenue路径的提交)"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "fix(revenue): 恢复被误覆盖的卖出复盘页(上一次误将report内容推到revenue路径)",
+    "desc": "fix(revenue): 恢复被误覆盖的卖出复盘页(上一次误将report内容推到revenue路径)"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-25 22:04"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-25 22:00",
     "desc": "wip: local snapshot 2026-09-25 22:00"
+  },
+  {
+    "date": "2026-09-25",
+    "tag": "fix",
+    "title": "feat(report): 日报页全面重设计(与服务器 428f8fd 同内容)",
+    "desc": "feat(report): 日报页全面重设计(与服务器 428f8fd 同内容)"
   },
   {
     "date": "2026-09-25",
@@ -82,41 +118,5 @@
     "tag": "chore",
     "title": "update buff_history.json, buff_recent.json, changelog.json,",
     "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json 2026-09-25 20:34"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(tracking): 成功率口径改跑赢大盘(beat)——头条/进化对比/柱状图/逐条演变全部切换，涨了就算赢降",
-    "desc": "小字注释"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-25 20:15",
-    "desc": "wip: local snapshot 2026-09-25 20:15"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json 2026-09-25 20:04"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-25 20:00",
-    "desc": "wip: local snapshot 2026-09-25 20:00"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(tracking): 给每条分析补 stats.beat(跑赢大盘口径)，成功率展示改跑赢大盘",
-    "desc": "fix(tracking): 给每条分析补 stats.beat(跑赢大盘口径)，成功率展示改跑赢大盘"
-  },
-  {
-    "date": "2026-09-25",
-    "tag": "fix",
-    "title": "fix(tracking): 新增 rec_tag_map.json(全量真实通道台账) + 通道解析改 chOf(未知",
-    "desc": "底)，修复「通道全eco」假数据"
   }
 ]
