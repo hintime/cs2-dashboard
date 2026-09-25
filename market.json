@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 986.31,
-    "change": -1.37,
-    "change_pct": -1.37,
-    "market_value": 302750979.14,
-    "total_items": 4067,
-    "updated": "2026-09-26T00:00:03+08:00",
+    "latest": 958.51,
+    "change": -4.15,
+    "change_pct": -4.15,
+    "market_value": 294220151.17,
+    "total_items": 4042,
+    "updated": "2026-09-26T02:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3806,6 +3806,14 @@
         "close": 986.31,
         "high": 1000.72,
         "low": 986.31
+      },
+      {
+        "date": "2026-09-26",
+        "dateFull": "2026-09-26 02:00",
+        "open": 958.51,
+        "close": 958.51,
+        "high": 958.51,
+        "low": 958.51
       }
     ],
     "volBar": [],
@@ -11401,12 +11409,20 @@
         "index": 986.31,
         "change_pct": -1.37,
         "market_value": 302750979.14
+      },
+      {
+        "time": "02:00",
+        "date": "2026-09-26",
+        "timestamp": 1790359203,
+        "index": 958.51,
+        "change_pct": -4.15,
+        "market_value": 294220151.17
       }
     ],
     "selling": {
-      "total_selling": 1381392,
+      "total_selling": 1368846,
       "total_selling_prev": 0,
-      "total_selling_delta": 1381392,
+      "total_selling_delta": 1368846,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11414,7 +11430,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790352003721,
+  "index_updated": 1790359203516,
   "alerts": [
     {
       "name": "M4A4 | Urban DDPAT (Factory New)",
@@ -29984,7 +30000,7 @@
     "MP9 | Storm (Factory New)",
     "MP9 | Storm (Minimal Wear)"
   ],
-  "updated": "2026-09-25T17:34:24Z",
+  "updated": "2026-09-25T18:04:22Z",
   "steam_market_items": 76,
   "steam_market_recs": {
     "momentum": [],
