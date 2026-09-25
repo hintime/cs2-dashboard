@@ -1,11 +1,77 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 13,
+  "total_analyses": 14,
   "lessons": [
     {
+      "id": "L-GAP",
+      "category": "数据源",
+      "category_key": "source",
+      "lesson": "全库 1086 条推荐里只有 120 条（11.0%）带维度数据（dims 自 2026-09-18 才写入），因子分层实际样本 n=120、中位持有 6 天",
+      "impact": "高",
+      "action": "因子类结论一律标注\"样本不足\"；维度数据攒到 200 条以上再据此改权重",
+      "auto": true,
+      "added_at": "2026-09-25",
+      "confirmed": 1
+    },
+    {
+      "id": "L-CH",
+      "category": "评分",
+      "lesson": "BUFF 通道胜率 74.6%（n=917，均值 +69.98%），ECO 通道仅 21.1%（n=109，均值 -18.18%）（同批次内一致：26-06 73%vs0%、26-07 76%vs0%、26-09 68%vs44%）",
+      "impact": "高",
+      "action": "BUFF 在每个推荐月都赢 ECO，不是批次假象 → ECO 通道降权、名额向 BUFF 倾斜",
+      "auto": true,
+      "added_at": "2026-09-25",
+      "confirmed": 4,
+      "last_seen": "2026-09-25"
+    },
+    {
+      "id": "L-NF",
+      "category": "评分",
+      "lesson": "真实存世量 区分度 -3.76%：低档均值 +0.40% 反而高于高档 -3.36%（⚠样本仅 120 条，待验证）",
+      "impact": "中",
+      "action": "先不动 真实存世量 的权重，等维度数据攒够 200 条再判",
+      "auto": true,
+      "added_at": "2026-09-25",
+      "confirmed": 4,
+      "last_seen": "2026-09-25"
+    },
+    {
+      "id": "L-COV",
+      "category": "数据源",
+      "lesson": "数据覆盖率区分度 -1.49%：覆盖率低档 -1.26% vs 高档 -2.75%",
+      "impact": "中",
+      "action": "覆盖率不影响收益，不必为它牺牲覆盖面",
+      "auto": true,
+      "added_at": "2026-09-25",
+      "confirmed": 4,
+      "last_seen": "2026-09-25"
+    },
+    {
+      "id": "L-HOLD",
+      "category": "时机",
+      "lesson": "持有 77 天的批次均值 +132.41%（n=30），持有 7 天仅 -1.57%（n=30）；但持有天数 = 推荐日早晚，与批次行情耦合，不能读成\"持有越久越好\"",
+      "impact": "中",
+      "action": "跨批次比收益必须先固定推荐日；复盘只在同批次内横向比",
+      "auto": true,
+      "added_at": "2026-09-25",
+      "confirmed": 4,
+      "last_seen": "2026-09-25"
+    },
+    {
+      "id": "L-PRICE",
+      "category": "市场",
+      "lesson": "¥200+ 区间均值 +87.62%（n=605），¥10~50 区间仅 +5.14%（n=222）（同批次内一致：26-06 200+ 85%、26-07 200+ 77%、26-09 200+ 84%）",
+      "impact": "中",
+      "action": "推荐池向 ¥200+ 区间倾斜",
+      "auto": true,
+      "added_at": "2026-09-25",
+      "confirmed": 4,
+      "last_seen": "2026-09-25"
+    },
+    {
       "id": "L01",
-      "category": "timing/market/source/scoring",
+      "category": "综合",
       "lesson": "市场信号解读不足，导致供需失衡",
       "impact": "高",
       "action": "加强市场趋势分析，调整推荐时机",
@@ -15,7 +81,7 @@
     },
     {
       "id": "L02",
-      "category": "timing/market/source/scoring",
+      "category": "综合",
       "lesson": "溢价过高导致推荐失败",
       "impact": "高",
       "action": "设定合理溢价阈值，避免盲目跟风",
@@ -24,18 +90,8 @@
       "last_seen": "2026-09-21"
     },
     {
-      "id": "L03",
-      "category": "scoring",
-      "lesson": "ECO评分权重过高，导致部分推荐失误",
-      "impact": "中",
-      "action": "调整ECO和BUFF评分权重，平衡推荐结果",
-      "added_at": "2026-06-16",
-      "confirmed": 13,
-      "last_seen": "2026-09-21"
-    },
-    {
       "id": "L04",
-      "category": "source",
+      "category": "数据源",
       "lesson": "信息来源单一，缺乏全面性",
       "impact": "中",
       "action": "拓宽信息来源，增加数据维度",
@@ -44,63 +100,18 @@
       "last_seen": "2026-09-21"
     },
     {
-      "id": "L-CH",
-      "category": "scoring",
-      "lesson": "BUFF 通道胜率 74.6%（n=917，均值 +69.98%），ECO 通道仅 21.1%（n=109，均值 -18.18%）（同批次内一致：26-06 73%vs0%、26-07 76%vs0%、26-09 68%vs44%）",
-      "impact": "高",
-      "action": "BUFF 在每个推荐月都赢 ECO，不是批次假象 → ECO 通道降权、名额向 BUFF 倾斜",
-      "auto": true,
-      "added_at": "2026-09-25",
-      "confirmed": 3,
-      "last_seen": "2026-09-25"
-    },
-    {
-      "id": "L-NF",
-      "category": "scoring",
-      "lesson": "真实存世量 区分度 -3.76%：低档均值 +0.40% 反而高于高档 -3.36%（⚠样本仅 120 条，待验证）",
+      "id": "L03",
+      "category": "评分",
+      "lesson": "ECO评分权重过高，导致部分推荐失误",
       "impact": "中",
-      "action": "先不动 真实存世量 的权重，等维度数据攒够 200 条再判",
-      "auto": true,
-      "added_at": "2026-09-25",
-      "confirmed": 3,
-      "last_seen": "2026-09-25"
-    },
-    {
-      "id": "L-COV",
-      "category": "source",
-      "lesson": "数据覆盖率区分度 -1.49%：覆盖率低档 -1.26% vs 高档 -2.75%",
-      "impact": "中",
-      "action": "覆盖率不影响收益，不必为它牺牲覆盖面",
-      "auto": true,
-      "added_at": "2026-09-25",
-      "confirmed": 3,
-      "last_seen": "2026-09-25"
-    },
-    {
-      "id": "L-HOLD",
-      "category": "timing",
-      "lesson": "持有 77 天的批次均值 +132.41%（n=30），持有 7 天仅 -1.57%（n=30）；但持有天数 = 推荐日早晚，与批次行情耦合，不能读成\"持有越久越好\"",
-      "impact": "中",
-      "action": "跨批次比收益必须先固定推荐日；复盘只在同批次内横向比",
-      "auto": true,
-      "added_at": "2026-09-25",
-      "confirmed": 3,
-      "last_seen": "2026-09-25"
-    },
-    {
-      "id": "L-PRICE",
-      "category": "market",
-      "lesson": "¥200+ 区间均值 +87.62%（n=605），¥10~50 区间仅 +5.14%（n=222）（同批次内一致：26-06 200+ 85%、26-07 200+ 77%、26-09 200+ 84%）",
-      "impact": "中",
-      "action": "推荐池向 ¥200+ 区间倾斜",
-      "auto": true,
-      "added_at": "2026-09-25",
-      "confirmed": 3,
-      "last_seen": "2026-09-25"
+      "action": "调整ECO和BUFF评分权重，平衡推荐结果",
+      "added_at": "2026-06-16",
+      "confirmed": 13,
+      "last_seen": "2026-09-21"
     },
     {
       "id": "L05",
-      "category": "reason",
+      "category": "推荐理由",
       "lesson": "部分推荐理由重复，缺乏针对性",
       "impact": "低",
       "action": "理由应包含具体指标数值（如溢价率）",
@@ -112,7 +123,7 @@
   "history": [
     {
       "id": "L-GAP",
-      "category": "source",
+      "category": "数据源",
       "lesson": "全库 1086 条推荐里只有 120 条（11.0%）带维度数据（dims 自 2026-09-18 才写入），因子分层实际样本 n=120、中位持有 6 天",
       "impact": "高",
       "action": "因子类结论一律标注\"样本不足\"；维度数据攒到 200 条以上再据此改权重",
@@ -122,7 +133,7 @@
     },
     {
       "id": "L-GAP",
-      "category": "source",
+      "category": "数据源",
       "lesson": "全库 1086 条推荐里只有 120 条（11.0%）带维度数据（dims 自 2026-09-18 才写入），因子分层实际样本 n=120、中位持有 6 天",
       "impact": "高",
       "action": "因子类结论一律标注\"样本不足\"；维度数据攒到 200 条以上再据此改权重",
@@ -132,7 +143,7 @@
     },
     {
       "id": "L-GAP",
-      "category": "source",
+      "category": "数据源",
       "lesson": "全库 1086 条推荐里只有 120 条（11.0%）带维度数据（dims 自 2026-09-18 才写入），因子分层实际样本 n=120、中位持有 6 天",
       "impact": "高",
       "action": "因子类结论一律标注\"样本不足\"；维度数据攒到 200 条以上再据此改权重",
@@ -141,7 +152,7 @@
       "confirmed": 1
     }
   ],
-  "last_updated": "2026-09-25T09:47:12Z",
+  "last_updated": "2026-09-25T09:56:35Z",
   "analysis_history": [
     {
       "seq": 1,
@@ -521,6 +532,39 @@
         "reason_keywords_avoid": "真实存世量、BUFF溢价、BUFF在售单"
       },
       "prompt_tweak": "建议：组胜率显著高于均值，Buff维度分、ECO求购单、相对Steam偏离对策略效果有显著影响，建议关注Buff维度分与组胜率的正相关性，同时结合ECO求购单的波动性对组胜率的影响进行进一步分析。",
+      "stats": {
+        "total": 1093,
+        "priced": 1086,
+        "profitable": 733,
+        "rate": 67.5
+      }
+    },
+    {
+      "seq": 14,
+      "ts": "2026-09-25T09:56:35Z",
+      "overview": {
+        "verdict": "基准组 1026 条：涨了就算赢 68.9%，平均 +60.61%；跑赢大盘 82.9%（大盘中位 -13.42%）；BUFF 通道 74.6% vs ECO 通道 21.1%",
+        "ai_verdict": "跑赢大盘83.9%，但ECO通道胜率仅21.1%",
+        "success_pattern": "BUFF通道n=917胜率74.6%，均值+69.98%",
+        "failure_pattern": "ECO通道n=109胜率21.1%，均值-18.18%",
+        "confidence_trend": "下降",
+        "market_signal": "大盘中位-13.42%，推荐抗跌"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "-5%/ECO通道胜率21.1%",
+        "buff_weight_advice": "+5%/BUFF通道胜率74.6%",
+        "flow_weight_advice": "不变/区分度不足3%",
+        "yy_weight_advice": "+2%/悠悠溢价门槛有效",
+        "premium_threshold_advice": "只推BUFF溢价<0的，n=52但均值-1.96%，暂不加",
+        "liquidity_advice": "覆盖率<0.7的排除，占比n见统计"
+      },
+      "reason_analysis": {
+        "right_reasons": "BUFF通道n=917胜率74.6%，均值+69.98%",
+        "wrong_reasons": "ECO通道n=109胜率21.1%，均值-18.18%",
+        "reason_keywords_use": "BUFF维度分、ECO求购单、相对Steam偏离",
+        "reason_keywords_avoid": "真实存世量、BUFF溢价、BUFF在售单"
+      },
+      "prompt_tweak": "建议保留Buff维度分、ECO求购单和相对Steam偏离等有效维度数据，对比组胜率68.9%与均值60.61%，突出Buff维度分在策略中的重要性，避免提及真实存世量、Buff溢价和Buff在售单等无效维度。重点分析Buff维度分与组胜率的关系，验证策略的有效性。",
       "stats": {
         "total": 1093,
         "priced": 1086,

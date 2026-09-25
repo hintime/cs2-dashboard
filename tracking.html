@@ -92,6 +92,14 @@ td.name{color:var(--text);max-width:230px;overflow:hidden;text-overflow:ellipsis
 .ew-row .vv{font-size:10px;min-width:44px;text-align:right}
 .evo-hist{font-size:10.5px;line-height:1.8;color:var(--text3)}
 .evo-hist b{color:var(--text2)}
+/* ── 2026-09-25：经验教训条目增强（分行正文 + 元信息） ── */
+.lesson{align-items:flex-start}
+.lesson .txt .ll{display:block;line-height:1.65;padding-left:9px;position:relative}
+.lesson .txt .ll:before{content:"";position:absolute;left:0;top:8px;width:4px;height:4px;border-radius:50%;background:var(--text3)}
+.lesson .txt .act{display:block;margin-top:3px;padding-left:9px}
+.lmeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.lz{font-size:9.5px;color:var(--text3);background:var(--surface2);border:1px solid var(--hair);border-radius:5px;padding:1px 6px}
+.lz-auto{color:var(--blue);border-color:rgba(88,166,255,.35)}
 /* ── 2026-09-25：统计引擎实测区块（因子表 / 门槛回测）── */
 .mini-tbl{width:100%;border-collapse:collapse;font-size:11px}
 .mini-tbl th{text-align:left;color:var(--text3);font-weight:600;padding:5px 6px;border-bottom:1px solid var(--hair);white-space:nowrap}
@@ -157,7 +165,7 @@ td.name{color:var(--text);max-width:230px;overflow:hidden;text-overflow:ellipsis
   </div>
 
   <div class="card" id="lessonsCard" style="display:none">
-    <h2>📖 经验教训 <span class="badge-mini gold" id="lessonCount"></span></h2>
+    <h2>📖 经验教训 <span class="badge-mini gold" id="lessonCount"></span><span style="font-size:10px;color:var(--text3);font-weight:400;margin-left:6px">按新增日期排序 · 可直接对照数字复核</span></h2>
     <div id="lessonsContent"></div>
   </div>
 </div>
@@ -607,24 +615,76 @@ function runAITrackAnalysis() {
 
             if (lessons.lessons && lessons.lessons.length) {
               var lCard = document.getElementById('lessonsCard');
-              var lEl = document.getElementById('lessonsContent');
               var lCount = document.getElementById('lessonCount');
               lCard.style.display = '';
-              if (lCount) lCount.textContent = lessons.lessons.length + ' 条教训 · ' + (lessons.total_analyses || 0) + ' 次分析';
-              var lhtml = '<div style="font-size:10px;color:var(--text3);margin-bottom:6px">AI 从追踪数据中提炼的涨跌规律</div>';
-              lessons.lessons.slice(0, 8).forEach(function (l) {
-                var cat = { timing: '⏰ 时机', market: '📈 市场', source: '📡 数据源', scoring: '📊 评分' }[l.category] || ('📌 ' + l.category);
+              if (lCount) lCount.textContent = lessons.lessons.length + ' 条活跃 · ' + lessons.total_analyses + ' 次分析';
+              window.__lessons = lessons;
+              /* ── 教训渲染 ★ 2026-09-25 ──
+                 ① category 直接是中文（后端已归一），不再做英文映射，避免 "a/b/c" 长串漏出来
+                 ② 排序改为按 added_at 分组，新批次在最前（后端已排好，这里保持）
+                 ③ 正文按句拆成 2~4 行并列，不再一大坨
+                 ④ 显示新增日期、来源（统计引擎/AI）
+                 ⑤ 默认显示 8 条，可展开全部（原来硬编码 8 条，新教训被元老挤掉） */
+              var _lall = (window.__lessons || {}).lessons || [];
+              var lEl = document.getElementById('lessonsContent');
+              if (!lEl) return;
+              var _lopen = false;
+              function renderAll() {
+              var lines = function (t, maxN) {
+                var raw = String(t || '').split(/[；;]|(?<=[。%）)])且/);
+                var seg = [];
+                raw.forEach(function (x) {
+                  x = x.trim();
+                  if (!x) return;
+                  if (x.length <= 46) { seg.push(x); return; }
+                  var parts = x.split(/[，,]/).reduce(function (acc, p) {
+                    if (acc.length && (acc[acc.length - 1] + '，' + p).length <= 46) acc[acc.length - 1] += '，' + p;
+                    else acc.push(p);
+                    return acc;
+                  }, []);
+                  seg = seg.concat(parts);
+                });
+                if (maxN && seg.length > maxN) seg = seg.slice(0, maxN);
+                return seg;
+              };
+              var lessonHtml = function (l) {
+                var cat = l.category || '其他';
+                if (cat.length > 6) cat = '综合';
                 var impactColor = l.impact === '高' ? 'var(--rise)' : l.impact === '中' ? 'var(--amber)' : 'var(--text3)';
                 var conf = l.confirmed || 1;
                 var stars = '⭐'.repeat(Math.min(conf, 5));
                 var isNew = conf <= 1 ? ' <span style="font-size:9px;color:var(--amber)">NEW</span>' : '';
-                var confNote = conf >= 3 ? ' <span style="font-size:9px;color:var(--fall)">已验证×' + conf + '</span>' : '';
-                lhtml += '<div class="lesson">' +
-                  '<span class="cat">' + cat + ' ' + stars + isNew + '</span>' +
-                  '<span class="txt">' + esc(l.lesson) + '<br><span class="act">→ ' + esc(l.action || '') + confNote + '</span></span>' +
+                var confNote = conf >= 3 ? '<span class="lz">已验证 ×' + conf + '</span>' : '';
+                var srcNote = l.auto ? '<span class="lz lz-auto">统计引擎</span>' : '<span class="lz">AI 生成</span>';
+                var dateNote = l.added_at ? '<span class="lz">' + esc(l.added_at) + '</span>' : '';
+                var h = '<div class="lesson">' +
+                  '<span class="cat">📌 ' + esc(cat) + ' ' + stars + isNew + '</span>' +
+                  '<span class="txt">';
+                lines(l.lesson).forEach(function (x) { h += '<span class="ll">' + esc(x) + '</span>'; });
+                if (l.action) {
+                  h += '<span class="act">→ ' + esc(l.action) + '</span>';
+                }
+                h += '<span class="lmeta">' + srcNote + dateNote + confNote + '</span>';
+                h += '</span>' +
                   '<span class="imp" style="color:' + impactColor + '">' + (l.impact || '?') + '</span></div>';
-              });
+                return h;
+              };
+              var lhtml = '<div style="font-size:10px;color:var(--text3);margin-bottom:6px">' +
+                '规律来自追踪数据统计（因子分层 / 门槛回测 / 同批次对比），数字均可在本页上方复核</div>';
+              var _shown = _lopen ? _lall : _lall.slice(0, 8);
+              _shown.forEach(function (l) { lhtml += lessonHtml(l); });
+              if (_lall.length > 8) {
+                lhtml += '<button class="more" id="lessonMore" style="margin-top:6px">' +
+                  (_lopen ? '收起' : ('展开全部 ' + _lall.length + ' 条')) + '</button>';
+              }
               lEl.innerHTML = lhtml;
+              var lm = document.getElementById('lessonMore');
+              if (lm) lm.addEventListener('click', function () {
+                _lopen = !_lopen;
+                renderAll();
+              });
+              }
+              renderAll();
             }
           });
       } else {
