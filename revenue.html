@@ -22,10 +22,22 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
 .header .nav a:hover{text-decoration:underline}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px}
 
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .tab{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .15s ease;user-select:none}
 .tab:hover{border-color:rgba(148,163,184,.5);color:var(--text)}
 .tab.on{background:rgba(88,166,255,.14);border-color:rgba(88,166,255,.5);color:var(--blue);font-weight:600}
+
+/* 联动过滤条：所有板块共享同一组过滤，chips 显示激活条件，可单独清除 */
+.fbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;min-height:26px}
+.fchip{display:inline-flex;align-items:center;gap:5px;background:rgba(88,166,255,.12);border:1px solid rgba(88,166,255,.45);
+  color:var(--blue);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;user-select:none;transition:all .15s ease}
+.fchip:hover{background:rgba(88,166,255,.2)}
+.fchip .x{opacity:.7;font-size:11px}
+.fchip .x:hover{opacity:1}
+.fchip.dim{background:var(--surface2);border-color:var(--border);color:var(--text2)}
+.fclear{background:var(--surface2);border:1px solid var(--border);color:var(--text3);border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer;transition:all .15s ease}
+.fclear:hover{color:var(--text);border-color:rgba(148,163,184,.5)}
+.fhint{font-size:11px;color:var(--text3)}
 
 .hero{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .hero .big{font-size:34px;font-weight:800;font-family:'DM Mono','JetBrains Mono',ui-monospace,monospace;letter-spacing:-.03em;line-height:1.1}
@@ -38,10 +50,12 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
 .wring .bgc{fill:none;stroke:var(--surface2);stroke-width:6}
 .wring .fgc{fill:none;stroke-width:6;stroke-linecap:round}
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
-.m{background:var(--surface2);border:1px solid var(--hair);border-radius:8px;padding:9px 12px}
+.m{background:var(--surface2);border:1px solid var(--hair);border-radius:8px;padding:9px 12px;transition:all .15s ease}
+.m.click{cursor:pointer}
+.m.click:hover{border-color:rgba(88,166,255,.5);background:rgba(88,166,255,.06)}
 .m .k{font-size:11px;color:var(--text3);margin-bottom:3px}
-.m .v{font-size:15px;font-weight:750;font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.m .s{font-size:11px;color:var(--text3);margin-top:2px}
+.m .v{font-size:15px;font-weight:750;font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
+.m .s{font-size:11px;color:var(--text3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .m .v.rise{color:var(--rise)}.m .v.fall{color:var(--fall)}.m .v.blue{color:var(--blue)}
 
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -50,6 +64,7 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;background:linear-gradie
 .chart-svg{width:100%;height:auto;display:block}
 .chart-line{fill:none;stroke-width:2;stroke-linejoin:round}
 .zero-line{stroke:rgba(255,255,255,.1);stroke-width:1;stroke-dasharray:4,3}
+rect.barp, circle.daypt{cursor:pointer}
 
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
 th{padding:8px 10px;color:var(--text3);font-size:11px;letter-spacing:.4px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;user-select:none}
@@ -60,14 +75,18 @@ th.act{color:var(--blue)}th.act .arw{opacity:1}
 td{padding:8px 10px;border-bottom:1px solid var(--hair);color:var(--text2)}
 tbody tr{transition:background .15s ease}
 tbody tr:hover{background:rgba(88,166,255,.05)}
+tbody tr.catrow{cursor:pointer}
+tbody tr.catrow.on{background:rgba(88,166,255,.1)}
+tbody tr.catrow.on td:first-child{color:var(--blue);font-weight:600}
 td.num{font-family:'DM Mono',monospace;white-space:nowrap;font-variant-numeric:tabular-nums}
 td.rise{color:var(--rise);font-weight:700}td.fall{color:var(--fall);font-weight:700}
 td.name{color:var(--text);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mkt-tag{display:inline-block;font-size:10px;padding:1px 5px;border-radius:4px;margin-left:6px;background:rgba(148,163,184,.12);color:var(--text3)}
-.search{width:100%;padding:6px 10px;margin-bottom:10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-family:inherit;outline:none}
+.search{width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-family:inherit;outline:none}
 .search:focus{border-color:rgba(88,166,255,.6)}
 .search::placeholder{color:var(--text3)}
 .toolbar2{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.toolbar2 .search{width:auto;flex:1 1 200px;margin-bottom:0}
 .btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s ease}
 .btn:hover{border-color:rgba(148,163,184,.5);color:var(--text)}
 
@@ -104,26 +123,31 @@ td.name{color:var(--text);max-width:240px;overflow:hidden;text-overflow:ellipsis
       <button class="tab" data-d="30">近30天</button>
       <button class="tab" data-d="0">全部</button>
     </div>
+    <div class="fbar" id="revFbar"></div>
     <div id="revBody"><div class="empty"><span class="loading"></span></div></div>
   </div>
 </div>
 <script>
 /* ══════════════════════════════════════════════════════════════════
-   卖出复盘 —— 2026-09-25 完全重写
+   卖出复盘 —— 2026-09-25 联动增强版
    数据契约（与 index.html 卖出流程一致，旧记录兼容）：
-     { n:名称(中文), w:磨损码, c:买入成本, p:卖出价, pnl:利润, pnlPct:利润率, date:'2026/9/5 14:00:00' }
-   来源：localStorage cs2_sold_items + Worker /api/sold（跨设备同步）
-   相比旧版新增：胜率环 / 盈亏比 / 每笔期望 / 最大单笔 / 品类盈亏 /
-                每日盈亏柱状图 / 可排序单品明细 / CSV 导出
-   原则：只统计真实记录；没有买入时间就不编造"持仓时长"。
+     { n:名称, w:磨损码, c:买入成本, p:卖出价, pnl:利润, pnlPct:利润率, date }
+   来源：localStorage cs2_sold_items + Worker /api/sold
+
+   ★ 联动模型：时间 / 搜索 / 品类 / 日期 / 盈亏方向 组成一组全局过滤，
+     页面上所有板块（利润卡、胜率、指标、双图、品类表、明细表）都基于
+     同一份过滤结果计算——点品类行只看该品类、点柱状图只看那一天、
+     点最大单笔卡聚焦该饰品，过滤条件在过滤条上可单独清除。
    ══════════════════════════════════════════════════════════════════ */
 
 var WORKER_BASE = 'https://cs2wyx.asia';
-var state = { raw: [], filterDays: 7, q: '', sort: { key: 'date', dir: -1 }, shown: 30, cloudCount: -1 };
+var state = {
+  raw: [], filterDays: 7, q: '', cat: null, day: null, side: 'all',
+  sort: { key: 'date', dir: -1 }, shown: 30, cloudCount: -1
+};
 
 var WEAR_ZH = { FN: '崭新出厂', MW: '略有磨损', FT: '久经沙场', WW: '战地风云', BS: '战痕累累' };
 
-/* 品类推断（与 index.html inferCatFromName 同口径的精简版） */
 var CAT = [
   ['sticker', /印花|胶囊|武器箱|涂鸦|布章|挂件|Charm|Capsule|Case$/i],
   ['music',   /^音乐盒|Music Kit/],
@@ -135,8 +159,9 @@ function catOf(name) {
   var s = String(name || '');
   for (var i = 0; i < CAT.length; i++) if (CAT[i][1].test(s)) return CAT[i][0];
   var head = s.split('|')[0].trim();
-  if (/^(AK-47|M4A1|M4A4|AWP|AUG|SG ?553|FAMAS|法玛斯|加利尔|Galil|G3SG1|SCAR-20|SSG ?08|M249|内格夫|Negev|MP9|MAC-10|MP7|MP5|UMP-45|P90|PP-野牛|PP-Bizon|P2000|USP|USP消音版|格洛克|Glock|P250|Five-SeveN|Tec-9|CZ75|R8|沙漠之鹰|Desert ?Eagle|双持贝瑞塔|新星|Nova|XM1014|MAG-7|截短霰弹枪|Sawed-Off)/i.test(head)) return 'weapon';
-  if (/^(AK-47|M4A1|M4A4|AWP|AUG|SG ?553|FAMAS|法玛斯|加利尔|Galil|G3SG1|SCAR-20|SSG ?08|M249|内格夫|Negev|MP9|MAC-10|MP7|MP5|UMP-45|P90|PP-野牛|PP-Bizon|P2000|USP|USP消音版|格洛克|Glock|P250|Five-SeveN|Tec-9|CZ75|R8|沙漠之鹰|Desert ?Eagle|双持贝瑞塔|新星|Nova|XM1014|MAG-7|截短霰弹枪|Sawed-Off)/i.test(s)) return 'weapon';
+  var GUNS = /^(AK-47|M4A1|M4A4|AWP|AUG|SG ?553|FAMAS|法玛斯|加利尔|Galil|G3SG1|SCAR-20|SSG ?08|M249|内格夫|Negev|MP9|MAC-10|MP7|MP5|UMP-45|P90|PP-野牛|PP-Bizon|P2000|USP|USP消音版|格洛克|Glock|P250|Five-SeveN|Tec-9|CZ75|R8|沙漠之鹰|Desert ?Eagle|双持贝瑞塔|新星|Nova|XM1014|MAG-7|截短霰弹枪|Sawed-Off)/i;
+  if (GUNS.test(head)) return 'weapon';
+  if (GUNS.test(s)) return 'weapon';
   return 'other';
 }
 
@@ -145,7 +170,6 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 function money(v) { return (v >= 0 ? '+' : '−') + '¥' + Math.abs(v).toFixed(2); }
-/* '2026/9/5 14:00:00' / ISO → 规范化（旧记录无前导零，直接字符串排序会乱） */
 function normDate(s) {
   var d = new Date(s);
   if (isNaN(d.getTime())) return { key: '', disp: String(s || '') };
@@ -163,7 +187,6 @@ function loadLocal() {
 function loadRev() {
   state.raw = loadLocal();
   render();
-  /* 云端同步：远端条数更多则采用（Worker 无删除接口，只增不删） */
   fetch(WORKER_BASE + '/api/sold').then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
     if (!Array.isArray(data)) return;
     state.cloudCount = data.length;
@@ -175,12 +198,17 @@ function loadRev() {
   }).catch(function () {});
 }
 
-/* ── 统计 ── */
+/* ── 全局过滤（所有板块共用）── */
 function filtered() {
   var q = state.q.trim().toLowerCase();
   var now = Date.now();
   return state.raw.filter(function (s) {
     if (state.filterDays > 0 && now - new Date(s.date).getTime() > state.filterDays * 86400000) return false;
+    if (state.cat && catOf(s.n) !== state.cat) return false;
+    if (state.day && normDate(s.date).key !== state.day) return false;
+    var pnl = Number(s.pnl) || 0;
+    if (state.side === 'win' && pnl <= 0) return false;
+    if (state.side === 'lose' && pnl >= 0) return false;
     if (q && String(s.n || '').toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
@@ -207,15 +235,46 @@ function stats(rows) {
   var avgLose = lose ? Math.abs(loseRows.reduce(function (a, s) { return a + Number(s.pnl); }, 0) / lose) : 0;
   var pl = avgLose > 0 ? avgWin / avgLose : null;
   var ev = total ? (wr * avgWin - (1 - wr) * avgLose) : 0;
-  return {
-    total: total, win: win, lose: lose, wr: wr,
-    sumPnl: sumPnl, sumSell: sumSell, sumCost: sumCost,
-    avgWin: avgWin, avgLose: avgLose, pl: pl, ev: ev,
-    maxWin: maxWin, maxLose: maxLose, byCat: byCat
-  };
+  return { total: total, win: win, lose: lose, wr: wr, sumPnl: sumPnl, sumSell: sumSell,
+           sumCost: sumCost, avgWin: avgWin, avgLose: avgLose, pl: pl, ev: ev,
+           maxWin: maxWin, maxLose: maxLose, byCat: byCat };
 }
 
-/* ── 渲染 ── */
+/* ── 过滤条：显示激活条件，可单独清除 ── */
+function renderFbar() {
+  var f = document.getElementById('revFbar');
+  var chips = [];
+  function chip(label, fn) {
+    return '<span class="fchip" data-fn="' + fn + '">' + esc(label) + '<span class="x">✕</span></span>';
+  }
+  if (state.q.trim()) chips.push(chip('搜索：' + state.q.trim(), 'q'));
+  if (state.cat) chips.push(chip('品类：' + (CAT_ZH[state.cat] || state.cat), 'cat'));
+  if (state.day) chips.push(chip('日期：' + state.day, 'day'));
+  if (state.side !== 'all') chips.push(chip(state.side === 'win' ? '只看盈利' : '只看亏损', 'side'));
+  if (state.filterDays > 0) chips.push('<span class="fchip dim">近' + state.filterDays + '天（上方可改）</span>');
+  var html = chips.length
+    ? chips.join('') + '<span class="fclear" id="fclear">清除全部筛选</span>'
+    : '<span class="fhint">提示：点品类表、图表柱子或最大单笔卡，可联动筛选全页数据</span>';
+  f.innerHTML = html;
+  f.querySelectorAll('.fchip[data-fn]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var fn = this.getAttribute('data-fn');
+      if (fn === 'q') state.q = '';
+      if (fn === 'cat') state.cat = null;
+      if (fn === 'day') state.day = null;
+      if (fn === 'side') state.side = 'all';
+      state.shown = 30;
+      render();
+    });
+  });
+  var clr = document.getElementById('fclear');
+  if (clr) clr.addEventListener('click', function () {
+    state.q = ''; state.cat = null; state.day = null; state.side = 'all';
+    state.shown = 30;
+    render();
+  });
+}
+
 function render() {
   var rows = filtered();
   var st = stats(rows);
@@ -226,16 +285,19 @@ function render() {
 
   var body = document.getElementById('revBody');
   if (!state.raw.length) {
+    renderFbar();
     body.innerHTML = '<div class="empty"><div class="ico">◍</div><div class="t">还没有卖出记录</div>' +
       '<div class="d">在持仓面板点 <code>卖出此件</code> 并确认后，这一笔会自动记到这里：' +
       '买入成本、卖出价、盈亏都会留下，随时回来复盘。</div></div>';
     return;
   }
   if (!rows.length) {
-    body.innerHTML = '<div class="empty"><div class="ico">◍</div><div class="t">该时间段没有卖出记录</div>' +
-      '<div class="d">换个时间范围，或切到「全部」。</div></div>';
+    renderFbar();
+    body.innerHTML = '<div class="empty"><div class="ico">◍</div><div class="t">当前筛选下没有卖出记录</div>' +
+      '<div class="d">用上方的筛选 chips 清除部分条件，或切到「全部」。</div></div>';
     return;
   }
+  renderFbar();
 
   var pc = st.sumPnl >= 0 ? 'rise' : 'fall';
   var wrCls = st.wr >= 0.55 ? 'hi' : (st.wr >= 0.4 ? 'mid' : 'lo');
@@ -256,9 +318,9 @@ function render() {
 
   var plTxt = st.pl === null ? '—' : st.pl.toFixed(2);
   var plCls = st.pl === null ? '' : (st.pl >= 1 ? 'rise' : 'fall');
-  var mw = st.maxWin ? '<span class="m"><div class="k">最大单笔盈利</div><div class="v rise">' + money(Number(st.maxWin.pnl)) +
+  var mw = st.maxWin ? '<span class="m click" id="mMaxWin" title="点击：只看这件饰品"><div class="k">最大单笔盈利</div><div class="v rise">' + money(Number(st.maxWin.pnl)) +
     '</div><div class="s">' + esc(String(st.maxWin.n).slice(0, 18)) + '</div></span>' : '';
-  var ml = st.maxLose ? '<span class="m"><div class="k">最大单笔亏损</div><div class="v fall">' + money(Number(st.maxLose.pnl)) +
+  var ml = st.maxLose ? '<span class="m click" id="mMaxLose" title="点击：只看这件饰品"><div class="k">最大单笔亏损</div><div class="v fall">' + money(Number(st.maxLose.pnl)) +
     '</div><div class="s">' + esc(String(st.maxLose.n).slice(0, 18)) + '</div></span>' : '';
   var metrics = '<div class="metrics">' +
     '<span class="m"><div class="k">平均每笔</div><div class="v ' + (st.sumPnl >= 0 ? 'rise' : 'fall') + '">' +
@@ -285,11 +347,12 @@ function render() {
 
   var catRows = Object.keys(st.byCat).map(function (k) { return { k: k, d: st.byCat[k] }; })
     .sort(function (a, b) { return b.d.pnl - a.d.pnl; });
-  var catHtml = '<table><thead><tr><th>品类</th><th style="text-align:right">笔数</th>' +
+  var catHtml = '<table><thead><tr><th>品类（点击联动筛选）</th><th style="text-align:right">笔数</th>' +
     '<th style="text-align:right">胜率</th><th style="text-align:right">盈亏</th></tr></thead><tbody>' +
     catRows.map(function (r) {
       var c = r.d.pnl >= 0 ? 'rise' : 'fall';
-      return '<tr><td>' + esc(CAT_ZH[r.k] || r.k) + '</td>' +
+      return '<tr class="catrow' + (state.cat === r.k ? ' on' : '') + '" data-cat="' + r.k + '">' +
+        '<td>' + esc(CAT_ZH[r.k] || r.k) + (state.cat === r.k ? ' ✓' : '') + '</td>' +
         '<td class="num" style="text-align:right">' + r.d.n + '</td>' +
         '<td class="num" style="text-align:right">' + (r.d.n ? Math.round(r.d.win / r.d.n * 100) : 0) + '%</td>' +
         '<td class="num ' + c + '" style="text-align:right">' + money(r.d.pnl) + '</td></tr>';
@@ -298,8 +361,8 @@ function render() {
   body.innerHTML =
     hero + metrics +
     '<div class="charts" style="margin-top:12px">' +
-      '<div class="chart-box"><div class="ct">累计利润（按日）</div>' + lineChart(series) + '</div>' +
-      '<div class="chart-box"><div class="ct">每日盈亏（悬停看当日合计与笔数）</div>' + barChart(series) + '</div>' +
+      '<div class="chart-box"><div class="ct">累计利润（按日，点击数据点联动筛选该日）</div>' + lineChart(series) + '</div>' +
+      '<div class="chart-box"><div class="ct">每日盈亏（点击柱子联动筛选该日）</div>' + barChart(series) + '</div>' +
     '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">' +
       '<div class="chart-box"><div class="ct">品类盈亏</div>' + catHtml + '</div>' +
@@ -308,12 +371,16 @@ function render() {
         '· 记录在持仓面板点「卖出此件」时生成，跨设备由 Worker 同步<br>' +
         '· 盈亏 = 卖出价 − 买入成本（挂牌价口径，非实际到账）<br>' +
         '· 胜率环：≥55% 绿 / 40~55% 黄 / &lt;40% 红<br>' +
-        '· <b>每笔期望</b> = 胜率×平均盈利 − 败率×平均亏损，衡量当前打法长期是否赚钱<br>' +
+        '· <b>每笔期望</b> = 胜率×平均盈利 − 败率×平均亏损<br>' +
+        '· 联动：品类行 / 图表 / 最大单笔卡 点击后全页同步筛选，过滤条可清除<br>' +
         '· 旧记录没有买入时间，所以没有「持仓时长」——不编造</div>' +
       '</div>' +
     '</div>' +
     '<div style="margin-top:12px">' +
       '<div class="toolbar2"><input class="search" id="revSearch" placeholder="搜索饰品…" value="' + esc(state.q) + '">' +
+      '<span class="fchip" data-side="all" style="' + (state.side === 'all' ? '' : 'background:var(--surface2);border-color:var(--border);color:var(--text2)') + '">全部</span>' +
+      '<span class="fchip" data-side="win" style="' + (state.side === 'win' ? '' : 'background:var(--surface2);border-color:var(--border);color:var(--text2)') + '">只看盈利</span>' +
+      '<span class="fchip" data-side="lose" style="' + (state.side === 'lose' ? '' : 'background:var(--surface2);border-color:var(--border);color:var(--text2)') + '">只看亏损</span>' +
       '<button class="btn" id="revCsv">导出 CSV</button><span style="font-size:11px;color:var(--text3)">共 ' + rows.length + ' 笔</span></div>' +
       '<table><thead><tr>' +
         '<th class="sortable" data-sort="date">日期<span class="arw">↕</span></th>' +
@@ -329,13 +396,14 @@ function render() {
 
   renderTable(rows);
 
+  /* ── 联动事件 ── */
   document.getElementById('revSearch').addEventListener('input', function (e) {
-    state.q = e.target.value; state.shown = 30; renderTable(rows);
+    state.q = e.target.value; state.shown = 30; render();
   });
   document.getElementById('revCsv').addEventListener('click', function () { exportCsv(rows); });
-  document.getElementById('revMore').addEventListener('click', function () {
-    state.shown += 50; renderTable(rows);
-  });
+  var more = document.getElementById('revMore');
+  if (more) more.addEventListener('click', function () { state.shown += 50; renderTable(rows); });
+
   body.querySelectorAll('th.sortable').forEach(function (th) {
     th.addEventListener('click', function () {
       var k = this.getAttribute('data-sort');
@@ -351,6 +419,44 @@ function render() {
   });
   var act = body.querySelector('th[data-sort="' + state.sort.key + '"]');
   if (act) { act.classList.add('act'); var a = act.querySelector('.arw'); if (a) a.textContent = state.sort.dir < 0 ? '↓' : '↑'; }
+
+  /* 品类行 → toggle 品类过滤 */
+  body.querySelectorAll('tr.catrow').forEach(function (tr) {
+    tr.addEventListener('click', function () {
+      var k = this.getAttribute('data-cat');
+      state.cat = (state.cat === k) ? null : k;
+      state.shown = 30;
+      render();
+    });
+  });
+  /* 柱状图 / 累计图数据点 → toggle 日期过滤 */
+  body.querySelectorAll('rect.barp, circle.daypt').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var d = this.getAttribute('data-day');
+      state.day = (state.day === d) ? null : d;
+      state.shown = 30;
+      render();
+    });
+  });
+  /* 最大单笔卡 → 聚焦该饰品 */
+  var mwEl = document.getElementById('mMaxWin');
+  if (mwEl) mwEl.addEventListener('click', function () {
+    state.q = String(st.maxWin.n).slice(0, 40); state.cat = null; state.day = null;
+    state.shown = 30; render();
+  });
+  var mlEl = document.getElementById('mMaxLose');
+  if (mlEl) mlEl.addEventListener('click', function () {
+    state.q = String(st.maxLose.n).slice(0, 40); state.cat = null; state.day = null;
+    state.shown = 30; render();
+  });
+  /* 方向 chips */
+  body.querySelectorAll('.fchip[data-side]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      state.side = this.getAttribute('data-side');
+      state.shown = 30;
+      render();
+    });
+  });
 }
 
 function sortedRows(rows) {
@@ -397,7 +503,7 @@ function renderTable(rows) {
   }
 }
 
-/* ── 图表 ── */
+/* ── 图表（可点击联动）── */
 function lineChart(series) {
   if (series.length < 2) return '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">数据点不足，攒几天再看</div>';
   var cw = 440, ch = 170, pad = { t: 14, r: 10, b: 24, l: 52 }, pW = cw - pad.l - pad.r, pH = ch - pad.t - pad.b;
@@ -415,12 +521,15 @@ function lineChart(series) {
       xL += '<text x="' + x + '" y="' + (ch - 6) + '" text-anchor="middle" fill="var(--text3)" font-size="9">' + s.d.slice(5) + '</text>';
     }
   });
-  var path = '', area = '';
+  var path = '', area = '', dots = '';
   series.forEach(function (s, i) {
     var x = pad.l + i / (series.length - 1) * pW;
     var y = pad.t + pH - (s.cum - mn) / rg * pH;
     path += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1);
     if (i === series.length - 1) area = path + 'L' + x.toFixed(1) + ',' + (pad.t + pH) + 'L' + pad.l + ',' + (pad.t + pH) + 'Z';
+    dots += '<circle class="daypt" data-day="' + s.d + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="7" fill="transparent"><title>' +
+            s.d + ' · 当日 ' + money(s.pnl) + ' · 累计 ' + money(s.cum) + '（点击联动筛选该日）</title></circle>' +
+            '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.5" fill="var(--blue)" pointer-events="none"/>';
   });
   var zy = pad.t + pH - (0 - mn) / rg * pH;
   var last = series[series.length - 1];
@@ -430,7 +539,7 @@ function lineChart(series) {
     '<path d="' + area + '" fill="var(--blue)" opacity=".08"/>' +
     '<path d="' + path + '" class="chart-line" stroke="var(--blue)"/>' +
     '<circle cx="' + (pad.l + pW).toFixed(1) + '" cy="' + (pad.t + pH - (last.cum - mn) / rg * pH).toFixed(1) + '" r="3" fill="var(--blue)"/>' +
-    '</svg>';
+    dots + '</svg>';
 }
 
 function barChart(series) {
@@ -443,9 +552,9 @@ function barChart(series) {
     var x = pad.l + (i + 0.5) / series.length * pW;
     var h = Math.abs(s.pnl) / mx * (pH / 2 - 4);
     var y = s.pnl >= 0 ? pad.t + pH / 2 - h : pad.t + pH / 2;
-    bars += '<rect x="' + (x - bw / 2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) +
-            '" height="' + Math.max(1, h).toFixed(1) + '" fill="' + (s.pnl >= 0 ? 'var(--rise)' : 'var(--fall)') +
-            '" opacity=".75"><title>' + s.d + ' · ' + s.n + ' 笔 · ' + money(s.pnl) + '</title></rect>';
+    bars += '<rect class="barp" data-day="' + s.d + '" x="' + (x - bw / 2).toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) +
+            '" height="' + Math.max(1, h).toFixed(1) + '" fill="' + (state.day === s.d ? 'var(--blue)' : (s.pnl >= 0 ? 'var(--rise)' : 'var(--fall)')) +
+            '" opacity=".8" rx="1"><title>' + s.d + ' · ' + s.n + ' 笔 · ' + money(s.pnl) + '（点击联动筛选该日）</title></rect>';
     if (i % step === 0 || i === series.length - 1) {
       xL += '<text x="' + x + '" y="' + (ch - 6) + '" text-anchor="middle" fill="var(--text3)" font-size="9">' + s.d.slice(5) + '</text>';
     }
@@ -478,12 +587,12 @@ document.getElementById('revTabs').addEventListener('click', function (e) {
   this.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('on'); });
   btn.classList.add('on');
   state.filterDays = parseInt(btn.getAttribute('data-d'), 10) || 0;
+  state.day = null;   // 时间范围变了，具体日期过滤失效
   state.shown = 30;
   render();
 });
 
 loadRev();
-/* 数据更新后自动重载 */
 (function () {
   var last = Date.now();
   setInterval(function () {
