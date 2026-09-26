@@ -3174,8 +3174,15 @@ function loadForecast() {
         }
       }
       FC.map = m; FC.meta = d; FC.loaded = true;
-      // 预测加载完：持仓列表可能已在 FC 就绪前渲染过 → 补一次重渲染让 Kronos 徽章出现
+      // 预测加载完：持仓列表/AI精选卡片可能已在 FC 就绪前渲染过 → 补重渲染让 Kronos 徽章出现
       try { if (typeof render === 'function' && document.getElementById('holdingsPanel')) render(); } catch (e) {}
+      try {
+        if (window._aiRecData && typeof renderAIRecBody === 'function') {
+          var _sel = window._aiSelIdx || 0;
+          renderAIRecBody(window._aiRecData);
+          if (_sel && typeof window.aiSelectPick === 'function') window.aiSelectPick(_sel);
+        }
+      } catch (e) {}
       return m;
     });
 }
@@ -3349,6 +3356,7 @@ function aiPickSignals(p) {
 }
 // 选中 AI 精选条目 → 下方展开该条全字段
 window.aiSelectPick = function(i) {
+  window._aiSelIdx = i;  // 记录选中项，供预测加载后重渲染时恢复
   var picks = window._aiPicks || [];
   var p = picks[i];
   var detailEl = document.getElementById('aiRecDetail');
