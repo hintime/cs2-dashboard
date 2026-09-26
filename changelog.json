@@ -2,6 +2,18 @@
   {
     "date": "2026-09-26",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-26 17:00",
+    "desc": "wip: local snapshot 2026-09-26 17:00"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 16:34"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 16:15",
     "desc": "wip: local snapshot 2026-09-26 16:15"
   },
@@ -106,17 +118,5 @@
     "tag": "fix",
     "title": "feat(news): 事件研究挂入all轮 + AI prompt接入历史先验 + 公告正文截断200→1500",
     "desc": "feat(news): 事件研究挂入all轮 + AI prompt接入历史先验 + 公告正文截断200→1500"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "feat(news): AI空投监控接入历史先验(每条公告标注历史支撑强度)",
-    "desc": "feat(news): AI空投监控接入历史先验(每条公告标注历史支撑强度)"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "feat(news): 事件研究——公告日效应的真实统计(10事件/4616标的池/3-7-14日窗口 vs 基准)",
-    "desc": "feat(news): 事件研究——公告日效应的真实统计(10事件/4616标的池/3-7-14日窗口 vs 基准)"
   }
 ]
