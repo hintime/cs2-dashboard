@@ -1,6 +1,12 @@
 [
   {
     "date": "2026-09-27",
+    "tag": "chore",
+    "title": "update ai_analysis.json, ai_daily_report.json, ai_forecast.j",
+    "desc": "on, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, csqaq_boards.json, daily_report.json, data_status.json, eco_tracked.json, event_study.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, news.json, rec_tracks.json, sectors.json, track_view.json, tracking_analysis.json, tracking_lessons.json 2026-09-27 01:19"
+  },
+  {
+    "date": "2026-09-27",
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-27 01:15",
     "desc": "wip: local snapshot 2026-09-27 01:15"
@@ -112,11 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 22:15",
     "desc": "wip: local snapshot 2026-09-26 22:15"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "feat(kronos): 持仓列表显示 14日预测徽章——生成端纳入持仓(targets+holdings.json)",
-    "desc": "H 补 hash_name、行模板调 fcChip、预测加载后重渲染"
   }
 ]
