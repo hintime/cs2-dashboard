@@ -2,63 +2,63 @@
   "news": [
     {
       "title": "尖峰时刻",
-      "body": "把脚放在油门上，然后踩在地上。欢迎来到Rush ，这是CS2的全新快节奏3v3排队模式。在随机选择的战斗竞技场挑战中前进时体验推动和拉动，以及",
+      "body": "Put your foot on the gas and floor it. Welcome to Rush, a new fast-paced 3v3 queued mode for CS2. Experience the push and pull as you advance through a gauntlet of randomly-selected battle arenas, and dominate your opponent to win the match! Make the most of your limited budget and precious time to clear the objective. Control the tower when you eliminate the enemy team (or time expires) to win the round.  Run the gauntlet of battle arenas to capture the enemy castle and win the match. The battle arenas are randomly selected each time you play, so no two matches are the same. Keep track of your wins and compete for bragging rights with the Rush friends leaderboard! Pick, Pick Pick, Pick We think that if you spend a lot of time developing strategies on a map, you should have a chance to benefit from that investment. So today we're changing the process for getting into a map in Premier--instead of banning down to a single map, teams will vote to pick two maps each. After all four maps are picked, a single map will be randomly selected and the match will begin. Change You Can See Today's update also includes several quality of life improvements, starting with blood and bullet impact visiblity. Blood is now much more bloody, and bullet impacts are far more impacty.  But wait, there's more! Crosshairs have gotten a significant upgrade with new shapes and other features, so check out the new Crosshair/Scopes settings and create the custom crosshair of your dreams. Also, Clan Tags a",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498216926",
       "date": 1790120317,
       "source": "社区公告"
     },
     {
       "title": "科隆2026 ：排名赛",
-      "body": "今天，我们将发行《科隆2026》排名系列主要贴纸，这些新贴纸表明了团队在设计中的最终地位。与科隆2026商店中的所有商品一样， 50%的皇室成员",
+      "body": "Today we're shipping the Ranked Series of Cologne 2026 Major stickers--new stickers that indicate a team's final standing in the design. As with all items in the Cologne 2026 Shop, 50% of the royalties support the teams, players and tournament organizer. The original dynamic pricing system determined the relative interest in players and teams, but it didn't produce reasonable prices. So the Ranked stickers have a lower price, but with the same relationship between players and teams as the Event Series stickers (as of today's update). Check out the new stickers and support your favorite players and teams! The Cologne 2026 Shop will be available until September 29th.",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1839676055881226",
       "date": 1785285490,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "间隙修复和剪裁调整。某些情况下，在尝试隐身重新加载时，响亮的重新加载会持续存在。sv_clantags_enabled选项，因此自定义服务器可以禁用家族标签。背景鸡蛋",
+      "body": "间隙修复和剪切调整。某些情况下，在尝试隐形重新加载时，响亮的重新加载会持续存在。sv_clantags_enabled选项，因此自定义服务器可以禁用家族标签。主菜单大厅中的后台玩家的蛋现在位于巢穴中。",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498226015",
       "date": 1790373294,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "对加载屏幕的规则进行更好的描述。调整规则，以确定何时因团队伤害而踢球员。各种剪辑调整。可能出现的情况",
+      "body": "对加载屏幕的规则进行更好的描述。调整规则，以确定何时因团队伤害而踢球员。各种剪辑调整。在按住它之前，可以通过点击重新加载按钮获得稍微更快的静音重新加载。修复了可以使用静音重新加载比正常情况下更快地发射霰弹枪的情况。有时会弹出AK-47检查动画的情况。",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498222773",
       "date": 1790286698,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "在终端房间和Convoy上，淘汰后的最大倒计时时间从7秒到14秒不等。在整个团队因自杀而死亡的情况下，淘汰后的最大倒计时时间不会激活，",
+      "body": "the maximum countdown-after-elimination time from 7 seconds to 14 seconds on end rooms and Convoy.The countdown-after-elimination time does not activate in cases where an entire team dies to suicides, team kills, and/or disconnects.Warmup time once all players have connected, freeze time, and technical timeout time are all reduced.Various gap fixes and clipping adjustments. additional information about the new crosshair system:The new crosshair thickness and length units are in pixels. In the past, the values were defined with an arbitrary scale and converted to pixels based on display resolution so the same value would result in different pixel counts at different resolutions. With the new settings, if you want a 1-pixel wide crosshair with a bar length of 8 pixels and a gap of 4 pixels, then you would set: thickness = 1, length = 8, and gap = 4. Please be aware that the new crosshair system automatically rescales pixel counts when the display resolution changes. For example, if a crosshair was configured at display resolution 1280x720 with a thickness of 2 pixels and then the display resolution changes to 2560x1440, it will now automatically rescale the thickness to 4 pixels so that it remains proportionally the same as when it was configured.Added option to draw half-outlines. This will only draw the top-left portions of the outline for a crosshair.Fixed a bug preventing 0 gap width from being respected.Added a static square crosshair styleReduced the minimum dynamic sprea",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498219795",
       "date": 1790204844,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "地图选择过程，让玩家有更多机会玩他们一直在学习的地图。地图选择过程： 1队挑选一张地图2队挑选两张地图1队挑选一张最终地图。四者之一",
+      "body": "the map selection process to give players more opportunities to play maps they've been learning.Map selection process:Team 1 picks one mapTeam 2 picks two mapsTeam 1 picks a final map. One of the four maps will be randomly selected and the match will begin. is a fast-paced queued 3v3 game mode. Players battle through a series of battle arenas to reach the opponent's castle and win the match.Battle arenas are randomly selected for each match, so no two matches are the same.Control the tower when you eliminate the enemy team (or time expires) to win the round. can now reload silently (but slowly) by pressing and holding the reload key.Un-scoping a sniper weapon no longer produces a sound.Globally increased visual clarity and improved fidelity of bullet impact decals.ammo_grenade_limit_total setting now also enforces the total number of grenades a player is allowed to purchase in a round.Chickens now take damage from the Zeus x27.  have been updated to be resolution independent.A new \"Crosshair/Scopes\" tab is available in the Settings menu, and includes updated crosshair settings.Added new crosshair stylesUpdated the default crosshair to \"Dynamic Quad,\" which better represents weapon accuracy. engine code to the latest version of Source 2. holes in world in Long A Main Hall.Adjusted door geometry and grenade clipping inside Jaguar.CacheSome gap fixes and clipping adjustments around the blue doors in Mid.MirageReinforced scaffolding by balcony in A site.TrainBlocked pixel gap in ",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498216924",
       "date": 1790120256,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "地图中的各种间隙。修复了B站点上的壁弹点。添加了缺少的竞争CT生成点。添加了额外的T生成点。CSPlayerCamera ：将其重命名为CustomPlayerCamera。添加了GetPlayer、GetMode",
+      "body": "various gaps in map.Fixed a wallbang spot on B site.Added a missing competitive CT spawn point.Added additional T spawn points. CSPlayerCamera:Renamed it to CustomPlayerCamera.Added GetPlayer, GetMode, SetMode, and SetFollowConfig.Deprecated IsEnabled, SetEnabled, and SetIsControllingAngles.Added an 'observable' property to custom_hud_layout that controls whether an observer sees the UI as the spectated player sees it. Defaults to false.Fixed several bugs related to stale custom_hud_layout state when changing spectator targets.Added top-level custom_hud_layout classes driven by client state:HUD_BUYMENU_VISIBLEHUD_SCOREBOARD_VISIBLEcustom_hud_layout now always draws on top of the base HUD. is now encrypted in demo files using the same rules as CS:GO :Team chat is no longer readable when playing back demo files.Global chat is only readable in demo files when played back via the in-game watch UI.",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1843481262690556",
       "date": 1788994268,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "custom_hud_layout实体： custom_hud_layouts是脚本化地图提供自定义UI的入口点。支持面板、标签、图像和按钮面板类型。支持CSS样式。事件",
+      "body": "custom_hud_layout entity:custom_hud_layouts are the entry point for scripted maps to provide custom UI.Panel, Label, Image, and Button panel types are supported.Styling with css is supported.Events and client side scripting are not supported.Maintains state during tools mode reloads.Added cs_player_camera entity:Gives control of a player's view without moving their pawn.Can be configured to let the player look around from the scripted position.Added Instance.DelayAdded Instance.OnBombPlantStartAdded Instance.OnBombPlantAbortAdded Instance.OnBombDefuseStartAdded Instance.OnBombDefuseAbortAdded Instance.OnCustomHudClickedAdded Instance.IsDedicatedServerAdded Entity.MoveAdded Entity.GetMoveTypeAdded Entity.SetMoveTypeAdded CSPlayerPawn.GetC4Added CSPlayerPawn.GetDefuseTargetAdded CSPlayerPawn.IsBuyMenuOpenAdded CSPlayerPawn.GetCameraAdded C4.GetPlantStartTimeAdded C4.GetPlantFinishTimeAdded C4.AbortPlantAdded CustomHudLayout.SetHasClassAdded CustomHudLayout.SetHasClassForPlayerAdded CustomHudLayout.SetDialogVariableStringAdded CustomHudLayout.SetDialogVariableStringForPlayerAdded CustomHudLayout.SetInputCaptureEnabledAdded CustomHudLayout.IsInputCaptureEnabledAdded CSPlayerCamera.IsEnabledAdded CSPlayerCamera.SetEnabledAdded CSPlayerCamera.SetIsControllingAnglesAdded enum CSMoveTypeCorrected types for some events where parameters were maybe undefined.Errors encountered during initial script run are now logged to the console.Unhandled promise rejections are now logged to the cons",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1841579228676851",
       "date": 1787614760,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "到社区研讨会的最新版本（更新说明） Poseidon更新到社区研讨会的最新版本（更新说明）移动agai时玩家速度过快的情况",
+      "body": "到社区研讨会的最新版本（更新说明） Poseidon更新到社区研讨会的最新版本（更新说明）玩家在靠墙移动时速度过快的情况。",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1841579228663932",
       "date": 1787182593,
       "source": "社区公告"
@@ -72,14 +72,14 @@
     },
     {
       "title": "反恐精英2更新",
-      "body": "一个可以通过水平几何投掷手榴弹的情况映射中的各种间隙映射中各种点的固定碰撞某些资产上的固定闪烁已移除Outside AShelterUpdated中的提升点",
+      "body": "a case where grenades could be thrown through level geometry various gaps in mapFixed collision in various spots across mapFixed flickering on some assetsRemoved boost spot in Outside AShelterUpdated to the latest version from the Community Workshop (Update Notes) Instance.TracePlayerAdded Instance.OnWeaponPickupAdded Instance.OnBombExplodeAdded Instance.SpawnGrenadeProjectileAdded dropper to Instance.OnWeaponDrop eventAdded hitEntity to Instance.OnGrenadeBounce eventAdded normal to Instance.OnGrenadeBounce eventAdded CSGrenadeProjectileBase.GetGrenadeTypeAdded CSGrenadeProjectileBase.GetThrowerAdded CSGrenadeProjectileBase.DetonateAdded CSPlantedC4.IsBombsiteAAdded CSPlantedC4.IsBombsiteBAdded CSPlantedC4.GetPlanterAdded CSPlantedC4.GetDefuserAdded CSPlantedC4.IsActiveAdded CSPlantedC4.IsExplodedAdded CSPlantedC4.IsDefusedAdded CSPlantedC4.GetPlantTimeAdded CSPlantedC4.GetExplodeTimeAdded CSPlantedC4.GetDefuseStartTimeAdded CSPlantedC4.GetDefuseFinishTimeAdded CSPlayerPawn.HasDefuserAdded CSPlayerPawn.SetHasDefuserAdded CSGrenadeType enumFixed a bug where Instance.RegisterCheatCommand would not work on script reload.Deprecated bounces from Instance.OnGrenadeBounce event.",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1839676055895877",
       "date": 1785791934,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "排名系列贴纸现已可供购买。50%的版税将与玩家、团队和锦标赛组织者分享。科隆2026商店中的物品将可供购买",
+      "body": "Ranked Series stickers are now available for purchase. 50% of royalties are shared with players, teams, and the tournament organizer.Items in the the Cologne 2026 Shop will be available for purchase until September 29th. a bug where scripts would fail to load in tools mode until a manual recompile.  to the latest version from the Community Workshop (Update Notes)FachwerkUpdated to the latest version from the Community Workshop (Update Notes)ShelterUpdated to the latest version from the Community Workshop (Update Notes) a bug which prevented some users from claiming Collection Catalog XP for The Dead Hand Collection.Fixed a bug that allowed malicious players to avoid being processed by VACnet.",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1839676055881227",
       "date": 1785285504,
       "source": "社区公告"
@@ -88,49 +88,49 @@
   "updates": [
     {
       "title": "反恐精英2更新",
-      "body": "间隙修复和剪裁调整。某些情况下，在尝试隐身重新加载时，响亮的重新加载会持续存在。sv_clantags_enabled选项，因此自定义服务器可以禁用家族标签。背景鸡蛋",
+      "body": "间隙修复和剪切调整。某些情况下，在尝试隐形重新加载时，响亮的重新加载会持续存在。sv_clantags_enabled选项，因此自定义服务器可以禁用家族标签。主菜单大厅中的后台玩家的蛋现在位于巢穴中。",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498226015",
       "date": 1790373294,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "对加载屏幕的规则进行更好的描述。调整规则，以确定何时因团队伤害而踢球员。各种剪辑调整。可能出现的情况",
+      "body": "对加载屏幕的规则进行更好的描述。调整规则，以确定何时因团队伤害而踢球员。各种剪辑调整。在按住它之前，可以通过点击重新加载按钮获得稍微更快的静音重新加载。修复了可以使用静音重新加载比正常情况下更快地发射霰弹枪的情况。有时会弹出AK-47检查动画的情况。",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498222773",
       "date": 1790286698,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "在终端房间和Convoy上，淘汰后的最大倒计时时间从7秒到14秒不等。在整个团队因自杀而死亡的情况下，淘汰后的最大倒计时时间不会激活，",
+      "body": "the maximum countdown-after-elimination time from 7 seconds to 14 seconds on end rooms and Convoy.The countdown-after-elimination time does not activate in cases where an entire team dies to suicides, team kills, and/or disconnects.Warmup time once all players have connected, freeze time, and technical timeout time are all reduced.Various gap fixes and clipping adjustments. additional information about the new crosshair system:The new crosshair thickness and length units are in pixels. In the past, the values were defined with an arbitrary scale and converted to pixels based on display resolution so the same value would result in different pixel counts at different resolutions. With the new settings, if you want a 1-pixel wide crosshair with a bar length of 8 pixels and a gap of 4 pixels, then you would set: thickness = 1, length = 8, and gap = 4. Please be aware that the new crosshair system automatically rescales pixel counts when the display resolution changes. For example, if a crosshair was configured at display resolution 1280x720 with a thickness of 2 pixels and then the display resolution changes to 2560x1440, it will now automatically rescale the thickness to 4 pixels so that it remains proportionally the same as when it was configured.Added option to draw half-outlines. This will only draw the top-left portions of the outline for a crosshair.Fixed a bug preventing 0 gap width from being respected.Added a static square crosshair styleReduced the minimum dynamic sprea",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498219795",
       "date": 1790204844,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "地图选择过程，让玩家有更多机会玩他们一直在学习的地图。地图选择过程： 1队挑选一张地图2队挑选两张地图1队挑选一张最终地图。四者之一",
+      "body": "the map selection process to give players more opportunities to play maps they've been learning.Map selection process:Team 1 picks one mapTeam 2 picks two mapsTeam 1 picks a final map. One of the four maps will be randomly selected and the match will begin. is a fast-paced queued 3v3 game mode. Players battle through a series of battle arenas to reach the opponent's castle and win the match.Battle arenas are randomly selected for each match, so no two matches are the same.Control the tower when you eliminate the enemy team (or time expires) to win the round. can now reload silently (but slowly) by pressing and holding the reload key.Un-scoping a sniper weapon no longer produces a sound.Globally increased visual clarity and improved fidelity of bullet impact decals.ammo_grenade_limit_total setting now also enforces the total number of grenades a player is allowed to purchase in a round.Chickens now take damage from the Zeus x27.  have been updated to be resolution independent.A new \"Crosshair/Scopes\" tab is available in the Settings menu, and includes updated crosshair settings.Added new crosshair stylesUpdated the default crosshair to \"Dynamic Quad,\" which better represents weapon accuracy. engine code to the latest version of Source 2. holes in world in Long A Main Hall.Adjusted door geometry and grenade clipping inside Jaguar.CacheSome gap fixes and clipping adjustments around the blue doors in Mid.MirageReinforced scaffolding by balcony in A site.TrainBlocked pixel gap in ",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498216924",
       "date": 1790120256,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "地图中的各种间隙。修复了B站点上的壁弹点。添加了缺少的竞争CT生成点。添加了额外的T生成点。CSPlayerCamera ：将其重命名为CustomPlayerCamera。添加了GetPlayer、GetMode",
+      "body": "various gaps in map.Fixed a wallbang spot on B site.Added a missing competitive CT spawn point.Added additional T spawn points. CSPlayerCamera:Renamed it to CustomPlayerCamera.Added GetPlayer, GetMode, SetMode, and SetFollowConfig.Deprecated IsEnabled, SetEnabled, and SetIsControllingAngles.Added an 'observable' property to custom_hud_layout that controls whether an observer sees the UI as the spectated player sees it. Defaults to false.Fixed several bugs related to stale custom_hud_layout state when changing spectator targets.Added top-level custom_hud_layout classes driven by client state:HUD_BUYMENU_VISIBLEHUD_SCOREBOARD_VISIBLEcustom_hud_layout now always draws on top of the base HUD. is now encrypted in demo files using the same rules as CS:GO :Team chat is no longer readable when playing back demo files.Global chat is only readable in demo files when played back via the in-game watch UI.",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1843481262690556",
       "date": 1788994268,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "custom_hud_layout实体： custom_hud_layouts是脚本化地图提供自定义UI的入口点。支持面板、标签、图像和按钮面板类型。支持CSS样式。事件",
+      "body": "custom_hud_layout entity:custom_hud_layouts are the entry point for scripted maps to provide custom UI.Panel, Label, Image, and Button panel types are supported.Styling with css is supported.Events and client side scripting are not supported.Maintains state during tools mode reloads.Added cs_player_camera entity:Gives control of a player's view without moving their pawn.Can be configured to let the player look around from the scripted position.Added Instance.DelayAdded Instance.OnBombPlantStartAdded Instance.OnBombPlantAbortAdded Instance.OnBombDefuseStartAdded Instance.OnBombDefuseAbortAdded Instance.OnCustomHudClickedAdded Instance.IsDedicatedServerAdded Entity.MoveAdded Entity.GetMoveTypeAdded Entity.SetMoveTypeAdded CSPlayerPawn.GetC4Added CSPlayerPawn.GetDefuseTargetAdded CSPlayerPawn.IsBuyMenuOpenAdded CSPlayerPawn.GetCameraAdded C4.GetPlantStartTimeAdded C4.GetPlantFinishTimeAdded C4.AbortPlantAdded CustomHudLayout.SetHasClassAdded CustomHudLayout.SetHasClassForPlayerAdded CustomHudLayout.SetDialogVariableStringAdded CustomHudLayout.SetDialogVariableStringForPlayerAdded CustomHudLayout.SetInputCaptureEnabledAdded CustomHudLayout.IsInputCaptureEnabledAdded CSPlayerCamera.IsEnabledAdded CSPlayerCamera.SetEnabledAdded CSPlayerCamera.SetIsControllingAnglesAdded enum CSMoveTypeCorrected types for some events where parameters were maybe undefined.Errors encountered during initial script run are now logged to the console.Unhandled promise rejections are now logged to the cons",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1841579228676851",
       "date": 1787614760,
       "source": "社区公告"
     },
     {
       "title": "反恐精英2更新",
-      "body": "到社区研讨会的最新版本（更新说明） Poseidon更新到社区研讨会的最新版本（更新说明）移动agai时玩家速度过快的情况",
+      "body": "到社区研讨会的最新版本（更新说明） Poseidon更新到社区研讨会的最新版本（更新说明）玩家在靠墙移动时速度过快的情况。",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1841579228663932",
       "date": 1787182593,
       "source": "社区公告"
@@ -143,5 +143,5 @@
       "source": "社区公告"
     }
   ],
-  "updated": "2026-09-26 12:01:01"
+  "updated": "2026-09-27 00:09:58"
 }
