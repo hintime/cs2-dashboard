@@ -1604,9 +1604,8 @@ html { scroll-behavior: smooth; }
   border-top:2px dashed currentColor}
 .hc-lg.off{opacity:.36}
 .hc-lg.off i{filter:grayscale(1)}
-/* 图例按钮上直接带该线的当前值（省掉顶部那条重复的指标行） */
-.hc-lg b{margin-left:3px;font-weight:650;color:var(--text2);
-  font-variant-numeric:tabular-nums;font-size:10px}
+/* 顶部读数里的数值：等宽数字，悬停改写时不会因字宽变化而整行抖动 */
+.hc-stats .it b{font-variant-numeric:tabular-nums;transition:color .1s}
 .hc-rg{display:inline-flex;margin-left:auto;border:1px solid var(--border);
   border-radius:7px;overflow:hidden;background:var(--surface2)}
 .hc-rg button{padding:3px 9px;border:0;border-left:1px solid var(--border);
@@ -6886,10 +6885,8 @@ function hpChart(vals, cost, reason, days, volName){
   var chgAll = vals[0] > 0 ? (last - vals[0]) / vals[0] * 100 : null;
   var chgCol = (chgAll === null || Math.abs(chgAll) < 0.05) ? 'var(--text2)'
              : (chgAll > 0 ? 'var(--rise)' : 'var(--fall)');
-  /* ★ 只留 3 项：现价 / 成本 / 区间涨跌。MA5·MA20·布林带的数值挪到图例按钮上，
-     不再上下各写一遍（原来顶部条和图例是重复的，白占一行的高度）。
-     区间切换挪到这一行的最右侧 —— 顶部只有 3 个短项，右边空着也是浪费；
-     挪走后底部那行只剩「日期 + 图例」，不用再挤成两行（实测 47px → ~29px）。 */
+  /* 区间切换放这一行最右 —— 右侧本来就空着，放这里底部那行就只剩「日期 + 图例」，
+     不用再挤成两行（实测 47px → 27px）。 */
   var range = (function(){
       var opts = [];
       if (nAll >= 7)  opts.push([7,  '7 日']);
@@ -6904,11 +6901,31 @@ function hpChart(vals, cost, reason, days, volName){
       }
       return s + '</div>';
     })();
+  /* ★ 2026-09-26：这行从「静态快照」改成「光标读数」——
+     鼠标移到图上时，每个数值都换成**该点当天**的值；移出后还原成最新值。
+     实现：每个数值 <b> 带 data-hc="<键>" + data-latest="<渲染时的最新值>"，
+     hpChartTooltip 的 mousemove 按该点下标改写，mouseleave 用 data-latest 还原。
+     ⚠ 还原值直接读回 data-latest，不在 tooltip 里重算一遍 —— 同一组数两处各算一次
+       迟早会漂移（这正是之前 hover 圆点落到布林带上的老毛病）。
+     ⚠ 缺失值写「—」而不是把整项去掉：悬停时项忽隐忽现会让整行抖动。 */
+  var hcIt = function(k, label, val, color, cls){
+    if (val === null || val === undefined || val === '') return '';
+    return '<span class="it'+(cls ? ' '+cls : '')+'">'
+      + '<span class="lb" data-hcl="'+k+'" data-ll="'+label+'">'+label+'</span>'
+      + '<b data-hc="'+k+'" data-latest="'+val+'" data-lc="'+(color||'')+'"'
+      + (color ? ' style="color:'+color+'"' : '') + '>'+val+'</b></span>';
+  };
+  var chgTxt = (chgAll === null) ? null : ((chgAll >= 0 ? '+' : '') + chgAll.toFixed(1) + '%');
+  /* ⚠ MA5/MA20/布林带统一 2 位小数：tooltip 里就是 2 位，两边用不同精度会出现
+     「顶部 MA5 56.6 / 悬停 tooltip MA5 56.64」这种同数不同样，看着像算错了。
+     价格本身仍按 dec（跨度自适应），因为大额饰品的小数位是噪音。 */
   var stats = '<div class="hc-stats">'
-    + '<span class="it k-cur">现价<b style="color:'+col+'">¥'+hpFmt(last)+'</b></span>'
-    + (hasCost ? '<span class="it">成本<b>¥'+hpFmt(cost)+'</b></span>' : '')
-    + (chgAll === null ? '' : ('<span class="it">区间涨跌<b style="color:'+chgCol+'">'
-        + (chgAll >= 0 ? '+' : '') + chgAll.toFixed(1) + '%</b></span>'))
+    + hcIt('price', '现价', '¥'+hpFmt(last), col, 'k-cur')
+    + (hasMa5  ? hcIt('ma5',  'MA5',  tk.ma5[n-1].toFixed(2), '#ff9f43') : '')
+    + (hasMa20 ? hcIt('ma20', 'MA20', tk.ma20[n-1].toFixed(2), '#a855f7') : '')
+    + (hasBoll ? hcIt('boll', '布林带', tk.dn[n-1].toFixed(2)+' ~ '+tk.up[n-1].toFixed(2), null) : '')
+    + (hasCost ? hcIt('cost', '成本', '¥'+hpFmt(cost), null) : '')
+    + hcIt('chg', '区间涨跌', chgTxt, chgCol)
     + range
     + '</div>';
   /* ⑥ 右侧价格轴：5 档刻度 + 当前价高亮标签（悬停时标签跟着变成该点的值）*/
@@ -6917,7 +6934,7 @@ function hpChart(vals, cost, reason, days, volName){
     + '%;background:'+col+'">¥'+hpFmt(last)+'</b></div>';
   /* ⑦ 绘图本体 */
   var svg = '<svg class="hc-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" '
-    + 'data-w="'+W+'" data-h="'+H+'" data-n="'+n+'" data-pts="'+pts.join(';')+'">'
+    + 'data-w="'+W+'" data-h="'+H+'" data-n="'+n+'" data-dec="'+dec+'" data-pts="'+pts.join(';')+'">'
     + '<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="0" y2="1">'
     +   '<stop offset="0%" stop-color="'+col+'" stop-opacity=".3"/>'
     +   '<stop offset="72%" stop-color="'+col+'" stop-opacity=".07"/>'
@@ -6959,19 +6976,19 @@ function hpChart(vals, cost, reason, days, volName){
         + 区间切换，与日期轴并成底部一行 */
   var foot = '<div class="hc-foot"><div class="hc-lgd">'
     + (function(){
-        var li = function(k, label, color, dash, val){
+        /* ★ 图例只做开关，不再带数值 —— 数值统一在顶部那行（会跟光标走），
+           两处都写就是重复，白占一行高度。 */
+        var li = function(k, label, color, dash){
           var on = !off[k];
           return '<button type="button" class="hc-lg'+(on ? '' : ' off')+'" data-k="'+k
             + '" title="点击'+(on ? '隐藏' : '显示')+label+'"><i class="'+(dash ? 'dash' : '')
-            + '" style="'+(dash ? 'color:'+color : 'background:'+color)+'"></i>'+label
-            + (val ? ('<b>'+val+'</b>') : '')+'</button>';
+            + '" style="'+(dash ? 'color:'+color : 'background:'+color)+'"></i>'+label+'</button>';
         };
-        return li('price', '日线', col, false, '¥'+hpFmt(last))
-          + (hasMa5 ? li('ma5', 'MA5', '#ff9f43', false, tk.ma5[n-1].toFixed(dec)) : '')
-          + (hasMa20 ? li('ma20', 'MA20', '#a855f7', false, tk.ma20[n-1].toFixed(dec)) : '')
-          + (hasBoll ? li('boll', '布林带', 'var(--blue)', false,
-              tk.dn[n-1].toFixed(dec)+'~'+tk.up[n-1].toFixed(dec)) : '')
-          + (hasCost ? li('cost', '成本', 'var(--amber)', true, '¥'+hpFmt(cost)) : '');
+        return li('price', '日线', col, false)
+          + (hasMa5 ? li('ma5', 'MA5', '#ff9f43', false) : '')
+          + (hasMa20 ? li('ma20', 'MA20', '#a855f7', false) : '')
+          + (hasBoll ? li('boll', '布林带', 'var(--blue)', false) : '')
+          + (hasCost ? li('cost', '成本', 'var(--amber)', true) : '');
       })()
     + '</div>';      /* 区间切换已挪到顶部行，这里只剩图例 */
   var xfoot = '<div class="hc-xfoot">' + xaxis + foot + '</div>';
@@ -7259,6 +7276,58 @@ function hpChartTooltip(idx){
   holder.appendChild(dot);
 
   var base = prices[0] || 0;                       /* 序列起点，用于算相对涨跌 */
+  var dec = parseInt(svg.getAttribute('data-dec'), 10);
+  if (isNaN(dec)) dec = 2;                         /* 小数位跟顶部读数保持一致（由图表渲染时写入）*/
+
+  /* ══ ★ 顶部读数联动（2026-09-26）══
+     鼠标在图上游走时，顶部那行（现价 / MA5 / MA20 / 布林带 / 区间涨跌）换成**该点当天**的值；
+     移出后用 data-latest 还原成最新值。
+     ⚠ 还原值不在这里重算，直接读回渲染时写下的 data-latest —— 同一组数两处各算一遍
+       迟早漂移（hover 圆点曾经落到布林带上的老毛病就是这么来的）。
+     ⚠ 缺失值写「—」而不是把整项藏掉：悬停时项忽隐忽现会让整行抖。 */
+  var readouts = D.querySelectorAll('.hc-stats [data-hc]');
+  var relabels = D.querySelectorAll('.hc-stats [data-hcl]');
+  function setReadout(i){
+    var pr = Number(prices[i]) || 0;
+    var m5  = tk ? tk.ma5[i]  : null, m20 = tk ? tk.ma20[i] : null;
+    var bu  = tk ? tk.up[i]   : null, bd  = tk ? tk.dn[i]   : null;
+    var ch  = base > 0 ? ((pr - base) / base * 100) : 0;
+    var map = {
+      price: '¥' + hpFmt(pr),
+      ma5:   (m5  != null) ? m5.toFixed(2)  : '—',
+      ma20:  (m20 != null) ? m20.toFixed(2) : '—',
+      boll:  (bu != null && bd != null) ? (bd.toFixed(2) + ' ~ ' + bu.toFixed(2)) : '—',
+      chg:   (ch >= 0 ? '+' : '') + ch.toFixed(1) + '%'
+    };
+    for (var k = 0; k < readouts.length; k++){
+      var el = readouts[k], key = el.getAttribute('data-hc');
+      if (!(key in map)) continue;
+      if (el.textContent !== map[key]) el.textContent = map[key];
+      if (key === 'chg'){
+        el.style.color = Math.abs(ch) < 0.05 ? 'var(--text2)'
+                       : (ch > 0 ? 'var(--rise)' : 'var(--fall)');
+      }
+    }
+    /* 「现价」这个词悬停时是错的（那是历史价）→ 标签换成该点日期，如 09/13 ¥22 */
+    var ds = (days && days[i]) ? String(days[i]).slice(5).replace('-', '/') : null;
+    for (var m = 0; m < relabels.length; m++){
+      var le = relabels[m];
+      if (le.getAttribute('data-hcl') !== 'price') continue;
+      le.textContent = ds || '该点';
+    }
+  }
+  function resetReadout(){
+    for (var k = 0; k < readouts.length; k++){
+      var el = readouts[k];
+      var lv = el.getAttribute('data-latest');
+      if (lv !== null) el.textContent = lv;
+      el.style.color = el.getAttribute('data-lc') || '';
+    }
+    for (var m = 0; m < relabels.length; m++){
+      var le = relabels[m], ll = le.getAttribute('data-ll');
+      if (ll !== null) le.textContent = ll;
+    }
+  }
 
   function move(e){
     /* ★ 2026-09-25 修复「悬停点不贴线」：原来以 .hp-chart 容器为定位基准，
@@ -7322,6 +7391,8 @@ function hpChartTooltip(idx){
       ycur.style.top = (P[best].y / vbH * 100).toFixed(2) + '%';
       ycur.textContent = '¥' + hpFmt(pr);
     }
+    /* ★ 顶部读数跟着走：现价 / MA5 / MA20 / 布林带 / 区间涨跌 全换成该点的值 */
+    setReadout(best);
   }
   function leave(){
     box.style.opacity = '0';
@@ -7332,6 +7403,7 @@ function hpChartTooltip(idx){
       ycur.style.top = (P[P.length - 1].y / vbH * 100).toFixed(2) + '%';
       ycur.textContent = ynow;
     }
+    resetReadout();                                /* ★ 顶部读数还原成最新值 */
   }
   svg.addEventListener('mousemove', move);
   svg.addEventListener('mouseleave', leave);
