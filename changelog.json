@@ -1,6 +1,30 @@
 [
   {
     "date": "2026-09-26",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-26 18:30",
+    "desc": "wip: local snapshot 2026-09-26 18:30"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "docs(kronos): 更正微调门槛口径为窗口561步 + 记录 B 方案落地",
+    "desc": "docs(kronos): 更正微调门槛口径为窗口561步 + 记录 B 方案落地"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-09-26 18:15",
+    "desc": "wip: local snapshot 2026-09-26 18:15"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 18:06"
+  },
+  {
+    "date": "2026-09-26",
     "tag": "chore",
     "title": "update buff_history.json, buff_recent.json, changelog.json,",
     "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 17:34"
@@ -94,29 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 15:00",
     "desc": "wip: local snapshot 2026-09-26 15:00"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "feat(news): 资讯中心展示历史先验真数字(与AI叙述分离)",
-    "desc": "feat(news): 资讯中心展示历史先验真数字(与AI叙述分离)"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "feat(news): AI空投监控接入历史先验(逐字锚定数字)",
-    "desc": "feat(news): AI空投监控接入历史先验(逐字锚定数字)"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "feat(event-study): 事件研究基线(公告后3/7/14天 vs 同期基准, stale过滤)",
-    "desc": "feat(event-study): 事件研究基线(公告后3/7/14天 vs 同期基准, stale过滤)"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 14:34"
   }
 ]
