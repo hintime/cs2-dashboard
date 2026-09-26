@@ -125,6 +125,27 @@ td.name{color:var(--text);max-width:240px;overflow:hidden;text-overflow:ellipsis
   table{min-width:520px}
   .wr{margin-left:0}
 }
+
+/* ═══ 口径说明（2026-09-26 重做）═══
+   原来是一坨 `<br>` 分隔的小灰字（12px / 行高 1.9 / 一整段），
+   既没对齐也没层级，夹在「品类盈亏」表格旁边显得像没做过设计。
+   现在按「标签 / 主文 / 副注」三段结构化：
+    · 标签列定宽 70px + 彩色圆点分类 → 六条一眼扫得完、纵向对齐；
+    · 行间用发丝线分隔（不套内层盒子，避免「框中框」）；
+    · hover 提亮标签，副注统一降一级放到第二行。 */
+.spec-row{display:grid;grid-template-columns:70px 1fr;gap:10px;align-items:baseline;
+  padding:7px 2px;border-top:1px solid var(--hair)}
+/* ⚠ 首行不能用 :first-child —— specHtml 直接拼在 .ct 之后，
+   第一个 .spec-row 其实是父容器里的第 2 个子元素，:first-child 不匹配。 */
+.ct+.spec-row{border-top:0;padding-top:1px}
+.spec-k{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  color:var(--text3);white-space:nowrap;transition:color .13s ease}
+.spec-k i{flex:0 0 6px;width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.spec-row:hover .spec-k{color:var(--text2)}
+.spec-v{min-width:0;font-size:11.5px;line-height:1.55;color:var(--text2)}
+.spec-v b{font-weight:600;color:var(--text)}
+.spec-v em{display:block;margin-top:2px;font-style:normal;font-size:10.5px;color:var(--text3)}
+.ct-note{float:right;font-weight:400;opacity:.72}
 </style>
 </head>
 <body>
@@ -375,6 +396,25 @@ function render() {
         '<td class="num ' + c + '" style="text-align:right">' + money(r.d.pnl) + '</td></tr>';
     }).join('') + '</tbody></table>';
 
+  /* ★ 2026-09-26：口径说明重做 —— 原先是 `<br>` 分隔的一整段小灰字（没对齐、没层级）。
+     现在按「标签 + 主文 + 副注」三段结构化；第 4 个元素是标签前的圆点色，留空则不画点。
+     ⚠ 口径本身一个字没改，只重排；"<40%" 必须写成 &lt; 实体（这串直接进 innerHTML）。 */
+  var SPEC = [
+    ['写入', '持仓面板点「卖出此件」自动生成，或下方「添加」补录', '跨设备由 Worker 同步', 'var(--blue)'],
+    ['盈亏', '卖出价 − 买入成本', '挂牌价口径，非实际到账', 'var(--rise)'],
+    ['胜率', '≥55% 绿 · 40~55% 黄 · &lt;40% 红', '按笔数计，不看金额', 'var(--fall)'],
+    ['期望', '胜率 × 平均盈利 − 败率 × 平均亏损', '每笔平均能赚多少', 'var(--amber)'],
+    ['联动', '品类行 / 图表 / 最大单笔卡 点击后全页同步筛选', '过滤条可一键清除', '#a78bfa'],
+    ['边界', '旧记录没有买入时间，所以不展示「持仓时长」', '宁可少说，不编造', '']
+  ];
+  var specHtml = SPEC.map(function (r) {
+    return '<div class="spec-row">' +
+        '<span class="spec-k">' + (r[3] ? '<i style="background:' + r[3] + '"></i>' : '<i></i>') +
+          r[0] + '</span>' +
+        '<span class="spec-v"><b>' + r[1] + '</b>' + (r[2] ? '<em>' + r[2] + '</em>' : '') + '</span>' +
+      '</div>';
+  }).join('');
+
   body.innerHTML =
     hero + metrics +
     '<div class="charts" style="margin-top:12px">' +
@@ -383,14 +423,8 @@ function render() {
     '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">' +
       '<div class="chart-box"><div class="ct">品类盈亏</div>' + catHtml + '</div>' +
-      '<div class="chart-box"><div class="ct">口径说明</div>' +
-        '<div style="font-size:12px;color:var(--text3);line-height:1.9">' +
-        '· 卖出即自动<b>写入卖出复盘</b>：持仓面板点「卖出此件」生成，或下方「添加」手动补录；跨设备由 Worker 同步<br>' +
-        '· 盈亏 = 卖出价 − 买入成本（挂牌价口径，非实际到账）<br>' +
-        '· 胜率环：≥55% 绿 / 40~55% 黄 / &lt;40% 红<br>' +
-        '· <b>每笔期望</b> = 胜率×平均盈利 − 败率×平均亏损<br>' +
-        '· 联动：品类行 / 图表 / 最大单笔卡 点击后全页同步筛选，过滤条可清除<br>' +
-        '· 旧记录没有买入时间，所以没有「持仓时长」——不编造</div>' +
+      '<div class="chart-box"><div class="ct">口径说明<span class="ct-note">这里的数字都按下面六条算</span></div>' +
+        specHtml +
       '</div>' +
     '</div>' +
     '<div style="margin-top:12px">' +
