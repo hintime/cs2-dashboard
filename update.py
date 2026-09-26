@@ -1715,7 +1715,7 @@ def fetch_steam_news():
             print('[NEWS] Skipped (Steam API blocked by hosts file)')
             return None
         # Request Chinese localization from Steam API
-        url = 'https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=730&count=12&maxlength=300&feeds=steam_community_announcements&l=schinese'
+        url = 'https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=730&count=12&maxlength=2000&feeds=steam_community_announcements&l=schinese'
         r = http_get(url, timeout=8)
         raw = (r.get('appnews', {}) or {}).get('newsitems', [])
         if not raw:
@@ -1730,7 +1730,8 @@ def fetch_steam_news():
             s = re.sub(r'https?://\S+', '', s)          # strip raw image URLs
             s = re.sub(r'<[^>]+>', '', s)
             s = s.replace('\n', ' ').replace('\r', ' ').strip()
-            return s[:200]
+            # 2026-09-26 截断 200→1500：事件研究需完整正文（识别新箱子/赛事等关键词）
+            return s[:1500]
 
         def has_cjk(s):
             return any('\u4e00' <= c <= '\u9fff' or '\u3040' <= c <= '\u30ff' for c in s)
@@ -1741,7 +1742,7 @@ def fetch_steam_news():
                 return text
             # Try MyMemory first (free, no key, reliable in China)
             try:
-                turl = 'https://api.mymemory.translated.net/get?q=' + urllib.parse.quote(text[:500]) + '&langpair=en|zh'
+                turl = 'https://api.mymemory.translated.net/get?q=' + urllib.parse.quote(text[:1800]) + '&langpair=en|zh'
                 resp = http_get(turl, timeout=20)
                 if isinstance(resp, dict):
                     rd = resp.get('responseData', {})
@@ -1753,7 +1754,7 @@ def fetch_steam_news():
                 print(f'[WARN] 翻译(主源)失败: {_e}', file=sys.stderr)
             # Fallback: Google Translate (may be blocked)
             try:
-                turl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=' + urllib.parse.quote(text[:200])
+                turl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=zh-CN&dt=t&q=' + urllib.parse.quote(text[:1500])
                 resp = http_get(turl, timeout=20)
                 if isinstance(resp, list) and len(resp) > 0 and isinstance(resp[0], list) and len(resp[0]) > 0:
                     translated = resp[0][0][0]
@@ -2275,22 +2276,40 @@ def generate_ai_news_impact():
         pnl = pf.get('pnl', 0); pnl_pct = pf.get('pnl_pct', 0); cnt = pf.get('count', 0)
         held_txt = '持仓%d件，浮动盈亏%+.2f元(%+.2f%%)' % (cnt, pnl, pnl_pct) if cnt else '无持仓数据'
 
+        # 历史先验（事件研究，2026-09-26）：把"公告日效应"的真实统计喂给 AI，给判断定性
+        es = read_json(os.path.join(DATA_DIR, 'event_study.json')) or {}
+        es_sum = es.get('summary') or {}
+        if es_sum.get('n_events'):
+            _parts = []
+            for _n in (3, 7, 14):
+                _k = 'ret_%dd' % _n
+                if es_sum.get(_k):
+                    _parts.append('%d日 事件均值%+.2f%% vs 同期基准%+.2f%%' % (
+                        _n, es_sum[_k]['event_mean'], es_sum[_k]['baseline_mean']))
+            prior_txt = ('【历史先验（事件研究：%d 个历史公告日 × %d 件标的池）】%s。%s' % (
+                es_sum['n_events'], es_sum.get('n_pool', 0), '；'.join(_parts),
+                es_sum.get('verdict', '')))
+        else:
+            prior_txt = '【历史先验】暂无（事件研究未生成）——本次判断缺乏历史数据支撑，必须如实说明。'
+
         prompt = (
-            '你是CS2饰品市场分析师。以下是 Steam CS2 最新公告全文，以及统计引擎算好的当前市场事实。\n'
+            '你是CS2饰品市场分析师。以下是 Steam CS2 最新公告全文，以及统计引擎算好的当前市场事实与历史先验。\n'
             '【公告】\n%s\n\n'
             '【市场事实（写作时必须直接引用，不得编造或改动数字）】\n'
             '- 全市场 %d 件，均价 ¥%.2f，中位价 ¥%.2f，价格分布：%s\n'
             '- 7日涨幅TOP：%s\n'
             '- 7日跌幅TOP：%s\n'
-            '- %s\n\n'
+            '- %s\n'
+            '%s\n\n'
             '请逐条公告深度分析（每条公告独立一小节），每节必须：\n'
             '1) 核心影响：结合公告具体内容说明影响什么品类\n'
             '2) 利好：点名涨幅榜里符合该主题的具体饰品及其真实涨幅数字\n'
             '3) 利空：点名跌幅榜里可能受压的具体饰品及其真实跌幅数字\n'
             '4) 持仓参考：结合当前浮动盈亏给一句可执行建议\n'
-            '禁止写"提升游戏热度""关注后续"之类不落地的话；公告与饰品市场无关的部分直接说明无直接影响。总计 450 字以内。'
+            '5) 历史对照：必须引用历史先验里的具体数字（如"历史 10 个公告日后 7 日全市场 -1.28%、同期基准 -2.28%，无系统性差异"），并据此标注本次判断的历史支撑强度（强/弱/无），不得只写"缺乏数据"而不引数字\n'
+            '禁止写"提升游戏热度""关注后续"之类不落地的话；公告与饰品市场无关的部分直接说明无直接影响。总计 500 字以内。'
         ) % (news_text, scan.get('total', 0), scan.get('avg_p', 0), scan.get('median_p', 0),
-             tiers_text, gainer_text, loser_text, held_txt)
+             tiers_text, gainer_text, loser_text, held_txt, prior_txt)
 
         stats = {
             'total': scan.get('total', 0), 'avg_p': scan.get('avg_p', 0), 'median_p': scan.get('median_p', 0),
@@ -4437,6 +4456,13 @@ def main():
                     # ── Kronos 价格预测（推荐池前10 + AI 精选；频率 = 推荐板块更新频率）──
                     if run_kronos_forecast() is not None:
                         dirty_files.add('ai_forecast.json')
+                    # ── 事件研究（公告日效应；供 AI 空投监控引用真实先验）2026-09-26 ──
+                    try:
+                        import event_study
+                        event_study.main()
+                        dirty_files.add('event_study.json')
+                    except Exception as _ev_e:
+                        print(f'[EVENT] 事件研究失败(non-fatal): {_ev_e}', file=sys.stderr)
             except Exception as e:
                 print(f'[PRICE_HIST] Failed: {e}', file=sys.stderr)
         except Exception as e:
