@@ -2277,6 +2277,8 @@ def generate_ai_news_impact():
         held_txt = '持仓%d件，浮动盈亏%+.2f元(%+.2f%%)' % (cnt, pnl, pnl_pct) if cnt else '无持仓数据'
 
         # 历史先验（事件研究，2026-09-26）：把"公告日效应"的真实统计喂给 AI，给判断定性
+        # ⚠ 实测 glm-4-flash 会改写数字（把 -1.03%/-7.06% 复述成 -1.28%/-2.28%）→
+        #   数字用竖线极简格式锚定，并要求逐字复制；前端另有 Python 真数字展示兜底。
         es = read_json(os.path.join(DATA_DIR, 'event_study.json')) or {}
         es_sum = es.get('summary') or {}
         if es_sum.get('n_events'):
@@ -2284,13 +2286,14 @@ def generate_ai_news_impact():
             for _n in (3, 7, 14):
                 _k = 'ret_%dd' % _n
                 if es_sum.get(_k):
-                    _parts.append('%d日 事件均值%+.2f%% vs 同期基准%+.2f%%' % (
-                        _n, es_sum[_k]['event_mean'], es_sum[_k]['baseline_mean']))
-            prior_txt = ('【历史先验（事件研究：%d 个历史公告日 × %d 件标的池）】%s。%s' % (
+                    _parts.append('%d日=【事件%s%% 基准%s%% 超额%s%%】' % (
+                        _n, es_sum[_k].get('event_mean'), es_sum[_k].get('baseline_mean'),
+                        es_sum[_k].get('excess')))
+            prior_txt = ('【历史先验·数字必须逐字复制，不得改写或四舍五入｜事件N=%s 标的池≈%s件】%s。%s' % (
                 es_sum['n_events'], es_sum.get('n_pool', 0), '；'.join(_parts),
                 es_sum.get('verdict', '')))
         else:
-            prior_txt = '【历史先验】暂无（事件研究未生成）——本次判断缺乏历史数据支撑，必须如实说明。'
+            prior_txt = '【历史先验】暂无（事件研究未生成或有效样本为 0）——本次判断缺乏历史数据支撑，必须如实说明，不得虚构历史数字。'
 
         prompt = (
             '你是CS2饰品市场分析师。以下是 Steam CS2 最新公告全文，以及统计引擎算好的当前市场事实与历史先验。\n'
@@ -2306,7 +2309,8 @@ def generate_ai_news_impact():
             '2) 利好：点名涨幅榜里符合该主题的具体饰品及其真实涨幅数字\n'
             '3) 利空：点名跌幅榜里可能受压的具体饰品及其真实跌幅数字\n'
             '4) 持仓参考：结合当前浮动盈亏给一句可执行建议\n'
-            '5) 历史对照：必须引用历史先验里的具体数字（如"历史 10 个公告日后 7 日全市场 -1.28%%、同期基准 -2.28%%，无系统性差异"），并据此标注本次判断的历史支撑强度（强/弱/无），不得只写"缺乏数据"而不引数字\n'
+            '5) 历史对照：必须**逐字复制**历史先验【】里的数字（例如"7日=【事件-1.03%% 基准-7.06%% 超额+6.03%%】"就照抄这三组数字，不得改写/四舍五入/自行合并），'
+            '再据此标注本次判断的历史支撑强度（强/弱/无）；不得只写"缺乏数据"而不引数字\n'
             '禁止写"提升游戏热度""关注后续"之类不落地的话；公告与饰品市场无关的部分直接说明无直接影响。总计 500 字以内。'
         ) % (news_text, scan.get('total', 0), scan.get('avg_p', 0), scan.get('median_p', 0),
              tiers_text, gainer_text, loser_text, held_txt, prior_txt)
