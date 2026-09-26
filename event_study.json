@@ -1,167 +1,505 @@
 {
-  "updated": "2026-09-26 14:08",
-  "method": "全市场指数 = 标的池（eco 通道、日数≥40）每日等权收益中位数的累积；事件窗口 = 公告日起 n 个交易日的指数收益；基准 = 全期全部同长度滑动窗口分布",
-  "baseline": {
-    "3": {
-      "n_windows": 55,
-      "mean": -0.96,
-      "median": -0.49,
-      "sd": 1.94,
-      "p10": -1.83,
-      "p90": -0.01
-    },
-    "7": {
-      "n_windows": 51,
-      "mean": -2.28,
-      "median": -1.29,
-      "sd": 3.19,
-      "p10": -9.2,
-      "p90": 0.22
-    },
-    "14": {
-      "n_windows": 44,
-      "mean": -4.84,
-      "median": -3.05,
-      "sd": 4.39,
-      "p10": -11.91,
-      "p90": -0.35
-    }
+  "generated": "2026-09-26 14:49",
+  "window": {
+    "from": "2026-06-28",
+    "to": "2026-09-26"
   },
+  "method": "同批对比：T-1 与 T+N 都出现的 buff 渠道物品（≥¥5）算涨跌中位数；同窗口中位 vs 非事件期同期基准；T±3 天容差",
+  "data_quality": "⚠ 7 月价格更新稀疏，部分日期为重复落库（两日价格几乎全同）→ 该事件 有效=false 剔除；9/20 起才是真实高频数据，当前有效样本少，结论仅供弱先验",
+  "note": "样本量=有效事件数（每事件内还有数千物品的同批样本）；n<5 时统计意义很弱",
+  "n_events": 14,
+  "n_valid_events": 5,
   "events": [
     {
-      "date": "2026-07-29",
-      "titles": [
-        "反恐精英2更新",
-        "科隆2026 ：排名赛"
-      ],
-      "ret_3d": -1.37,
-      "ret_7d": -1.81,
-      "ret_14d": -1.59,
-      "z_7d": 0.15
+      "date": "2026-07-01",
+      "title": "Team Falcons' Finale",
+      "cat": "esports",
+      "base_day": "2026-06-30",
+      "d3": {
+        "day": "2026-07-04",
+        "n": 4480,
+        "med": -1.09,
+        "up": 28.5,
+        "dn3": 30.6,
+        "stale": false
+      },
+      "d7": {
+        "day": "2026-07-08",
+        "n": 4427,
+        "med": -2.31,
+        "up": 23.8,
+        "dn3": 44.5,
+        "stale": false
+      },
+      "d14": {
+        "day": "2026-07-17",
+        "n": 4387,
+        "med": -2.25,
+        "up": 24.9,
+        "dn3": 44.3,
+        "stale": false
+      },
+      "有效": true
     },
     {
-      "date": "2026-08-03",
-      "titles": [
-        "反恐精英2更新"
-      ],
-      "ret_3d": -1.37,
-      "ret_7d": -1.81,
-      "ret_14d": -1.59,
-      "z_7d": 0.15
+      "date": "2026-07-03",
+      "title": "The Jackass Sticker Capsule",
+      "cat": "major",
+      "base_day": "2026-07-02",
+      "d3": {
+        "day": "2026-07-06",
+        "n": 4504,
+        "med": -0.73,
+        "up": 32.9,
+        "dn3": 27.8,
+        "stale": false
+      },
+      "d7": {
+        "day": "2026-07-10",
+        "n": 4449,
+        "med": -1.2,
+        "up": 30.6,
+        "dn3": 33.8,
+        "stale": false
+      },
+      "d14": {
+        "day": "2026-07-17",
+        "n": 4417,
+        "med": -1.2,
+        "up": 30.7,
+        "dn3": 33.7,
+        "stale": false
+      },
+      "有效": true
     },
     {
-      "date": "2026-08-12",
-      "titles": [
-        "反恐精英2更新"
-      ],
-      "ret_3d": -1.37,
-      "ret_7d": -1.81,
-      "ret_14d": -1.59,
-      "z_7d": 0.15
+      "date": "2026-07-08",
+      "title": "Season 5, Armory, and More",
+      "cat": "major",
+      "base_day": "2026-07-07",
+      "d3": {
+        "day": "2026-07-12",
+        "n": 4438,
+        "med": -0.03,
+        "up": 26.4,
+        "dn3": 2.7,
+        "stale": false
+      },
+      "d7": {
+        "day": "2026-07-17",
+        "n": 4452,
+        "med": -0.03,
+        "up": 26.4,
+        "dn3": 2.6,
+        "stale": false
+      },
+      "d14": {
+        "day": "2026-07-23",
+        "n": 4433,
+        "med": -0.03,
+        "up": 26.5,
+        "dn3": 2.6,
+        "stale": false
+      },
+      "有效": true
+    },
+    {
+      "date": "2026-07-09",
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-07-08",
+      "d3": {
+        "day": "2026-07-12",
+        "n": 4425,
+        "med": 0.0,
+        "up": 46.5,
+        "dn3": 1.2,
+        "stale": false
+      },
+      "d7": {
+        "day": "2026-07-17",
+        "n": 4434,
+        "med": 0.0,
+        "up": 46.5,
+        "dn3": 1.2,
+        "stale": false
+      },
+      "d14": {
+        "day": "2026-07-23",
+        "n": 4404,
+        "med": 0.0,
+        "up": 46.7,
+        "dn3": 1.2,
+        "stale": false
+      },
+      "有效": true
+    },
+    {
+      "date": "2026-07-15",
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-07-12",
+      "d3": {
+        "day": "2026-07-18",
+        "n": 4409,
+        "med": 0.0,
+        "up": 4.7,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "d7": {
+        "day": "2026-07-23",
+        "n": 4372,
+        "med": 0.0,
+        "up": 0.0,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "d14": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "有效": false
+    },
+    {
+      "date": "2026-07-16",
+      "title": "Call II Arms-ory",
+      "cat": "other",
+      "base_day": "2026-07-12",
+      "d3": {
+        "day": "2026-07-21",
+        "n": 4385,
+        "med": 0.0,
+        "up": 0.0,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "d7": {
+        "day": "2026-07-23",
+        "n": 4372,
+        "med": 0.0,
+        "up": 0.0,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "d14": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "有效": false
+    },
+    {
+      "date": "2026-07-20",
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-07-18",
+      "d3": {
+        "day": "2026-07-23",
+        "n": 4405,
+        "med": 0.0,
+        "up": 4.2,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "d7": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "d14": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "有效": false
     },
     {
       "date": "2026-08-19",
-      "titles": [
-        "反恐精英2更新"
-      ],
-      "ret_3d": -0.8,
-      "ret_7d": -1.29,
-      "ret_14d": -0.85,
-      "z_7d": 0.31
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-08-18",
+      "d3": {
+        "day": "2026-08-22",
+        "n": 4353,
+        "med": 0.0,
+        "up": 0.0,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "d7": {
+        "day": "2026-08-26",
+        "n": 4353,
+        "med": 0.0,
+        "up": 0.0,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "d14": {
+        "day": "2026-09-03",
+        "n": 4351,
+        "med": 0.0,
+        "up": 0.0,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "有效": false
     },
     {
       "date": "2026-08-24",
-      "titles": [
-        "反恐精英2更新"
-      ],
-      "ret_3d": -0.33,
-      "ret_7d": 0.22,
-      "ret_14d": -0.35,
-      "z_7d": 0.78
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-08-23",
+      "d3": {
+        "day": "2026-08-27",
+        "n": 4363,
+        "med": 0.0,
+        "up": 0.0,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "d7": {
+        "day": "2026-08-31",
+        "n": 4357,
+        "med": 0.0,
+        "up": 0.0,
+        "dn3": 0.0,
+        "stale": true
+      },
+      "d14": {
+        "day": "2026-09-07",
+        "n": 4329,
+        "med": -11.38,
+        "up": 14.6,
+        "dn3": 79.9,
+        "stale": false
+      },
+      "有效": false
     },
     {
       "date": "2026-09-09",
-      "titles": [
-        "反恐精英2更新"
-      ],
-      "ret_3d": -0.47,
-      "ret_7d": -1.21,
-      "ret_14d": -3.15,
-      "z_7d": 0.34
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-09-08",
+      "d3": {
+        "day": "2026-09-12",
+        "n": 4710,
+        "med": -0.89,
+        "up": 25.7,
+        "dn3": 28.0,
+        "stale": false
+      },
+      "d7": {
+        "day": "2026-09-16",
+        "n": 4650,
+        "med": -1.63,
+        "up": 22.9,
+        "dn3": 37.9,
+        "stale": false
+      },
+      "d14": {
+        "day": "2026-09-23",
+        "n": 4640,
+        "med": -5.18,
+        "up": 14.9,
+        "dn3": 64.1,
+        "stale": false
+      },
+      "有效": true
     },
     {
       "date": "2026-09-22",
-      "titles": [
-        "反恐精英2更新",
-        "尖峰时刻"
-      ],
-      "ret_3d": -0.4,
-      "ret_7d": null,
-      "ret_14d": null
+      "title": "Rush Hour",
+      "cat": "major",
+      "base_day": "2026-09-21",
+      "d3": {
+        "day": "2026-09-25",
+        "n": 4687,
+        "med": -0.58,
+        "up": 30.6,
+        "dn3": 24.9,
+        "stale": false
+      },
+      "d7": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "d14": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "有效": false
     },
     {
       "date": "2026-09-23",
-      "titles": [
-        "反恐精英2更新"
-      ],
-      "ret_3d": -0.23,
-      "ret_7d": null,
-      "ret_14d": null
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-09-22",
+      "d3": {
+        "day": "2026-09-26",
+        "n": 4670,
+        "med": -0.08,
+        "up": 37.5,
+        "dn3": 20.6,
+        "stale": false
+      },
+      "d7": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "d14": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "有效": false
     },
     {
       "date": "2026-09-24",
-      "titles": [
-        "反恐精英2更新"
-      ],
-      "ret_3d": null,
-      "ret_7d": null,
-      "ret_14d": null
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-09-23",
+      "d3": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "d7": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "d14": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "有效": false
     },
     {
       "date": "2026-09-25",
-      "titles": [
-        "反恐精英2更新"
-      ],
-      "ret_3d": null,
-      "ret_7d": null,
-      "ret_14d": null
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-09-24",
+      "d3": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "d7": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "d14": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "有效": false
     }
   ],
   "summary": {
-    "n_events": 10,
-    "n_pool": 4616,
-    "window_days": [
-      3,
-      7,
-      14
-    ],
+    "n_events": 5,
+    "n_pool": 4449,
     "ret_3d": {
-      "event_mean": -0.79,
-      "event_n": 8,
-      "baseline_mean": -0.96,
-      "diff": 0.17,
-      "z_vs_baseline": 0.09
+      "event_mean": -0.55,
+      "baseline_mean": -4.43,
+      "excess": 3.88,
+      "n_base": 9,
+      "n_events": 5,
+      "up_pct": 32.0,
+      "dn3_pct": 18.06
     },
     "ret_7d": {
-      "event_mean": -1.28,
-      "event_n": 6,
-      "baseline_mean": -2.28,
-      "diff": 0.99,
-      "z_vs_baseline": 0.31
+      "event_mean": -1.03,
+      "baseline_mean": -7.06,
+      "excess": 6.03,
+      "n_base": 11,
+      "n_events": 5,
+      "up_pct": 30.04,
+      "dn3_pct": 24.0
     },
     "ret_14d": {
-      "event_mean": -1.52,
-      "event_n": 6,
-      "baseline_mean": -4.84,
-      "diff": 3.32,
-      "z_vs_baseline": 0.76
+      "event_mean": -1.73,
+      "baseline_mean": -13.2,
+      "excess": 11.47,
+      "n_base": 7,
+      "n_events": 5,
+      "up_pct": 28.74,
+      "dn3_pct": 29.18
     },
-    "verdict": "历史 10 个公告日后 7 天，全市场表现与随机窗口基本无异（差异 0.31 个标准差）——公告本身对大盘无系统性影响，利好/利空判断应视为弱先验，不构成交易依据。"
-  },
-  "limits": [
-    "贴纸/箱子/刀不在采集池 → 无法做「新箱发布→箱内物品」级定向研究",
-    "公告正文 2026-09-26 起才完整抓取（此前截断 200 字符）",
-    "事件样本仅 10 个，统计功效有限，结论看方向不看小数",
-    "事件窗口为全市场口径（非个券），个券影响需另做映射"
-  ]
+    "verdict": "历史上 5 个有效公告事件后 7 天，同批物品中位涨跌 -1.03%，同期基准 -7.06%，超额 +6.03%（上涨物品占比 30.0%）→ 历史方向性支撑：偏弱",
+    "by_cat": {
+      "major": {
+        "n": 2,
+        "med7": -0.61,
+        "up7": 28.5
+      },
+      "esports": {
+        "n": 1,
+        "med7": -2.31,
+        "up7": 23.8
+      },
+      "routine": {
+        "n": 2,
+        "med7": -0.81,
+        "up7": 34.7
+      },
+      "other": {
+        "n": 0
+      },
+      "content": {
+        "n": 3,
+        "med7": -1.2,
+        "up7": 26.93
+      }
+    }
+  }
 }
