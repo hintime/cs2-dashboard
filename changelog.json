@@ -2,6 +2,24 @@
   {
     "date": "2026-09-26",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-26 19:00",
+    "desc": "wip: local snapshot 2026-09-26 19:00"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "docs(kronos): 更正 CPU 基线实测值 + 补记 CUDA 落地/口径部署/上游缺陷修复",
+    "desc": "docs(kronos): 更正 CPU 基线实测值 + 补记 CUDA 落地/口径部署/上游缺陷修复"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 18:37"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 18:30",
     "desc": "wip: local snapshot 2026-09-26 18:30"
   },
@@ -100,23 +118,5 @@
     "tag": "chore",
     "title": "update buff_history.json, buff_recent.json, changelog.json,",
     "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 15:04"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "feat(news): 历史先验数字逐字锚定(防flash改写) + 5条历史对照要求",
-    "desc": "feat(news): 历史先验数字逐字锚定(防flash改写) + 5条历史对照要求"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "feat(event-study): 事件研究实现(同批对比+同期基准+stale过滤+公告缓存回退)",
-    "desc": "feat(event-study): 事件研究实现(同批对比+同期基准+stale过滤+公告缓存回退)"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-26 15:00",
-    "desc": "wip: local snapshot 2026-09-26 15:00"
   }
 ]
