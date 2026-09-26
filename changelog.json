@@ -2,6 +2,24 @@
   {
     "date": "2026-09-26",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-26 20:00",
+    "desc": "wip: local snapshot 2026-09-26 20:00"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(holdings): 走势图重做——右侧价格轴/十字光标/可点图例/区间切换",
+    "desc": "feat(holdings): 走势图重做——右侧价格轴/十字光标/可点图例/区间切换"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 19:35"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 19:15",
     "desc": "wip: local snapshot 2026-09-26 19:15"
   },
@@ -100,23 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 16:15",
     "desc": "wip: local snapshot 2026-09-26 16:15"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "fix(kronos): update.py Windows 路径改按存在性探测(消除 C/E 盘分叉) + 纳入 ne",
-    "desc": "s_history.json [api-push]"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "fix(kronos): update.py Windows 路径改按存在性探测(消除 C/E 盘分叉) + 纳入 ne",
-    "desc": "s_history.json"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 16:04"
   }
 ]
