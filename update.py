@@ -928,8 +928,12 @@ def run_kronos_forecast(top_n=10, days=14, samples=3):
         return None
     # 平台自适应：Windows=本机 venv；Linux=服务器 kronos-venv（方案 C，2026-09-26 实测峰值 478MB）
     if os.name == 'nt':
-        default_py = r'C:\Users\Lenovo\cs2-kronos\venv\Scripts\python.exe'
-        default_local = r'C:\Users\Lenovo\cs2-kronos\forecast_batch.py'
+        # Windows 侧 2026-09-26 做过 C→E 盘迁移：按存在性探测根目录，两机共用
+        # 同一份代码，互推时不会把对方的路径打回旧值（此前 E:\ 与 C:\ 分叉过）
+        _kroot = next((_p for _p in (r'E:\cs2-kronos', r'C:\Users\Lenovo\cs2-kronos')
+                       if os.path.isdir(_p)), r'E:\cs2-kronos')
+        default_py = os.path.join(_kroot, 'venv', 'Scripts', 'python.exe')
+        default_local = os.path.join(_kroot, 'forecast_batch.py')
     else:
         default_py = '/home/ubuntu/kronos-venv/bin/python'
         default_local = '/home/ubuntu/cs2-run/kronos_forecast_srv.py'
