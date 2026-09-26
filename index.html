@@ -1230,25 +1230,12 @@ html { scroll-behavior: smooth; }
 .hp-bbtn.ghost:hover{background:var(--surface2);color:var(--text2);border-color:var(--border)}
 @media(max-width:860px){ .hp-li.selmode{grid-template-columns:16px 1fr 66px} }
 
-/* ═══ 【hover】走势图 tooltip + 列表名称提示（2026-09-22）═══ */
-.hp-tip{position:absolute;z-index:10;pointer-events:none;opacity:0;
-  transition:opacity .12s;transform:translateX(-50%);
-  /* ★ 同上：改用不透明背景 */
-  background:var(--bg);
-  border:1px solid rgba(255,255,255,.13);border-radius:6px;
-  padding:4px 9px;font-size:11.5px;line-height:1.5;color:var(--text);
-  white-space:nowrap;
-  box-shadow:inset 0 0 0 9999px rgba(255,255,255,.038),
-             0 10px 26px -8px rgba(0,0,0,.9), 0 0 0 1px rgba(0,0,0,.4);
-  display:flex;align-items:baseline;gap:7px}
+/* ═══ 【hover】走势图 crosshair（2026-09-26：浮动 tooltip 已删——信息由顶部读数行逐点联动承接，浮层遮挡曲线）═══ */
 /* ★ 垂直准线（TradingView 式 crosshair 竖线）*/
 .hp-tip-line{position:absolute;top:0;bottom:0;width:1px;display:none;z-index:8;
   pointer-events:none;background:linear-gradient(to bottom,
     rgba(255,255,255,0) 0%, rgba(255,255,255,.22) 12%,
     rgba(255,255,255,.22) 88%, rgba(255,255,255,0) 100%)}
-.hp-tip b{font-variant-numeric:tabular-nums;font-size:12.5px;
-  font-family:'DM Mono','JetBrains Mono',ui-monospace,monospace}
-.hp-tip span{color:var(--text3);font-size:10.5px}
 .hp-tip-dot{position:absolute;z-index:9;pointer-events:none;display:none;
   width:8px;height:8px;border-radius:50%;background:var(--text);
   border:1.5px solid var(--surface);box-shadow:0 0 0 2px rgba(255,255,255,.08)}
@@ -1638,14 +1625,11 @@ html { scroll-behavior: smooth; }
   .hc-lg{padding:2px 4px;gap:4px}
   .hc-lg b{font-size:9px}
 }
-/* ⑥ 十字光标：水平线 + tooltip 第二行（该点 MA 值） */
+/* ⑥ 十字光标：水平线 */
 .hp-tip-h{position:absolute;left:0;right:0;height:1px;display:none;z-index:8;
   pointer-events:none;background:linear-gradient(to right,
     rgba(255,255,255,0) 0%, rgba(255,255,255,.2) 10%,
     rgba(255,255,255,.2) 90%, rgba(255,255,255,0) 100%)}
-.hp-tip{flex-wrap:wrap}
-.hp-tip em{flex:0 0 100%;font-style:normal;font-size:10px;color:var(--text3);
-  font-variant-numeric:tabular-nums;margin-top:2px}
 /* ⑦ 面板内：图表不再被 flex 拉高。原本 svg 被 stretch 到 220~400px，
    同一张图在不同视口会被纵向拉成不同形状；改由图 viewBox 比例决定（780:180）。 */
 #holdingsPanel .hp-chart{flex:0 0 auto!important;min-height:0!important;display:block!important}
@@ -7272,8 +7256,9 @@ function hpChartTooltip(idx){
   var vbH = parseFloat(svg.getAttribute('data-h')) || 252;
 
   holder.style.position = 'relative';
-  var box = document.createElement('div');
-  box.className = 'hp-tip';
+  /* ★ 2026-09-26 删除浮动 tooltip（.hp-tip）：它显示的价格/日期/涨跌/MA5/MA20/布林
+     顶部读数行（.hc-stats）已逐点联动展示（改动 B），浮层是 100% 冗余且遮挡曲线。
+     保留：十字准线 + 数据点圆点 + 右轴跟随价格标签 —— TradingView legend 模式。 */
   var dot = document.createElement('span');
   dot.className = 'hp-tip-dot';
   var line = document.createElement('span');      /* ★ 垂直准线 */
@@ -7284,7 +7269,6 @@ function hpChartTooltip(idx){
   var ynow = ycur ? (ycur.getAttribute('data-now') || '') : '';
   holder.appendChild(line);
   holder.appendChild(hline);
-  holder.appendChild(box);
   holder.appendChild(dot);
 
   var base = prices[0] || 0;                       /* 序列起点，用于算相对涨跌 */
@@ -7360,22 +7344,6 @@ function hpChartTooltip(idx){
       if (d0 < bestD){ bestD = d0; best = i; }
     }
     var pr = Number(prices[best]) || 0;
-    var dt = days[best] || ('第 ' + (best + 1) + ' 天');
-    var chg = base > 0 ? ((pr - base) / base * 100) : 0;
-    var cls = chg >= 0 ? 'rise' : 'fall';
-    /* 第二行：该点的 MA5 / MA20 / 布林区间（有才算，不给「—」占位）*/
-    var extra = '';
-    if (tk){
-      var m5 = tk.ma5[best], m20 = tk.ma20[best], seg = [];
-      if (m5 != null) seg.push('MA5 ' + m5.toFixed(2));
-      if (m20 != null) seg.push('MA20 ' + m20.toFixed(2));
-      if (tk.up[best] != null) seg.push('布林 ' + tk.dn[best].toFixed(2) + '~' + tk.up[best].toFixed(2));
-      if (seg.length) extra = '<em>' + seg.join(' · ') + '</em>';
-    }
-    box.innerHTML = '<b>¥' + hpFmt(pr) + '</b>'
-      + '<span>' + dt + '</span>'
-      + '<span class="' + cls + '">' + (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%</span>'
-      + extra;
     /* 屏幕坐标（CSS px，svg 内），再平移回容器坐标系 */
     var cx = P[best].x / vbW * w + offX;
     var cy = P[best].y / vbH * hgt + offY;
@@ -7384,16 +7352,6 @@ function hpChartTooltip(idx){
     line.style.display = 'block';
     hline.style.top = cy.toFixed(1) + 'px';
     hline.style.display = 'block';
-    /* tooltip 水平跟随鼠标但不出界 */
-    var half = Math.min(84, Math.max(58, rect.width / 2 - 4));
-    var mtx = e.clientX - rect.left;
-    var tx = Math.max(half, Math.min(rect.width - half, mtx));
-    box.style.left = tx + 'px';
-    /* 垂直避让数据点：优先放上方（两行更占高），顶部不够则放下方 */
-    var ty = cy - 44;
-    if (ty < 4) ty = cy + 16;
-    box.style.top = ty.toFixed(1) + 'px';
-    box.style.opacity = '1';                       /* ★ 关键修复：让它真的显示 */
     /* 数据点标记 */
     dot.style.left = (cx - 4).toFixed(1) + 'px';
     dot.style.top = (cy - 4).toFixed(1) + 'px';
@@ -7407,7 +7365,6 @@ function hpChartTooltip(idx){
     setReadout(best);
   }
   function leave(){
-    box.style.opacity = '0';
     dot.style.display = 'none';
     line.style.display = 'none';
     hline.style.display = 'none';
