@@ -6176,7 +6176,7 @@ function checkClipboard(){
             ta.style.borderColor = 'var(--fall)';
             setTimeout(function() {
               if(confirm('✓ 检测到库存 JSON（'+d.assets.length+' 件物品）\n是否立即导入？')){
-                processSteamJson(d);
+                showImportPreview(parseSteamJson(d));
               }
             }, 200);
           } else {
@@ -6190,7 +6190,7 @@ function checkClipboard(){
             ta.style.borderColor = 'var(--fall)';
             setTimeout(function() {
               if(confirm('✓ 检测到库存 JSON（'+cnt+' 件物品）\n是否立即导入？')){
-                processSteamJson(d);
+                showImportPreview(parseSteamJson(d));
               }
             }, 200);
           } else {
@@ -6214,165 +6214,109 @@ function checkClipboard(){
     // 部分浏览器首次需要手动粘贴一次以授权
   });
 }
-function switchImportTab(tab) {
-  document.getElementById('importTabPaste').style.display = (tab==='paste' ? '' : 'none');
-  document.getElementById('importTabEasy').style.display = (tab==='easy' ? '' : 'none');
-  ['tabPaste','tabEasy'].forEach(function(id){
-    var b=document.getElementById(id);
-    if(b) b.style.background = (id==='tab'+tab.charAt(0).toUpperCase()+tab.slice(1) ? 'var(--blue)' : 'var(--surface2)');
-  });
-}
 function doSteamImport(){
   var raw = document.getElementById('steamJson').value.trim();
   if(!raw){ alert('请先粘贴JSON'); return; }
-  try { var data=JSON.parse(raw); processSteamJson(data); } catch(e){ alert('JSON解析失败: '+e.message); }
+  try { var data=JSON.parse(raw); showImportPreview(parseSteamJson(data)); } catch(e){ alert('JSON解析失败: '+e.message); }
 }
-function processSteamJson(data){
-  var nm = window._cnNameMap || {};  // 中文名映射
-  var items = loadMyHoldings();
-  var imported = 0;
-
-  // 用 Map 加速去重
-  var itemMap = {};
-  items.forEach(function(it){ itemMap[it.market_hash] = it; });
-
-  function addItem(mhn, qty, wearCode){
+// ── 磨损解析：从 market_hash_name 提取（忽略 StatTrak™ / Souvenir / ★ 等品质词）──
+function extractWear(mh){
+  if(!mh) return '';
+  var m = mh.match(/\b(Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\b/);
+  if(!m) return '';
+  return {'Factory New':'FN','Minimal Wear':'MW','Field-Tested':'FT','Well-Worn':'WW','Battle-Scarred':'BS'}[m[1]];
+}
+// 成本默认值：取现价（避免导入后 ¥0 虚高盈亏）
+function priceForMh(mh){
+  var ps = window._priceSummary || {};
+  var p = ps[mh] || {};
+  return Number(p.price || p.current_price || 0) || 0;
+}
+// ── 把 Steam JSON 解析成 [{mh,cn,wear,qty}]（不落地）──
+function parseSteamJson(data){
+  if(!data || typeof data !== 'object') return [];
+  var out = [], seen = {};
+  function push(mhn, qty){
     if(!mhn) return;
-    var chName = nm[mhn] || mhn;  // 优先中文名
-    chName = chName.replace(/[\u2605\u2122\u00ae]/g,'').trim();
-    var exist = itemMap[mhn];
-    if(exist){
-      exist.qty += qty || 1;
-    } else {
-      var newItem = {
-        id: Date.now() + '_' + (Math.random()*1e6|0),
-        name: chName,
-        market_hash: mhn,
-        cost: 0,
-        qty: qty || 1,
-        wear: wearCode || '',
-        category: ''
-      };
-      itemMap[mhn] = newItem;
-      items.push(newItem);
-    }
-    imported += (qty || 1);
+    var w = extractWear(mhn);
+    var cn = cnName(mhn);
+    var key = overrideKey(cn, w);
+    if(seen[key]){ seen[key].qty += (qty || 1); return; }
+    var it = { mh: mhn, cn: cn, wear: w, qty: qty || 1 };
+    seen[key] = it; out.push(it);
   }
-
   if(data.assets && Array.isArray(data.assets)){
     // 格式1: assets 数组 (直接 API)
     var classes = {};
-    if(data.descriptions) data.descriptions.forEach(function(d){
-      classes[d.classid+'_'+d.instanceid] = d.market_hash_name;
-    });
-    data.assets.forEach(function(a){
-      addItem(classes[a.classid+'_'+a.instanceid] || a.market_hash_name);
-    });
+    if(data.descriptions) data.descriptions.forEach(function(d){ classes[d.classid+'_'+d.instanceid] = d.market_hash_name; });
+    data.assets.forEach(function(a){ push(classes[a.classid+'_'+a.instanceid] || a.market_hash_name, 1); });
   } else if(data.items && Array.isArray(data.items)){
     // 格式2: items 数组
-    data.items.forEach(function(it){
-      addItem(it.market_hash || it.hash);
-    });
+    data.items.forEach(function(it){ push(it.market_hash || it.hash, it.qty || 1); });
   } else if(data.rgInventory && typeof data.rgInventory === 'object'){
     // 格式3: rgInventory 对象 (Steam 网页版库存)
-    var classes = {};
-    if(data.rgDescriptions) Object.keys(data.rgDescriptions).forEach(function(k){
-      classes[k] = data.rgDescriptions[k].market_hash_name;
-    });
+    var rc = {};
+    if(data.rgDescriptions) Object.keys(data.rgDescriptions).forEach(function(k){ rc[k] = data.rgDescriptions[k].market_hash_name; });
     Object.keys(data.rgInventory).forEach(function(key){
       var a = data.rgInventory[key];
-      addItem(classes[a.classid+'_'+a.instanceid], parseInt(a.amount) || 1);
+      push(rc[a.classid+'_'+a.instanceid], parseInt(a.amount) || 1);
     });
   } else {
-    var hint = data ? (data.assets ? 'assets 不是数组' : '缺少 assets 字段') : '数据为空';
-    var preview = data ? JSON.stringify(data).slice(0,200) : 'null';
-    alert('✗ 数据格式不对 — ' + hint + '\n\n数据预览：' + preview + '\n\n请确认：\n① 库存已设为公开\n② 复制的是 steamcommunity.com/inventory/.../730/2 的纯文本页面\n③ 页面开头是 {"success":true,...}');
-    return;
+    return null; // 格式不对
   }
-
-  saveMyHoldings(items);
+  return out;
+}
+// ── 导入预览表（逐件可改成本 + 合并策略）──
+function showImportPreview(items){
+  if(items === null){ alert('✗ 数据格式不对 — 请确认复制的是 inventory/.../730/2 的纯文本 JSON（开头 {"success":true,...}）'); return; }
+  if(!items || !items.length){ alert('未解析出任何物品（库存可能为空或未公开）'); return; }
+  window._importItems = items;
+  var tbody = '';
+  items.forEach(function(it, i){
+    var def = priceForMh(it.mh);
+    tbody += '<tr>' +
+      '<td style="padding:4px 8px">' + esc(it.cn) + '</td>' +
+      '<td style="text-align:center;color:var(--text3)">' + (window.WEAR_MAP[it.wear] || it.wear || '—') + '</td>' +
+      '<td style="text-align:center">' + it.qty + '</td>' +
+      '<td style="padding:2px 8px"><input id="ipcost-' + i + '" value="' + (def ? def.toFixed(2) : '') + '" placeholder="成本" style="width:72px;padding:2px 4px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px;font-size:11px"></td>' +
+      '</tr>';
+  });
+  var pv = document.getElementById('importPreview');
+  pv.querySelector('#ipTbody').innerHTML = tbody;
+  pv.querySelector('#ipCount').textContent = items.length;
+  pv.style.display = '';
+}
+// ── 确认导入：按策略合并 + 填成本 ──
+function commitImport(){
+  var items = window._importItems || [];
+  if(!items.length) return;
+  var strat = (document.getElementById('ipStrategy') || {}).value || 'merge';
+  var existing = loadMyHoldings() || [];
+  var map = {};
+  if(strat !== 'replace') existing.forEach(function(it){ map[overrideKey(it.name, it.wear)] = it; });
+  if(strat === 'replace'){ existing = []; map = {}; }
+  var imported = 0;
+  items.forEach(function(it, i){
+    var costStr = (document.getElementById('ipcost-' + i) || {}).value;
+    var cost = parseFloat(costStr);
+    if(isNaN(cost) || cost < 0) cost = priceForMh(it.mh) || 0; // 留空→按现价填
+    var key = overrideKey(it.cn, it.wear);
+    var ex = map[key];
+    if(ex){
+      if(strat === 'add') return;            // 仅新增：已存在跳过
+      ex.qty = (Number(ex.qty) || 1) + (it.qty || 1);
+      if((Number(ex.cost) || 0) === 0 && cost > 0) ex.cost = cost;  // 原成本为0且用户填了才更新
+      imported += (it.qty || 1);
+    } else {
+      var ni = { id: Date.now() + '_' + (Math.random()*1e6|0), name: it.cn, market_hash: it.mh, cost: cost, qty: it.qty || 1, wear: it.wear || '', category: '' };
+      map[key] = ni; existing.push(ni);
+      imported += (it.qty || 1);
+    }
+  });
+  saveMyHoldings(existing);
   closeSteamImport();
-  alert('✓ 导入 '+imported+' 件');
+  alert('✓ 导入 ' + imported + ' 件（' + ({merge:'增量合并',replace:'整表替换',add:'仅新增'})[strat] + '）');
   location.reload();
-}
-async function tryFetchSteam(){
-  var sid = document.getElementById('steamUrl').value.trim();
-  if(!sid){ alert('请输入 Steam ID64'); return; }
-  var status = document.getElementById('steamFetchStatus');
-  status.textContent = '获取中...';
-  // ── 代理优先级：云端(Vercel) > 本地 > 直连 > CORS公共代理 ──
-  var VERCEL_PROXY_URL = '';
-  var steamPath = '/inventory/'+encodeURIComponent(sid)+'/730/2?l=schinese&count=5000';
-  var proxies = [];
-  if (VERCEL_PROXY_URL) {
-    proxies.push([VERCEL_PROXY_URL + '/api/steam?sid=' + encodeURIComponent(sid), '云端代理']);
-  }
-  proxies.push(
-    ['http://localhost:8765' + steamPath, '本地代理'],
-    ['https://corsproxy.io/?' + encodeURIComponent('https://steamcommunity.com' + steamPath), 'corsproxy.io'],
-    ['https://api.allorigins.win/raw?url=' + encodeURIComponent('https://steamcommunity.com' + steamPath), 'allorigins.win']
-  );
-  for(var pi=0; pi<proxies.length; pi++){
-    status.textContent = '获取中... (' + proxies[pi][1] + ')';
-    try {
-      var r = await fetch(proxies[pi][0], {signal: AbortSignal.timeout(15000)});
-      if(r.ok){
-        var data = await r.json();
-        document.getElementById('steamJsonUrl').value = JSON.stringify(data);
-        status.textContent = '✓ 成功！点下方"导入"';
-        return;
-      }
-      if(r.status === 403 || r.status === 401) { continue; }
-    } catch(e){}
-  }
-  status.textContent = '✗ 自动获取失败（CORS限制）— 切到"粘贴JSON"手动导入';
-}
-
-// ── 一键导入：输入个人资料链接，全自动 ──
-async function autoImportFromProfile(){
-  var link = document.getElementById('steamProfile').value.trim();
-  if(!link){ alert('请粘贴 Steam 个人资料链接'); return; }
-  var m = link.match(/profiles\/(\d+)|id\/([\w-]+)/);
-  if(!m){ alert('链接格式不对，需要包含 profiles/xxx 或 id/xxx'); return; }
-  var sid = m[1] || m[2];
-  var status = document.getElementById('easyStatus');
-  status.textContent = '⏳ 正在获取库存...';
-  
-  // ── 代理优先级：本地代理(需启动) > CORS公共代理 ──
-  var steamPath = '/inventory/'+encodeURIComponent(sid)+'/730/2?l=schinese&count=5000';
-  var proxies = [];
-  if (VERCEL_PROXY_URL) {
-    proxies.push([VERCEL_PROXY_URL + '/api/steam?sid=' + encodeURIComponent(sid), '云端代理']);
-  }
-  proxies.push(
-    ['http://localhost:8765' + steamPath, '本地代理'],
-    ['https://corsproxy.io/?' + encodeURIComponent('https://steamcommunity.com' + steamPath), 'corsproxy.io'],
-    ['https://api.allorigins.win/raw?url=' + encodeURIComponent('https://steamcommunity.com' + steamPath), 'allorigins.win']
-  );
-
-  for(var pi=0; pi<proxies.length; pi++){
-    var fetchUrl = proxies[pi][0];
-    var label = proxies[pi][1];
-    status.textContent = '⏳ 正在获取库存... (' + label + ')';
-    try {
-      var r = await fetch(fetchUrl, {signal: AbortSignal.timeout(15000)});
-      if(r.ok){
-        var data = await r.json();
-        if(data && data.assets){
-          status.textContent = '✓ 获取成功！ ' + data.assets.length + ' 件物品，已导入';
-          processSteamJson(data);
-          return;
-        }
-        if(!data.assets) { status.textContent = '✗ 库存为空或无权限访问'; return; }
-      }
-      // 403/401 = 无权限（代理无登录态或库存确实未公开），继续试下一个
-      if(r.status === 403 || r.status === 401) {
-        // Don't give up yet — try next proxy
-        continue;
-      }
-    } catch(e){}
-  }
-  status.textContent = '✗ 自动获取失败（CORS限制）— 请切到"粘贴JSON"手动导入';
 }
 
 // ═══ 检测书签跳转导入（window.name 跨域传递数据）═══
@@ -6382,7 +6326,7 @@ async function autoImportFromProfile(){
       var data = JSON.parse(window.name);
       if(data && data.assets) {
         window.name = ''; // 清空防止重复导入
-        processSteamJson(data);
+        importSteamInventory(); showImportPreview(parseSteamJson(data));
       }
     } catch(e){}
   }
@@ -6524,43 +6468,53 @@ window.addEventListener('focus', function(){
 <div id="steamImportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)closeSteamImport()">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:560px;max-width:95vw">
     <h3 style="font-size:16px;margin-bottom:6px;color:var(--text)">🚀 导入 Steam 库存</h3>
-    <p style="font-size:10px;color:var(--text3);margin-bottom:12px">所有用户都可用，无需安装任何东西</p>
-    <div style="display:flex;gap:4px;margin-bottom:14px">
-      <button onclick="switchImportTab('paste')" id="tabPaste" class="export-btn" style="font-size:11px;background:var(--blue);color:#fff">📋 粘贴JSON · 推荐</button>
-      <button onclick="switchImportTab('easy')" id="tabEasy" class="export-btn" style="font-size:11px">✨ 一键导入</button>
+    <p style="font-size:10px;color:var(--text3);margin-bottom:12px">所有用户可用 · 数据只存你本地浏览器</p>
+
+    <!-- ① 主路径：书签一键 -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">① 推荐：书签一键导入</div>
+      <p style="font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:8px">
+        装一个浏览器书签 → 在 Steam 库存页点一下 → 自动跳回并导入。<br>
+        <b style="color:var(--amber)">需先开 Steam++ 能访问社区</b>，书签只在 steamcommunity.com 上生效。
+      </p>
+      <button onclick="window.open('bookmarklet.html','_blank')" style="padding:7px 16px;background:var(--amber);color:#000;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600">🔖 安装书签</button>
     </div>
-    <div id="importTabPaste">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:12px;color:var(--text2)">①</span>
-        <button onclick="window.open('https://steamcommunity.com/my/inventory/json/730/2','_blank')" style="padding:8px 16px;background:var(--fall);color:#000;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">📦 打开 Steam 库存 JSON 页面</button>
-        <span style="font-size:10px;color:var(--text3)">(需开 Steam++)</span>
+
+    <!-- ② 兜底：粘贴 JSON -->
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">② 兜底：粘贴 JSON</div>
+    <p style="font-size:11px;color:var(--text3);margin-bottom:6px">
+      打开 <a href="https://steamcommunity.com/my/inventory/json/730/2" target="_blank" style="color:var(--blue)">Steam 库存 JSON 页</a> → Ctrl+A 全选 → Ctrl+C → 切回本页自动识别
+    </p>
+    <textarea id="steamJson" placeholder="去 Steam 库存页面复制后切回来，自动识别剪贴板..." style="width:100%;height:150px;padding:10px;background:var(--surface2);color:var(--text);border:2px solid var(--border);border-radius:8px;font-size:11px;resize:vertical;font-family:monospace"></textarea>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button onclick="checkClipboard()" style="padding:5px 12px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px">📋 检测剪贴板</button>
+      <button onclick="doSteamImport()" style="padding:5px 16px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">解析并预览</button>
+    </div>
+
+    <!-- ③ 预览 -->
+    <div id="importPreview" style="display:none;margin-top:14px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">预览（共 <b id="ipCount">0</b> 件）· 成本价可逐件改，<b style="color:var(--text3)">留空按现价填</b></div>
+      <div style="max-height:230px;overflow:auto;border:1px solid var(--border);border-radius:8px">
+        <table style="width:100%;font-size:11px;border-collapse:collapse">
+          <thead><tr style="position:sticky;top:0;background:var(--surface2)">
+            <th style="padding:5px 8px;text-align:left">名称</th>
+            <th style="padding:5px;text-align:center">磨损</th>
+            <th style="padding:5px;text-align:center">数量</th>
+            <th style="padding:5px;text-align:left">成本价(¥)</th>
+          </tr></thead>
+          <tbody id="ipTbody"></tbody>
+        </table>
       </div>
-      <p style="font-size:11px;color:var(--text3);margin-bottom:8px">
-        ② 新页面打开后：<b>Ctrl+A</b> 全选 → <b>Ctrl+C</b> 复制<br>
-        ③ <b>切回本页</b> → 自动检测 → 确认导入 ✅
-      </p>
-      <textarea id="steamJson" placeholder="去 Steam 库存页面复制后切回来，自动识别剪贴板..." style="width:100%;height:180px;padding:10px;background:var(--surface2);color:var(--text);border:2px solid var(--border);border-radius:8px;font-size:11px;resize:vertical;font-family:monospace"></textarea>
-      <div style="display:flex;gap:6px;justify-content:center;align-items:center;margin-top:6px">
-        <button onclick="checkClipboard()" style="padding:3px 10px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:10px">📋 检测剪贴板</button>
-        <span style="font-size:10px;color:var(--text3)">或切回本页自动检测</span>
-        <a href="bookmarklet.html" target="_blank" style="color:var(--amber);font-size:10px">🔖 书签备选</a>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--text3)">合并方式</span>
+        <select id="ipStrategy" style="padding:5px 8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px">
+          <option value="merge">增量合并（相同饰品数量累加）</option>
+          <option value="replace">整表替换（清空原持仓）</option>
+          <option value="add">仅新增（不覆盖已有）</option>
+        </select>
+        <button onclick="commitImport()" style="padding:7px 18px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">确认导入</button>
+        <button onclick="document.getElementById('importPreview').style.display='none'" style="padding:7px 16px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">返回</button>
       </div>
-    </div>
-    <div id="importTabEasy" style="display:none">
-      <p style="font-size:11px;color:var(--amber);margin-bottom:10px">
-        ⚡ 输入 Steam 链接，自动抓取（海外自动 / 国内需运行本地代理）
-      </p>
-      <p style="font-size:11px;color:var(--text3);margin-bottom:8px">
-        Steam 个人资料链接：<br>
-        <input id="steamProfile" placeholder="https://steamcommunity.com/profiles/7656119xxxxxxxxx" style="width:100%;padding:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;margin-top:6px">
-      </p>
-      <button onclick="autoImportFromProfile()" style="padding:8px 18px;background:var(--fall);color:#000;border:none;border-radius:8px;font-size:13px;cursor:pointer;margin-bottom:8px;font-weight:600">✨ 一键导入</button>
-      <span id="easyStatus" style="font-size:11px;color:var(--text3)"></span>
-      <p style="font-size:10px;color:var(--text3);margin-top:8px">失败会自动尝试多个代理。切到 <a href="#" onclick="event.preventDefault();switchImportTab('paste')" style="color:var(--blue)">📋 粘贴JSON</a> 最稳</p>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button onclick="doSteamImport()" style="padding:8px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer">导入</button>
-      <button onclick="closeSteamImport()" style="padding:8px 20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">取消</button>
     </div>
   </div>
 </div>
