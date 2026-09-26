@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 973.84,
-    "change": -2.62,
-    "change_pct": -2.62,
-    "market_value": 298923699.77,
-    "total_items": 4013,
-    "updated": "2026-09-26T20:00:03+08:00",
+    "latest": 976.34,
+    "change": -2.37,
+    "change_pct": -2.37,
+    "market_value": 299692534.36,
+    "total_items": 4006,
+    "updated": "2026-09-26T22:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3846,6 +3846,14 @@
         "close": 973.84,
         "high": 973.91,
         "low": 973.84
+      },
+      {
+        "date": "2026-09-26",
+        "dateFull": "2026-09-26 22:00",
+        "open": 976.34,
+        "close": 976.34,
+        "high": 976.34,
+        "low": 976.34
       }
     ],
     "volBar": [],
@@ -11521,12 +11529,20 @@
         "index": 973.84,
         "change_pct": -2.62,
         "market_value": 298923699.77
+      },
+      {
+        "time": "22:00",
+        "date": "2026-09-26",
+        "timestamp": 1790431203,
+        "index": 976.34,
+        "change_pct": -2.37,
+        "market_value": 299692534.36
       }
     ],
     "selling": {
-      "total_selling": 1359602,
+      "total_selling": 1345783,
       "total_selling_prev": 0,
-      "total_selling_delta": 1359602,
+      "total_selling_delta": 1345783,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11534,7 +11550,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790424003034,
+  "index_updated": 1790431203420,
   "alerts": [
     {
       "name": "★ Moto Gloves | 3rd Commando Company (Field-Tested)",
@@ -30105,7 +30121,7 @@
     "MP9 | Stained Glass (Minimal Wear)",
     "MP9 | Starlight Protector (Factory New)"
   ],
-  "updated": "2026-09-26T13:34:24Z",
+  "updated": "2026-09-26T14:04:24Z",
   "steam_market_items": 59,
   "steam_market_recs": {
     "momentum": [],
