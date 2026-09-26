@@ -1057,10 +1057,6 @@ html { scroll-behavior: smooth; }
 .hp-tech.tb-dn{background:rgba(34,197,94,.14);color:var(--fall);border-color:rgba(34,197,94,.35)}
 .hp-tech.tb-flat{background:rgba(148,163,184,.13);color:var(--text3);border-color:rgba(148,163,184,.3)}
 .hp-tech:hover{filter:brightness(1.15)}
-/* 在售量副图 */
-.hp-vol{margin-top:10px;padding:8px 10px 6px;background:var(--surface2);
-  border:1px solid var(--border);border-radius:8px}   /* 原为 var(--hair)：该变量全站未定义 → 边框其实一直没画出来 */
-.hp-vol-t{font-size:10.5px;color:var(--text3);margin-bottom:4px}
 .hp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
   background:var(--border);border:1px solid var(--border);border-radius:7px;
   overflow:hidden;margin-top:14px}
@@ -1356,7 +1352,11 @@ html { scroll-behavior: smooth; }
 #holdingsPanel .hp-detail>*{flex-shrink:0}
 #holdingsPanel .hp-chart{flex:1 1 auto;min-height:220px;
   display:flex;flex-direction:column}
-#holdingsPanel .hp-chart svg{flex:1 1 auto;height:auto;
+/* ⚠ 2026-09-26：原来这里写的是 `#holdingsPanel .hp-chart svg{min-height:220px}`，
+   那是给旧版「单 svg 图表」兜底的。新加的挂单量副图也是 .hp-chart 里的 svg，
+   于是被同一条规则撑成 220px（实测 .hc-vol 整块 241px，比价格图还高）。
+   收窄到只匹配价格图 .hc-svg —— 副图走自己的 .hc-vol svg{height:44px}。 */
+#holdingsPanel .hp-chart .hc-svg{flex:1 1 auto;height:auto;
   min-height:220px;max-height:400px}
 /* ③ 数据格：标签弱化、数值强化，层级更清楚 */
 #holdingsPanel .hp-cell{padding:9px 11px;border-radius:8px;background:var(--surface2);
@@ -1557,23 +1557,28 @@ html { scroll-behavior: smooth; }
      · 图例可点击：单独关掉某条线（ECharts 那种做法）
      · 区间切换 7 / 14 / 30 日（数据本身只有 ~30 个点，只做截取不插值）
    ══════════════════════════════════════════════════════════════════════════ */
-.hp-chart{position:relative;padding:0;margin:12px 0 2px}
+.hp-chart{position:relative;padding:0;margin:9px 0 2px}
 .hp-chart svg{display:block;width:100%;height:auto}
-/* ① 顶部指标条 */
-.hc-stats{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 15px;
-  padding:9px 1px;border-bottom:1px solid var(--border);
+/* ① 顶部指标条
+   ★ 2026-09-26「挡视野」优化：原来这里塞了 6 项（现价/MA5/MA20/布林带/成本/涨跌），
+     而 MA5·MA20·布林带的数值在底部图例里又写了一遍 → 重复且把图表挤下去。
+     现在顶部只留 3 项最该看的（现价 / 成本 / 区间涨跌），
+     MA 与布林带的数值挂到图例按钮上（本来就要点它开关，顺手看数）。 */
+.hc-stats{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;
+  padding:3px 1px 5px;border-bottom:1px solid var(--border);
   font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
 .hc-stats .it{white-space:nowrap}
 .hc-stats .it b{margin-left:5px;font-size:12.5px;font-weight:650;color:var(--text2)}
-.hc-stats .it.k-cur b{font-size:13.5px;color:var(--text)}
+.hc-stats .it.k-cur b{font-size:14px;color:var(--text)}
+.hc-stats .hc-rg{margin-left:auto;align-self:center}   /* 区间切换靠右，填补这行右侧的空白 */
 /* ② 绘图区 + 右侧价格轴
    ⚠ 右轴**不能用 flex 并排**（实测 .hc-yaxis 会被 stretch 到 262px，
      而 svg 只有 209px → 刻度与网格最大偏差 48.78px，越往下越偏）。
      改成：绘图区留出 padding-right，右轴绝对定位铺满同一块高度，
      这样两者的高度永远等于 svg 高度，刻度必然落在网格线上。 */
 .hc-body{position:relative}
-.hc-plot{position:relative;padding-right:64px}
-.hc-yaxis{position:absolute;top:0;right:0;bottom:0;width:54px}
+.hc-plot{position:relative;padding-right:62px}
+.hc-yaxis{position:absolute;top:0;right:0;bottom:0;width:52px}
 .hc-yaxis span{position:absolute;right:0;transform:translateY(-50%);line-height:1;
   font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums;white-space:nowrap}
 .hc-yaxis .hc-cur{position:absolute;right:0;transform:translateY(-50%);
@@ -1581,13 +1586,15 @@ html { scroll-behavior: smooth; }
   font-size:10px;font-weight:700;color:#fff;background:var(--text3);
   font-variant-numeric:tabular-nums;white-space:nowrap;
   transition:top .07s linear;box-shadow:0 1px 6px rgba(0,0,0,.45)}
-/* ③ 底部日期轴 */
-.hc-xaxis{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);
-  padding:7px 0 0;font-variant-numeric:tabular-nums}
-/* ④ 图例（可点击开关）+ 区间切换 */
-.hc-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:7px 0 1px}
+/* ③ 底部「一行」：日期轴（左）+ 图例（中）+ 区间切换（右）
+   ★ 优化：原来日期轴占一行（~24px）、图例+区间又占一行（~35px），合计 59px。
+     合成一行 flex 后只占 ~26px —— 省下来的高度给走势本身。 */
+.hc-xfoot{display:flex;flex-wrap:wrap;align-items:center;gap:3px 10px;padding:5px 0 1px}
+.hc-xaxis{display:flex;flex:1 1 160px;justify-content:space-between;min-width:140px;
+  font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums}
+.hc-foot{display:flex;flex-wrap:wrap;align-items:center;gap:4px 9px;margin-left:auto}
 .hc-lgd{display:flex;flex-wrap:wrap;align-items:center;gap:2px}
-.hc-lg{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;
+.hc-lg{display:inline-flex;align-items:center;gap:5px;padding:2px 6px;
   border:1px solid transparent;border-radius:6px;background:transparent;
   font-size:10.5px;color:var(--text2);cursor:pointer;font-family:inherit;
   transition:background .13s,border-color .13s,opacity .13s}
@@ -1597,6 +1604,9 @@ html { scroll-behavior: smooth; }
   border-top:2px dashed currentColor}
 .hc-lg.off{opacity:.36}
 .hc-lg.off i{filter:grayscale(1)}
+/* 图例按钮上直接带该线的当前值（省掉顶部那条重复的指标行） */
+.hc-lg b{margin-left:3px;font-weight:650;color:var(--text2);
+  font-variant-numeric:tabular-nums;font-size:10px}
 .hc-rg{display:inline-flex;margin-left:auto;border:1px solid var(--border);
   border-radius:7px;overflow:hidden;background:var(--surface2)}
 .hc-rg button{padding:3px 9px;border:0;border-left:1px solid var(--border);
@@ -1605,7 +1615,31 @@ html { scroll-behavior: smooth; }
 .hc-rg button:first-child{border-left:0}
 .hc-rg button:hover{color:var(--text2);background:var(--surface)}
 .hc-rg button.on{background:var(--surface);color:var(--text);font-weight:650}
-/* ⑤ 十字光标：水平线 + tooltip 第二行（该点 MA 值） */
+/* ⑤ 挂单量副图（近 12 小时 BUFF 在售量柱 + 求购量线）
+   ⚠ 平台不公开真实成交量，只能用「挂单量」代替 —— 标题里如实写明，绝不冒充成交量。
+   ⚠ 必须与价格图分开成两块：价格是 30 日日线，挂单量是 12 个小时快照，
+     两者 X 轴尺度不同，画进同一张 svg 会让人误以为「那天量在那个价上」。
+      副图右侧同样留 62px 空档，使柱子与上方曲线左右严格对齐。 */
+.hc-vol{margin-top:1px;padding:4px 0 0;border-top:1px solid var(--border)}
+.hc-vol-in{position:relative;padding-right:62px}
+.hc-vol-h{display:flex;align-items:baseline;gap:6px;font-size:10.5px;color:var(--text3);
+  line-height:1.4;margin-bottom:2px}
+.hc-vol-h b{color:var(--text2);font-weight:650}
+.hc-vol-h em{margin-left:auto;font-style:normal;font-size:9.5px;opacity:.7;text-align:right}
+.hc-vol svg{display:block;width:100%;height:44px}
+.hc-vol-mx{position:absolute;top:0;right:0;width:52px;font-size:9.5px;color:var(--text3);
+  text-align:right;line-height:1;font-variant-numeric:tabular-nums}
+@media (max-width:600px){
+  /* 窄屏别让右轴吃掉 9% 宽度：刻度收窄、字号调小 */
+  .hc-plot,.hc-vol-in{padding-right:44px}
+  .hc-yaxis,.hc-vol-mx{width:36px}
+  .hc-yaxis span{font-size:9px}
+  .hc-yaxis .hc-cur{font-size:9px;padding:1px 4px}
+  /* 窄屏图例必然换行，把值再压小一档，少占一行 */
+  .hc-lg{padding:2px 4px;gap:4px}
+  .hc-lg b{font-size:9px}
+}
+/* ⑥ 十字光标：水平线 + tooltip 第二行（该点 MA 值） */
 .hp-tip-h{position:absolute;left:0;right:0;height:1px;display:none;z-index:8;
   pointer-events:none;background:linear-gradient(to right,
     rgba(255,255,255,0) 0%, rgba(255,255,255,.2) 10%,
@@ -1613,11 +1647,13 @@ html { scroll-behavior: smooth; }
 .hp-tip{flex-wrap:wrap}
 .hp-tip em{flex:0 0 100%;font-style:normal;font-size:10px;color:var(--text3);
   font-variant-numeric:tabular-nums;margin-top:2px}
-/* ⑥ 面板内：图表不再被 flex 拉高。原本 svg 被 stretch 到 220~400px，
-   同一张图在不同视口会被纵向拉成不同形状；改由图 viewBox 比例决定（780:252）。 */
+/* ⑦ 面板内：图表不再被 flex 拉高。原本 svg 被 stretch 到 220~400px，
+   同一张图在不同视口会被纵向拉成不同形状；改由图 viewBox 比例决定（780:180）。 */
 #holdingsPanel .hp-chart{flex:0 0 auto!important;min-height:0!important;display:block!important}
+/* ★ max-height 从 none 改成 210px：图表高度原本随面板宽度等比增长，
+   超宽屏（≥1700px）下会涨到 250px+ 又把视野吃掉；210px 封顶后宽屏只变宽不变高。 */
 #holdingsPanel .hp-chart .hc-svg{flex:0 0 auto!important;min-height:0!important;
-  max-height:none!important;height:auto!important}
+  max-height:210px!important;height:auto!important}
 </style>
   </div>
 
@@ -6709,8 +6745,9 @@ function hpTech(v){
            verdict: verdict, reasons: reasons, n: n };
 }
 
-function hpChart(vals, cost, reason, days){
-  /* vals 现为 {p:[], d:[]}；兼容旧的纯数组写法 */
+function hpChart(vals, cost, reason, days, volName){
+  /* vals 现为 {p:[], d:[]}；兼容旧的纯数组写法
+     volName：饰品 market_hash，用于下方挂单量副图（没有就传空，副图整块不出现） */
   var pts0 = vals, dts = days;
   if (vals && !Array.isArray(vals) && vals.p){
     pts0 = vals.p; dts = vals.d || days;
@@ -6741,9 +6778,12 @@ function hpChart(vals, cost, reason, days){
   var hasCost = (typeof cost === 'number') && cost > 0;
   var ext = hasCost ? [cost] : [];
   if (tk){ for (var ti=0;ti<tk.up.length;ti++){ if (tk.up[ti]!=null) ext.push(tk.up[ti]); if (tk.dn[ti]!=null) ext.push(tk.dn[ti]); } }
-  /* W:H = 780:252 —— 加高到 252 是给右侧那 5 档刻度留行距（原来 112 太挤）。
-     高度由 CSS 按宽度等比缩放，等比时 preserveAspectRatio="none" 与保持比例等价、不失真。 */
-  var W=780, H=252, PT=24, PB=20;
+  /* W:H = 780:180 —— ★ 2026-09-26「挡视野」优化：
+     上一版把 H 从 112 一口气加到 252（700px 视口下 226px），加上顶部指标条和底部
+     两行，整块占到 ~313px，把下面的内容全顶出屏幕。
+     现在回到 180（同视口 ~161px）：5 档刻度仍然放得下（间距 38.5px > 字号 10px），
+     同时把顶部指标条精简、底部两行并成一行 —— 省下的高度正好留给新增的挂单量副图。 */
+  var W=780, H=180, PT=13, PB=13;
   var mx=Math.max.apply(null,vals.concat(ext)),
       mn=Math.min.apply(null,vals.concat(hasCost?[cost*0.9]:[],ext)), rng=(mx-mn)||1, pts=[];
   var plotH = H - PT - PB;
@@ -6846,14 +6886,30 @@ function hpChart(vals, cost, reason, days){
   var chgAll = vals[0] > 0 ? (last - vals[0]) / vals[0] * 100 : null;
   var chgCol = (chgAll === null || Math.abs(chgAll) < 0.05) ? 'var(--text2)'
              : (chgAll > 0 ? 'var(--rise)' : 'var(--fall)');
+  /* ★ 只留 3 项：现价 / 成本 / 区间涨跌。MA5·MA20·布林带的数值挪到图例按钮上，
+     不再上下各写一遍（原来顶部条和图例是重复的，白占一行的高度）。
+     区间切换挪到这一行的最右侧 —— 顶部只有 3 个短项，右边空着也是浪费；
+     挪走后底部那行只剩「日期 + 图例」，不用再挤成两行（实测 47px → ~29px）。 */
+  var range = (function(){
+      var opts = [];
+      if (nAll >= 7)  opts.push([7,  '7 日']);
+      if (nAll >= 14) opts.push([14, '14 日']);
+      if (nAll >= 10) opts.push([30, '全部']);
+      if (opts.length < 2) return '';
+      var s = '<div class="hc-rg">';
+      for (var oi=0; oi<opts.length; oi++){
+        s += '<button type="button" class="'+(hcRange === opts[oi][0] ? 'on' : '')
+          + '" onclick="hpSetRange('+opts[oi][0]+')" title="只看最近 '+opts[oi][0]+' 天">'
+          + opts[oi][1] + '</button>';
+      }
+      return s + '</div>';
+    })();
   var stats = '<div class="hc-stats">'
     + '<span class="it k-cur">现价<b style="color:'+col+'">¥'+hpFmt(last)+'</b></span>'
-    + (hasMa5 ? '<span class="it">MA5<b style="color:#ff9f43">'+tk.ma5[n-1].toFixed(2)+'</b></span>' : '')
-    + (hasMa20 ? '<span class="it">MA20<b style="color:#a855f7">'+tk.ma20[n-1].toFixed(2)+'</b></span>' : '')
-    + (hasBoll ? '<span class="it">布林带<b>'+tk.dn[n-1].toFixed(2)+' ~ '+tk.up[n-1].toFixed(2)+'</b></span>' : '')
     + (hasCost ? '<span class="it">成本<b>¥'+hpFmt(cost)+'</b></span>' : '')
     + (chgAll === null ? '' : ('<span class="it">区间涨跌<b style="color:'+chgCol+'">'
         + (chgAll >= 0 ? '+' : '') + chgAll.toFixed(1) + '%</b></span>'))
+    + range
     + '</div>';
   /* ⑥ 右侧价格轴：5 档刻度 + 当前价高亮标签（悬停时标签跟着变成该点的值）*/
   var yaxis = '<div class="hc-yaxis">' + ticks.join('')
@@ -6899,40 +6955,32 @@ function hpChart(vals, cost, reason, days){
         return '<div class="hc-xaxis"><span>'+fd(0)+'</span><span>'+fd(1/3)+'</span>'
              + '<span>'+fd(2/3)+'</span><span>'+fd(1)+'</span></div>';
       })();
-  /* ⑨ 可点击图例 + 区间切换 */
+  /* ⑨ 可点击图例（★ 按钮上直接带该线的当前值，不用再到顶部条里找）
+        + 区间切换，与日期轴并成底部一行 */
   var foot = '<div class="hc-foot"><div class="hc-lgd">'
     + (function(){
-        var li = function(k, label, color, dash){
+        var li = function(k, label, color, dash, val){
           var on = !off[k];
           return '<button type="button" class="hc-lg'+(on ? '' : ' off')+'" data-k="'+k
             + '" title="点击'+(on ? '隐藏' : '显示')+label+'"><i class="'+(dash ? 'dash' : '')
-            + '" style="'+(dash ? 'color:'+color : 'background:'+color)+'"></i>'+label+'</button>';
+            + '" style="'+(dash ? 'color:'+color : 'background:'+color)+'"></i>'+label
+            + (val ? ('<b>'+val+'</b>') : '')+'</button>';
         };
-        return li('price', '日线', col, false)
-          + (hasMa5 ? li('ma5', 'MA5', '#ff9f43', false) : '')
-          + (hasMa20 ? li('ma20', 'MA20', '#a855f7', false) : '')
-          + (hasBoll ? li('boll', '布林带', 'var(--blue)', false) : '')
-          + (hasCost ? li('cost', '成本线 ¥'+hpFmt(cost), 'var(--amber)', true) : '');
+        return li('price', '日线', col, false, '¥'+hpFmt(last))
+          + (hasMa5 ? li('ma5', 'MA5', '#ff9f43', false, tk.ma5[n-1].toFixed(dec)) : '')
+          + (hasMa20 ? li('ma20', 'MA20', '#a855f7', false, tk.ma20[n-1].toFixed(dec)) : '')
+          + (hasBoll ? li('boll', '布林带', 'var(--blue)', false,
+              tk.dn[n-1].toFixed(dec)+'~'+tk.up[n-1].toFixed(dec)) : '')
+          + (hasCost ? li('cost', '成本', 'var(--amber)', true, '¥'+hpFmt(cost)) : '');
       })()
-    + '</div>'
-    + (function(){
-        var opts = [];
-        if (nAll >= 7)  opts.push([7,  '7 日']);
-        if (nAll >= 14) opts.push([14, '14 日']);
-        if (nAll >= 10) opts.push([30, '全部']);
-        if (opts.length < 2) return '';
-        var s = '<div class="hc-rg">';
-        for (var oi=0; oi<opts.length; oi++){
-          s += '<button type="button" class="'+(hcRange === opts[oi][0] ? 'on' : '')
-            + '" onclick="hpSetRange('+opts[oi][0]+')" title="只看最近 '+opts[oi][0]+' 天">'
-            + opts[oi][1] + '</button>';
-        }
-        return s + '</div>';
-      })()
-    + '</div>';
+    + '</div>';      /* 区间切换已挪到顶部行，这里只剩图例 */
+  var xfoot = '<div class="hc-xfoot">' + xaxis + foot + '</div>';
+  /* ⑩ 挂单量副图：数据来自 buff_recent.json（近 12 小时）。
+     没有就整块不出现 —— 宁可没有，也不画一条假曲线。 */
+  var volHtml = hpVolHtml(volName);
   return stats
     + '<div class="hc-body"><div class="hc-plot">' + svg + '</div>' + yaxis + '</div>'
-    + xaxis + foot;
+    + volHtml + xfoot;
 }
 /* 图表区间切换 / 图例开关：改状态后重渲染当前这件（hpSelect 幂等）*/
 function hpSetRange(d){
@@ -6981,41 +7029,88 @@ function hpTechTip(el, idx){
   hpPopAt(el, '<div class="hp-pop-h">技术面</div><div class="hp-pop-sub">' + esc(hpName(h)) + '</div>' + body);
 }
 
-/* 在售量副图（近 12 小时，来自 fluct_recent.json；与上方日线尺度不同，如实标注）*/
-window._hpMini = null;
-function hpVolEnsure(){
-  if (window._hpMini) return Promise.resolve(window._hpMini);
-  return fetch('fluct_recent.json?v=' + Math.floor(Date.now() / 900000))
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (d) { window._hpMini = d; return d; })
-    .catch(function () { return null; });
-}
-function hpVolChart(name){
-  var d = window._hpMini;
-  if (!d) return '';
+/* ══════════════════════════════════════════════════════════════════════════
+   挂单量副图（在售量柱 + 求购量线，近 12 小时）
+   ──────────────────────────────────────────────────────────────────────────
+   ★ 先说清楚一件事：**这里没有真正的成交量**。
+     BUFF / 悠悠 / Steam 都不公开逐笔成交，采集侧拿不到「今天卖了多少件」。
+     能拿到的是**挂单量**：buff_sell_num（多少人挂单在卖）、buff_buy_num（多少人挂单求购）。
+     所以副图画的是挂单量，标题里如实写「挂单量（非成交量）」—— 不拿它冒充 VOL。
+   数据源：buff_recent.json（12 个小时快照，含 buff_sell_num / buff_buy_num），
+     init 阶段已载入 window._buffHistory，无需额外请求；持仓 32/32 全覆盖（2026-09-26 实测）。
+   与价格图分开两块而不是画进同一张 svg：价格是 30 日日线，挂单量是 12 个小时快照，
+     X 轴尺度不同，合并会让人误读成「那天量在那个价上」。
+   ══════════════════════════════════════════════════════════════════════════ */
+function hpVolSeries(name){
+  var d = window._buffHistory;
+  if (!d || !name) return null;
   var ks = Object.keys(d).filter(function (k) { return k.length === 16 && k.charAt(10) === 'T'; }).sort();
-  var vals = [], labels = [];
-  ks.forEach(function (k) {
-    var e = (d[k] || {})[name];
-    vals.push(e ? (e.b || 0) : 0);
-    labels.push(k.slice(11));
-  });
-  if (!vals.length || !vals.some(function (v) { return v > 0; })) return '';
-  /* 至少 2 期有值才画：只有一根柱子的"趋势图"没有意义（快照刚纳入该饰品时会这样） */
+  if (ks.length < 3) return null;                 /* 少于 3 个小时点不画 */
+  var sell = [], buy = [], hrs = [];
+  for (var i = 0; i < ks.length; i++){
+    var e = (d[ks[i]] || {})[name] || {};
+    sell.push(Number(e.buff_sell_num) > 0 ? Number(e.buff_sell_num) : 0);
+    buy.push(Number(e.buff_buy_num) > 0 ? Number(e.buff_buy_num) : 0);
+    hrs.push(ks[i].slice(11, 16));
+  }
   var nz = 0;
-  for (var vi = 0; vi < vals.length; vi++) if (vals[vi] > 0) nz++;
-  if (nz < 2) return '';
-  var mxc = Math.max.apply(null, vals) || 1;
-  var W = 780, H = 44, bw = Math.max(2, W / vals.length * 0.62);
-  var bars = vals.map(function (v, i) {
-    var h = Math.max(1, v / mxc * (H - 12));
-    var x = (i + 0.5) / vals.length * W;
-    return '<rect x="' + (x - bw / 2).toFixed(1) + '" y="' + (H - 6 - h).toFixed(1) + '" width="'
-      + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="var(--blue)" opacity=".55" rx="1">'
-      + '<title>' + labels[i] + ' 在售 ' + v + ' 件</title></rect>';
-  }).join('');
-  return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" style="width:100%;height:52px;display:block">'
-    + bars + '</svg>';
+  for (var j = 0; j < sell.length; j++) if (sell[j] > 0) nz++;
+  if (nz < 3) return null;                        /* 只有 1~2 根柱子谈不上「趋势」 */
+  return { hrs: hrs, sell: sell, buy: buy };
+}
+function hpVolHtml(name){
+  var s = hpVolSeries(name);
+  if (!s) return '';
+  var W = 780, H = 44, PB = 2, PT = 2, plotH = H - PT - PB;
+  var mxS = Math.max.apply(null, s.sell) || 1;
+  var mxB = Math.max.apply(null, s.buy) || 0;
+  var mx = Math.max(mxS, mxB) || 1;
+  var n = s.sell.length;
+  var bw = Math.max(3, W / n * 0.54);
+  var bars = '', bpts = [];
+  for (var i = 0; i < n; i++){
+    var x = (i + 0.5) / n * W;
+    var hh = s.sell[i] > 0 ? Math.max(1.5, s.sell[i] / mx * plotH) : 0;
+    if (hh > 0){
+      bars += '<rect x="' + (x - bw / 2).toFixed(1) + '" y="' + (PT + plotH - hh).toFixed(1)
+        + '" width="' + bw.toFixed(1) + '" height="' + hh.toFixed(1)
+        + '" fill="var(--blue)" opacity=".5" rx="1"><title>' + s.hrs[i]
+        + ' 在售 ' + s.sell[i] + ' 件</title></rect>';
+    }
+    /* 求购量：与在售共用同一刻度（求购通常远少于在售，画出来就是贴底的一条线 —— 这是真实比例，不做归一化美化） */
+    var by = PT + plotH - (s.buy[i] > 0 ? Math.max(1, s.buy[i] / mx * plotH) : 0);
+    bpts.push(x.toFixed(1) + ',' + by.toFixed(1));
+  }
+  var buyLine = mxB > 0
+    ? ('<polyline fill="none" stroke="var(--amber)" stroke-width="1.3" stroke-linejoin="round" '
+       + 'vector-effect="non-scaling-stroke" opacity=".9" points="' + bpts.join(' ') + '"/>'
+       + s.buy.map(function (v, i) {
+           var x = (i + 0.5) / n * W;
+           var by = PT + plotH - (v > 0 ? Math.max(1, v / mx * plotH) : 0);
+           return '<circle cx="' + x.toFixed(1) + '" cy="' + by.toFixed(1) + '" r="1.6" fill="var(--amber)">'
+             + '<title>' + s.hrs[i] + ' 求购 ' + v + ' 件</title></circle>';
+         }).join(''))
+    : '';
+  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">'
+    + '<line x1="0" y1="' + (PT + plotH) + '" x2="' + W + '" y2="' + (PT + plotH)
+    + '" stroke="var(--border)" stroke-width="1" vector-effect="non-scaling-stroke"/>'
+    + bars + buyLine + '</svg>';
+  return '<div class="hc-vol"><div class="hc-vol-h"><b>挂单量</b>'
+    + '<span>在售 <b style="color:var(--blue)">' + mxS + '</b> · 求购 <b style="color:var(--amber)">'
+    + (mxB || 0) + '</b> 件（近 12 小时峰值）</span>'
+    + '<em>' + s.hrs[0] + ' → ' + s.hrs[s.hrs.length - 1] + ' · BUFF 挂单，非成交量</em></div>'
+    + '<div class="hc-vol-in">' + svg
+    + '<span class="hc-vol-mx">' + mx + '</span></div></div>';
+}
+/* 首次渲染时 buff_recent.json 可能还没到位 → 数据到了再刷一次当前这件 */
+function hpVolEnsure(){
+  if (window._buffHistory) return Promise.resolve(window._buffHistory);
+  if (window._hpMiniLoading) return window._hpMiniLoading;
+  window._hpMiniLoading = fetch('buff_recent.json?v=' + Math.floor(Date.now() / 900000))
+    .then(function (r) { return r.ok ? r.json() : {}; })
+    .then(function (d) { window._buffHistory = d || {}; return window._buffHistory; })
+    .catch(function () { window._buffHistory = {}; return {}; });
+  return window._hpMiniLoading;
 }
 window.hpName = hpName;   /* 供其它 script 块（如 AI 分析弹窗）复用中文名 */
 document.addEventListener('click', function(e){
@@ -7101,24 +7196,19 @@ function hpSelect(idx){
    + (need === null ? '—' : ('需涨 '+need+'%'))+'</div>'
    + '<div class="s">'+(noCost ? '需先录入成本' : ('到 ¥'+hpFmt(c)))+'</div></div>'
    + '</div>'
-   + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)))+'</div>'
-   /* ⚠ 默认隐藏：快照只覆盖动态 top200 热门，多数持仓不在其中。
-      有数据才显示，避免对每个饰品都吊一个空盒子。 */
-   + (cv ? ('<div class="hp-vol" id="hpVolBox" style="display:none"><div class="hp-vol-t">在售量（近 12 小时，与上方日线尺度不同）</div>'
-      + '<div id="hpVolInner"></div></div>') : '');
+   + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)),
+        null, (h.mh || h.market_hash || h.n))+'</div>';
   box.innerHTML = html;
   window._hpCur = idx;
-  /* 在售量副图：按需加载 fluct_recent.json（一次），再按饰品名取序列 */
+  /* 挂单量副图：buff_recent.json 由 init 异步载入，首屏渲染时可能还没到。
+     到位后补渲染一次当前这件（只刷这一件，不做全量重排）。
+     ⚠ 有数据才画、没数据整块不出现 —— 绝不给每件饰品吊一个空盒子。 */
   try {
-    hpVolEnsure().then(function () {
-      var vbox = document.getElementById('hpVolInner');
-      var wrap = document.getElementById('hpVolBox');
-      if (!vbox) return;
-      var svg = hpVolChart(h.mh || h.n);
-      if (!svg){ if (wrap) wrap.style.display = 'none'; return; }   /* 无数据：整块收起，不留空盒 */
-      vbox.innerHTML = svg;
-      if (wrap) wrap.style.display = '';
-    });
+    if (cv && !window._buffHistory){
+      hpVolEnsure().then(function(){
+        if (window._hpCur === idx) { try { hpSelect(idx); } catch(e){} }
+      });
+    }
   } catch (e) {}
   /* ★ 走势图鼠标跟随 tooltip（TradingView 模式）*/
   try { hpChartTooltip(idx); } catch(e) {}
