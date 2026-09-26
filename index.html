@@ -2667,6 +2667,7 @@ window.__hpGetFiltered = function(){ try { return getFiltered(); } catch(e) { re
           pnlPct: cU > 0 ? (pricePerUnit - cU) / cU * 100 : 0,
           gid: item.id || 0,
           mh: item.market_hash,
+          hash_name: item.market_hash,   // 供 Kronos 预测徽章 fcOf() 按市场全名匹配
           // 传递涨跌率字段（update.py写入）
           rate_1: item.rate_1,
           rate_7: item.rate_7,
@@ -3154,7 +3155,8 @@ function renderAIRecommendations() {
 
 // 追踪教训（评分权重反哺）——独立请求 + 缓存
 // ── Kronos 14 日预测（实验性）──
-// 只覆盖「推荐池前10 + AI 精选」的标的；由 update.py 在推荐板块更新时一并生成。
+// 覆盖「推荐池前10 + AI 精选 + 持仓」三类标的（持仓由 kronos_forecast_srv.py 从 holdings.json 读取）；
+// 由 update.py 在推荐板块更新时一并生成。
 // 定位：辅助方向参考，不作买卖依据（Kronos 是金融 K 线基础模型迁移，域外外推）。
 var FC = { map: {}, loaded: false };
 function loadForecast() {
@@ -3172,6 +3174,8 @@ function loadForecast() {
         }
       }
       FC.map = m; FC.meta = d; FC.loaded = true;
+      // 预测加载完：持仓列表可能已在 FC 就绪前渲染过 → 补一次重渲染让 Kronos 徽章出现
+      try { if (typeof render === 'function' && document.getElementById('holdingsPanel')) render(); } catch (e) {}
       return m;
     });
 }
@@ -3623,7 +3627,7 @@ function render() {
       }
     };
     tr.innerHTML =
-      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+(h.w && h.w !== 'other' ? '<span class="wear-tag">'+h.w+'</span>' : '')+'<span class="ai-badge-inline" id="aib-'+realIdx+'"></span> <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\', '+(h.buff_sell || h.eco_price || h.yyyp_sell || 0)+')" title="查看价格走势">📈</span></div></td>'+
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+(h.w && h.w !== 'other' ? '<span class="wear-tag">'+h.w+'</span>' : '')+'<span class="ai-badge-inline" id="aib-'+realIdx+'"></span> <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\', '+(h.buff_sell || h.eco_price || h.yyyp_sell || 0)+')" title="查看价格走势">📈</span>'+(typeof fcChip === 'function' ? fcChip(h) : '')+'</div></td>'+
       '<td class="text-r mono" style="font-size:11px">'+(h.rate_1 !== undefined && !isNaN(h.rate_1) ? '<span class="'+(h.rate_1>=0?'clr-rise':'clr-fall')+'">'+(h.rate_1>=0?'+':'')+h.rate_1.toFixed(1)+'%</span>' : '<span class="text-muted">--</span>')+'</td>'+
       '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
       '<td class="text-r mono">'+(h.eco_price > 0 ? '¥'+h.eco_price.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
