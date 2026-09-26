@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 944.59,
-    "change": -5.54,
-    "change_pct": -5.54,
-    "market_value": 289945139.35,
-    "total_items": 3964,
-    "updated": "2026-09-26T08:00:03+08:00",
+    "latest": 976.95,
+    "change": -2.31,
+    "change_pct": -2.31,
+    "market_value": 299877817.79,
+    "total_items": 3992,
+    "updated": "2026-09-26T10:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3822,6 +3822,14 @@
         "close": 944.59,
         "high": 978.44,
         "low": 944.59
+      },
+      {
+        "date": "2026-09-26",
+        "dateFull": "2026-09-26 10:00",
+        "open": 976.95,
+        "close": 976.95,
+        "high": 976.95,
+        "low": 976.95
       }
     ],
     "volBar": [],
@@ -11449,12 +11457,20 @@
         "index": 944.59,
         "change_pct": -5.54,
         "market_value": 289945139.35
+      },
+      {
+        "time": "10:00",
+        "date": "2026-09-26",
+        "timestamp": 1790388003,
+        "index": 976.95,
+        "change_pct": -2.31,
+        "market_value": 299877817.79
       }
     ],
     "selling": {
-      "total_selling": 1345124,
+      "total_selling": 1330220,
       "total_selling_prev": 0,
-      "total_selling_delta": 1345124,
+      "total_selling_delta": 1330220,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11462,7 +11478,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790380803472,
+  "index_updated": 1790388003677,
   "alerts": [
     {
       "name": "Prof. Shahmat | Elite Crew",
@@ -30031,7 +30047,7 @@
     "MP9 | 军队之辉 (久经沙场)",
     "MP9 | 军队之辉 (崭新出厂)"
   ],
-  "updated": "2026-09-26T01:34:24Z",
+  "updated": "2026-09-26T02:04:24Z",
   "steam_market_items": 71,
   "steam_market_recs": {
     "momentum": [],
