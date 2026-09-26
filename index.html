@@ -1605,6 +1605,7 @@ html { scroll-behavior: smooth; }
       <div id="aiNewsImpact" style="display:none;margin:0 0 14px;padding:10px 14px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(234,179,8,.05));border:1px solid rgba(234,179,8,.2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.8">
         <div style="margin-bottom:6px"><span style="color:#eab308;font-weight:700">🪂 AI 空投监控</span> · <span style="font-size:10px;color:var(--text3)">AI 注记 · 数字来自统计引擎</span></div>
         <div id="aiNewsImpactText" style="white-space:pre-line">加载中...</div>
+        <div id="aiNewsPrior" style="display:none;font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px dashed rgba(148,163,184,.18);line-height:1.7"></div>
       </div>
       <div id="newsGrid"></div>
     </div>
@@ -2837,6 +2838,21 @@ async function renderNews() {
     if (!bar || !txt) return;
     if (d && d.impact && d.impact.length > 5) { txt.textContent = d.impact; bar.style.display = ''; }
     else if (d && d.headlines && d.headlines.length) { txt.textContent = '最新公告：' + d.headlines[0].replace('- ','') + '... | AI分析生成中，请稍后刷新'; bar.style.display = ''; }
+  }).catch(function() {});
+  // 历史先验（事件研究统计引擎的真数字，与 AI 叙述分离——AI 可能改数字，这里以统计为准）
+  fetch('event_study.json?v=' + Math.floor(Date.now()/3600000)).then(function(r) { return r.ok ? r.json() : null; }).then(function(es) {
+    var el = document.getElementById('aiNewsPrior');
+    if (!el || !es) return;
+    var s = es.summary || {};
+    if (!s.n_events) { el.innerHTML = '📊 历史先验（统计引擎）：暂无有效样本（价格库 ' + ((es.window||{}).from || '') + ' 起）'; el.style.display = ''; return; }
+    var r7 = s.ret_7d || {}, r3 = s.ret_3d || {}, r14 = s.ret_14d || {};
+    el.innerHTML = '📊 <b style="color:var(--text2)">历史先验</b>（统计引擎算出的真数字，非 AI 叙述）· '
+      + '有效事件 <b>' + s.n_events + '</b> 个 · 标的池 ≈' + (s.n_pool || 0).toLocaleString() + ' 件<br>'
+      + '公告后 3 日：事件 <b>' + r3.event_mean + '%</b> vs 同期基准 ' + r3.baseline_mean + '%（超额 ' + r3.excess + '%）　'
+      + '7 日：事件 <b>' + r7.event_mean + '%</b> vs 同期基准 ' + r7.baseline_mean + '%（超额 ' + r7.excess + '%）　'
+      + '14 日：事件 ' + r14.event_mean + '% vs 基准 ' + r14.baseline_mean + '%<br>'
+      + '<span style="opacity:.75">口径：同批对比（¥5 以上物品涨跌中位）；样本少（' + s.n_events + ' 事件），仅作弱先验，随数据积累自动增强</span>';
+    el.style.display = '';
   }).catch(function() {});
   if (!cs2NewsData) {
     var grid = $('newsGrid');
