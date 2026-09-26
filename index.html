@@ -1059,7 +1059,7 @@ html { scroll-behavior: smooth; }
 .hp-tech:hover{filter:brightness(1.15)}
 /* 在售量副图 */
 .hp-vol{margin-top:10px;padding:8px 10px 6px;background:var(--surface2);
-  border:1px solid var(--hair);border-radius:8px}
+  border:1px solid var(--border);border-radius:8px}   /* 原为 var(--hair)：该变量全站未定义 → 边框其实一直没画出来 */
 .hp-vol-t{font-size:10.5px;color:var(--text3);margin-bottom:4px}
 .hp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
   background:var(--border);border:1px solid var(--border);border-radius:7px;
@@ -1541,6 +1541,83 @@ html { scroll-behavior: smooth; }
 @media (min-width:861px){
   #holdingsPanel .hp-list{max-height:620px}
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   2026-09-26（义轩）：单品走势图重做 —— 对齐行情终端的信息布局
+   ──────────────────────────────────────────────────────────────────────────
+   义轩给了两张图：现状（深色、只有曲线 + 底部图例）
+   → 目标（顶部一行指标数值、圆点图例、右侧价格刻度 + 当前价高亮标签、
+     横向虚线网格、底部日期轴）。
+   参照图是浅色终端，但本站有 4 套深色主题，嵌浅色卡片会割裂
+   → 结构照搬，配色全部走 var() 跟随主题。
+   ── 除了换布局，新增这些（不是换皮） ──
+     · 右侧价格刻度 5 档，与虚线网格严格对齐（同一套 Y 反算，绝不错位）
+     · 当前价高亮标签吸附在右侧轴上；鼠标悬停时标签跟着变成该点的值
+     · 十字光标：竖线 + 水平线，tooltip 补上该点的 MA5 / MA20
+     · 图例可点击：单独关掉某条线（ECharts 那种做法）
+     · 区间切换 7 / 14 / 30 日（数据本身只有 ~30 个点，只做截取不插值）
+   ══════════════════════════════════════════════════════════════════════════ */
+.hp-chart{position:relative;padding:0;margin:12px 0 2px}
+.hp-chart svg{display:block;width:100%;height:auto}
+/* ① 顶部指标条 */
+.hc-stats{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 15px;
+  padding:9px 1px;border-bottom:1px solid var(--border);
+  font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
+.hc-stats .it{white-space:nowrap}
+.hc-stats .it b{margin-left:5px;font-size:12.5px;font-weight:650;color:var(--text2)}
+.hc-stats .it.k-cur b{font-size:13.5px;color:var(--text)}
+/* ② 绘图区 + 右侧价格轴
+   ⚠ 右轴**不能用 flex 并排**（实测 .hc-yaxis 会被 stretch 到 262px，
+     而 svg 只有 209px → 刻度与网格最大偏差 48.78px，越往下越偏）。
+     改成：绘图区留出 padding-right，右轴绝对定位铺满同一块高度，
+     这样两者的高度永远等于 svg 高度，刻度必然落在网格线上。 */
+.hc-body{position:relative}
+.hc-plot{position:relative;padding-right:64px}
+.hc-yaxis{position:absolute;top:0;right:0;bottom:0;width:54px}
+.hc-yaxis span{position:absolute;right:0;transform:translateY(-50%);line-height:1;
+  font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.hc-yaxis .hc-cur{position:absolute;right:0;transform:translateY(-50%);
+  padding:2px 5px;border-radius:4px;line-height:1.25;
+  font-size:10px;font-weight:700;color:#fff;background:var(--text3);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+  transition:top .07s linear;box-shadow:0 1px 6px rgba(0,0,0,.45)}
+/* ③ 底部日期轴 */
+.hc-xaxis{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);
+  padding:7px 0 0;font-variant-numeric:tabular-nums}
+/* ④ 图例（可点击开关）+ 区间切换 */
+.hc-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:7px 0 1px}
+.hc-lgd{display:flex;flex-wrap:wrap;align-items:center;gap:2px}
+.hc-lg{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;
+  border:1px solid transparent;border-radius:6px;background:transparent;
+  font-size:10.5px;color:var(--text2);cursor:pointer;font-family:inherit;
+  transition:background .13s,border-color .13s,opacity .13s}
+.hc-lg:hover{background:var(--surface2);border-color:var(--border)}
+.hc-lg i{flex:0 0 9px;width:9px;height:9px;border-radius:50%;background:var(--text3)}
+.hc-lg i.dash{width:11px;height:0;border-radius:0;background:none!important;
+  border-top:2px dashed currentColor}
+.hc-lg.off{opacity:.36}
+.hc-lg.off i{filter:grayscale(1)}
+.hc-rg{display:inline-flex;margin-left:auto;border:1px solid var(--border);
+  border-radius:7px;overflow:hidden;background:var(--surface2)}
+.hc-rg button{padding:3px 9px;border:0;border-left:1px solid var(--border);
+  background:transparent;cursor:pointer;font-family:inherit;
+  font-size:10.5px;color:var(--text3);transition:background .13s,color .13s}
+.hc-rg button:first-child{border-left:0}
+.hc-rg button:hover{color:var(--text2);background:var(--surface)}
+.hc-rg button.on{background:var(--surface);color:var(--text);font-weight:650}
+/* ⑤ 十字光标：水平线 + tooltip 第二行（该点 MA 值） */
+.hp-tip-h{position:absolute;left:0;right:0;height:1px;display:none;z-index:8;
+  pointer-events:none;background:linear-gradient(to right,
+    rgba(255,255,255,0) 0%, rgba(255,255,255,.2) 10%,
+    rgba(255,255,255,.2) 90%, rgba(255,255,255,0) 100%)}
+.hp-tip{flex-wrap:wrap}
+.hp-tip em{flex:0 0 100%;font-style:normal;font-size:10px;color:var(--text3);
+  font-variant-numeric:tabular-nums;margin-top:2px}
+/* ⑥ 面板内：图表不再被 flex 拉高。原本 svg 被 stretch 到 220~400px，
+   同一张图在不同视口会被纵向拉成不同形状；改由图 viewBox 比例决定（780:252）。 */
+#holdingsPanel .hp-chart{flex:0 0 auto!important;min-height:0!important;display:block!important}
+#holdingsPanel .hp-chart .hc-svg{flex:0 0 auto!important;min-height:0!important;
+  max-height:none!important;height:auto!important}
 </style>
   </div>
 
@@ -6639,6 +6716,14 @@ function hpChart(vals, cost, reason, days){
     pts0 = vals.p; dts = vals.d || days;
   }
   vals = pts0;
+  /* ★ 2026-09-26：区间切换（7 / 14 / 30 日）。数据本身最多 ~30 个点，
+     这里只做尾部截取 —— 不插值、不外推、不补点。 */
+  var nAll = (vals && vals.length) ? vals.length : 0;
+  var hcRange = Number(window._hpRange) || 30;
+  if (nAll > hcRange){
+    vals = vals.slice(-hcRange);
+    if (Array.isArray(dts) && dts.length >= hcRange) dts = dts.slice(-hcRange);
+  }
   if(!vals || vals.length < 2){
     var tip = reason || '暂无走势数据';
     return '<div style="height:150px;display:flex;flex-direction:column;gap:6px;'
@@ -6656,8 +6741,14 @@ function hpChart(vals, cost, reason, days){
   var hasCost = (typeof cost === 'number') && cost > 0;
   var ext = hasCost ? [cost] : [];
   if (tk){ for (var ti=0;ti<tk.up.length;ti++){ if (tk.up[ti]!=null) ext.push(tk.up[ti]); if (tk.dn[ti]!=null) ext.push(tk.dn[ti]); } }
-  var W=780,H=112, mx=Math.max.apply(null,vals.concat(ext)),
+  /* W:H = 780:252 —— 加高到 252 是给右侧那 5 档刻度留行距（原来 112 太挤）。
+     高度由 CSS 按宽度等比缩放，等比时 preserveAspectRatio="none" 与保持比例等价、不失真。 */
+  var W=780, H=252, PT=24, PB=20;
+  var mx=Math.max.apply(null,vals.concat(ext)),
       mn=Math.min.apply(null,vals.concat(hasCost?[cost*0.9]:[],ext)), rng=(mx-mn)||1, pts=[];
+  var plotH = H - PT - PB;
+  var Y = function(vy){ return PT + (mx - vy)/rng*plotH; };
+  var invY = function(y){ return mx - (y - PT)/plotH*rng; };
   /* ★ X 轴按真实日期差计算；日期缺失或全空时退回等距 */
   var xs = [];
   var t0 = NaN, t1 = NaN;
@@ -6679,21 +6770,34 @@ function hpChart(vals, cost, reason, days){
     for (var i0=0;i0<vals.length;i0++) xs.push(i0*(W/(vals.length-1)));
   }
   for (var i=0;i<vals.length;i++){
-    var x = xs[i], y = H-14-((vals[i]-mn)/rng)*(H-30);
-    pts.push(x.toFixed(1)+','+y.toFixed(1));
+    pts.push(xs[i].toFixed(1)+','+Y(vals[i]).toFixed(1));
   }
-  var cy = H-14-((cost-mn)/rng)*(H-30);
-  var last = vals[vals.length-1], ly = H-14-((last-mn)/rng)*(H-30);
-  var col = last>=cost ? 'var(--rise)' : 'var(--fall)';
+  var last = vals[vals.length-1], ly = Y(last);
+  var cy = hasCost ? Y(cost) : 0;
+  /* 颜色口径：录了成本看「现价 vs 成本」，没录成本看「现价 vs 区间首点」
+     （原来 cost=0 时 last>=0 恒真 → 永远显示涨色，是错的）。 */
+  var col = hasCost ? (last >= cost ? 'var(--rise)' : 'var(--fall)')
+                    : (last >= vals[0] ? 'var(--rise)' : 'var(--fall)');
   var lastX = xs.length ? xs[xs.length-1] : W;
   /* ★ 渐变面积填充（area chart 观感）：颜色随涨跌取 rise/fall */
   var uid = 'hpG' + Math.random().toString(36).slice(2, 8);
   var area = '0,' + H + ' ' + pts.join(' ') + ' ' + W + ',' + H;
-  var Y = function(vy){ return H-14-((vy-mn)/rng)*(H-30); };
+  var off = window._hcOff || {};
+  var n = vals.length;
+  /* 刻度小数位随价格跨度自适应：跨度大用整数，跨度小保留 2 位 */
+  var dec = rng >= 40 ? 0 : (rng >= 8 ? 1 : 2);
 
-  /* ① 布林带通道（20 日 ±2σ）*/
+  /* ① 网格 + 右侧刻度：两者用同一套 Y 反算 → 虚线与其标签严格对齐，绝不会错位 */
+  var grid = '', ticks = [];
+  for (var gi=0; gi<5; gi++){
+    var gy = PT + gi*plotH/4;
+    grid += '<line class="hc-grid" x1="0" y1="'+gy.toFixed(1)+'" x2="'+W+'" y2="'+gy.toFixed(1)+'" '
+      + 'stroke="var(--border)" stroke-width="1" stroke-dasharray="3 6" vector-effect="non-scaling-stroke"/>';
+    ticks.push('<span style="top:'+(gy/H*100).toFixed(2)+'%">'+ invY(gy).toFixed(dec) +'</span>');
+  }
+  /* ② 布林带通道（20 日 ±2σ）—— 可被图例关掉 */
   var boll = '';
-  if (tk){
+  if (tk && !off.boll){
     var upPts = [], dnPts = [];
     for (var bi=0;bi<tk.up.length;bi++){
       if (tk.up[bi] == null) continue;
@@ -6701,52 +6805,149 @@ function hpChart(vals, cost, reason, days){
       dnPts.push(xs[bi].toFixed(1)+','+Y(tk.dn[bi]).toFixed(1));
     }
     if (upPts.length > 1){
-      boll = '<polygon fill="var(--blue)" opacity=".07" points="'+upPts.concat(dnPts.slice().reverse()).join(' ')+'"/>'
-        + '<polyline fill="none" stroke="var(--blue)" stroke-width="1" opacity=".35" points="'+upPts.join(' ')+'"/>'
-        + '<polyline fill="none" stroke="var(--blue)" stroke-width="1" opacity=".35" points="'+dnPts.join(' ')+'"/>';
+      boll = '<polygon fill="var(--blue)" opacity=".055" points="'+upPts.concat(dnPts.slice().reverse()).join(' ')+'"/>'
+        + '<polyline fill="none" stroke="var(--blue)" stroke-width="1.1" opacity=".5" '
+        + 'vector-effect="non-scaling-stroke" points="'+upPts.join(' ')+'"/>'
+        + '<polyline fill="none" stroke="var(--blue)" stroke-width="1.1" opacity=".3" '
+        + 'vector-effect="non-scaling-stroke" points="'+dnPts.join(' ')+'"/>';
     }
   }
-  /* ② MA5 / MA20 */
-  var maLine = function(arr, color, w){
-    if (!arr) return '';
+  /* ③ MA5 / MA20 */
+  var maLine = function(arr, color, w, on){
+    if (!arr || !on) return '';
     var p2 = [];
     for (var mi=0;mi<arr.length;mi++){
       if (arr[mi] == null) continue;
       p2.push(xs[mi].toFixed(1)+','+Y(arr[mi]).toFixed(1));
     }
-    return p2.length > 1 ? '<polyline fill="none" stroke="'+color+'" stroke-width="'+w+'" opacity=".9" points="'+p2.join(' ')+'"/>' : '';
+    return p2.length > 1 ? ('<polyline fill="none" stroke="'+color+'" stroke-width="'+w+'" opacity=".92" '
+      + 'stroke-linejoin="round" vector-effect="non-scaling-stroke" points="'+p2.join(' ')+'"/>') : '';
   };
-  /* ③ 区间高低点标记 */
+  /* ④ 区间高低点：圆点 + 原生 title（不在 SVG 里写字，会被 preserveAspectRatio 横向拉伸变形）*/
+  var hasD = Array.isArray(dts) && dts.length === n;
+  var dOf = function(ix){ return hasD && dts[ix] ? dts[ix] : ('第 ' + (ix + 1) + ' 天'); };
   var marks = '';
   if (tk){
-    marks += '<circle cx="'+xs[tk.hiIdx].toFixed(1)+'" cy="'+Y(tk.hi).toFixed(1)+'" r="2.6" fill="var(--rise)" opacity=".85"/>'
-      + '<circle cx="'+xs[tk.loIdx].toFixed(1)+'" cy="'+Y(tk.lo).toFixed(1)+'" r="2.6" fill="var(--fall)" opacity=".85"/>';
+    marks += '<circle cx="'+xs[tk.hiIdx].toFixed(1)+'" cy="'+Y(tk.hi).toFixed(1)+'" r="2.6" fill="var(--rise)" opacity=".85">'
+      + '<title>区间高点 ¥'+hpFmt(tk.hi)+'（'+dOf(tk.hiIdx)+'）</title></circle>'
+      + '<circle cx="'+xs[tk.loIdx].toFixed(1)+'" cy="'+Y(tk.lo).toFixed(1)+'" r="2.6" fill="var(--fall)" opacity=".85">'
+      + '<title>区间低点 ¥'+hpFmt(tk.lo)+'（'+dOf(tk.loIdx)+'）</title></circle>';
   }
-  /* ④ 金叉 / 死叉标记 */
   var crossMark = '';
   if (tk && tk.cross){
-    var cx2 = xs[tk.cross.i], cy2 = Y(tk.ma20[tk.cross.i]);
-    crossMark = '<circle cx="'+cx2.toFixed(1)+'" cy="'+cy2.toFixed(1)+'" r="4.5" fill="none" stroke="'
-      + (tk.cross.type === 'gold' ? 'var(--rise)' : 'var(--fall)') + '" stroke-width="1.5" opacity=".9"/>';
+    crossMark = '<circle cx="'+xs[tk.cross.i].toFixed(1)+'" cy="'+Y(tk.ma20[tk.cross.i]).toFixed(1)+'" r="4.5" fill="none" stroke="'
+      + (tk.cross.type === 'gold' ? 'var(--rise)' : 'var(--fall)') + '" stroke-width="1.5" opacity=".9">'
+      + '<title>'+(tk.cross.type === 'gold' ? 'MA5 上穿 MA20（金叉）' : 'MA5 下穿 MA20（死叉）')
+      + '：'+dOf(tk.cross.i)+'</title></circle>';
   }
-
-  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'
+  /* ⑤ 顶部指标条：真实值现算，缺失的指标整项不出现（不留「—」占位噪音）*/
+  var hasMa5 = tk && tk.ma5[n-1] != null, hasMa20 = tk && tk.ma20[n-1] != null;
+  var hasBoll = tk && tk.up[n-1] != null;
+  var chgAll = vals[0] > 0 ? (last - vals[0]) / vals[0] * 100 : null;
+  var chgCol = (chgAll === null || Math.abs(chgAll) < 0.05) ? 'var(--text2)'
+             : (chgAll > 0 ? 'var(--rise)' : 'var(--fall)');
+  var stats = '<div class="hc-stats">'
+    + '<span class="it k-cur">现价<b style="color:'+col+'">¥'+hpFmt(last)+'</b></span>'
+    + (hasMa5 ? '<span class="it">MA5<b style="color:#ff9f43">'+tk.ma5[n-1].toFixed(2)+'</b></span>' : '')
+    + (hasMa20 ? '<span class="it">MA20<b style="color:#a855f7">'+tk.ma20[n-1].toFixed(2)+'</b></span>' : '')
+    + (hasBoll ? '<span class="it">布林带<b>'+tk.dn[n-1].toFixed(2)+' ~ '+tk.up[n-1].toFixed(2)+'</b></span>' : '')
+    + (hasCost ? '<span class="it">成本<b>¥'+hpFmt(cost)+'</b></span>' : '')
+    + (chgAll === null ? '' : ('<span class="it">区间涨跌<b style="color:'+chgCol+'">'
+        + (chgAll >= 0 ? '+' : '') + chgAll.toFixed(1) + '%</b></span>'))
+    + '</div>';
+  /* ⑥ 右侧价格轴：5 档刻度 + 当前价高亮标签（悬停时标签跟着变成该点的值）*/
+  var yaxis = '<div class="hc-yaxis">' + ticks.join('')
+    + '<b class="hc-cur" data-now="¥'+hpFmt(last)+'" style="top:'+(ly/H*100).toFixed(2)
+    + '%;background:'+col+'">¥'+hpFmt(last)+'</b></div>';
+  /* ⑦ 绘图本体 */
+  var svg = '<svg class="hc-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" '
+    + 'data-w="'+W+'" data-h="'+H+'" data-n="'+n+'" data-pts="'+pts.join(';')+'">'
     + '<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="0" y2="1">'
-    +   '<stop offset="0%" stop-color="'+col+'" stop-opacity=".26"/>'
+    +   '<stop offset="0%" stop-color="'+col+'" stop-opacity=".3"/>'
+    +   '<stop offset="72%" stop-color="'+col+'" stop-opacity=".07"/>'
     +   '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'
     + '</linearGradient></defs>'
+    + grid
     + boll
-    + (hasCost ? ('<line x1="0" x2="'+W+'" y1="'+cy+'" y2="'+cy+'" stroke="var(--amber)" '
-    + 'stroke-width="1.2" stroke-dasharray="5 4" opacity=".8"/>') : '')
     + '<polygon fill="url(#'+uid+')" points="'+area+'"/>'
-    + maLine(tk && tk.ma20, '#a855f7', 1.4)
-    + maLine(tk && tk.ma5, '#ff9f43', 1.4)
-    + '<polyline fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round" '
-    + 'points="'+pts.join(' ')+'"/>'
+    + ((hasCost && !off.cost) ? ('<line x1="0" x2="'+W+'" y1="'+cy+'" y2="'+cy+'" stroke="var(--amber)" '
+        + 'stroke-width="1.2" stroke-dasharray="5 4" opacity=".8" vector-effect="non-scaling-stroke"/>') : '')
+    + maLine(tk && tk.ma20, '#a855f7', 1.5, !off.ma20)
+    + maLine(tk && tk.ma5, '#ff9f43', 1.5, !off.ma5)
+    + (off.price ? '' : ('<polyline class="hc-price" fill="none" stroke="'+col+'" stroke-width="2" '
+        + 'stroke-linejoin="round" vector-effect="non-scaling-stroke" points="'+pts.join(' ')+'"/>'))
     + marks + crossMark
-    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="3.5" fill="'+col+'"/>'
-    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="7" fill="'+col+'" opacity=".18"/></svg>';
+    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="3.6" fill="'+col+'"/>'
+    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="8" fill="'+col+'" opacity=".16"/></svg>';
+  /* ⑧ 底部日期轴：取该位置对应点的真实日期（X 按日期差排，按点数折算会错位）
+     ⚠ 必须留在 svg 变量之外 —— 起初把日期轴和图例一起拼进 svg 字符串里，
+       结果它们落进 .hc-plot，把绘图区撑高 53px（22+31），
+       而右侧轴的高度按绘图区算 → 刻度与网格越往下偏得越多（实测 48.78px）。*/
+  var xaxis = (function(){
+        var _now = new Date();
+        var _mmdd = ('0'+(_now.getMonth()+1)).slice(-2)+'/'+('0'+_now.getDate()).slice(-2);
+        var _fmtD = function(s){ return s ? s.slice(5,10).replace('-','/') : ''; };
+        var fd = function(f){
+          var pi = Math.round(f*(n-1));
+          if (hasD && dts[pi]){
+            var md = _fmtD(dts[pi]);
+            return (f >= 1 && md === _mmdd) ? '今天' : md;
+          }
+          var dd = Math.round((n-1)*(1-f));
+          return dd <= 0 ? '今天' : (dd + ' 天前');
+        };
+        return '<div class="hc-xaxis"><span>'+fd(0)+'</span><span>'+fd(1/3)+'</span>'
+             + '<span>'+fd(2/3)+'</span><span>'+fd(1)+'</span></div>';
+      })();
+  /* ⑨ 可点击图例 + 区间切换 */
+  var foot = '<div class="hc-foot"><div class="hc-lgd">'
+    + (function(){
+        var li = function(k, label, color, dash){
+          var on = !off[k];
+          return '<button type="button" class="hc-lg'+(on ? '' : ' off')+'" data-k="'+k
+            + '" title="点击'+(on ? '隐藏' : '显示')+label+'"><i class="'+(dash ? 'dash' : '')
+            + '" style="'+(dash ? 'color:'+color : 'background:'+color)+'"></i>'+label+'</button>';
+        };
+        return li('price', '日线', col, false)
+          + (hasMa5 ? li('ma5', 'MA5', '#ff9f43', false) : '')
+          + (hasMa20 ? li('ma20', 'MA20', '#a855f7', false) : '')
+          + (hasBoll ? li('boll', '布林带', 'var(--blue)', false) : '')
+          + (hasCost ? li('cost', '成本线 ¥'+hpFmt(cost), 'var(--amber)', true) : '');
+      })()
+    + '</div>'
+    + (function(){
+        var opts = [];
+        if (nAll >= 7)  opts.push([7,  '7 日']);
+        if (nAll >= 14) opts.push([14, '14 日']);
+        if (nAll >= 10) opts.push([30, '全部']);
+        if (opts.length < 2) return '';
+        var s = '<div class="hc-rg">';
+        for (var oi=0; oi<opts.length; oi++){
+          s += '<button type="button" class="'+(hcRange === opts[oi][0] ? 'on' : '')
+            + '" onclick="hpSetRange('+opts[oi][0]+')" title="只看最近 '+opts[oi][0]+' 天">'
+            + opts[oi][1] + '</button>';
+        }
+        return s + '</div>';
+      })()
+    + '</div>';
+  return stats
+    + '<div class="hc-body"><div class="hc-plot">' + svg + '</div>' + yaxis + '</div>'
+    + xaxis + foot;
 }
+/* 图表区间切换 / 图例开关：改状态后重渲染当前这件（hpSelect 幂等）*/
+function hpSetRange(d){
+  window._hpRange = Number(d) || 30;
+  try { hpSelect(window._hpCur || 0); } catch(e) {}
+}
+document.addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('.hc-lg');
+  if (!b) return;
+  var k = b.getAttribute('data-k');
+  if (!k) return;
+  window._hcOff = window._hcOff || {};
+  window._hcOff[k] = !window._hcOff[k];
+  try { hpSelect(window._hpCur || 0); } catch(err) {}
+});
 
 /* 技术面徽章：结论 + 悬停/点击看判定依据（规则完全可解释） */
 function hpTechBadge(cv, idx){
@@ -6901,14 +7102,9 @@ function hpSelect(idx){
    + '<div class="s">'+(noCost ? '需先录入成本' : ('到 ¥'+hpFmt(c)))+'</div></div>'
    + '</div>'
    + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)))+'</div>'
-   + (cv ? ('<div class="hp-axis"><span>'+_ax(0)+'</span><span>'+_ax(1/3)+'</span><span>'+_ax(2/3)+'</span>'
-      + '<span>今天</span></div>'
-      + '<div class="hp-lgd">'+(noCost ? '' : '<span><i class="l-cost"></i>成本线 ¥'+hpFmt(c)+'</span>')
-      + '<span><i class="l-ma5"></i>MA5</span><span><i class="l-ma20"></i>MA20</span>'
-      + '<span><i class="l-boll"></i>布林带</span></div>'
-      /* ⚠ 默认隐藏：快照只覆盖动态 top200 热门，多数持仓不在其中。
-         有数据才显示，避免对每个饰品都吊一个空盒子。 */
-      + '<div class="hp-vol" id="hpVolBox" style="display:none"><div class="hp-vol-t">在售量（近 12 小时，与上方日线尺度不同）</div>'
+   /* ⚠ 默认隐藏：快照只覆盖动态 top200 热门，多数持仓不在其中。
+      有数据才显示，避免对每个饰品都吊一个空盒子。 */
+   + (cv ? ('<div class="hp-vol" id="hpVolBox" style="display:none"><div class="hp-vol-t">在售量（近 12 小时，与上方日线尺度不同）</div>'
       + '<div id="hpVolInner"></div></div>') : '');
   box.innerHTML = html;
   window._hpCur = idx;
@@ -6929,26 +7125,32 @@ function hpSelect(idx){
   /* ★ 详情区高度按视口自适应（每次渲染后重算）*/
   try { hpFitDetail(); } catch(e) {}
 }
-/* 详情走势图：鼠标跟随 tooltip */
+/* 详情走势图：十字光标 + 鼠标跟随 tooltip（TradingView 模式）
+   2026-09-26 重写，修一个旧 bug：
+     原来坐标是从 svg 里第一条 <polyline> 反推的，但按绘制顺序
+     第一条是**布林带上轨**（图例关掉日线时更乱）→ hover 的小圆点
+     会落在错误的线上。改成由 svg 的 data-pts 直接给坐标，不猜。 */
 function hpChartTooltip(idx){
   var D = document.getElementById('hpDetail');
-  var svg = D ? D.querySelector('.hp-chart svg') : null;
-  var holder = D ? D.querySelector('.hp-chart') : null;
+  var svg = D ? D.querySelector('.hp-chart .hc-svg') : null;
+  var holder = D ? D.querySelector('.hp-chart .hc-plot') : null;
   if (!svg || !holder) return;
   var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
   var h = arr[idx];
   if (!h) return;
   var cv = hpCurve(h);
   if (!cv || !cv.p || cv.p.length < 2) return;
-  var prices = cv.p, days = cv.d || [];
-  var lines = svg.querySelectorAll('polyline');
-  if (!lines.length) return;
-  var ptList = (lines[0].getAttribute('points') || '').split(/\s+/).filter(Boolean);
-  if (!ptList.length) return;
-  var xs = ptList.map(function(p){ return parseFloat(p.split(',')[0]); });
-  var ys = ptList.map(function(p){ return parseFloat(p.split(',')[1]); });
-  var vbW = (svg.viewBox && svg.viewBox.baseVal) ? svg.viewBox.baseVal.width : 780;
-  var vbH = (svg.viewBox && svg.viewBox.baseVal) ? svg.viewBox.baseVal.height : 210;
+  /* 区间必须与图一致，否则下标错位 */
+  var range = Number(window._hpRange) || 30;
+  var prices = cv.p.slice(-range), days = (cv.d || []).slice(-range);
+  if (prices.length < 2) return;
+  var P = (svg.getAttribute('data-pts') || '').split(';').map(function(s){
+    var a = s.split(','); return { x: parseFloat(a[0]), y: parseFloat(a[1]) };
+  }).filter(function(o){ return !isNaN(o.x) && !isNaN(o.y); });
+  if (P.length !== prices.length) return;          /* 对不上就不挂 tooltip，不猜 */
+  var tk = hpTech(prices);
+  var vbW = parseFloat(svg.getAttribute('data-w')) || 780;
+  var vbH = parseFloat(svg.getAttribute('data-h')) || 252;
 
   holder.style.position = 'relative';
   var box = document.createElement('div');
@@ -6957,7 +7159,12 @@ function hpChartTooltip(idx){
   dot.className = 'hp-tip-dot';
   var line = document.createElement('span');      /* ★ 垂直准线 */
   line.className = 'hp-tip-line';
+  var hline = document.createElement('span');     /* ★ 水平准线 */
+  hline.className = 'hp-tip-h';
+  var ycur = D.querySelector('.hc-yaxis .hc-cur');
+  var ynow = ycur ? (ycur.getAttribute('data-now') || '') : '';
   holder.appendChild(line);
+  holder.appendChild(hline);
   holder.appendChild(box);
   holder.appendChild(dot);
 
@@ -6977,42 +7184,64 @@ function hpChartTooltip(idx){
     var vx = mx / w * vbW;
     /* 最近采样点 */
     var best = 0, bestD = Infinity;
-    for (var i=0;i<xs.length;i++){
-      var d0 = Math.abs(xs[i] - vx);
+    for (var i=0;i<P.length;i++){
+      var d0 = Math.abs(P[i].x - vx);
       if (d0 < bestD){ bestD = d0; best = i; }
     }
     var pr = Number(prices[best]) || 0;
     var dt = days[best] || ('第 ' + (best + 1) + ' 天');
     var chg = base > 0 ? ((pr - base) / base * 100) : 0;
     var cls = chg >= 0 ? 'rise' : 'fall';
+    /* 第二行：该点的 MA5 / MA20 / 布林区间（有才算，不给「—」占位）*/
+    var extra = '';
+    if (tk){
+      var m5 = tk.ma5[best], m20 = tk.ma20[best], seg = [];
+      if (m5 != null) seg.push('MA5 ' + m5.toFixed(2));
+      if (m20 != null) seg.push('MA20 ' + m20.toFixed(2));
+      if (tk.up[best] != null) seg.push('布林 ' + tk.dn[best].toFixed(2) + '~' + tk.up[best].toFixed(2));
+      if (seg.length) extra = '<em>' + seg.join(' · ') + '</em>';
+    }
     box.innerHTML = '<b>¥' + hpFmt(pr) + '</b>'
       + '<span>' + dt + '</span>'
-      + '<span class="' + cls + '">' + (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%</span>';
+      + '<span class="' + cls + '">' + (chg >= 0 ? '+' : '') + chg.toFixed(1) + '%</span>'
+      + extra;
     /* 屏幕坐标（CSS px，svg 内），再平移回容器坐标系 */
-    var cx = xs[best] / vbW * w + offX;
-    var cy = ys[best] / vbH * hgt + offY;
-    /* 准线 */
+    var cx = P[best].x / vbW * w + offX;
+    var cy = P[best].y / vbH * hgt + offY;
+    /* 准线（竖 + 横）*/
     line.style.left = cx.toFixed(1) + 'px';
     line.style.display = 'block';
+    hline.style.top = cy.toFixed(1) + 'px';
+    hline.style.display = 'block';
     /* tooltip 水平跟随鼠标但不出界 */
-    var half = 58;
+    var half = Math.min(84, Math.max(58, rect.width / 2 - 4));
     var mtx = e.clientX - rect.left;
     var tx = Math.max(half, Math.min(rect.width - half, mtx));
     box.style.left = tx + 'px';
-    /* 垂直避让数据点：优先放上方 34px，顶部不够则放下方 */
-    var ty = cy - 34;
-    if (ty < 4) ty = cy + 14;
+    /* 垂直避让数据点：优先放上方（两行更占高），顶部不够则放下方 */
+    var ty = cy - 44;
+    if (ty < 4) ty = cy + 16;
     box.style.top = ty.toFixed(1) + 'px';
     box.style.opacity = '1';                       /* ★ 关键修复：让它真的显示 */
     /* 数据点标记 */
     dot.style.left = (cx - 4).toFixed(1) + 'px';
     dot.style.top = (cy - 4).toFixed(1) + 'px';
     dot.style.display = 'block';
+    /* ★ 右侧价格轴的当前价标签跟着变成该点的值 —— 视线不用离开右轴 */
+    if (ycur){
+      ycur.style.top = (P[best].y / vbH * 100).toFixed(2) + '%';
+      ycur.textContent = '¥' + hpFmt(pr);
+    }
   }
   function leave(){
     box.style.opacity = '0';
     dot.style.display = 'none';
     line.style.display = 'none';
+    hline.style.display = 'none';
+    if (ycur){
+      ycur.style.top = (P[P.length - 1].y / vbH * 100).toFixed(2) + '%';
+      ycur.textContent = ynow;
+    }
   }
   svg.addEventListener('mousemove', move);
   svg.addEventListener('mouseleave', leave);
