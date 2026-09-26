@@ -2,6 +2,18 @@
   {
     "date": "2026-09-26",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-26 16:00",
+    "desc": "wip: local snapshot 2026-09-26 16:00"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 15:34"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 15:15",
     "desc": "wip: local snapshot 2026-09-26 15:15"
   },
@@ -14,8 +26,38 @@
   {
     "date": "2026-09-26",
     "tag": "fix",
+    "title": "feat(news): 历史先验数字逐字锚定(防flash改写) + 5条历史对照要求",
+    "desc": "feat(news): 历史先验数字逐字锚定(防flash改写) + 5条历史对照要求"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(event-study): 事件研究实现(同批对比+同期基准+stale过滤+公告缓存回退)",
+    "desc": "feat(event-study): 事件研究实现(同批对比+同期基准+stale过滤+公告缓存回退)"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 15:00",
     "desc": "wip: local snapshot 2026-09-26 15:00"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(news): 资讯中心展示历史先验真数字(与AI叙述分离)",
+    "desc": "feat(news): 资讯中心展示历史先验真数字(与AI叙述分离)"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(news): AI空投监控接入历史先验(逐字锚定数字)",
+    "desc": "feat(news): AI空投监控接入历史先验(逐字锚定数字)"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(event-study): 事件研究基线(公告后3/7/14天 vs 同期基准, stale过滤)",
+    "desc": "feat(event-study): 事件研究基线(公告后3/7/14天 vs 同期基准, stale过滤)"
   },
   {
     "date": "2026-09-26",
@@ -28,6 +70,30 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 14:30",
     "desc": "wip: local snapshot 2026-09-26 14:30"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(news): 事件研究脚本(全市场指数/事件窗口/基准分布/分位判定)",
+    "desc": "feat(news): 事件研究脚本(全市场指数/事件窗口/基准分布/分位判定)"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(news): 事件研究挂入all轮 + AI prompt接入历史先验 + 公告正文截断200→1500",
+    "desc": "feat(news): 事件研究挂入all轮 + AI prompt接入历史先验 + 公告正文截断200→1500"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(news): AI空投监控接入历史先验(每条公告标注历史支撑强度)",
+    "desc": "feat(news): AI空投监控接入历史先验(每条公告标注历史支撑强度)"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "feat(news): 事件研究——公告日效应的真实统计(10事件/4616标的池/3-7-14日窗口 vs 基准)",
+    "desc": "feat(news): 事件研究——公告日效应的真实统计(10事件/4616标的池/3-7-14日窗口 vs 基准)"
   },
   {
     "date": "2026-09-26",
@@ -49,74 +115,8 @@
   },
   {
     "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 13:34"
-  },
-  {
-    "date": "2026-09-26",
     "tag": "fix",
-    "title": "wip: local snapshot 2026-09-26 13:15",
-    "desc": "wip: local snapshot 2026-09-26 13:15"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, csqaq_boards.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, news.json, rec_tracks.json, sectors.json, track_view.json, tracking_analysis.json, tracking_lessons.json 2026-09-26 13:08"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 13:05"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-26 13:00",
-    "desc": "wip: local snapshot 2026-09-26 13:00"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 12:37"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-26 12:30",
-    "desc": "wip: local snapshot 2026-09-26 12:30"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-26 12:15",
-    "desc": "wip: local snapshot 2026-09-26 12:15"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 12:06"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 11:34"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-26 11:15",
-    "desc": "wip: local snapshot 2026-09-26 11:15"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 11:04"
+    "title": "feat(kronos): 服务器版推理脚本(去matplotlib/服务器路径/内存峰值自测)",
+    "desc": "feat(kronos): 服务器版推理脚本(去matplotlib/服务器路径/内存峰值自测)"
   }
 ]
