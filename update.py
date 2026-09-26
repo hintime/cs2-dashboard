@@ -926,10 +926,17 @@ def run_kronos_forecast(top_n=10, days=14, samples=3):
     """
     if str(os.environ.get('KRONOS_FORECAST', '1')).strip() == '0':
         return None
-    venv_py = os.environ.get('KRONOS_PY') or r'C:\Users\Lenovo\cs2-kronos\venv\Scripts\python.exe'
-    _local = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'kronos_forecast.py')
-    script = os.environ.get('KRONOS_SCRIPT') or (_local if os.path.exists(_local)
-                                          else r'C:\Users\Lenovo\cs2-kronos\forecast_batch.py')
+    # 平台自适应：Windows=本机 venv；Linux=服务器 kronos-venv（方案 C，2026-09-26 实测峰值 478MB）
+    if os.name == 'nt':
+        default_py = r'C:\Users\Lenovo\cs2-kronos\venv\Scripts\python.exe'
+        default_local = r'C:\Users\Lenovo\cs2-kronos\forecast_batch.py'
+    else:
+        default_py = '/home/ubuntu/kronos-venv/bin/python'
+        default_local = '/home/ubuntu/cs2-run/kronos_forecast_srv.py'
+    venv_py = os.environ.get('KRONOS_PY') or default_py
+    _local_script = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 'kronos_forecast.py' if os.name == 'nt' else 'kronos_forecast_srv.py')
+    script = os.environ.get('KRONOS_SCRIPT') or (_local_script if os.path.exists(_local_script) else default_local)
     if not (os.path.exists(venv_py) and os.path.exists(script)):
         print('[Kronos] 未找到独立环境（%s），跳过预测' % venv_py)
         return None
@@ -941,11 +948,12 @@ def run_kronos_forecast(top_n=10, days=14, samples=3):
     out = os.path.join(DATA_DIR, 'ai_forecast.json')
     try:
         _t0 = time.time()
+        _kw = {'creationflags': 0x08000000} if os.name == 'nt' else {}  # creationflags 仅 Windows，Linux 传非 0 会 ValueError
         r = subprocess.run(
             [venv_py, script, '--days', str(days), '--top', str(top_n),
              '--samples', str(samples), '--out', out],
             env=env, cwd=os.path.dirname(script), capture_output=True, text=True,
-            encoding='utf-8', errors='replace', timeout=1200, creationflags=0x08000000)
+            encoding='utf-8', errors='replace', timeout=1200, **_kw)
         if r.returncode == 0:
             print('[Kronos] 预测完成（%.0fs）→ ai_forecast.json' % (time.time() - _t0))
             return out
