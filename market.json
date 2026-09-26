@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 979.34,
-    "change": -2.07,
-    "change_pct": -2.07,
-    "market_value": 300612727.26,
-    "total_items": 3981,
-    "updated": "2026-09-26T12:00:03+08:00",
+    "latest": 978.52,
+    "change": -2.15,
+    "change_pct": -2.15,
+    "market_value": 300359464.28,
+    "total_items": 4023,
+    "updated": "2026-09-26T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3830,6 +3830,14 @@
         "close": 979.34,
         "high": 979.34,
         "low": 976.95
+      },
+      {
+        "date": "2026-09-26",
+        "dateFull": "2026-09-26 14:00",
+        "open": 974.3,
+        "close": 978.52,
+        "high": 978.52,
+        "low": 974.3
       }
     ],
     "volBar": [],
@@ -11473,12 +11481,28 @@
         "index": 979.34,
         "change_pct": -2.07,
         "market_value": 300612727.26
+      },
+      {
+        "time": "14:00",
+        "date": "2026-09-26",
+        "timestamp": 1790402403,
+        "index": 974.3,
+        "change_pct": -2.57,
+        "market_value": 299066023.81
+      },
+      {
+        "time": "16:00",
+        "date": "2026-09-26",
+        "timestamp": 1790409603,
+        "index": 978.52,
+        "change_pct": -2.15,
+        "market_value": 300359464.28
       }
     ],
     "selling": {
-      "total_selling": 1330875,
+      "total_selling": 1361312,
       "total_selling_prev": 0,
-      "total_selling_delta": 1330875,
+      "total_selling_delta": 1361312,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11486,7 +11510,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790395203552,
+  "index_updated": 1790409603622,
   "alerts": [
     {
       "name": "M4A4 | Urban DDPAT (Factory New)",
@@ -30060,7 +30084,7 @@
     "MP9 | 九头蛇 (略有磨损)",
     "MP9 | 八音盒 (久经沙场)"
   ],
-  "updated": "2026-09-26T05:34:47Z",
+  "updated": "2026-09-26T08:04:22Z",
   "steam_market_items": 61,
   "steam_market_recs": {
     "momentum": [],
