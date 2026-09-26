@@ -2,6 +2,30 @@
   {
     "date": "2026-09-26",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-09-26 16:15",
+    "desc": "wip: local snapshot 2026-09-26 16:15"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "fix(kronos): update.py Windows 路径改按存在性探测(消除 C/E 盘分叉) + 纳入 ne",
+    "desc": "s_history.json [api-push]"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "title": "fix(kronos): update.py Windows 路径改按存在性探测(消除 C/E 盘分叉) + 纳入 ne",
+    "desc": "s_history.json"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 16:04"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-09-26 16:00",
     "desc": "wip: local snapshot 2026-09-26 16:00"
   },
@@ -94,29 +118,5 @@
     "tag": "fix",
     "title": "feat(news): 事件研究——公告日效应的真实统计(10事件/4616标的池/3-7-14日窗口 vs 基准)",
     "desc": "feat(news): 事件研究——公告日效应的真实统计(10事件/4616标的池/3-7-14日窗口 vs 基准)"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-26 14:15",
-    "desc": "wip: local snapshot 2026-09-26 14:15"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-09-26 14:04"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-09-26 14:00",
-    "desc": "wip: local snapshot 2026-09-26 14:00"
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "title": "feat(kronos): 服务器版推理脚本(去matplotlib/服务器路径/内存峰值自测)",
-    "desc": "feat(kronos): 服务器版推理脚本(去matplotlib/服务器路径/内存峰值自测)"
   }
 ]
