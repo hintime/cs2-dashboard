@@ -89,7 +89,20 @@ def main():
                         targets.append({'hash_name': r['hash_name'], 'name': nm, 'rank': None,
                                         'source': 'ai', 'score': r.get('score')})
                         break
-    print('目标 %d 件（推荐池前%d + AI精选）' % (len(targets), top_n), flush=True)
+    # 持仓：把持仓列表也纳入预测（与 top10/AI精选 去重）
+    holdings_path = os.path.join(REPO, 'holdings.json')
+    if os.path.exists(holdings_path):
+        try:
+            ho = json.load(open(holdings_path, encoding='utf-8'))
+            for it in (ho.get('items') or []):
+                hn = it.get('market_hash') or it.get('hash_name') or ''
+                if hn and hn not in seen:
+                    seen.add(hn)
+                    targets.append({'hash_name': hn, 'name': it.get('name'),
+                                    'rank': None, 'source': 'holdings', 'score': None})
+        except Exception as e:
+            print('  读取持仓失败：%s' % str(e)[:80], flush=True)
+    print('目标 %d 件（推荐池前%d + AI精选 + 持仓）' % (len(targets), top_n), flush=True)
 
     if not targets:
         print('无目标，退出')
