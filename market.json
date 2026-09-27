@@ -30313,132 +30313,293 @@
     "MP9 | 彩绘玻璃 (略有磨损)",
     "MP9 | 星使 (久经沙场)"
   ],
-  "updated": "2026-09-27T22:35:47Z",
-  "steam_market_items": 13,
+  "updated": "2026-09-27T23:06:07Z",
+  "steam_market_items": 58,
   "steam_market_recs": {
     "momentum": [],
     "oversold": [],
-    "scarce": [],
+    "scarce": [
+      {
+        "name": "MAC-10 | 霓虹骑士 (久经沙场)",
+        "price": 177.99,
+        "sell_listings": 48,
+        "score": 52,
+        "reason": "Only 48 listings, high scarcity (price=178 CNY)"
+      }
+    ],
     "undervalued": [
       {
-        "name": "手套武器箱",
-        "price": 13.53,
-        "buff_sell": 68.17,
+        "name": "幻彩 2 号武器箱",
+        "price": 5.32,
+        "buff_sell": 24.06,
         "rate_7": 0,
-        "premium": 403.84,
+        "premium": 352.26,
         "score": 100,
-        "reason": "BUFF (68 CNY) > Steam (14 CNY), 404% premium"
+        "reason": "BUFF (24 CNY) > Steam (5 CNY), 352% premium"
       },
       {
         "name": "“突围大行动”武器箱",
-        "price": 10.07,
-        "buff_sell": 51.75,
+        "price": 10.84,
+        "buff_sell": 51.64,
         "rate_7": 0,
-        "premium": 413.9,
+        "premium": 376.38,
         "score": 100,
-        "reason": "BUFF (52 CNY) > Steam (10 CNY), 414% premium"
+        "reason": "BUFF (52 CNY) > Steam (11 CNY), 376% premium"
       },
       {
-        "name": "“裂网大行动”武器箱",
-        "price": 5.9,
-        "buff_sell": 26.89,
+        "name": "MP9 | 星使 (久经沙场)",
+        "price": 85.0,
+        "buff_sell": 398.9,
         "rate_7": 0,
-        "premium": 355.76,
+        "premium": 369.29,
         "score": 100,
-        "reason": "BUFF (27 CNY) > Steam (6 CNY), 356% premium"
+        "reason": "BUFF (399 CNY) > Steam (85 CNY), 369% premium"
       },
       {
-        "name": "AK-47 | 传承 (久经沙场)",
-        "price": 41.51,
-        "buff_sell": 223.77,
+        "name": "AK-47 | 夜愿 (久经沙场)",
+        "price": 88.9,
+        "buff_sell": 409.0,
         "rate_7": 0,
-        "premium": 439.07,
+        "premium": 360.07,
         "score": 100,
-        "reason": "BUFF (224 CNY) > Steam (42 CNY), 439% premium"
+        "reason": "BUFF (409 CNY) > Steam (89 CNY), 360% premium"
       },
       {
-        "name": "AK-47 | 翔鹤 (久经沙场)",
-        "price": 16.61,
-        "buff_sell": 78.8,
+        "name": "手套武器箱",
+        "price": 14.46,
+        "buff_sell": 68.18,
         "rate_7": 0,
-        "premium": 374.41,
+        "premium": 371.51,
         "score": 100,
-        "reason": "BUFF (79 CNY) > Steam (17 CNY), 374% premium"
+        "reason": "BUFF (68 CNY) > Steam (14 CNY), 372% premium"
       },
       {
         "name": "“狂牙大行动”武器箱",
-        "price": 8.17,
-        "buff_sell": 38.4,
+        "price": 8.24,
+        "buff_sell": 37.86,
         "rate_7": 0,
-        "premium": 370.01,
+        "premium": 359.47,
         "score": 100,
-        "reason": "BUFF (38 CNY) > Steam (8 CNY), 370% premium"
+        "reason": "BUFF (38 CNY) > Steam (8 CNY), 359% premium"
       },
       {
-        "name": "幻彩 2 号武器箱",
-        "price": 5.0,
-        "buff_sell": 23.96,
+        "name": "电竞 2013 冬季武器箱",
+        "price": 17.87,
+        "buff_sell": 79.0,
         "rate_7": 0,
-        "premium": 379.2,
+        "premium": 342.08,
+        "score": 100,
+        "reason": "BUFF (79 CNY) > Steam (18 CNY), 342% premium"
+      },
+      {
+        "name": "“凤凰大行动”武器箱",
+        "price": 5.34,
+        "buff_sell": 24.89,
+        "rate_7": 0,
+        "premium": 366.1,
+        "score": 100,
+        "reason": "BUFF (25 CNY) > Steam (5 CNY), 366% premium"
+      },
+      {
+        "name": "幻彩武器箱",
+        "price": 6.59,
+        "buff_sell": 31.0,
+        "rate_7": 0,
+        "premium": 370.41,
+        "score": 100,
+        "reason": "BUFF (31 CNY) > Steam (7 CNY), 370% premium"
+      },
+      {
+        "name": "AK-47 | 一发入魂 (略有磨损)",
+        "price": 60.0,
+        "buff_sell": 318.0,
+        "rate_7": 0,
+        "premium": 430.0,
+        "score": 100,
+        "reason": "BUFF (318 CNY) > Steam (60 CNY), 430% premium"
+      },
+      {
+        "name": "“裂网大行动”武器箱",
+        "price": 5.94,
+        "buff_sell": 26.88,
+        "rate_7": 0,
+        "premium": 352.53,
+        "score": 100,
+        "reason": "BUFF (27 CNY) > Steam (6 CNY), 353% premium"
+      },
+      {
+        "name": "MAC-10 | 霓虹骑士 (久经沙场)",
+        "price": 177.99,
+        "buff_sell": 773.5,
+        "rate_7": 0,
+        "premium": 334.57,
+        "score": 100,
+        "reason": "BUFF (774 CNY) > Steam (178 CNY), 335% premium"
+      },
+      {
+        "name": "AWP | 印花集 (久经沙场)",
+        "price": 58.13,
+        "buff_sell": 290.5,
+        "rate_7": 0,
+        "premium": 399.74,
+        "score": 100,
+        "reason": "BUFF (290 CNY) > Steam (58 CNY), 400% premium"
+      },
+      {
+        "name": "AK-47 | 传承 (战痕累累)",
+        "price": 39.1,
+        "buff_sell": 183.9,
+        "rate_7": 0,
+        "premium": 370.33,
+        "score": 100,
+        "reason": "BUFF (184 CNY) > Steam (39 CNY), 370% premium"
+      },
+      {
+        "name": "M4A1消音版 | 黑莲花 (久经沙场)",
+        "price": 5.01,
+        "buff_sell": 24.0,
+        "rate_7": 0,
+        "premium": 379.04,
         "score": 100,
         "reason": "BUFF (24 CNY) > Steam (5 CNY), 379% premium"
       },
       {
-        "name": "AK-47 | 夜愿 (久经沙场)",
-        "price": 85.9,
-        "buff_sell": 400.0,
+        "name": "“先锋大行动”武器箱",
+        "price": 6.96,
+        "buff_sell": 33.14,
         "rate_7": 0,
-        "premium": 365.66,
+        "premium": 376.15,
         "score": 100,
-        "reason": "BUFF (400 CNY) > Steam (86 CNY), 366% premium"
+        "reason": "BUFF (33 CNY) > Steam (7 CNY), 376% premium"
       },
       {
-        "name": "“凤凰大行动”武器箱",
-        "price": 5.2,
-        "buff_sell": 23.7,
+        "name": "AK-47 | 皇后 (久经沙场)",
+        "price": 135.7,
+        "buff_sell": 664.5,
         "rate_7": 0,
-        "premium": 355.77,
+        "premium": 389.68,
         "score": 100,
-        "reason": "BUFF (24 CNY) > Steam (5 CNY), 356% premium"
+        "reason": "BUFF (664 CNY) > Steam (136 CNY), 390% premium"
       },
       {
-        "name": "M4A4 | 反冲精英 (战痕累累)",
-        "price": 35.47,
-        "buff_sell": 168.98,
+        "name": "AK-47 | 翔鹤 (略有磨损)",
+        "price": 33.31,
+        "buff_sell": 146.0,
         "rate_7": 0,
-        "premium": 376.4,
+        "premium": 338.31,
         "score": 100,
-        "reason": "BUFF (169 CNY) > Steam (35 CNY), 376% premium"
+        "reason": "BUFF (146 CNY) > Steam (33 CNY), 338% premium"
       },
       {
-        "name": "AWP | 印花集 (久经沙场)",
-        "price": 55.92,
-        "buff_sell": 293.0,
+        "name": "MP9 | 星使 (略有磨损)",
+        "price": 88.98,
+        "buff_sell": 440.0,
         "rate_7": 0,
-        "premium": 423.96,
+        "premium": 394.49,
         "score": 100,
-        "reason": "BUFF (293 CNY) > Steam (56 CNY), 424% premium"
+        "reason": "BUFF (440 CNY) > Steam (89 CNY), 394% premium"
       },
       {
-        "name": "AK-47 | 墨岩 (久经沙场)",
-        "price": 5.13,
-        "buff_sell": 26.0,
+        "name": "沙漠之鹰 | 印花集 (久经沙场)",
+        "price": 40.98,
+        "buff_sell": 220.0,
         "rate_7": 0,
-        "premium": 406.82,
+        "premium": 436.85,
         "score": 100,
-        "reason": "BUFF (26 CNY) > Steam (5 CNY), 407% premium"
+        "reason": "BUFF (220 CNY) > Steam (41 CNY), 437% premium"
+      },
+      {
+        "name": "AK-47 | 翔鹤 (久经沙场)",
+        "price": 18.87,
+        "buff_sell": 78.99,
+        "rate_7": 0,
+        "premium": 318.6,
+        "score": 100,
+        "reason": "BUFF (79 CNY) > Steam (19 CNY), 319% premium"
+      },
+      {
+        "name": "AK-47 | 传承 (久经沙场)",
+        "price": 43.37,
+        "buff_sell": 220.0,
+        "rate_7": 0,
+        "premium": 407.26,
+        "score": 100,
+        "reason": "BUFF (220 CNY) > Steam (43 CNY), 407% premium"
+      },
+      {
+        "name": "MP9 | 星使 (战痕累累)",
+        "price": 81.83,
+        "buff_sell": 374.36,
+        "rate_7": 0,
+        "premium": 357.49,
+        "score": 100,
+        "reason": "BUFF (374 CNY) > Steam (82 CNY), 357% premium"
       },
       {
         "name": "音乐盒 | ALRT, 多巴胺冲击",
-        "price": 5.45,
-        "buff_sell": 25.0,
+        "price": 5.54,
+        "buff_sell": 24.0,
         "rate_7": 0,
-        "premium": 358.72,
+        "premium": 333.21,
         "score": 100,
-        "reason": "BUFF (25 CNY) > Steam (5 CNY), 359% premium"
+        "reason": "BUFF (24 CNY) > Steam (6 CNY), 333% premium"
+      },
+      {
+        "name": "AK-47 | 可燃冰 (久经沙场)",
+        "price": 5.93,
+        "buff_sell": 26.0,
+        "rate_7": 0,
+        "premium": 338.45,
+        "score": 100,
+        "reason": "BUFF (26 CNY) > Steam (6 CNY), 338% premium"
+      },
+      {
+        "name": "九头蛇手套（★） | 表面淬火 (久经沙场)",
+        "price": 73.72,
+        "buff_sell": 347.0,
+        "rate_7": 0,
+        "premium": 370.7,
+        "score": 100,
+        "reason": "BUFF (347 CNY) > Steam (74 CNY), 371% premium"
+      },
+      {
+        "name": "冬季攻势武器箱",
+        "price": 13.04,
+        "buff_sell": 59.78,
+        "rate_7": 0,
+        "premium": 358.44,
+        "score": 100,
+        "reason": "BUFF (60 CNY) > Steam (13 CNY), 358% premium"
+      },
+      {
+        "name": "AK-47 | 墨岩 (久经沙场)",
+        "price": 5.38,
+        "buff_sell": 25.97,
+        "rate_7": 0,
+        "premium": 382.71,
+        "score": 100,
+        "reason": "BUFF (26 CNY) > Steam (5 CNY), 383% premium"
+      },
+      {
+        "name": "AK-47 | 翔鹤 (战痕累累)",
+        "price": 9.27,
+        "buff_sell": 42.6,
+        "rate_7": 0,
+        "premium": 359.55,
+        "score": 100,
+        "reason": "BUFF (43 CNY) > Steam (9 CNY), 360% premium"
+      },
+      {
+        "name": "AK-47 | 午夜层压板 (略有磨损)",
+        "price": 8.89,
+        "buff_sell": 40.21,
+        "rate_7": 0,
+        "premium": 352.31,
+        "score": 100,
+        "reason": "BUFF (40 CNY) > Steam (9 CNY), 352% premium"
       }
     ],
     "golden_cross": []
   },
-  "market_updated": "2026-09-27T17:14:06Z"
+  "market_updated": "2026-09-27T23:02:49Z"
 }
