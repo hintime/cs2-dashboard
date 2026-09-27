@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 966.49,
-    "change": -3.35,
-    "change_pct": -3.35,
-    "market_value": 296667202.11,
-    "total_items": 3960,
-    "updated": "2026-09-27T18:00:03+08:00",
+    "latest": 970.32,
+    "change": -2.97,
+    "change_pct": -2.97,
+    "market_value": 297843141.82,
+    "total_items": 3992,
+    "updated": "2026-09-27T20:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3891,8 +3891,8 @@
         "date": "2026-09-27",
         "dateFull": "2026-09-27 18:00",
         "open": 966.49,
-        "close": 966.49,
-        "high": 966.49,
+        "close": 970.32,
+        "high": 970.32,
         "low": 966.49
       }
     ],
@@ -11657,12 +11657,20 @@
         "index": 966.49,
         "change_pct": -3.35,
         "market_value": 296667202.11
+      },
+      {
+        "time": "20:00",
+        "date": "2026-09-27",
+        "timestamp": 1790510403,
+        "index": 970.32,
+        "change_pct": -2.97,
+        "market_value": 297843141.82
       }
     ],
     "selling": {
-      "total_selling": 1330112,
+      "total_selling": 1343958,
       "total_selling_prev": 0,
-      "total_selling_delta": 1330112,
+      "total_selling_delta": 1343958,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11670,7 +11678,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790503203430,
+  "index_updated": 1790510403374,
   "alerts": [
     {
       "name": "Sticker | Ninjas in Pyjamas (Holo) | Stockholm 2021",
@@ -30241,7 +30249,7 @@
     "MP9 | 军队之辉 (崭新出厂)",
     "MP9 | 军队之辉 (略有磨损)"
   ],
-  "updated": "2026-09-27T11:34:25Z",
+  "updated": "2026-09-27T12:04:29Z",
   "steam_market_items": 58,
   "steam_market_recs": {
     "momentum": [],
