@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 23,
+  "total_analyses": 24,
   "lessons": [
     {
       "id": "L-GAP",
@@ -12,7 +12,7 @@
       "action": "因子类结论一律标注\"样本不足\"；维度数据攒到 200 条以上再据此改权重",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 10,
+      "confirmed": 11,
       "last_seen": "2026-09-28"
     },
     {
@@ -23,7 +23,7 @@
       "action": "BUFF 在每个推荐月都赢 ECO，不是批次假象 → ECO 通道降权、名额向 BUFF 倾斜",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 13,
+      "confirmed": 14,
       "last_seen": "2026-09-28"
     },
     {
@@ -34,7 +34,7 @@
       "action": "先不动 真实存世量 的权重，等维度数据攒够 200 条再判",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 13,
+      "confirmed": 14,
       "last_seen": "2026-09-28"
     },
     {
@@ -45,7 +45,7 @@
       "action": "覆盖率不影响收益，不必为它牺牲覆盖面",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 13,
+      "confirmed": 14,
       "last_seen": "2026-09-28"
     },
     {
@@ -56,7 +56,7 @@
       "action": "跨批次比收益必须先固定推荐日；复盘只在同批次内横向比",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 13,
+      "confirmed": 14,
       "last_seen": "2026-09-28"
     },
     {
@@ -67,7 +67,7 @@
       "action": "推荐池向 ¥200+ 区间倾斜",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 13,
+      "confirmed": 14,
       "last_seen": "2026-09-28"
     }
   ],
@@ -153,39 +153,8 @@
       "last_seen": "2026-06-16"
     }
   ],
-  "last_updated": "2026-09-27T23:11:49Z",
+  "last_updated": "2026-09-28T05:14:56Z",
   "analysis_history": [
-    {
-      "seq": 4,
-      "ts": "2026-06-16T02:26:16Z",
-      "overview": {
-        "verdict": "整体表现优秀，涨多跌少",
-        "success_pattern": "强调多平台溢价、流动性稀缺、求购活跃，涨超20%",
-        "failure_pattern": "仅依赖ECO供需比，忽略溢价和流动性，涨幅有限",
-        "confidence_trend": "上升",
-        "market_signal": "多平台溢价和流动性主导上涨，ECO信号需结合溢价"
-      },
-      "scoring_feedback": {
-        "eco_weight_advice": "-20%",
-        "buff_weight_advice": "+20%",
-        "premium_threshold_advice": "多平台溢价>20%为佳",
-        "liquidity_advice": "在售<100件或求售比>100%加分"
-      },
-      "reason_analysis": {
-        "right_reasons": "共同特征：多平台溢价强劲、在售稀少、求购活跃，评分高且AI优选",
-        "wrong_reasons": "共同特征：单一ECO信号，忽略实际溢价不足，评分低且表现持平",
-        "reason_keywords_avoid": "仅ECO信号，供需比高但无溢价，待观察",
-        "reason_keywords_use": "多平台溢价强劲，在售稀少，求购活跃，AI优选"
-      },
-      "prompt_tweak": "推荐理由应强调多平台溢价数值、在售稀少、求购活跃，避免单独使用ECO信号，统一用“多平台信号·溢价强劲”表述",
-      "stats": {
-        "total": 60,
-        "priced": 60,
-        "profitable": 58,
-        "rate": 96.7,
-        "beat": 81.7
-      }
-    },
     {
       "seq": 5,
       "ts": "2026-09-18T08:48:06Z",
@@ -802,6 +771,39 @@
         "priced": 1296,
         "profitable": 817,
         "rate": 63.0
+      }
+    },
+    {
+      "seq": 24,
+      "ts": "2026-09-28T05:14:56Z",
+      "overview": {
+        "verdict": "基准组 1116 条：涨了就算赢 66.0%，平均 +50.96%；跑赢大盘 81.9%（大盘中位 -14.71%）；BUFF 通道 70.9% vs ECO 通道 27.2%",
+        "ai_verdict": "跑赢大盘83.9%，ECO通道表现不佳",
+        "success_pattern": "BUFF通道n=917胜率74.6%，均值+69.98%",
+        "failure_pattern": "ECO通道n=109胜率21.1%，均值-18.18%",
+        "confidence_trend": "下降",
+        "market_signal": "大盘中位-13.42%，推荐抗跌"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "-5%/ECO通道胜率21.1%",
+        "buff_weight_advice": "+5%/BUFF通道胜率74.6%",
+        "flow_weight_advice": "不变/区分度不足3%",
+        "yy_weight_advice": "+2%/悠悠溢价门槛有效",
+        "premium_threshold_advice": "只推BUFF溢价<0的，n=52但均值-1.96%，暂不加",
+        "liquidity_advice": "覆盖率<0.7的排除，占比n见统计"
+      },
+      "reason_analysis": {
+        "right_reasons": "BUFF通道n=917胜率74.6%，均值+69.98%",
+        "wrong_reasons": "ECO通道n=109胜率21.1%，均值-18.18%",
+        "reason_keywords_use": "ECO求购单、ECO维度分",
+        "reason_keywords_avoid": "真实存世量、7日供给变化、BUFF在售单"
+      },
+      "prompt_tweak": "ECO求购单与维度分有效，剔除真实存世量、7日供给变化、BUFF在售单影响。基准组胜率66.0%，均值50.96%，优化策略需聚焦有效维度。",
+      "stats": {
+        "total": 1303,
+        "priced": 1296,
+        "profitable": 829,
+        "rate": 64.0
       }
     }
   ],
