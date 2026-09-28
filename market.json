@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 936.25,
-    "change": -6.37,
-    "change_pct": -6.37,
-    "market_value": 287386026.9,
-    "total_items": 3904,
-    "updated": "2026-09-28T14:00:02+08:00",
+    "latest": 970.0,
+    "change": -3.0,
+    "change_pct": -3.0,
+    "market_value": 297744191.51,
+    "total_items": 3954,
+    "updated": "2026-09-28T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3931,8 +3931,8 @@
         "date": "2026-09-28",
         "dateFull": "2026-09-28 14:00",
         "open": 936.25,
-        "close": 936.25,
-        "high": 936.25,
+        "close": 970.0,
+        "high": 970.0,
         "low": 936.25
       }
     ],
@@ -11777,12 +11777,20 @@
         "index": 936.25,
         "change_pct": -6.37,
         "market_value": 287386026.9
+      },
+      {
+        "time": "16:00",
+        "date": "2026-09-28",
+        "timestamp": 1790582403,
+        "index": 970.0,
+        "change_pct": -3.0,
+        "market_value": 297744191.51
       }
     ],
     "selling": {
-      "total_selling": 1313773,
+      "total_selling": 1321538,
       "total_selling_prev": 0,
-      "total_selling_delta": 1313773,
+      "total_selling_delta": 1321538,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11790,7 +11798,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790575202996,
+  "index_updated": 1790582403540,
   "alerts": [
     {
       "name": "Sticker | Natus Vincere (Holo) | Shanghai 2024",
@@ -30357,7 +30365,7 @@
     "MP9 | 干旱季节 (久经沙场)",
     "MP9 | 干旱季节 (略有磨损)"
   ],
-  "updated": "2026-09-28T07:34:28Z",
+  "updated": "2026-09-28T08:04:30Z",
   "steam_market_items": 16,
   "steam_market_recs": {
     "momentum": [],
