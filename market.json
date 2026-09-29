@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 972.79,
-    "change": -2.72,
-    "change_pct": -2.72,
-    "market_value": 298602811.15,
-    "total_items": 4020,
-    "updated": "2026-09-29T14:00:03+08:00",
+    "latest": 973.94,
+    "change": -2.61,
+    "change_pct": -2.61,
+    "market_value": 298955087.01,
+    "total_items": 4018,
+    "updated": "2026-09-29T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -3979,8 +3979,8 @@
         "date": "2026-09-29",
         "dateFull": "2026-09-29 14:00",
         "open": 972.79,
-        "close": 972.79,
-        "high": 972.79,
+        "close": 973.94,
+        "high": 973.94,
         "low": 972.79
       }
     ],
@@ -11921,12 +11921,20 @@
         "index": 972.79,
         "change_pct": -2.72,
         "market_value": 298602811.15
+      },
+      {
+        "time": "16:00",
+        "date": "2026-09-29",
+        "timestamp": 1790668803,
+        "index": 973.94,
+        "change_pct": -2.61,
+        "market_value": 298955087.01
       }
     ],
     "selling": {
-      "total_selling": 1353283,
+      "total_selling": 1352455,
       "total_selling_prev": 0,
-      "total_selling_delta": 1353283,
+      "total_selling_delta": 1352455,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -11934,7 +11942,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790661603472,
+  "index_updated": 1790668803415,
   "alerts": [
     {
       "name": "Sticker | GamerLegion (Holo) | Budapest 2025",
@@ -30509,7 +30517,7 @@
     "MP9 | 富士山 (崭新出厂)",
     "MP9 | 富士山 (略有磨损)"
   ],
-  "updated": "2026-09-29T07:34:36Z",
+  "updated": "2026-09-29T08:04:36Z",
   "steam_market_items": 21,
   "steam_market_recs": {
     "momentum": [],
