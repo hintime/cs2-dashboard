@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-29 07:13",
+  "generated": "2026-09-29 13:05",
   "window": {
     "from": "2026-06-28",
     "to": "2026-09-29"
@@ -7,40 +7,9 @@
   "method": "同批对比：T-1 与 T+N 都出现的 buff 渠道物品（≥¥5）算涨跌中位数；同窗口中位 vs 非事件期同期基准；T±3 天容差",
   "data_quality": "⚠ 7 月价格更新稀疏，部分日期为重复落库（两日价格几乎全同）→ 该事件 有效=false 剔除；9/20 起才是真实高频数据，当前有效样本少，结论仅供弱先验",
   "note": "样本量=有效事件数（每事件内还有数千物品的同批样本）；n<5 时统计意义很弱",
-  "n_events": 14,
+  "n_events": 13,
   "n_valid_events": 5,
   "events": [
-    {
-      "date": "2026-07-01",
-      "title": "Team Falcons' Finale",
-      "cat": "esports",
-      "base_day": "2026-06-30",
-      "d3": {
-        "day": "2026-07-04",
-        "n": 4480,
-        "med": -1.09,
-        "up": 28.5,
-        "dn3": 30.6,
-        "stale": false
-      },
-      "d7": {
-        "day": "2026-07-08",
-        "n": 4427,
-        "med": -2.31,
-        "up": 23.8,
-        "dn3": 44.5,
-        "stale": false
-      },
-      "d14": {
-        "day": "2026-07-17",
-        "n": 4387,
-        "med": -2.25,
-        "up": 24.9,
-        "dn3": 44.3,
-        "stale": false
-      },
-      "有效": true
-    },
     {
       "date": "2026-07-03",
       "title": "The Jackass Sticker Capsule",
@@ -334,12 +303,12 @@
         "stale": false
       },
       "d7": {
-        "day": null,
-        "n": 0,
-        "med": null,
-        "up": null,
-        "dn3": null,
-        "stale": null
+        "day": "2026-09-29",
+        "n": 4629,
+        "med": -1.07,
+        "up": 30.2,
+        "dn3": 32.5,
+        "stale": false
       },
       "d14": {
         "day": null,
@@ -349,7 +318,7 @@
         "dn3": null,
         "stale": null
       },
-      "有效": false
+      "有效": true
     },
     {
       "date": "2026-09-23",
@@ -423,7 +392,7 @@
         "n": 4666,
         "med": -0.18,
         "up": 36.3,
-        "dn3": 21.9,
+        "dn3": 22.0,
         "stale": false
       },
       "d7": {
@@ -447,45 +416,43 @@
   ],
   "summary": {
     "n_events": 5,
-    "n_pool": 4449,
+    "n_pool": 4452,
     "ret_3d": {
-      "event_mean": -0.55,
+      "event_mean": -0.45,
       "baseline_mean": -4.43,
-      "excess": 3.88,
+      "excess": 3.98,
       "n_base": 9,
       "n_events": 5,
-      "up_pct": 32.0,
-      "dn3_pct": 18.06
+      "up_pct": 32.42,
+      "dn3_pct": 16.92
     },
     "ret_7d": {
-      "event_mean": -1.03,
+      "event_mean": -0.79,
       "baseline_mean": -7.06,
-      "excess": 6.03,
+      "excess": 6.27,
       "n_base": 11,
       "n_events": 5,
-      "up_pct": 30.04,
-      "dn3_pct": 24.0
+      "up_pct": 31.32,
+      "dn3_pct": 21.6
     },
     "ret_14d": {
-      "event_mean": -1.73,
-      "baseline_mean": -11.06,
-      "excess": 9.33,
-      "n_base": 9,
-      "n_events": 5,
-      "up_pct": 28.74,
-      "dn3_pct": 29.18
+      "event_mean": -1.6,
+      "baseline_mean": -10.29,
+      "excess": 8.69,
+      "n_base": 10,
+      "n_events": 4,
+      "up_pct": 29.7,
+      "dn3_pct": 25.4
     },
-    "verdict": "历史上 5 个有效公告事件后 7 天，同批物品中位涨跌 -1.03%，同期基准 -7.06%，超额 +6.03%（上涨物品占比 30.0%）→ 历史方向性支撑：偏弱",
+    "verdict": "历史上 5 个有效公告事件后 7 天，同批物品中位涨跌 -0.79%，同期基准 -7.06%，超额 +6.27%（上涨物品占比 31.3%）→ 历史方向性支撑：偏弱",
     "by_cat": {
       "major": {
-        "n": 2,
-        "med7": -0.61,
-        "up7": 28.5
+        "n": 3,
+        "med7": -1.07,
+        "up7": 29.07
       },
       "esports": {
-        "n": 1,
-        "med7": -2.31,
-        "up7": 23.8
+        "n": 0
       },
       "routine": {
         "n": 2,
@@ -497,8 +464,8 @@
       },
       "content": {
         "n": 3,
-        "med7": -1.2,
-        "up7": 26.93
+        "med7": -1.07,
+        "up7": 29.07
       }
     }
   }
