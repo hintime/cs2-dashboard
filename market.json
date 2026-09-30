@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 960.48,
-    "change": -3.95,
-    "change_pct": -3.95,
-    "market_value": 294822681.53,
-    "total_items": 3998,
-    "updated": "2026-10-01T04:00:03+08:00",
+    "latest": 960.2,
+    "change": -3.98,
+    "change_pct": -3.98,
+    "market_value": 294736142.72,
+    "total_items": 3979,
+    "updated": "2026-10-01T06:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4054,6 +4054,14 @@
         "close": 960.48,
         "high": 960.48,
         "low": 952.6
+      },
+      {
+        "date": "2026-10-01",
+        "dateFull": "2026-10-01 06:00",
+        "open": 960.2,
+        "close": 960.2,
+        "high": 960.2,
+        "low": 960.2
       }
     ],
     "volBar": [],
@@ -12145,12 +12153,20 @@
         "index": 960.48,
         "change_pct": -3.95,
         "market_value": 294822681.53
+      },
+      {
+        "time": "06:00",
+        "date": "2026-10-01",
+        "timestamp": 1790805603,
+        "index": 960.2,
+        "change_pct": -3.98,
+        "market_value": 294736142.72
       }
     ],
     "selling": {
-      "total_selling": 1384394,
+      "total_selling": 1404535,
       "total_selling_prev": 0,
-      "total_selling_delta": 1384394,
+      "total_selling_delta": 1404535,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12158,60 +12174,247 @@
       "cold": []
     }
   },
-  "index_updated": 1790798403038,
+  "index_updated": 1790805603750,
   "alerts": [
     {
-      "name": "Sticker | Evil Geniuses (Holo) | Stockholm 2021",
-      "price": 24.0,
-      "rate_1": 4.35,
-      "rate_7": 0,
-      "buff_sell": 498,
-      "buff_buy": 235,
-      "buff_price": 24.0,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Music Kit | DRYDEN, Feel The Power",
-      "price": 9.39,
-      "rate_1": -1.05,
-      "rate_7": 0,
-      "buff_sell": 464,
-      "buff_buy": 14,
-      "buff_price": 9.39,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Lt. Commander Ricksaw | NSWC SEAL",
-      "price": 101.88,
-      "rate_1": 0.49,
+      "name": "UMP-45 | Blaze (Factory New)",
+      "price": 110.16,
+      "rate_1": 6.74,
       "rate_7": -3.4,
-      "buff_sell": 930,
-      "buff_buy": 62,
-      "buff_price": 101.88,
+      "buff_sell": 187,
+      "buff_buy": 16,
+      "buff_price": 110.16,
       "steam_buy": 0,
       "img": ""
     },
     {
       "name": "M4A4 | Spider Lily (Minimal Wear)",
-      "price": 84.3,
-      "rate_1": 0.36,
-      "rate_7": 4.07,
-      "buff_sell": 553,
-      "buff_buy": 29,
-      "buff_price": 84.3,
+      "price": 79.9,
+      "rate_1": -4.88,
+      "rate_7": -1.36,
+      "buff_sell": 552,
+      "buff_buy": 30,
+      "buff_price": 79.9,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Sticker | HEROIC (Holo) | Shanghai 2024",
+      "price": 16.42,
+      "rate_1": -2.26,
+      "rate_7": 0,
+      "buff_sell": 104,
+      "buff_buy": 248,
+      "buff_price": 16.42,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Sticker | Evil Geniuses (Holo) | Stockholm 2021",
+      "price": 23.5,
+      "rate_1": 2.17,
+      "rate_7": 0,
+      "buff_sell": 508,
+      "buff_buy": 233,
+      "buff_price": 23.5,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Lt. Commander Ricksaw | NSWC SEAL",
+      "price": 99.5,
+      "rate_1": -1.85,
+      "rate_7": -3.5,
+      "buff_sell": 973,
+      "buff_buy": 72,
+      "buff_price": 99.5,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "M4A4 | 龍王 (Dragon King) (Minimal Wear)",
+      "price": 142.29,
+      "rate_1": -1.04,
+      "rate_7": 0.5,
+      "buff_sell": 361,
+      "buff_buy": 28,
+      "buff_price": 142.29,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Prof. Shahmat | Elite Crew",
+      "price": 39.39,
+      "rate_1": 1.0,
+      "rate_7": 3.66,
+      "buff_sell": 792,
+      "buff_buy": 58,
+      "buff_price": 39.39,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Sticker | Natus Vincere (Holo) | Shanghai 2024",
+      "price": 15.78,
+      "rate_1": -0.63,
+      "rate_7": 0,
+      "buff_sell": 148,
+      "buff_buy": 179,
+      "buff_price": 15.78,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Sticker | FaZe Clan (Holo) | Shanghai 2024",
+      "price": 20.93,
+      "rate_1": -0.52,
+      "rate_7": 0,
+      "buff_sell": 161,
+      "buff_buy": 237,
+      "buff_price": 20.93,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Dual Berettas | Heist (Factory New)",
+      "price": 13.92,
+      "rate_1": -0.5,
+      "rate_7": -8.5,
+      "buff_sell": 172,
+      "buff_buy": 82,
+      "buff_price": 13.92,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Music Kit | DRYDEN, Feel The Power",
+      "price": 9.53,
+      "rate_1": 0.42,
+      "rate_7": 0,
+      "buff_sell": 501,
+      "buff_buy": 17,
+      "buff_price": 9.53,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "★ Moto Gloves | 3rd Commando Company (Field-Tested)",
+      "price": 244.9,
+      "rate_1": -0.4,
+      "rate_7": 1.9,
+      "buff_sell": 203,
+      "buff_buy": 18,
+      "buff_price": 244.9,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Sticker | GamerLegion (Holo) | Budapest 2025",
+      "price": 6.18,
+      "rate_1": -0.32,
+      "rate_7": 0,
+      "buff_sell": 120,
+      "buff_buy": 70,
+      "buff_price": 6.18,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Sticker | fnatic (Holo) | Budapest 2025",
+      "price": 6.28,
+      "rate_1": -0.32,
+      "rate_7": 0,
+      "buff_sell": 116,
+      "buff_buy": 123,
+      "buff_price": 6.28,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "'Blueberries' Buckshot | NSWC SEAL",
+      "price": 74.8,
+      "rate_1": -0.27,
+      "rate_7": -2.8,
+      "buff_sell": 180,
+      "buff_buy": 13,
+      "buff_price": 74.8,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Blackwolf | Sabre",
+      "price": 39.34,
+      "rate_1": -0.1,
+      "rate_7": -2.0,
+      "buff_sell": 650,
+      "buff_buy": 28,
+      "buff_price": 39.34,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Sticker | RED Canids (Holo) | Budapest 2025",
+      "price": 9.8,
+      "rate_1": -0.1,
+      "rate_7": 0,
+      "buff_sell": 103,
+      "buff_buy": 56,
+      "buff_price": 9.8,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Sticker | Natus Vincere (Holo) | Stockholm 2021",
+      "price": 13.22,
+      "rate_1": -0.08,
+      "rate_7": 0,
+      "buff_sell": 420,
+      "buff_buy": 560,
+      "buff_price": 13.22,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Galil AR | Vandal (Factory New)",
+      "price": 64.98,
+      "rate_1": -0.03,
+      "rate_7": -13.9,
+      "buff_sell": 82,
+      "buff_buy": 10,
+      "buff_price": 64.98,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "Rezan The Ready | Sabre",
+      "price": 37.69,
+      "rate_1": -0.03,
+      "rate_7": -4.0,
+      "buff_sell": 933,
+      "buff_buy": 46,
+      "buff_price": 37.69,
+      "steam_buy": 0,
+      "img": ""
+    },
+    {
+      "name": "M4A4 | Polysoup (Minimal Wear)",
+      "price": 79.35,
+      "rate_1": 0.01,
+      "rate_7": -7.9,
+      "buff_sell": 175,
+      "buff_buy": 7,
+      "buff_price": 79.35,
       "steam_buy": 0,
       "img": ""
     },
     {
       "name": "M4A1-S | Moss Quartz (Factory New)",
-      "price": 497.91,
-      "rate_1": 0.0,
+      "price": 497.9,
+      "rate_1": -0.0,
       "rate_7": -7.2,
-      "buff_sell": 127,
-      "buff_buy": 6,
-      "buff_price": 497.91,
+      "buff_sell": 128,
+      "buff_buy": 5,
+      "buff_price": 497.9,
       "steam_buy": 0,
       "img": ""
     },
@@ -12219,8 +12422,8 @@
       "name": "FAMAS | Commemoration (Factory New)",
       "price": 348.98,
       "rate_1": 0.0,
-      "rate_7": -7.2,
-      "buff_sell": 178,
+      "rate_7": -7.9,
+      "buff_sell": 179,
       "buff_buy": 14,
       "buff_price": 348.98,
       "steam_buy": 0,
@@ -12231,20 +12434,9 @@
       "price": 584.0,
       "rate_1": 0.0,
       "rate_7": 4.9,
-      "buff_sell": 52,
-      "buff_buy": 22,
+      "buff_sell": 51,
+      "buff_buy": 21,
       "buff_price": 584.0,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "UMP-45 | Blaze (Factory New)",
-      "price": 103.2,
-      "rate_1": 0.0,
-      "rate_7": -3.5,
-      "buff_sell": 189,
-      "buff_buy": 14,
-      "buff_price": 103.2,
       "steam_buy": 0,
       "img": ""
     },
@@ -12253,20 +12445,9 @@
       "price": 183.0,
       "rate_1": 0.0,
       "rate_7": -8.5,
-      "buff_sell": 352,
-      "buff_buy": 21,
+      "buff_sell": 351,
+      "buff_buy": 19,
       "buff_price": 183.0,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "'Blueberries' Buckshot | NSWC SEAL",
-      "price": 75.0,
-      "rate_1": 0.0,
-      "rate_7": -2.4,
-      "buff_sell": 177,
-      "buff_buy": 22,
-      "buff_price": 75.0,
       "steam_buy": 0,
       "img": ""
     },
@@ -12274,120 +12455,10 @@
       "name": "M4A4 | Urban DDPAT (Factory New)",
       "price": 134.5,
       "rate_1": 0.0,
-      "rate_7": -16.6,
-      "buff_sell": 107,
+      "rate_7": -16.9,
+      "buff_sell": 106,
       "buff_buy": 3,
       "buff_price": 134.5,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "M4A4 | Polysoup (Minimal Wear)",
-      "price": 79.34,
-      "rate_1": 0.0,
-      "rate_7": -7.9,
-      "buff_sell": 179,
-      "buff_buy": 28,
-      "buff_price": 79.34,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "★ Moto Gloves | 3rd Commando Company (Field-Tested)",
-      "price": 245.87,
-      "rate_1": -0.0,
-      "rate_7": 2.0,
-      "buff_sell": 200,
-      "buff_buy": 21,
-      "buff_price": 245.87,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Galil AR | Vandal (Factory New)",
-      "price": 65.0,
-      "rate_1": 0.0,
-      "rate_7": -13.0,
-      "buff_sell": 81,
-      "buff_buy": 11,
-      "buff_price": 65.0,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Prof. Shahmat | Elite Crew",
-      "price": 39.0,
-      "rate_1": 0.0,
-      "rate_7": 2.63,
-      "buff_sell": 798,
-      "buff_buy": 62,
-      "buff_price": 39.0,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Sticker | FaZe Clan (Holo) | Shanghai 2024",
-      "price": 21.04,
-      "rate_1": 0.0,
-      "rate_7": 0,
-      "buff_sell": 160,
-      "buff_buy": 237,
-      "buff_price": 21.04,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Sticker | Natus Vincere (Holo) | Shanghai 2024",
-      "price": 15.88,
-      "rate_1": 0.0,
-      "rate_7": 0,
-      "buff_sell": 148,
-      "buff_buy": 179,
-      "buff_price": 15.88,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "M4A4 | 龍王 (Dragon King) (Minimal Wear)",
-      "price": 143.79,
-      "rate_1": 0.0,
-      "rate_7": 0,
-      "buff_sell": 355,
-      "buff_buy": 12,
-      "buff_price": 143.79,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Sticker | HEROIC (Holo) | Shanghai 2024",
-      "price": 16.8,
-      "rate_1": 0.0,
-      "rate_7": 0,
-      "buff_sell": 104,
-      "buff_buy": 248,
-      "buff_price": 16.8,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Rezan The Ready | Sabre",
-      "price": 37.7,
-      "rate_1": 0.0,
-      "rate_7": -4.0,
-      "buff_sell": 935,
-      "buff_buy": 44,
-      "buff_price": 37.7,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Blackwolf | Sabre",
-      "price": 39.38,
-      "rate_1": 0.0,
-      "rate_7": -2.3,
-      "buff_sell": 648,
-      "buff_buy": 30,
-      "buff_price": 39.38,
       "steam_buy": 0,
       "img": ""
     },
@@ -12399,50 +12470,6 @@
       "buff_sell": 142,
       "buff_buy": 149,
       "buff_price": 19.66,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Sticker | GamerLegion (Holo) | Budapest 2025",
-      "price": 6.2,
-      "rate_1": 0.0,
-      "rate_7": 0,
-      "buff_sell": 118,
-      "buff_buy": 70,
-      "buff_price": 6.2,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Sticker | Natus Vincere (Holo) | Stockholm 2021",
-      "price": 13.23,
-      "rate_1": 0.0,
-      "rate_7": 0,
-      "buff_sell": 423,
-      "buff_buy": 310,
-      "buff_price": 13.23,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Sticker | fnatic (Holo) | Budapest 2025",
-      "price": 6.3,
-      "rate_1": 0.0,
-      "rate_7": 0,
-      "buff_sell": 113,
-      "buff_buy": 128,
-      "buff_price": 6.3,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Dual Berettas | Heist (Factory New)",
-      "price": 13.99,
-      "rate_1": 0.0,
-      "rate_7": -7.8,
-      "buff_sell": 175,
-      "buff_buy": 82,
-      "buff_price": 13.99,
       "steam_buy": 0,
       "img": ""
     },
@@ -12462,20 +12489,9 @@
       "price": 10.9,
       "rate_1": 0.0,
       "rate_7": 0,
-      "buff_sell": 436,
-      "buff_buy": 213,
+      "buff_sell": 434,
+      "buff_buy": 212,
       "buff_price": 10.9,
-      "steam_buy": 0,
-      "img": ""
-    },
-    {
-      "name": "Sticker | RED Canids (Holo) | Budapest 2025",
-      "price": 9.81,
-      "rate_1": 0.0,
-      "rate_7": 0,
-      "buff_sell": 101,
-      "buff_buy": 56,
-      "buff_price": 9.81,
       "steam_buy": 0,
       "img": ""
     },
@@ -12485,13 +12501,13 @@
       "rate_1": 0.0,
       "rate_7": 0,
       "buff_sell": 95,
-      "buff_buy": 70,
+      "buff_buy": 66,
       "buff_price": 5.65,
       "steam_buy": 0,
       "img": ""
     }
   ],
-  "alerts_updated": "2026-09-30T16:00:40Z",
+  "alerts_updated": "2026-09-30T22:00:40Z",
   "recommendations": {
     "all": [
       {
@@ -30730,7 +30746,7 @@
     "MP9 | 富士山 (久经沙场)",
     "MP9 | 富士山 (崭新出厂)"
   ],
-  "updated": "2026-09-30T21:35:00Z",
+  "updated": "2026-09-30T22:06:59Z",
   "steam_market_items": 74,
   "steam_market_recs": {
     "momentum": [
