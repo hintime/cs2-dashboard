@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 960.15,
-    "change": -3.98,
-    "change_pct": -3.98,
-    "market_value": 294723522.98,
-    "total_items": 3991,
-    "updated": "2026-09-30T08:00:02+08:00",
+    "latest": 961.32,
+    "change": -3.87,
+    "change_pct": -3.87,
+    "market_value": 295081290.06,
+    "total_items": 3988,
+    "updated": "2026-09-30T10:00:02+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4014,6 +4014,14 @@
         "close": 960.15,
         "high": 965.57,
         "low": 960.15
+      },
+      {
+        "date": "2026-09-30",
+        "dateFull": "2026-09-30 10:00",
+        "open": 961.32,
+        "close": 961.32,
+        "high": 961.32,
+        "low": 961.32
       }
     ],
     "volBar": [],
@@ -12025,12 +12033,20 @@
         "index": 960.15,
         "change_pct": -3.98,
         "market_value": 294723522.98
+      },
+      {
+        "time": "10:00",
+        "date": "2026-09-30",
+        "timestamp": 1790733602,
+        "index": 961.32,
+        "change_pct": -3.87,
+        "market_value": 295081290.06
       }
     ],
     "selling": {
-      "total_selling": 1365565,
+      "total_selling": 1370260,
       "total_selling_prev": 0,
-      "total_selling_delta": 1365565,
+      "total_selling_delta": 1370260,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12038,7 +12054,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790726402865,
+  "index_updated": 1790733602944,
   "alerts": [
     {
       "name": "Sticker | HEROIC (Holo) | Shanghai 2024",
@@ -30612,7 +30628,7 @@
     "MP9 | 干旱季节 (略有磨损)",
     "MP9 | 彩绘玻璃 (久经沙场)"
   ],
-  "updated": "2026-09-30T01:34:42Z",
+  "updated": "2026-09-30T02:04:42Z",
   "steam_market_items": 61,
   "steam_market_recs": {
     "momentum": [],
