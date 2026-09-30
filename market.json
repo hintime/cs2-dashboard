@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 945.27,
-    "change": -5.47,
-    "change_pct": -5.47,
-    "market_value": 290155753.28,
-    "total_items": 3959,
-    "updated": "2026-09-30T12:00:03+08:00",
+    "latest": 962.83,
+    "change": -3.72,
+    "change_pct": -3.72,
+    "market_value": 295543451.68,
+    "total_items": 3999,
+    "updated": "2026-09-30T14:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4022,6 +4022,14 @@
         "close": 945.27,
         "high": 961.32,
         "low": 945.27
+      },
+      {
+        "date": "2026-09-30",
+        "dateFull": "2026-09-30 14:00",
+        "open": 962.83,
+        "close": 962.83,
+        "high": 962.83,
+        "low": 962.83
       }
     ],
     "volBar": [],
@@ -12049,12 +12057,20 @@
         "index": 945.27,
         "change_pct": -5.47,
         "market_value": 290155753.28
+      },
+      {
+        "time": "14:00",
+        "date": "2026-09-30",
+        "timestamp": 1790748003,
+        "index": 962.83,
+        "change_pct": -3.72,
+        "market_value": 295543451.68
       }
     ],
     "selling": {
-      "total_selling": 1358747,
+      "total_selling": 1380138,
       "total_selling_prev": 0,
-      "total_selling_delta": 1358747,
+      "total_selling_delta": 1380138,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12062,7 +12078,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790740803770,
+  "index_updated": 1790748003524,
   "alerts": [
     {
       "name": "Sticker | Evil Geniuses (Holo) | Stockholm 2021",
@@ -30638,7 +30654,7 @@
     "MP9 | 彩绘玻璃 (略有磨损)",
     "MP9 | 星使 (久经沙场)"
   ],
-  "updated": "2026-09-30T05:34:50Z",
+  "updated": "2026-09-30T06:04:45Z",
   "steam_market_items": 47,
   "steam_market_recs": {
     "momentum": [],
