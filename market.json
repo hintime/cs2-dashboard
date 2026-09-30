@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 952.6,
-    "change": -4.74,
-    "change_pct": -4.74,
-    "market_value": 292405495.75,
+    "latest": 960.48,
+    "change": -3.95,
+    "change_pct": -3.95,
+    "market_value": 294822681.53,
     "total_items": 3998,
-    "updated": "2026-10-01T02:00:03+08:00",
+    "updated": "2026-10-01T04:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4051,8 +4051,8 @@
         "date": "2026-10-01",
         "dateFull": "2026-10-01 02:00",
         "open": 952.6,
-        "close": 952.6,
-        "high": 952.6,
+        "close": 960.48,
+        "high": 960.48,
         "low": 952.6
       }
     ],
@@ -12137,12 +12137,20 @@
         "index": 952.6,
         "change_pct": -4.74,
         "market_value": 292405495.75
+      },
+      {
+        "time": "04:00",
+        "date": "2026-10-01",
+        "timestamp": 1790798402,
+        "index": 960.48,
+        "change_pct": -3.95,
+        "market_value": 294822681.53
       }
     ],
     "selling": {
-      "total_selling": 1414800,
+      "total_selling": 1384394,
       "total_selling_prev": 0,
-      "total_selling_delta": 1414800,
+      "total_selling_delta": 1384394,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12150,7 +12158,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790791203596,
+  "index_updated": 1790798403038,
   "alerts": [
     {
       "name": "Sticker | Evil Geniuses (Holo) | Stockholm 2021",
@@ -30722,7 +30730,7 @@
     "MP9 | 富士山 (久经沙场)",
     "MP9 | 富士山 (崭新出厂)"
   ],
-  "updated": "2026-09-30T19:34:54Z",
+  "updated": "2026-09-30T20:04:53Z",
   "steam_market_items": 74,
   "steam_market_recs": {
     "momentum": [
