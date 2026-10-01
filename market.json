@@ -30790,7 +30790,7 @@
     "MP9 | 沙漠虚线 (崭新出厂)"
   ],
   "updated": "2026-10-01T04:38:01Z",
-  "steam_market_items": 76,
+  "steam_market_items": 46,
   "steam_market_recs": {
     "momentum": [
       {
@@ -30800,307 +30800,308 @@
         "rate_1": 0.87,
         "score": 31.54,
         "reason": "7-day +15.8%, trend up (1-day +0.9%)"
-      },
-      {
-        "name": "AWP | 镀铬大炮 (久经沙场)",
-        "price": 38.65,
-        "rate_7": 7.24,
-        "rate_1": 10.43,
-        "score": 14.48,
-        "reason": "7-day +7.2%, trend up (1-day +10.4%)"
-      },
-      {
-        "name": "AK-47 | 灼心怒焰 (久经沙场)",
-        "price": 6.26,
-        "rate_7": 5.92,
-        "rate_1": 4.16,
-        "score": 11.84,
-        "reason": "7-day +5.9%, trend up (1-day +4.2%)"
-      },
-      {
-        "name": "AK-47 | 可燃冰 (久经沙场)",
-        "price": 5.69,
-        "rate_7": 5.76,
-        "rate_1": 5.96,
-        "score": 11.52,
-        "reason": "7-day +5.8%, trend up (1-day +6.0%)"
       }
     ],
-    "oversold": [],
-    "scarce": [],
-    "undervalued": [
+    "oversold": [
       {
         "name": "“突围大行动”武器箱",
-        "price": 10.55,
-        "buff_sell": 49.3,
-        "rate_7": -3.74,
-        "premium": 367.3,
-        "score": 100,
-        "reason": "BUFF (49 CNY) > Steam (11 CNY), 367% premium"
+        "price": 9.33,
+        "rate_7": -14.87,
+        "sell_listings": 20274,
+        "score": 22.305,
+        "reason": "7-day -14.9% drop, but 20274 listings suggest demand"
       },
       {
         "name": "手套武器箱",
-        "price": 13.8,
-        "buff_sell": 63.94,
-        "rate_7": -4.3,
-        "premium": 363.33,
+        "price": 12.61,
+        "rate_7": -12.55,
+        "sell_listings": 17903,
+        "score": 18.825000000000003,
+        "reason": "7-day -12.6% drop, but 17903 listings suggest demand"
+      }
+    ],
+    "scarce": [
+      {
+        "name": "USP消音版 | 黑色魅影 (久经沙场)",
+        "price": 136.32,
+        "sell_listings": 44,
+        "score": 56,
+        "reason": "Only 44 listings, high scarcity (price=136 CNY)"
+      }
+    ],
+    "undervalued": [
+      {
+        "name": "手套武器箱",
+        "price": 12.61,
+        "buff_sell": 64.19,
+        "rate_7": -12.55,
+        "premium": 409.04,
         "score": 100,
-        "reason": "BUFF (64 CNY) > Steam (14 CNY), 363% premium"
+        "reason": "BUFF (64 CNY) > Steam (13 CNY), 409% premium"
       },
       {
-        "name": "2 号印花胶囊",
-        "price": 16.1,
-        "buff_sell": 70.0,
-        "rate_7": 0,
-        "premium": 334.78,
+        "name": "“突围大行动”武器箱",
+        "price": 9.33,
+        "buff_sell": 49.1,
+        "rate_7": -14.87,
+        "premium": 426.26,
         "score": 100,
-        "reason": "BUFF (70 CNY) > Steam (16 CNY), 335% premium"
-      },
-      {
-        "name": "“凤凰大行动”武器箱",
-        "price": 5.18,
-        "buff_sell": 24.39,
-        "rate_7": -1.52,
-        "premium": 370.85,
-        "score": 100,
-        "reason": "BUFF (24 CNY) > Steam (5 CNY), 371% premium"
-      },
-      {
-        "name": "MP9 | 星使 (略有磨损)",
-        "price": 95.0,
-        "buff_sell": 434.11,
-        "rate_7": 0,
-        "premium": 356.96,
-        "score": 100,
-        "reason": "BUFF (434 CNY) > Steam (95 CNY), 357% premium"
+        "reason": "BUFF (49 CNY) > Steam (9 CNY), 426% premium"
       },
       {
         "name": "光谱武器箱",
-        "price": 5.0,
-        "buff_sell": 23.34,
+        "price": 5.03,
+        "buff_sell": 23.32,
         "rate_7": 0,
-        "premium": 366.8,
+        "premium": 363.62,
         "score": 100,
-        "reason": "BUFF (23 CNY) > Steam (5 CNY), 367% premium"
+        "reason": "BUFF (23 CNY) > Steam (5 CNY), 364% premium"
       },
       {
-        "name": "幻彩 2 号武器箱",
-        "price": 5.2,
-        "buff_sell": 24.96,
-        "rate_7": 0.58,
-        "premium": 380.0,
+        "name": "幻彩武器箱",
+        "price": 6.83,
+        "buff_sell": 31.8,
+        "rate_7": 4.12,
+        "premium": 365.59,
         "score": 100,
-        "reason": "BUFF (25 CNY) > Steam (5 CNY), 380% premium"
+        "reason": "BUFF (32 CNY) > Steam (7 CNY), 366% premium"
+      },
+      {
+        "name": "“凤凰大行动”武器箱",
+        "price": 5.23,
+        "buff_sell": 23.0,
+        "rate_7": -0.57,
+        "premium": 339.77,
+        "score": 100,
+        "reason": "BUFF (23 CNY) > Steam (5 CNY), 340% premium"
       },
       {
         "name": "AWP | 印花集 (久经沙场)",
-        "price": 59.93,
-        "buff_sell": 290.0,
+        "price": 57.99,
+        "buff_sell": 289.98,
         "rate_7": 0,
-        "premium": 383.9,
+        "premium": 400.05,
         "score": 100,
-        "reason": "BUFF (290 CNY) > Steam (60 CNY), 384% premium"
+        "reason": "BUFF (290 CNY) > Steam (58 CNY), 400% premium"
       },
       {
-        "name": "“裂网大行动”武器箱",
-        "price": 5.84,
-        "buff_sell": 26.57,
-        "rate_7": 7.95,
-        "premium": 354.97,
+        "name": "“狂牙大行动”武器箱",
+        "price": 8.37,
+        "buff_sell": 38.59,
+        "rate_7": 4.89,
+        "premium": 361.05,
         "score": 100,
-        "reason": "BUFF (27 CNY) > Steam (6 CNY), 355% premium"
+        "reason": "BUFF (39 CNY) > Steam (8 CNY), 361% premium"
+      },
+      {
+        "name": "反恐精英武器箱",
+        "price": 148.98,
+        "buff_sell": 699.0,
+        "rate_7": 0,
+        "premium": 369.19,
+        "score": 100,
+        "reason": "BUFF (699 CNY) > Steam (149 CNY), 369% premium"
+      },
+      {
+        "name": "USP消音版 | 黑色魅影 (久经沙场)",
+        "price": 136.32,
+        "buff_sell": 662.95,
+        "rate_7": 0,
+        "premium": 386.32,
+        "score": 100,
+        "reason": "BUFF (663 CNY) > Steam (136 CNY), 386% premium"
+      },
+      {
+        "name": "“先锋大行动”武器箱",
+        "price": 6.68,
+        "buff_sell": 30.69,
+        "rate_7": 0,
+        "premium": 359.43,
+        "score": 100,
+        "reason": "BUFF (31 CNY) > Steam (7 CNY), 359% premium"
+      },
+      {
+        "name": "AK-47 | 爱神 (战痕累累)",
+        "price": 14.06,
+        "buff_sell": 68.0,
+        "rate_7": 0.93,
+        "premium": 383.64,
+        "score": 100,
+        "reason": "BUFF (68 CNY) > Steam (14 CNY), 384% premium"
       },
       {
         "name": "MP9 | 星使 (久经沙场)",
         "price": 85.0,
-        "buff_sell": 399.48,
+        "buff_sell": 399.0,
         "rate_7": 0,
-        "premium": 369.98,
+        "premium": 369.41,
         "score": 100,
-        "reason": "BUFF (399 CNY) > Steam (85 CNY), 370% premium"
-      },
-      {
-        "name": "“狂牙大行动”武器箱",
-        "price": 8.35,
-        "buff_sell": 38.68,
-        "rate_7": 4.64,
-        "premium": 363.23,
-        "score": 100,
-        "reason": "BUFF (39 CNY) > Steam (8 CNY), 363% premium"
-      },
-      {
-        "name": "AK-47 | 墨岩 (久经沙场)",
-        "price": 5.46,
-        "buff_sell": 25.3,
-        "rate_7": -3.7,
-        "premium": 363.37,
-        "score": 100,
-        "reason": "BUFF (25 CNY) > Steam (5 CNY), 363% premium"
-      },
-      {
-        "name": "“九头蛇大行动”武器箱",
-        "price": 38.57,
-        "buff_sell": 172.4,
-        "rate_7": 0,
-        "premium": 346.98,
-        "score": 100,
-        "reason": "BUFF (172 CNY) > Steam (39 CNY), 347% premium"
-      },
-      {
-        "name": "AWP | 镀铬大炮 (久经沙场)",
-        "price": 38.65,
-        "buff_sell": 172.0,
-        "rate_7": 7.24,
-        "premium": 345.02,
-        "score": 100,
-        "reason": "BUFF (172 CNY) > Steam (39 CNY), 345% premium"
-      },
-      {
-        "name": "AK-47 | 翔鹤 (久经沙场)",
-        "price": 16.68,
-        "buff_sell": 79.0,
-        "rate_7": 6.65,
-        "premium": 373.62,
-        "score": 100,
-        "reason": "BUFF (79 CNY) > Steam (17 CNY), 374% premium"
+        "reason": "BUFF (399 CNY) > Steam (85 CNY), 369% premium"
       },
       {
         "name": "AK-47 | 可燃冰 (久经沙场)",
-        "price": 5.69,
-        "buff_sell": 27.0,
-        "rate_7": 5.76,
-        "premium": 374.52,
+        "price": 5.46,
+        "buff_sell": 26.99,
+        "rate_7": 1.49,
+        "premium": 394.32,
         "score": 100,
-        "reason": "BUFF (27 CNY) > Steam (6 CNY), 375% premium"
+        "reason": "BUFF (27 CNY) > Steam (5 CNY), 394% premium"
       },
       {
-        "name": "幻彩武器箱",
-        "price": 6.82,
-        "buff_sell": 31.7,
-        "rate_7": 3.96,
-        "premium": 364.81,
+        "name": "印花 | THUNDERdOWNUNDER (全息，排名) | 2026年科隆锦标赛",
+        "price": 12.26,
+        "buff_sell": 45.66,
+        "rate_7": 0,
+        "premium": 272.43,
         "score": 100,
-        "reason": "BUFF (32 CNY) > Steam (7 CNY), 365% premium"
+        "reason": "BUFF (46 CNY) > Steam (12 CNY), 272% premium"
       },
       {
-        "name": "AWP | 印花集 (战痕累累)",
+        "name": "电竞 2014 夏季武器箱",
+        "price": 17.05,
+        "buff_sell": 77.9,
+        "rate_7": 0.41,
+        "premium": 356.89,
+        "score": 100,
+        "reason": "BUFF (78 CNY) > Steam (17 CNY), 357% premium"
+      },
+      {
+        "name": "UMP-45 | 动量 (崭新出厂)",
+        "price": 15.35,
+        "buff_sell": 62.89,
+        "rate_7": 0,
+        "premium": 309.71,
+        "score": 100,
+        "reason": "BUFF (63 CNY) > Steam (15 CNY), 310% premium"
+      },
+      {
+        "name": "“裂网大行动”武器箱",
+        "price": 5.84,
+        "buff_sell": 26.54,
+        "rate_7": 7.95,
+        "premium": 354.45,
+        "score": 100,
+        "reason": "BUFF (27 CNY) > Steam (6 CNY), 354% premium"
+      },
+      {
+        "name": "“激流大行动”武器箱",
+        "price": 11.88,
+        "buff_sell": 53.3,
+        "rate_7": -0.67,
+        "premium": 348.65,
+        "score": 100,
+        "reason": "BUFF (53 CNY) > Steam (12 CNY), 349% premium"
+      },
+      {
+        "name": "AWP | 黑色魅影 (久经沙场)",
         "price": 51.75,
-        "buff_sell": 259.5,
+        "buff_sell": 258.5,
         "rate_7": 0,
-        "premium": 401.45,
+        "premium": 399.52,
         "score": 100,
-        "reason": "BUFF (260 CNY) > Steam (52 CNY), 401% premium"
+        "reason": "BUFF (258 CNY) > Steam (52 CNY), 400% premium"
       },
       {
-        "name": "音乐盒 | ALRT, 多巴胺冲击",
-        "price": 5.8,
-        "buff_sell": 23.67,
-        "rate_7": 15.77,
-        "premium": 308.1,
+        "name": "AK-47 | 红线 (久经沙场)",
+        "price": 36.59,
+        "buff_sell": 175.0,
+        "rate_7": 0,
+        "premium": 378.27,
         "score": 100,
-        "reason": "BUFF (24 CNY) > Steam (6 CNY), 308% premium"
+        "reason": "BUFF (175 CNY) > Steam (37 CNY), 378% premium"
       },
       {
-        "name": "PP-野牛 | 碳素纤维 (崭新出厂)",
-        "price": 5.42,
-        "buff_sell": 30.75,
+        "name": "M4A1消音版 | 黑莲花 (久经沙场)",
+        "price": 5.18,
+        "buff_sell": 24.4,
         "rate_7": 0,
-        "premium": 467.34,
+        "premium": 371.04,
         "score": 100,
-        "reason": "BUFF (31 CNY) > Steam (5 CNY), 467% premium"
+        "reason": "BUFF (24 CNY) > Steam (5 CNY), 371% premium"
       },
       {
-        "name": "沙漠之鹰 | 印花集 (战痕累累)",
-        "price": 42.04,
-        "buff_sell": 207.0,
-        "rate_7": 0,
-        "premium": 392.39,
+        "name": "猎杀者武器箱",
+        "price": 11.93,
+        "buff_sell": 53.73,
+        "rate_7": 3.11,
+        "premium": 350.38,
         "score": 100,
-        "reason": "BUFF (207 CNY) > Steam (42 CNY), 392% premium"
+        "reason": "BUFF (54 CNY) > Steam (12 CNY), 350% premium"
+      },
+      {
+        "name": "M4A1消音版 | 幽独 (略有磨损)",
+        "price": 5.0,
+        "buff_sell": 26.74,
+        "rate_7": 0,
+        "premium": 434.8,
+        "score": 100,
+        "reason": "BUFF (27 CNY) > Steam (5 CNY), 435% premium"
+      },
+      {
+        "name": "M4A4 | 黑色魅影 (破损不堪)",
+        "price": 35.97,
+        "buff_sell": 185.0,
+        "rate_7": 0,
+        "premium": 414.32,
+        "score": 100,
+        "reason": "BUFF (185 CNY) > Steam (36 CNY), 414% premium"
       },
       {
         "name": "AK-47 | 灼心怒焰 (久经沙场)",
-        "price": 6.26,
-        "buff_sell": 30.5,
-        "rate_7": 5.92,
-        "premium": 387.22,
+        "price": 6.0,
+        "buff_sell": 30.0,
+        "rate_7": 1.52,
+        "premium": 400.0,
         "score": 100,
-        "reason": "BUFF (30 CNY) > Steam (6 CNY), 387% premium"
+        "reason": "BUFF (30 CNY) > Steam (6 CNY), 400% premium"
       },
       {
-        "name": "AK-47 | 夜愿 (略有磨损)",
-        "price": 88.69,
-        "buff_sell": 430.0,
+        "name": "AK-47 | 墨岩 (久经沙场)",
+        "price": 5.36,
+        "buff_sell": 25.5,
+        "rate_7": -5.47,
+        "premium": 375.75,
+        "score": 100,
+        "reason": "BUFF (26 CNY) > Steam (5 CNY), 376% premium"
+      },
+      {
+        "name": "双持贝瑞塔 | 瓜瓜 (久经沙场)",
+        "price": 7.83,
+        "buff_sell": 41.28,
+        "rate_7": 0.13,
+        "premium": 427.2,
+        "score": 100,
+        "reason": "BUFF (41 CNY) > Steam (8 CNY), 427% premium"
+      },
+      {
+        "name": "MP5-SD | 磷光体 (略有磨损)",
+        "price": 8.52,
+        "buff_sell": 35.07,
         "rate_7": 0,
-        "premium": 384.83,
+        "premium": 311.62,
         "score": 100,
-        "reason": "BUFF (430 CNY) > Steam (89 CNY), 385% premium"
+        "reason": "BUFF (35 CNY) > Steam (9 CNY), 312% premium"
       },
       {
-        "name": "AK-47 | 翔鹤 (破损不堪)",
-        "price": 13.05,
-        "buff_sell": 57.05,
+        "name": "印花 | Ninjas in Pyjamas（全息）| 2014年科隆锦标赛",
+        "price": 43.09,
+        "buff_sell": 258.0,
         "rate_7": 0,
-        "premium": 337.16,
+        "premium": 498.75,
         "score": 100,
-        "reason": "BUFF (57 CNY) > Steam (13 CNY), 337% premium"
+        "reason": "BUFF (258 CNY) > Steam (43 CNY), 499% premium"
       },
       {
-        "name": "AWP | 树蝰 (久经沙场)",
-        "price": 5.33,
-        "buff_sell": 27.79,
-        "rate_7": -2.74,
-        "premium": 421.39,
-        "score": 100,
-        "reason": "BUFF (28 CNY) > Steam (5 CNY), 421% premium"
-      },
-      {
-        "name": "精英穆哈里克先生 | 精锐分子",
-        "price": 13.62,
-        "buff_sell": 58.69,
-        "rate_7": 11.27,
-        "premium": 330.91,
-        "score": 100,
-        "reason": "BUFF (59 CNY) > Steam (14 CNY), 331% premium"
-      },
-      {
-        "name": "反恐精英 3 号武器箱",
-        "price": 19.01,
-        "buff_sell": 84.78,
-        "rate_7": 1.33,
-        "premium": 345.98,
-        "score": 100,
-        "reason": "BUFF (85 CNY) > Steam (19 CNY), 346% premium"
-      },
-      {
-        "name": "格洛克18型 | 巅峰状态 (久经沙场)",
-        "price": 65.83,
-        "buff_sell": 316.46,
+        "name": "电竞 2013 冬季武器箱",
+        "price": 17.8,
+        "buff_sell": 80.6,
         "rate_7": 0,
-        "premium": 380.72,
+        "premium": 352.81,
         "score": 100,
-        "reason": "BUFF (316 CNY) > Steam (66 CNY), 381% premium"
-      },
-      {
-        "name": "AWP | 黑色魅影 (崭新出厂)",
-        "price": 69.66,
-        "buff_sell": 319.0,
-        "rate_7": 0,
-        "premium": 357.94,
-        "score": 100,
-        "reason": "BUFF (319 CNY) > Steam (70 CNY), 358% premium"
-      },
-      {
-        "name": "M4A1消音版 | 夜店王子 (战痕累累)",
-        "price": 8.0,
-        "buff_sell": 45.0,
-        "rate_7": 0,
-        "premium": 462.5,
-        "score": 100,
-        "reason": "BUFF (45 CNY) > Steam (8 CNY), 462% premium"
+        "reason": "BUFF (81 CNY) > Steam (18 CNY), 353% premium"
       }
     ],
     "golden_cross": []
   },
-  "market_updated": "2026-09-30T23:03:54Z"
+  "market_updated": "2026-10-01T05:12:58Z"
 }
