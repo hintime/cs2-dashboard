@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 948.44,
-    "change": -5.16,
-    "change_pct": -5.16,
-    "market_value": 291127851.69,
-    "total_items": 3895,
-    "updated": "2026-10-01T14:00:02+08:00",
+    "latest": 952.68,
+    "change": -4.73,
+    "change_pct": -4.73,
+    "market_value": 292430203.19,
+    "total_items": 3933,
+    "updated": "2026-10-01T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4075,8 +4075,8 @@
         "date": "2026-10-01",
         "dateFull": "2026-10-01 14:00",
         "open": 948.44,
-        "close": 948.44,
-        "high": 948.44,
+        "close": 952.68,
+        "high": 952.68,
         "low": 948.44
       }
     ],
@@ -12209,12 +12209,20 @@
         "index": 948.44,
         "change_pct": -5.16,
         "market_value": 291127851.69
+      },
+      {
+        "time": "16:00",
+        "date": "2026-10-01",
+        "timestamp": 1790841603,
+        "index": 952.68,
+        "change_pct": -4.73,
+        "market_value": 292430203.19
       }
     ],
     "selling": {
-      "total_selling": 1351124,
+      "total_selling": 1354209,
       "total_selling_prev": 0,
-      "total_selling_delta": 1351124,
+      "total_selling_delta": 1354209,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12222,7 +12230,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790834402767,
+  "index_updated": 1790841603308,
   "alerts": [
     {
       "name": "UMP-45 | Blaze (Factory New)",
@@ -30805,7 +30813,7 @@
     "MP9 | 气密 (略有磨损)",
     "MP9 | 沙漠虚线 (崭新出厂)"
   ],
-  "updated": "2026-10-01T07:35:02Z",
+  "updated": "2026-10-01T08:04:57Z",
   "steam_market_items": 46,
   "steam_market_recs": {
     "momentum": [
