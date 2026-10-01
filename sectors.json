@@ -5,7 +5,7 @@
       "name": "饰品指数",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/dapan.png",
-      "ratio": -0.34
+      "ratio": -0.35
     },
     {
       "id": 104,
@@ -19,21 +19,21 @@
       "name": "武库二期",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/armory_season_2.png",
-      "ratio": -0.67
+      "ratio": -0.65
     },
     {
       "id": 109,
       "name": "武库挂件一期",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/armory_charms_season_1.png",
-      "ratio": -0.37
+      "ratio": -0.47
     },
     {
       "id": 110,
       "name": "武库挂件二期",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/armory_charms_season_2.png",
-      "ratio": -0.43
+      "ratio": -0.42
     },
     {
       "id": 106,
@@ -47,28 +47,28 @@
       "name": "25奥斯汀",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/austin_2025.png",
-      "ratio": -0.24
+      "ratio": -0.23
     },
     {
       "id": 169,
       "name": "租赁饰品",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/rent.png",
-      "ratio": -2.78
+      "ratio": -2.5
     },
     {
       "id": 37,
       "name": "手套",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/hands_0723.png",
-      "ratio": -0.78
+      "ratio": -0.76
     },
     {
       "id": 44,
       "name": "探员",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/type_customplayer.png",
-      "ratio": -0.69
+      "ratio": -0.7
     },
     {
       "id": 45,
@@ -89,14 +89,14 @@
       "name": "三代手套",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/third_gen_gloves_0728.png",
-      "ratio": -0.2
+      "ratio": -0.14
     },
     {
       "id": 126,
       "name": "四代手套",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/four_gen_gloves.png",
-      "ratio": -0.17
+      "ratio": -0.18
     },
     {
       "id": 3,
@@ -110,7 +110,7 @@
       "name": "武库",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/arsenal.png",
-      "ratio": -0.71
+      "ratio": -0.72
     },
     {
       "id": 159,
@@ -124,28 +124,28 @@
       "name": "机枪",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/machinegun.png",
-      "ratio": -0.21
+      "ratio": -0.2
     },
     {
       "id": 35,
       "name": "收藏品",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/collection_new_0728.png",
-      "ratio": -0.25
+      "ratio": -0.26
     },
     {
       "id": 2,
       "name": "千元主战",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/thousand_main_battle_0723.png",
-      "ratio": -1.14
+      "ratio": -1.27
     },
     {
       "id": 123,
       "name": "中端收藏品",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/medium_collection_new_0723.png",
-      "ratio": -0.89
+      "ratio": -0.97
     },
     {
       "id": 122,
@@ -159,14 +159,14 @@
       "name": "二代手套",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/second_gen_gloves.png",
-      "ratio": -0.22
+      "ratio": -0.15
     },
     {
       "id": 112,
       "name": "24 上海",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/shanghai_2024.png",
-      "ratio": -1.27
+      "ratio": -1.19
     }
   ],
   "ranked": [
@@ -192,25 +192,32 @@
       "ratio": -0.14
     },
     {
-      "id": 126,
-      "name": "四代手套",
-      "current_index": null,
-      "img": "https://static.firepulse.com.cn/category/four_gen_gloves.png",
-      "ratio": -0.17
-    },
-    {
       "id": 9,
       "name": "三代手套",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/third_gen_gloves_0728.png",
-      "ratio": -0.2
+      "ratio": -0.14
+    },
+    {
+      "id": 8,
+      "name": "二代手套",
+      "current_index": null,
+      "img": "https://static.firepulse.com.cn/category/second_gen_gloves.png",
+      "ratio": -0.15
+    },
+    {
+      "id": 126,
+      "name": "四代手套",
+      "current_index": null,
+      "img": "https://static.firepulse.com.cn/category/four_gen_gloves.png",
+      "ratio": -0.18
     },
     {
       "id": 166,
       "name": "机枪",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/machinegun.png",
-      "ratio": -0.21
+      "ratio": -0.2
     },
     {
       "id": 106,
@@ -220,46 +227,39 @@
       "ratio": -0.22
     },
     {
-      "id": 8,
-      "name": "二代手套",
-      "current_index": null,
-      "img": "https://static.firepulse.com.cn/category/second_gen_gloves.png",
-      "ratio": -0.22
-    },
-    {
       "id": 111,
       "name": "25奥斯汀",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/austin_2025.png",
-      "ratio": -0.24
+      "ratio": -0.23
     },
     {
       "id": 35,
       "name": "收藏品",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/collection_new_0728.png",
-      "ratio": -0.25
+      "ratio": -0.26
     },
     {
       "id": 11,
       "name": "饰品指数",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/dapan.png",
-      "ratio": -0.34
-    },
-    {
-      "id": 109,
-      "name": "武库挂件一期",
-      "current_index": null,
-      "img": "https://static.firepulse.com.cn/category/armory_charms_season_1.png",
-      "ratio": -0.37
+      "ratio": -0.35
     },
     {
       "id": 110,
       "name": "武库挂件二期",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/armory_charms_season_2.png",
-      "ratio": -0.43
+      "ratio": -0.42
+    },
+    {
+      "id": 109,
+      "name": "武库挂件一期",
+      "current_index": null,
+      "img": "https://static.firepulse.com.cn/category/armory_charms_season_1.png",
+      "ratio": -0.47
     },
     {
       "id": 45,
@@ -273,7 +273,7 @@
       "name": "武库二期",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/armory_season_2.png",
-      "ratio": -0.67
+      "ratio": -0.65
     },
     {
       "id": 104,
@@ -287,42 +287,49 @@
       "name": "探员",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/type_customplayer.png",
-      "ratio": -0.69
+      "ratio": -0.7
     },
     {
       "id": 168,
       "name": "武库",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/arsenal.png",
-      "ratio": -0.71
+      "ratio": -0.72
     },
     {
       "id": 37,
       "name": "手套",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/hands_0723.png",
-      "ratio": -0.78
+      "ratio": -0.76
     },
     {
       "id": 123,
       "name": "中端收藏品",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/medium_collection_new_0723.png",
-      "ratio": -0.89
-    },
-    {
-      "id": 2,
-      "name": "千元主战",
-      "current_index": null,
-      "img": "https://static.firepulse.com.cn/category/thousand_main_battle_0723.png",
-      "ratio": -1.14
+      "ratio": -0.97
     },
     {
       "id": 112,
       "name": "24 上海",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/shanghai_2024.png",
+      "ratio": -1.19
+    },
+    {
+      "id": 2,
+      "name": "千元主战",
+      "current_index": null,
+      "img": "https://static.firepulse.com.cn/category/thousand_main_battle_0723.png",
       "ratio": -1.27
+    },
+    {
+      "id": 169,
+      "name": "租赁饰品",
+      "current_index": null,
+      "img": "https://static.firepulse.com.cn/category/rent.png",
+      "ratio": -2.5
     },
     {
       "id": 122,
@@ -330,13 +337,6 @@
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/low_collection_new_0723.png",
       "ratio": -2.77
-    },
-    {
-      "id": 169,
-      "name": "租赁饰品",
-      "current_index": null,
-      "img": "https://static.firepulse.com.cn/category/rent.png",
-      "ratio": -2.78
     }
   ],
   "up": [
@@ -354,7 +354,7 @@
       "name": "武库二期",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/armory_season_2.png",
-      "ratio": -0.67
+      "ratio": -0.65
     },
     {
       "id": 104,
@@ -368,42 +368,49 @@
       "name": "探员",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/type_customplayer.png",
-      "ratio": -0.69
+      "ratio": -0.7
     },
     {
       "id": 168,
       "name": "武库",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/arsenal.png",
-      "ratio": -0.71
+      "ratio": -0.72
     },
     {
       "id": 37,
       "name": "手套",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/hands_0723.png",
-      "ratio": -0.78
+      "ratio": -0.76
     },
     {
       "id": 123,
       "name": "中端收藏品",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/medium_collection_new_0723.png",
-      "ratio": -0.89
-    },
-    {
-      "id": 2,
-      "name": "千元主战",
-      "current_index": null,
-      "img": "https://static.firepulse.com.cn/category/thousand_main_battle_0723.png",
-      "ratio": -1.14
+      "ratio": -0.97
     },
     {
       "id": 112,
       "name": "24 上海",
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/shanghai_2024.png",
+      "ratio": -1.19
+    },
+    {
+      "id": 2,
+      "name": "千元主战",
+      "current_index": null,
+      "img": "https://static.firepulse.com.cn/category/thousand_main_battle_0723.png",
       "ratio": -1.27
+    },
+    {
+      "id": 169,
+      "name": "租赁饰品",
+      "current_index": null,
+      "img": "https://static.firepulse.com.cn/category/rent.png",
+      "ratio": -2.5
     },
     {
       "id": 122,
@@ -411,16 +418,9 @@
       "current_index": null,
       "img": "https://static.firepulse.com.cn/category/low_collection_new_0723.png",
       "ratio": -2.77
-    },
-    {
-      "id": 169,
-      "name": "租赁饰品",
-      "current_index": null,
-      "img": "https://static.firepulse.com.cn/category/rent.png",
-      "ratio": -2.78
     }
   ],
   "enriched": 24,
-  "updated": "2026-10-01T11:04:51Z",
+  "updated": "2026-10-01T11:08:11Z",
   "source": "firepulse"
 }
