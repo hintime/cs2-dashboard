@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 956.1,
-    "change": -4.39,
-    "change_pct": -4.39,
-    "market_value": 293478673.51,
-    "total_items": 3985,
-    "updated": "2026-10-01T08:00:03+08:00",
+    "latest": 948.02,
+    "change": -5.2,
+    "change_pct": -5.2,
+    "market_value": 290997833.03,
+    "total_items": 3920,
+    "updated": "2026-10-01T10:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4062,6 +4062,14 @@
         "close": 956.1,
         "high": 960.2,
         "low": 956.1
+      },
+      {
+        "date": "2026-10-01",
+        "dateFull": "2026-10-01 10:00",
+        "open": 948.02,
+        "close": 948.02,
+        "high": 948.02,
+        "low": 948.02
       }
     ],
     "volBar": [],
@@ -12169,12 +12177,20 @@
         "index": 956.1,
         "change_pct": -4.39,
         "market_value": 293478673.51
+      },
+      {
+        "time": "10:00",
+        "date": "2026-10-01",
+        "timestamp": 1790820002,
+        "index": 948.02,
+        "change_pct": -5.2,
+        "market_value": 290997833.03
       }
     ],
     "selling": {
-      "total_selling": 1403512,
+      "total_selling": 1383476,
       "total_selling_prev": 0,
-      "total_selling_delta": 1403512,
+      "total_selling_delta": 1383476,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12182,7 +12198,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790812803511,
+  "index_updated": 1790820003018,
   "alerts": [
     {
       "name": "UMP-45 | Blaze (Factory New)",
@@ -30762,7 +30778,7 @@
     "MP9 | 彩绘玻璃 (崭新出厂)",
     "MP9 | 彩绘玻璃 (略有磨损)"
   ],
-  "updated": "2026-10-01T01:34:55Z",
+  "updated": "2026-10-01T02:05:01Z",
   "steam_market_items": 76,
   "steam_market_recs": {
     "momentum": [
