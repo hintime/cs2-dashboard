@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 960.92,
-    "change": -3.91,
-    "change_pct": -3.91,
-    "market_value": 294959040.56,
-    "total_items": 3998,
-    "updated": "2026-10-02T02:00:03+08:00",
+    "latest": 962.97,
+    "change": -3.7,
+    "change_pct": -3.7,
+    "market_value": 295588227.79,
+    "total_items": 3981,
+    "updated": "2026-10-02T04:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4099,8 +4099,8 @@
         "date": "2026-10-02",
         "dateFull": "2026-10-02 02:00",
         "open": 960.92,
-        "close": 960.92,
-        "high": 960.92,
+        "close": 962.97,
+        "high": 962.97,
         "low": 960.92
       }
     ],
@@ -12281,12 +12281,20 @@
         "index": 960.92,
         "change_pct": -3.91,
         "market_value": 294959040.56
+      },
+      {
+        "time": "04:00",
+        "date": "2026-10-02",
+        "timestamp": 1790884803,
+        "index": 962.97,
+        "change_pct": -3.7,
+        "market_value": 295588227.79
       }
     ],
     "selling": {
-      "total_selling": 1383370,
+      "total_selling": 1383571,
       "total_selling_prev": 0,
-      "total_selling_delta": 1383370,
+      "total_selling_delta": 1383571,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12294,7 +12302,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790877603549,
+  "index_updated": 1790884803730,
   "alerts": [
     {
       "name": "Rezan The Ready | Sabre",
@@ -30875,7 +30883,7 @@
     "MP9 | 富士山 (久经沙场)",
     "MP9 | 富士山 (崭新出厂)"
   ],
-  "updated": "2026-10-01T19:35:04Z",
+  "updated": "2026-10-01T20:05:07Z",
   "steam_market_items": 78,
   "steam_market_recs": {
     "momentum": [
