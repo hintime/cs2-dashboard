@@ -9,6 +9,13 @@
     },
     {
       "title": "反恐精英2更新",
+      "body": "现在，在摄影亭摄影会议期间和购买菜单中佩戴配备的手套当十字准线厚度设置为3像素时，固定手榴弹十字准线渲染在赞扬和报告对话框中固定标题格式在仓库地图中改进照明使用新的十字准线设置更新车间卷曲白名单稳定性改进",
+      "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1845383656387875",
+      "date": 1790979853,
+      "source": "社区公告"
+    },
+    {
+      "title": "反恐精英2更新",
       "body": "clipping fixes in Rush maps visualization of weapon inaccuracy + spreadAdded crosshair outline color optionAdded a new style \"Static Quadrant\"Enabled grenade crosshairs in freeze time for insta-smokes (just hold any grenade attack button)Allowed negative gaps for classic dynamic crosshair styleChanged the classic dynamic crosshair alpha increments to 0.01Scope dot scale and color preferences are now included in the new crosshair share codeChanged the format of the crosshair share code to accommodate newly included crosshair settings",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1845383656379136",
       "date": 1790808379,
@@ -76,16 +83,16 @@
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1840944183775194",
       "date": 1786575047,
       "source": "社区公告"
-    },
-    {
-      "title": "反恐精英2更新",
-      "body": "a case where grenades could be thrown through level geometry various gaps in mapFixed collision in various spots across mapFixed flickering on some assetsRemoved boost spot in Outside AShelterUpdated to the latest version from the Community Workshop (Update Notes) Instance.TracePlayerAdded Instance.OnWeaponPickupAdded Instance.OnBombExplodeAdded Instance.SpawnGrenadeProjectileAdded dropper to Instance.OnWeaponDrop eventAdded hitEntity to Instance.OnGrenadeBounce eventAdded normal to Instance.OnGrenadeBounce eventAdded CSGrenadeProjectileBase.GetGrenadeTypeAdded CSGrenadeProjectileBase.GetThrowerAdded CSGrenadeProjectileBase.DetonateAdded CSPlantedC4.IsBombsiteAAdded CSPlantedC4.IsBombsiteBAdded CSPlantedC4.GetPlanterAdded CSPlantedC4.GetDefuserAdded CSPlantedC4.IsActiveAdded CSPlantedC4.IsExplodedAdded CSPlantedC4.IsDefusedAdded CSPlantedC4.GetPlantTimeAdded CSPlantedC4.GetExplodeTimeAdded CSPlantedC4.GetDefuseStartTimeAdded CSPlantedC4.GetDefuseFinishTimeAdded CSPlayerPawn.HasDefuserAdded CSPlayerPawn.SetHasDefuserAdded CSGrenadeType enumFixed a bug where Instance.RegisterCheatCommand would not work on script reload.Deprecated bounces from Instance.OnGrenadeBounce event.",
-      "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1839676055895877",
-      "date": 1785791934,
-      "source": "社区公告"
     }
   ],
   "updates": [
+    {
+      "title": "反恐精英2更新",
+      "body": "现在，在摄影亭摄影会议期间和购买菜单中佩戴配备的手套当十字准线厚度设置为3像素时，固定手榴弹十字准线渲染在赞扬和报告对话框中固定标题格式在仓库地图中改进照明使用新的十字准线设置更新车间卷曲白名单稳定性改进",
+      "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1845383656387875",
+      "date": 1790979853,
+      "source": "社区公告"
+    },
     {
       "title": "反恐精英2更新",
       "body": "clipping fixes in Rush maps visualization of weapon inaccuracy + spreadAdded crosshair outline color optionAdded a new style \"Static Quadrant\"Enabled grenade crosshairs in freeze time for insta-smokes (just hold any grenade attack button)Allowed negative gaps for classic dynamic crosshair styleChanged the classic dynamic crosshair alpha increments to 0.01Scope dot scale and color preferences are now included in the new crosshair share codeChanged the format of the crosshair share code to accommodate newly included crosshair settings",
@@ -134,14 +141,7 @@
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1843481262690556",
       "date": 1788994268,
       "source": "社区公告"
-    },
-    {
-      "title": "反恐精英2更新",
-      "body": "custom_hud_layout entity:custom_hud_layouts are the entry point for scripted maps to provide custom UI.Panel, Label, Image, and Button panel types are supported.Styling with css is supported.Events and client side scripting are not supported.Maintains state during tools mode reloads.Added cs_player_camera entity:Gives control of a player's view without moving their pawn.Can be configured to let the player look around from the scripted position.Added Instance.DelayAdded Instance.OnBombPlantStartAdded Instance.OnBombPlantAbortAdded Instance.OnBombDefuseStartAdded Instance.OnBombDefuseAbortAdded Instance.OnCustomHudClickedAdded Instance.IsDedicatedServerAdded Entity.MoveAdded Entity.GetMoveTypeAdded Entity.SetMoveTypeAdded CSPlayerPawn.GetC4Added CSPlayerPawn.GetDefuseTargetAdded CSPlayerPawn.IsBuyMenuOpenAdded CSPlayerPawn.GetCameraAdded C4.GetPlantStartTimeAdded C4.GetPlantFinishTimeAdded C4.AbortPlantAdded CustomHudLayout.SetHasClassAdded CustomHudLayout.SetHasClassForPlayerAdded CustomHudLayout.SetDialogVariableStringAdded CustomHudLayout.SetDialogVariableStringForPlayerAdded CustomHudLayout.SetInputCaptureEnabledAdded CustomHudLayout.IsInputCaptureEnabledAdded CSPlayerCamera.IsEnabledAdded CSPlayerCamera.SetEnabledAdded CSPlayerCamera.SetIsControllingAnglesAdded enum CSMoveTypeCorrected types for some events where parameters were maybe undefined.Errors encountered during initial script run are now logged to the console.Unhandled promise rejections are now logged to the cons",
-      "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1841579228676851",
-      "date": 1787614760,
-      "source": "社区公告"
     }
   ],
-  "updated": "2026-10-03 06:08:31"
+  "updated": "2026-10-03 18:07:31"
 }
