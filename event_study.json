@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-03 07:07",
+  "generated": "2026-10-03 13:05",
   "window": {
     "from": "2026-06-28",
     "to": "2026-10-03"
@@ -419,12 +419,12 @@
       "cat": "routine",
       "base_day": "2026-09-29",
       "d3": {
-        "day": null,
-        "n": 0,
-        "med": null,
-        "up": null,
-        "dn3": null,
-        "stale": null
+        "day": "2026-10-03",
+        "n": 4620,
+        "med": -0.63,
+        "up": 28.5,
+        "dn3": 25.3,
+        "stale": false
       },
       "d7": {
         "day": null,
@@ -481,32 +481,32 @@
     "n_pool": 4649,
     "ret_3d": {
       "event_mean": -0.26,
-      "baseline_mean": -4.08,
-      "excess": 3.82,
-      "n_base": 10,
+      "baseline_mean": -4.43,
+      "excess": 4.17,
+      "n_base": 9,
       "n_events": 7,
       "up_pct": 34.79,
       "dn3_pct": 16.81
     },
     "ret_7d": {
       "event_mean": -0.8,
-      "baseline_mean": -6.56,
-      "excess": 5.76,
-      "n_base": 12,
+      "baseline_mean": -7.06,
+      "excess": 6.26,
+      "n_base": 11,
       "n_events": 7,
       "up_pct": 31.79,
       "dn3_pct": 24.99
     },
     "ret_14d": {
       "event_mean": -1.74,
-      "baseline_mean": -8.3,
-      "excess": 6.56,
-      "n_base": 14,
+      "baseline_mean": -8.86,
+      "excess": 7.12,
+      "n_base": 13,
       "n_events": 3,
       "up_pct": 29.37,
       "dn3_pct": 22.63
     },
-    "verdict": "历史上 7 个有效公告事件后 7 天，同批物品中位涨跌 -0.80%，同期基准 -6.56%，超额 +5.76%（上涨物品占比 31.8%）→ 历史方向性支撑：偏弱",
+    "verdict": "历史上 7 个有效公告事件后 7 天，同批物品中位涨跌 -0.80%，同期基准 -7.06%，超额 +6.26%（上涨物品占比 31.8%）→ 历史方向性支撑：偏弱",
     "by_cat": {
       "major": {
         "n": 2,
