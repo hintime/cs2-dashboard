@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 932.37,
-    "change": -6.76,
-    "change_pct": -6.76,
-    "market_value": 286195496.96,
-    "total_items": 3926,
-    "updated": "2026-10-03T06:00:03+08:00",
+    "latest": 936.7,
+    "change": -6.33,
+    "change_pct": -6.33,
+    "market_value": 287523548.03,
+    "total_items": 3932,
+    "updated": "2026-10-03T08:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4155,8 +4155,8 @@
         "date": "2026-10-03",
         "dateFull": "2026-10-03 06:00",
         "open": 932.37,
-        "close": 932.37,
-        "high": 932.37,
+        "close": 936.7,
+        "high": 936.7,
         "low": 932.37
       }
     ],
@@ -12449,12 +12449,20 @@
         "index": 932.37,
         "change_pct": -6.76,
         "market_value": 286195496.96
+      },
+      {
+        "time": "08:00",
+        "date": "2026-10-03",
+        "timestamp": 1790985603,
+        "index": 936.7,
+        "change_pct": -6.33,
+        "market_value": 287523548.03
       }
     ],
     "selling": {
-      "total_selling": 1371579,
+      "total_selling": 1384299,
       "total_selling_prev": 0,
-      "total_selling_delta": 1371579,
+      "total_selling_delta": 1384299,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12462,7 +12470,7 @@
       "cold": []
     }
   },
-  "index_updated": 1790978403523,
+  "index_updated": 1790985603401,
   "alerts": [
     {
       "name": "Galil AR | Vandal (Factory New)",
@@ -31113,7 +31121,7 @@
     "MP9 | 红宝石毒镖 (久经沙场)",
     "MP9 | 红宝石毒镖 (崭新出厂)"
   ],
-  "updated": "2026-10-02T23:35:24Z",
+  "updated": "2026-10-03T00:05:39Z",
   "steam_market_items": 81,
   "steam_market_recs": {
     "momentum": [],
