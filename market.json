@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 949.35,
-    "change": -5.07,
-    "change_pct": -5.07,
-    "market_value": 291406706.53,
-    "total_items": 3985,
-    "updated": "2026-10-03T20:00:03+08:00",
+    "latest": 950.17,
+    "change": -4.98,
+    "change_pct": -4.98,
+    "market_value": 291657646.23,
+    "total_items": 4007,
+    "updated": "2026-10-03T22:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4182,6 +4182,14 @@
         "close": 949.35,
         "high": 950.25,
         "low": 949.35
+      },
+      {
+        "date": "2026-10-03",
+        "dateFull": "2026-10-03 22:00",
+        "open": 950.17,
+        "close": 950.17,
+        "high": 950.17,
+        "low": 950.17
       }
     ],
     "volBar": [],
@@ -12529,12 +12537,20 @@
         "index": 949.35,
         "change_pct": -5.07,
         "market_value": 291406706.53
+      },
+      {
+        "time": "22:00",
+        "date": "2026-10-03",
+        "timestamp": 1791036003,
+        "index": 950.17,
+        "change_pct": -4.98,
+        "market_value": 291657646.23
       }
     ],
     "selling": {
-      "total_selling": 1363275,
+      "total_selling": 1375317,
       "total_selling_prev": 0,
-      "total_selling_delta": 1363275,
+      "total_selling_delta": 1375317,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12542,7 +12558,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791028803288,
+  "index_updated": 1791036003560,
   "alerts": [
     {
       "name": "Sticker | HEROIC (Holo) | Shanghai 2024",
@@ -31247,7 +31263,7 @@
     "MP9 | 残花败藤 (略有磨损)",
     "MP9 | 毛细血管 (崭新出厂)"
   ],
-  "updated": "2026-10-03T13:35:25Z",
+  "updated": "2026-10-03T14:05:24Z",
   "steam_market_items": 68,
   "steam_market_recs": {
     "momentum": [
