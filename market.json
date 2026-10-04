@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 949.3,
-    "change": -5.07,
-    "change_pct": -5.07,
-    "market_value": 291392766.22,
-    "total_items": 4005,
-    "updated": "2026-10-04T18:00:03+08:00",
+    "latest": 958.49,
+    "change": -4.15,
+    "change_pct": -4.15,
+    "market_value": 294212475.62,
+    "total_items": 4059,
+    "updated": "2026-10-04T20:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4227,8 +4227,8 @@
         "date": "2026-10-04",
         "dateFull": "2026-10-04 18:00",
         "open": 949.3,
-        "close": 949.3,
-        "high": 949.3,
+        "close": 958.49,
+        "high": 958.49,
         "low": 949.3
       }
     ],
@@ -12665,12 +12665,20 @@
         "index": 949.3,
         "change_pct": -5.07,
         "market_value": 291392766.22
+      },
+      {
+        "time": "20:00",
+        "date": "2026-10-04",
+        "timestamp": 1791115203,
+        "index": 958.49,
+        "change_pct": -4.15,
+        "market_value": 294212475.62
       }
     ],
     "selling": {
-      "total_selling": 1397946,
+      "total_selling": 1411545,
       "total_selling_prev": 0,
-      "total_selling_delta": 1397946,
+      "total_selling_delta": 1411545,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12678,7 +12686,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791108003706,
+  "index_updated": 1791115203588,
   "alerts": [
     {
       "name": "Galil AR | Vandal (Factory New)",
@@ -31393,7 +31401,7 @@
     "MP9 | 滑移 (崭新出厂)",
     "MP9 | 潘多拉魔盒 (崭新出厂)"
   ],
-  "updated": "2026-10-04T11:35:53Z",
+  "updated": "2026-10-04T12:05:37Z",
   "steam_market_items": 66,
   "steam_market_recs": {
     "momentum": [
