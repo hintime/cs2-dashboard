@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 903.9,
-    "change": -9.61,
-    "change_pct": -9.61,
-    "market_value": 277456147.23,
-    "total_items": 3850,
-    "updated": "2026-10-05T02:00:03+08:00",
+    "latest": 955.83,
+    "change": -4.42,
+    "change_pct": -4.42,
+    "market_value": 293397010.39,
+    "total_items": 4040,
+    "updated": "2026-10-05T04:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4243,8 +4243,8 @@
         "date": "2026-10-05",
         "dateFull": "2026-10-05 02:00",
         "open": 903.9,
-        "close": 903.9,
-        "high": 903.9,
+        "close": 955.83,
+        "high": 955.83,
         "low": 903.9
       }
     ],
@@ -12713,12 +12713,20 @@
         "index": 903.9,
         "change_pct": -9.61,
         "market_value": 277456147.23
+      },
+      {
+        "time": "04:00",
+        "date": "2026-10-05",
+        "timestamp": 1791144003,
+        "index": 955.83,
+        "change_pct": -4.42,
+        "market_value": 293397010.39
       }
     ],
     "selling": {
-      "total_selling": 1340762,
+      "total_selling": 1394837,
       "total_selling_prev": 0,
-      "total_selling_delta": 1340762,
+      "total_selling_delta": 1394837,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12726,7 +12734,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791136803279,
+  "index_updated": 1791144003330,
   "alerts": [
     {
       "name": "Prof. Shahmat | Elite Crew",
@@ -31437,7 +31445,7 @@
     "MP9 | 残花败藤 (崭新出厂)",
     "MP9 | 残花败藤 (略有磨损)"
   ],
-  "updated": "2026-10-04T19:35:51Z",
+  "updated": "2026-10-04T20:05:46Z",
   "steam_market_items": 78,
   "steam_market_recs": {
     "momentum": [],
