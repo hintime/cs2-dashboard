@@ -3829,8 +3829,10 @@ def git_sync_safe():
     # 把工作区改动落成本地提交，保证后续 push 有内容可推。
     # 注意：这只是"落地"，不 push —— 真正的 push 由 push_all()/git_push_locally()
     # 在数据生成完之后统一做（那时才知道哪些文件真的变了）。
-    if not _commit_all_local(f'wip: local snapshot {time.strftime("%Y-%m-%d %H:%M")}'):
-        print('[GIT][WARN] 本地中转提交未完成，继续跑数据更新（不影响推送）', file=sys.stderr)
+    # 2026-10-04 API 通道已接管推送；停用本地 wip 中转快照，
+    # 避免本地 main 与 origin/main(API 推送)分叉导致 push_retry 合并冲突。
+    # if not _commit_all_local(f'wip: local snapshot {time.strftime("%Y-%m-%d %H:%M")}'):
+    # print('[GIT][WARN] 本地中转提交未完成，继续跑数据更新（不影响推送）', file=sys.stderr)
 
 
 # ═══════════════ MAIN ═══════════════
@@ -4700,8 +4702,10 @@ def main():
         print('[FirePulse] 大盘生成失败: %s' % _e, file=sys.stderr)
 
     # ── 同步生成数据状态摘要 ──
+    # 2026-10-04 修：这里原有的 `import json` 是多余的（模块顶部已 import），
+    # 且它把 json 变成 main() 的局部变量 → 后面 4573 行 name_map 段用的
+    # json.load 变成 UnboundLocalError，name_map.json 从 9-22 起就再没更新过。
     try:
-        import json
         status_summary = {'updated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         # price_history (SQLite) dates
         try:
