@@ -29,9 +29,11 @@
     venv/bin/python build_kline.py --out kline.json --days 120 --min-days 5
 """
 import argparse
+import hashlib
 import json
 import os
 import sqlite3
+import sys
 import time
 
 REPO = os.path.dirname(os.path.abspath(__file__))
@@ -225,6 +227,92 @@ def main():
           flush=True)
     print('  影线不可信的K线占比 %.1f%%（r=0，即当天采样点 < %d）'
           % (100.0 * r0 / max(1, bars_total), args.min_pts), flush=True)
+
+    push_out(args.out, len(items), bars_total)
+
+
+def push_out(path, n_items, n_bars):
+    """把 kline.json 推到 GitHub —— 走 update.py 同一条 Git Database API 通道。
+
+    ⚠ 为什么必须在这里自己推，而不是指望 update.py：
+      update.py 的 push_all() 推的是它自己维护的 dirty_files 集合，
+      本脚本是独立 cron 跑的，不经过 update.py → kline.json 永远不会被推上线，
+      前端就会一直读 8 月的旧数据（而且没有任何报错，静默陈旧）。
+    ⚠ 只在「内容真的变了」时才推：每天重建出来的 JSON 里 date 字段每次都变，
+      不比对就会每天提交一次 4.7MB 的空转 commit。
+    ⚠ 推失败不抛异常：构建本身已经成功落盘了，推送失败只该告警不该让 cron 变红。
+    """
+    if os.environ.get('KRONOS_NO_PUSH'):
+        print('  KRONOS_NO_PUSH 已设置，跳过推送', flush=True)
+        return
+    token = os.environ.get('GH_TOKEN') or read_gh_token()
+    if not token:
+        print('  ⚠ 没有 GH_TOKEN，kline.json 未推送（前端会读旧数据）', flush=True)
+        return
+    rel = os.path.relpath(path, REPO).replace('\\', '/')
+    sig = file_signature(path)
+    if last_pushed_sig() == sig:
+        print('  内容与上次推送一致，跳过', flush=True)
+        return
+    try:
+        sys.path.insert(0, REPO)
+        from github_api_push import api_push_all, _ssl_ctx
+        ok, failed = api_push_all(
+            files=[rel],
+            message=('chore(kline): 刷新日K数据 %s（%d 件 / %d 根）'
+                     % (time.strftime('%Y-%m-%d %H:%M'), n_items, n_bars)),
+            repo=os.environ.get('KRONOS_REPO') or 'hintime/cs2-dashboard',
+            token=token, ctx=_ssl_ctx(), base_dir=REPO)
+        if ok:
+            save_pushed_sig(sig)
+            print('  已推送到 GitHub（%s）' % rel, flush=True)
+        else:
+            print('  ⚠ 推送失败: %s' % failed, flush=True)
+    except Exception as e:
+        print('  ⚠ 推送异常（不影响已生成的 kline.json）: %s' % e, flush=True)
+
+
+SIG_FILE = os.path.join(REPO, '.kline_pushed_sig')
+
+
+def file_signature(path):
+    """内容指纹：md5 + 文件大小。只看大小会漏掉「大小相同内容不同」。"""
+    h = hashlib.md5()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 20), b''):
+            h.update(chunk)
+    return '%d:%s' % (os.path.getsize(path), h.hexdigest())
+
+
+def last_pushed_sig():
+    try:
+        with open(SIG_FILE, encoding='utf-8') as f:
+            return f.read().strip()
+    except Exception:
+        return ''
+
+
+def save_pushed_sig(sig):
+    try:
+        with open(SIG_FILE, 'w', encoding='utf-8') as f:
+            f.write(sig)
+    except Exception:
+        pass
+
+
+def read_gh_token():
+    """从 local_keys.env 读 GH_TOKEN（update.py 用的是环境变量，
+    但 cron 环境里通常没有 → 直接读文件更可靠）。"""
+    p = os.path.join(REPO, 'local_keys.env')
+    try:
+        with open(p, encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('GH_TOKEN'):
+                    return line.split('=', 1)[1].strip().strip('"').strip("'")
+    except Exception:
+        pass
+    return None
 
 
 if __name__ == '__main__':
