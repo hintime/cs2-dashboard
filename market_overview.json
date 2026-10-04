@@ -7,20 +7,20 @@
     "max": 768.52,
     "min": 768.27,
     "change_days": -2,
-    "latest_time": "2026-10-05 00:35"
+    "latest_time": "2026-10-05 01:00"
   },
   "trade": {
-    "today_amount": 447987.63,
-    "yesterday_amount": 54552747.31,
-    "today_volume": 21007,
-    "yesterday_volume": 1431631,
-    "amount_mom": 2.23,
-    "volume_mom": -13.61
+    "today_amount": 910197.08,
+    "yesterday_amount": 55293562.22,
+    "today_volume": 39819,
+    "yesterday_volume": 1440640,
+    "amount_mom": 1.82,
+    "volume_mom": -11.03
   },
   "updown": {
-    "up": 1706,
-    "flat": 2265,
-    "down": 3523
+    "up": 618,
+    "flat": 6081,
+    "down": 795
   },
   "greedy": {
     "value": 36.03,
@@ -28,7 +28,6 @@
     "change": "-5.3"
   },
   "trend_24h": [
-    773.65,
     773.7,
     773.78,
     773.83,
@@ -51,8 +50,9 @@
     769.2,
     768.7,
     768.52,
+    768.41,
     768.33
   ],
-  "updated": "2026-10-04T16:43:03Z",
+  "updated": "2026-10-04T17:07:10Z",
   "source": "firepulse"
 }
