@@ -7033,24 +7033,26 @@ function hpVolHtml(name){
   var mxB = Math.max.apply(null, s.buy) || 0;
   var mx = Math.max(mxS, mxB) || 1;
   var n = s.sell.length;
-  var bw = Math.max(3, W / n * 0.54);
-  var bars = '', bpts = [];
+  var pts = [], bpts = [];
   for (var i = 0; i < n; i++){
     var x = (i + 0.5) / n * W;
-    var hh = s.sell[i] > 0 ? Math.max(1.5, s.sell[i] / mx * plotH) : 0;
-    if (hh > 0){
-      bars += '<rect x="' + (x - bw / 2).toFixed(1) + '" y="' + (PT + plotH - hh).toFixed(1)
-        + '" width="' + bw.toFixed(1) + '" height="' + hh.toFixed(1)
-        + '" fill="var(--blue)" opacity=".5" rx="1"><title>' + s.hrs[i]
-        + ' 在售 ' + s.sell[i] + ' 件</title></rect>';
-    }
-    /* 求购量：与在售共用同一刻度（求购通常远少于在售，画出来就是贴底的一条线 —— 这是真实比例，不做归一化美化） */
+    var sy = PT + plotH - (s.sell[i] > 0 ? Math.max(1.5, s.sell[i] / mx * plotH) : 0);
+    pts.push(x.toFixed(1) + ',' + sy.toFixed(1));
     var by = PT + plotH - (s.buy[i] > 0 ? Math.max(1, s.buy[i] / mx * plotH) : 0);
     bpts.push(x.toFixed(1) + ',' + by.toFixed(1));
   }
+  /* ★ 在售量：由柱状改为折线（与求购量线同构），2026-09-26 用户要求「改成折线图」 */
+  var sellLine = '<polyline fill="none" stroke="var(--blue)" stroke-width="1.4" stroke-linejoin="round" '
+    + 'vector-effect="non-scaling-stroke" opacity=".92" points="' + pts.join(' ') + '"/>'
+    + s.sell.map(function (v, i) {
+        var x = (i + 0.5) / n * W;
+        var sy = PT + plotH - (v > 0 ? Math.max(1.5, v / mx * plotH) : 0);
+        return '<circle cx="' + x.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="1.6" fill="var(--blue)">'
+          + '<title>' + s.hrs[i] + ' 在售 ' + v + ' 件</title></circle>';
+      }).join('');
   var buyLine = mxB > 0
-    ? ('<polyline fill="none" stroke="var(--amber)" stroke-width="1.3" stroke-linejoin="round" '
-       + 'vector-effect="non-scaling-stroke" opacity=".9" points="' + bpts.join(' ') + '"/>'
+    ? ('<polyline fill="none" stroke="var(--amber)" stroke-width="1.4" stroke-linejoin="round" '
+       + 'vector-effect="non-scaling-stroke" opacity=".92" points="' + bpts.join(' ') + '"/>'
        + s.buy.map(function (v, i) {
            var x = (i + 0.5) / n * W;
            var by = PT + plotH - (v > 0 ? Math.max(1, v / mx * plotH) : 0);
@@ -7058,13 +7060,18 @@ function hpVolHtml(name){
              + '<title>' + s.hrs[i] + ' 求购 ' + v + ' 件</title></circle>';
          }).join(''))
     : '';
-  var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">'
+  /* svg 注入 data-*：在售/求购折线坐标 + 时间轴 + 最大值，供 hpChartTooltip 做副图联动 */
+  var svg = '<svg class="hc-vsvg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none"'
+    + ' data-w="' + W + '" data-h="' + H + '"'
+    + ' data-pts="' + pts.join(';') + '" data-bpts="' + bpts.join(';') + '"'
+    + ' data-hrs="' + s.hrs.join('|') + '" data-mx="' + mx + '">'
     + '<line x1="0" y1="' + (PT + plotH) + '" x2="' + W + '" y2="' + (PT + plotH)
     + '" stroke="var(--border)" stroke-width="1" vector-effect="non-scaling-stroke"/>'
-    + bars + buyLine + '</svg>';
+    + sellLine + buyLine + '</svg>';
   return '<div class="hc-vol"><div class="hc-vol-h"><b>挂单量</b>'
     + '<span>在售 <b style="color:var(--blue)">' + mxS + '</b> · 求购 <b style="color:var(--amber)">'
     + (mxB || 0) + '</b> 件（近 12 小时峰值）</span>'
+    + '<em class="hc-vol-cur" style="display:none;margin-left:8px"></em>'
     + '<em>' + s.hrs[0] + ' → ' + s.hrs[s.hrs.length - 1] + ' · BUFF 挂单，非成交量</em></div>'
     + '<div class="hc-vol-in">' + svg
     + '<span class="hc-vol-mx">' + mx + '</span></div></div>';
@@ -7329,6 +7336,65 @@ function hpChartTooltip(idx){
     resetReadout();                                /* ★ 顶部读数还原成最新值 */
   }
   svg.addEventListener('mousemove', move);
+
+  /* ── 挂单量副图 crosshair + 随鼠标读数（2026-09-26 新增）──
+     副图 X 轴是 12 小时快照，与价格图 30 日线尺度不同，不能共用一条竖准线，
+     故副图独立挂一套 crosshair 与读数，鼠标移到副图上时显示该时刻在售/求购量。 */
+  var vWrap = D.querySelector('.hp-chart .hc-vol');
+  if (vWrap){
+    var vsvg = vWrap.querySelector('svg');
+    var vholder = vWrap.querySelector('.hc-vol-in');
+    var vtip = vWrap.querySelector('.hc-vol-cur');
+    var vname = (h.mh || h.market_hash || h.n);
+    var vs = hpVolSeries(vname);
+    if (vsvg && vholder && vs){
+      var vP = (vsvg.getAttribute('data-pts') || '').split(';').map(function (s) {
+        var a = s.split(','); return { x: parseFloat(a[0]), y: parseFloat(a[1]) };
+      }).filter(function (o) { return !isNaN(o.x) && !isNaN(o.y); });
+      var vBP = (vsvg.getAttribute('data-bpts') || '').split(';').map(function (s) {
+        var a = s.split(','); return { x: parseFloat(a[0]), y: parseFloat(a[1]) };
+      }).filter(function (o) { return !isNaN(o.x) && !isNaN(o.y); });
+      var vhrs = (vsvg.getAttribute('data-hrs') || '').split('|');
+      var vvbW = parseFloat(vsvg.getAttribute('data-w')) || 780;
+      var vvbH = parseFloat(vsvg.getAttribute('data-h')) || 44;
+      var vpr = parseFloat(getComputedStyle(vholder).paddingRight) || 0;
+      var vline = document.createElement('span'); vline.className = 'hp-tip-line';
+      if (vpr) vline.style.right = vpr + 'px';
+      var vdotS = document.createElement('span'); vdotS.className = 'hp-tip-dot';
+      vdotS.style.background = 'var(--blue)';
+      var vdotB = document.createElement('span'); vdotB.className = 'hp-tip-dot';
+      vdotB.style.background = 'var(--amber)';
+      vholder.appendChild(vline); vholder.appendChild(vdotS); vholder.appendChild(vdotB);
+      function vmove(e){
+        var vrect = vholder.getBoundingClientRect();
+        var vsrect = vsvg.getBoundingClientRect();
+        var voffX = vsrect.left - vrect.left, voffY = vsrect.top - vrect.top;
+        var vw = vsrect.width || 1, vh = vsrect.height || 1;
+        var vvx = (e.clientX - vsrect.left) / vw * vvbW;
+        var best = 0, bestD = Infinity;
+        for (var i = 0; i < vP.length; i++){
+          var d0 = Math.abs(vP[i].x - vvx);
+          if (d0 < bestD){ bestD = d0; best = i; }
+        }
+        var cx = vP[best].x / vvbW * vw + voffX;
+        var cyS = vP[best].y / vvbH * vh + voffY;
+        var cyB = vBP[best].y / vvbH * vh + voffY;
+        vline.style.left = cx.toFixed(1) + 'px'; vline.style.display = 'block';
+        vdotS.style.left = (cx - 4).toFixed(1) + 'px'; vdotS.style.top = (cyS - 4).toFixed(1) + 'px'; vdotS.style.display = 'block';
+        vdotB.style.left = (cx - 4).toFixed(1) + 'px'; vdotB.style.top = (cyB - 4).toFixed(1) + 'px'; vdotB.style.display = 'block';
+        if (vtip){
+          vtip.style.display = 'block';
+          vtip.textContent = vhrs[best] + ' 在售 ' + vs.sell[best] + ' · 求购 ' + vs.buy[best] + ' 件';
+        }
+      }
+      function vleave(){
+        vline.style.display = 'none'; vdotS.style.display = 'none'; vdotB.style.display = 'none';
+        if (vtip) vtip.style.display = 'none';
+      }
+      vsvg.addEventListener('mousemove', vmove);
+      vsvg.addEventListener('mouseleave', vleave);
+    }
+  }
   svg.addEventListener('mouseleave', leave);
 }
 function hpSell(idx){
