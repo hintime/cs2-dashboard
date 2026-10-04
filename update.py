@@ -3124,28 +3124,53 @@ def push_all():
             print(f'  [DIRTY] {filename}')
         return
     else:
-        # Local: single git commit + push（带重试）
-        last_err = None
-        for attempt in range(3):
+        # Local: GitHub API 通道（稳，替代被限速的 git push / github.com:443）
+        # 失败处理：API 主通道 → git 兜底；仍失败才 raise（daemon 下轮重试），
+        # 且彻底失败时发企微告警，避免「静默空转 10 小时」。
+        try:
+            from github_api_push import api_push_all
+            ok, failed = api_push_all(sorted(dirty_files), message,
+                                     repo=REPO, token=GH_TOKEN, ctx=ctx,
+                                     base_dir=SCRIPT_DIR)
+            if ok:
+                print('[PUSH] API 通道推送成功（%d 文件）' % len(dirty_files))
+            else:
+                print('[PUSH] API 通道有 %d 个文件未推送: %s，回退 git' % (len(failed), failed),
+                      file=sys.stderr)
+                try:
+                    git_push_locally(sorted(dirty_files), message)
+                    print('[PUSH] git 兜底推送成功')
+                except Exception as e2:
+                    print('[PUSH] git 兜底也失败: %s' % e2, file=sys.stderr)
+                    _alert_push_failed('API+git 均失败: %s' % e2)
+                    raise RuntimeError('push 失败，数据未推送: %s' % e2)
+        except Exception as e:
+            print('[PUSH] API 通道异常: %s，回退 git' % e, file=sys.stderr)
             try:
                 git_push_locally(sorted(dirty_files), message)
-                last_err = None
-                break
-            except Exception as e:
-                last_err = e
-                print(f'[PUSH] Attempt {attempt+1} failed: {e}', file=sys.stderr)
-                if attempt < 2:
-                    time.sleep(3)
-                    # ⚠️ 重试**不再** fetch + rebase。
-                    #   实测（2026-09-16）这条仓库里 fetch 从没真正下到对象
-                    #   （FETCH_HEAD 写了、对象没下来），而 rebase 一旦被超时
-                    #   强杀就会清空 refs/ → 仓库变 "not a git repository"。
-                    #   更关键的是：远端数据比本地旧，rebase 进来只会覆盖新数据。
-                    #   所以重试只做纯 push —— push 不需要远端对象在本地存在。
-                    pass
-        if last_err is not None:
-            # 必须让调用方知道数据没推上去 —— 否则自动任务会「静默成功」地空转。
-            raise RuntimeError(f'push 重试 3 次全部失败，数据未推送: {last_err}')
+            except Exception as e2:
+                _alert_push_failed('git 兜底失败: %s' % e2)
+                raise RuntimeError('push 失败，数据未推送: %s' % e2)
+
+def _alert_push_failed(detail):
+    """推送彻底失败时发企微告警（2 小时冷却，避免刷屏）。"""
+    try:
+        import subprocess
+        state = os.path.join(SCRIPT_DIR, '.last_push_alert')
+        now = time.time()
+        if os.path.exists(state):
+            try:
+                if now - float((open(state).read().strip() or '0')) < 7200:
+                    return
+            except Exception:
+                pass
+        open(state, 'w').write(str(now))
+        msg = '⚠️ CS2 推送通道异常：%s' % detail
+        subprocess.run([sys.executable, 'watchdog/wecom_notify.py', msg],
+                       cwd=SCRIPT_DIR, timeout=25, capture_output=True)
+    except Exception:
+        pass
+
 
 def github_push_file(path, content_str, message):
     """Push a single file via GitHub Contents API"""
