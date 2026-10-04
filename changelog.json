@@ -2,6 +2,24 @@
   {
     "date": "2026-10-04",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-10-04 16:15",
+    "desc": "wip: local snapshot 2026-10-04 16:15"
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "fix",
+    "title": "feat(ux): 持仓页自动刷新 60s→30s 智能轮询（新数据上线≤30s 自动重载，不丢滚动/面板状态）",
+    "desc": "feat(ux): 持仓页自动刷新 60s→30s 智能轮询（新数据上线≤30s 自动重载，不丢滚动/面板状态）"
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-04 16:06"
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-10-04 16:00",
     "desc": "wip: local snapshot 2026-10-04 16:00"
   },
@@ -10,6 +28,12 @@
     "tag": "chore",
     "title": "update buff_history.json, buff_recent.json, changelog.json,",
     "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-04 15:36"
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "fix",
+    "title": "feat(holdings): 挂单量副图在售量改折线图 + 随鼠标联动(竖准线+蓝/琥珀双点+实时读数)",
+    "desc": "feat(holdings): 挂单量副图在售量改折线图 + 随鼠标联动(竖准线+蓝/琥珀双点+实时读数)"
   },
   {
     "date": "2026-10-04",
@@ -94,29 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-10-04 02:15",
     "desc": "wip: local snapshot 2026-10-04 02:15"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-04 02:06"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-04 02:00",
-    "desc": "wip: local snapshot 2026-10-04 02:00"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-04 01:35"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_forecast.json, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, csqaq_boards.json, daily_report.json, data_status.json, eco_tracked.json, event_study.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, news.json, rec_tracks.json, sectors.json, track_view.json, tracking_analysis.json, tracking_lessons.json 2026-10-04 01:21"
   }
 ]
