@@ -1631,12 +1631,13 @@ html { scroll-behavior: smooth; }
     rgba(255,255,255,0) 0%, rgba(255,255,255,.2) 10%,
     rgba(255,255,255,.2) 90%, rgba(255,255,255,0) 100%)}
 /* ⑦ 面板内：图表不再被 flex 拉高。原本 svg 被 stretch 到 220~400px，
-   同一张图在不同视口会被纵向拉成不同形状；改由图 viewBox 比例决定（780:180）。 */
+   同一张图在不同视口会被纵向拉成不同形状；改由图 viewBox 比例决定（780:260）。
+   ★ 2026-10-04 义轩反馈「图太小」：max-height 210→320 配合 H=260 的放大。 */
 #holdingsPanel .hp-chart{flex:0 0 auto!important;min-height:0!important;display:block!important}
-/* ★ max-height 从 none 改成 210px：图表高度原本随面板宽度等比增长，
-   超宽屏（≥1700px）下会涨到 250px+ 又把视野吃掉；210px 封顶后宽屏只变宽不变高。 */
+/* ★ max-height 320px：图表高度随面板宽度等比增长（宽/3），超宽屏封顶 320，
+   只变宽不变高，避免 ≥1700px 视口下无限增高吃掉视野。 */
 #holdingsPanel .hp-chart .hc-svg{flex:0 0 auto!important;min-height:0!important;
-  max-height:210px!important;height:auto!important}
+  max-height:320px!important;height:auto!important}
 </style>
   </div>
 
@@ -6727,12 +6728,11 @@ function hpChart(vals, cost, reason, days, volName){
   var hasCost = (typeof cost === 'number') && cost > 0;
   var ext = hasCost ? [cost] : [];
   if (tk){ for (var ti=0;ti<tk.up.length;ti++){ if (tk.up[ti]!=null) ext.push(tk.up[ti]); if (tk.dn[ti]!=null) ext.push(tk.dn[ti]); } }
-  /* W:H = 780:180 —— ★ 2026-09-26「挡视野」优化：
-     上一版把 H 从 112 一口气加到 252（700px 视口下 226px），加上顶部指标条和底部
-     两行，整块占到 ~313px，把下面的内容全顶出屏幕。
-     现在回到 180（同视口 ~161px）：5 档刻度仍然放得下（间距 38.5px > 字号 10px），
-     同时把顶部指标条精简、底部两行并成一行 —— 省下的高度正好留给新增的挂单量副图。 */
-  var W=780, H=180, PT=13, PB=13;
+  /* W:H = 780:260 —— ★ 2026-09-26「挡视野」优化曾把 H 从 252 压回 180；
+     ★ 2026-10-04 义轩反馈「图太小」，重新放大：180→260（视口下渲染高约 宽/3，
+     800px 宽 ≈ 266px），max-height 上限同步 210→320。顶部指标条与底部图例
+     仍保持单行，不会像 252 时代那样把内容顶出屏幕。 */
+  var W=780, H=260, PT=13, PB=13;
   var mx=Math.max.apply(null,vals.concat(ext)),
       mn=Math.min.apply(null,vals.concat(hasCost?[cost*0.9]:[],ext)), rng=(mx-mn)||1, pts=[];
   var plotH = H - PT - PB;
