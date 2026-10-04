@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 947.23,
-    "change": -5.28,
-    "change_pct": -5.28,
-    "market_value": 290756182.77,
-    "total_items": 4009,
-    "updated": "2026-10-04T14:00:03+08:00",
+    "latest": 951.79,
+    "change": -4.82,
+    "change_pct": -4.82,
+    "market_value": 292157152.8,
+    "total_items": 4033,
+    "updated": "2026-10-04T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4219,8 +4219,8 @@
         "date": "2026-10-04",
         "dateFull": "2026-10-04 14:00",
         "open": 947.23,
-        "close": 947.23,
-        "high": 947.23,
+        "close": 951.79,
+        "high": 951.79,
         "low": 947.23
       }
     ],
@@ -12641,12 +12641,20 @@
         "index": 947.23,
         "change_pct": -5.28,
         "market_value": 290756182.77
+      },
+      {
+        "time": "16:00",
+        "date": "2026-10-04",
+        "timestamp": 1791100803,
+        "index": 951.79,
+        "change_pct": -4.82,
+        "market_value": 292157152.8
       }
     ],
     "selling": {
-      "total_selling": 1378794,
+      "total_selling": 1420016,
       "total_selling_prev": 0,
-      "total_selling_delta": 1378794,
+      "total_selling_delta": 1420016,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12654,7 +12662,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791093603606,
+  "index_updated": 1791100803528,
   "alerts": [
     {
       "name": "★ Moto Gloves | 3rd Commando Company (Field-Tested)",
@@ -31362,7 +31370,7 @@
     "MP9 | 爆裂食物链 (崭新出厂)",
     "MP9 | 爆裂食物链 (略有磨损)"
   ],
-  "updated": "2026-10-04T07:35:58Z",
+  "updated": "2026-10-04T08:05:50Z",
   "steam_market_items": 51,
   "steam_market_recs": {
     "momentum": [],
