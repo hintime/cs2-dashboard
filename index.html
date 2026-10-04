@@ -1594,6 +1594,22 @@ html { scroll-behavior: smooth; }
    ══════════════════════════════════════════════════════════════════════════ */
 .hp-chart{position:relative;padding:0;margin:9px 0 2px}
 .hp-chart svg{display:block;width:100%;height:auto}
+/* ★ 全屏按钮（2026-10-04 义轩：加个按钮点开看一整个大图）
+   放在顶部指标条右侧，与「7日/14日/全部」区间切换同排。
+   图标用 CSS 画四个角（比引入图标字体更省，且跟随主题）。 */
+.hc-fs{position:absolute;top:-2px;right:52px;z-index:6;
+  width:24px;height:22px;padding:0;border:1px solid var(--border);border-radius:6px;
+  background:var(--surface2);cursor:pointer;opacity:.62;
+  transition:opacity .13s,border-color .13s,background .13s}
+.hc-fs:hover{opacity:1;border-color:var(--text3);background:var(--surface)}
+.hc-fs::before{content:'';position:absolute;inset:5px;
+  border:1.4px solid var(--text2);border-radius:1px;
+  clip-path:polygon(0 0,34% 0,34% 12%,12% 12%,12% 34%,0 34%,
+                    0 66%,12% 66%,12% 88%,34% 88%,34% 100%,0 100%,
+                    100% 100%,66% 100%,66% 88%,88% 88%,88% 66%,100% 66%,
+                    100% 34%,88% 34%,88% 12%,66% 12%,66% 0,100% 0)}
+.hc-fs::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;
+  background:var(--border)}
 /* ① 顶部指标条
    ★ 2026-09-26「挡视野」优化：原来这里塞了 6 项（现价/MA5/MA20/布林带/成本/涨跌），
      而 MA5·MA20·布林带的数值在底部图例里又写了一遍 → 重复且把图表挤下去。
@@ -1713,6 +1729,65 @@ html { scroll-behavior: smooth; }
   border-radius:3px;background:rgba(96,165,250,.14);pointer-events:none;
   box-shadow:0 0 0 1px rgba(0,0,0,.25) inset}
 .hc-mini:hover .hc-mini-win{background:rgba(96,165,250,.2)}
+/* ── 全屏看大图（2026-10-04 义轩：加个按钮点开看一整个图）──
+   实现方式：**把图表 DOM 整体搬进全屏层，用 CSS 放大，绝不重画、绝不改 viewBox**。
+   这么做的三个理由：
+     ① tooltip / 十字光标 / 滚轮缩放 / 底部导航条 全部原样复用（它们都绑在这棵
+        DOM 上，搬走就跟着走），不需要写第二套交互代码，也不会出现两套行为不一致；
+     ② 改 viewBox 会让 data-pts 反算的屏幕坐标全错位（2026-10-04 已踩过一次）；
+     ③ 内存/耗时零开销 —— 就是一次 DOM 移动 + 一行 style。
+   关闭时把 DOM 搬回原位，缩放倍率与区间选择原样保留。 */
+.hp-fs-layer{position:fixed;inset:0;z-index:9000;display:none;
+  background:var(--bg);overflow:hidden}
+.hp-fs-layer.on{display:flex;flex-direction:column}
+/* 顶部一条：标题 + 操作。ESC / 双击遮罩 / 关闭按钮都能退出。 */
+.hp-fs-bar{display:flex;align-items:center;gap:10px;flex:0 0 auto;
+  padding:10px 16px;border-bottom:1px solid var(--border);
+  background:var(--surface)}
+.hp-fs-title{font-size:13px;font-weight:650;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hp-fs-title small{font-weight:400;color:var(--text3);margin-left:8px;font-size:11px}
+.hp-fs-hint{margin-left:auto;font-size:11px;color:var(--text3);white-space:nowrap}
+.hp-fs-x{width:26px;height:26px;padding:0;border:1px solid var(--border);
+  border-radius:6px;background:var(--surface2);color:var(--text2);
+  font-size:14px;line-height:1;cursor:pointer;font-family:inherit;
+  transition:border-color .13s,color .13s}
+.hp-fs-x:hover{border-color:var(--text3);color:var(--text)}
+/* 图表容器：搬来的 .hp-chart 在这里被放大 */
+.hp-fs-body{flex:1 1 auto;position:relative;overflow-y:auto;overflow-x:hidden;
+  display:flex;align-items:stretch;padding:14px 20px 20px}
+/* 放大态覆盖：图表撑满可用空间，右侧留出价格轴的位置。
+   ⚠ 关键：要 svg 真的等比变大，**整条父链每一级都必须有确定高度**，
+     否则 .hc-svg{height:100%} 的百分比基准是 auto → 等于没设，实测只放大 8%。
+     所以 .hp-fs-body(定高) > .hp-chart(flex) > .hc-body(flex) > .hc-plot(flex)
+     四级全部显式接管高度，svg 才有 100% 可依。 */
+.hp-fs-body .hp-chart{flex:1 1 auto;display:flex;flex-direction:column;
+  min-width:0;min-height:0;height:100%;margin:0}
+.hp-fs-body .hc-stats{flex:0 0 auto;font-size:12px;padding:3px 1px 7px}
+.hp-fs-body .hc-stats .it.k-cur b{font-size:15px}
+.hp-fs-body .hc-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.hp-fs-body .hc-plot{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+  padding-right:78px}
+.hp-fs-body .hc-yaxis{width:66px}
+.hp-fs-body .hc-yaxis span{font-size:11px}
+.hp-fs-body .hc-mini{height:46px;flex:0 0 auto;padding-right:78px}
+.hp-fs-body .hc-mini-in{height:46px}
+/* ⚠ 特异性必须压过 #holdingsPanel .hp-chart .hc-svg 的 height:auto!important /
+   max-height:320px!important（那是面板内的上限，全屏要突破它）。
+   用 body:not(.hp-fs-off) 提一级特异性，不靠 !important 对拼。
+   ⚠ min-height 保底：视口很矮时（无头 488px / 分屏），flex 分配会把 svg 压到
+     150px —— 比面板内还小。给 280px 下限，保证「全屏永远 ≥ 面板内」。 */
+body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
+  flex:1 1 auto!important;min-height:280px!important;height:100%!important;
+  max-height:none!important;width:100%!important}
+.hp-fs-body .hc-vol-h{font-size:11.5px}
+.hp-fs-body .hc-xaxis{font-size:11px}
+.hp-fs-body .hc-lg{font-size:11.5px;padding:3px 8px}
+/* 副图（挂单量）在全屏下也一起放大，但别喧宾夺主 —— 限高 1/5 */
+.hp-fs-body .hc-vol{flex:0 0 auto}
+.hp-fs-body .hc-vol svg{height:90px!important}
+/* 全屏下把「全屏按钮」自己隐藏（已在全屏，没什么可点的），换上退出按钮 */
+.hp-fs-layer .hc-fs{display:none}
 </style>
   </div>
 
@@ -7063,6 +7138,8 @@ function hpChart(vals, cost, reason, days, volName){
   return stats
     + '<div class="hc-body"><div class="hc-plot">' + svg
     + '<span class="hc-zbadge"><b>1.0×</b><span>滚轮缩放 · 拖动平移 · 双击复位</span></span>'
+    /* 全屏按钮：与「7日/14日/全部」同排（stats 行右侧），点开看大图 */
+    + '<button class="hc-fs" title="全屏看大图（Esc 退出）" onclick="hpFullscreen()"></button>'
     + '</div>' + yaxis + '</div>'
     + mini
     + volHtml + xfoot;
@@ -7293,6 +7370,10 @@ function hpSelect(idx){
    + '</div>'
    + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)),
         null, (h.mh || h.market_hash || h.n))+'</div>';
+  /* ★ 2026-10-04：图表在全屏层里时，hpSelect 重渲染会 innerHTML 清空 #hpDetail，
+     而真正的图表 DOM 此刻挂在全屏层上（不在这棵子树里）→ 重渲染完图表就没了。
+     所以先检测并关掉全屏（把 DOM 搬回来），让下面这次渲染照常进行。 */
+  try { hpFullscreenClose(); } catch (e) {}
   box.innerHTML = html;
   window._hpCur = idx;
   /* 挂单量副图：buff_recent.json 由 init 异步载入，首屏渲染时可能还没到。
@@ -7653,6 +7734,86 @@ function hpInitZoom(root){
   apply();
 }
 /* ══════════════════════════════════════════════════════════════════════════
+   走势图全屏看大图（2026-10-04 义轩要求：加个按钮点开能看到一整个图）
+   ──────────────────────────────────────────────────────────────────────────
+   设计取舍：**搬 DOM，不重画**。
+     · 图表这棵 DOM 上已经绑好了 tooltip / 十字光标 / 滚轮缩放 / 拖动平移 /
+       底部导航条（hpChartTooltip + hpInitZoom），整体搬进全屏层后这些交互
+       全部原样可用 —— 不必写第二套，也就不会出现「全屏里滚轮失灵」这类不一致。
+     · 绝不能改 viewBox 宽高来「放大」：十字光标与顶部读数靠 svg 的
+       data-pts + data-w 反算屏幕坐标（hpChartTooltip.move），改 viewBox 会全错位。
+       所以全屏只做 CSS 层的放大（.hp-fs-body 里的覆盖规则），viewBox 一个字不动。
+     · 缩放倍率/区间选择会原样带过去；退出时搬回原位，状态不丢。
+   退出：右上角 ✕ / ESC / 双击标题栏，三种都行。
+   ══════════════════════════════════════════════════════════════════════════ */
+function hpFullscreen(){
+  var layer = document.getElementById('hpFsLayer');
+  var src = document.querySelector('#hpDetail .hp-chart');
+  if (!src) return;
+  if (!layer){
+    layer = document.createElement('div');
+    layer.id = 'hpFsLayer';
+    layer.className = 'hp-fs-layer';
+    document.body.appendChild(layer);
+  }
+  /* 记住来源容器，退出时搬回去（innerHTML 重渲染后容器会变，故每次现取） */
+  var holder = src.parentNode;
+  /* 标题：hpName 依赖异步加载的 _cnNameMap，首屏可能还没到 → 退回英文名/HashName，
+     宁可显示英文名也不要只显示「走势详情」这种等于没写。 */
+  var title = '';
+  try {
+    var hArr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+    var hCur = hArr[window._hpCur];
+    if (hCur) title = hpName(hCur) || hCur.name || hCur.mh || hCur.market_hash || hCur.n || '';
+    if (!title) title = hCur ? String(hCur.n || hCur.mh || '') : '';
+  }
+  catch (e) { title = ''; }
+
+  layer.innerHTML = '<div class="hp-fs-bar">'
+    + '<div class="hp-fs-title">' + esc(title || '走势详情')
+    + '<small>滚轮缩放 · 拖动平移 · 双击复位</small></div>'
+    + '<div class="hp-fs-hint">按 Esc 或双击此处退出</div>'
+    + '<button class="hp-fs-x" title="退出全屏（Esc）" onclick="hpFullscreenClose()">✕</button>'
+    + '</div>'
+    + '<div class="hp-fs-body" id="hpFsBody"></div>';
+  var bodyEl = document.getElementById('hpFsBody');
+  bodyEl.appendChild(src);            /* ← 整棵搬走 */
+  /* 标题栏双击退出（点空白处也算，这里给整条 bar 绑 dblclick 而不是只有标题文字） */
+  bodyEl.parentNode.querySelector('.hp-fs-bar')
+    .addEventListener('dblclick', hpFullscreenClose);
+  layer.classList.add('on');
+  document.body.style.overflow = 'hidden';   /* 背景不跟着滚 */
+  /* 搬过来之后 tooltip 用的 getBoundingClientRect 会自动跟着变，无需重算；
+     但 hpInitZoom 里缓存的 svg 引用仍指向同一个元素，无需重调。 */
+  try { hpInitZoom(src); } catch (e) {}
+}
+function hpFullscreenClose(){
+  var layer = document.getElementById('hpFsLayer');
+  if (!layer) return;
+  var bodyEl = document.getElementById('hpFsBody');
+  var chart = bodyEl ? bodyEl.querySelector('.hp-chart') : null;
+  if (chart){
+    /* 搬回持仓详情。用 #hpDetail 本身当落点即可 —— hpSelect 每次重渲染都会
+       重新生成 .hp-chart 容器，appendChild 会插到 #hpDetail 末尾，
+       而 #hpDetail 里只有这一个走势图，位置不会错乱。 */
+    var back = document.getElementById('hpDetail');
+    if (back) back.appendChild(chart);
+  }
+  layer.classList.remove('on');
+  layer.innerHTML = '';
+  document.body.style.overflow = '';
+  /* 搬回后 tooltip 的坐标基准变了（滚动位置），让它自己重算一次 */
+  try { hpInitZoom(chart); } catch (e) {}
+}
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    var fl = document.getElementById('hpFsLayer');
+    if (fl && fl.classList.contains('on')) { hpFullscreenClose(); return; }
+    var b = document.getElementById('hpKronosBox');
+    if (b && b.classList.contains('on')) hpKronosClose();
+  }
+});
+/* ══════════════════════════════════════════════════════════════════════════
    Kronos 预测弹层（2026-10-04 义轩要求：持仓详情里加个按钮看预测）
    ──────────────────────────────────────────────────────────────────────────
    数据来源：ai_forecast.json（服务器 update.py 每天生成，14 日预测）。
@@ -7662,12 +7823,8 @@ function hpInitZoom(root){
      只作方向参考，不参与推荐评分、不作买卖依据（红线上不能误导）。
    ══════════════════════════════════════════════════════════════════════════ */
 function hpKronosClose(){ var b=document.getElementById('hpKronosBox'); if(b) b.classList.remove('on'); }
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape'){
-    var b = document.getElementById('hpKronosBox');
-    if (b && b.classList.contains('on')) hpKronosClose();
-  }
-});
+/* ESC 关闭的公共监听统一放在 hpFullscreenClose 之后（全屏 / Kronos 两个弹层一起管），
+   避免两个 keydown 监听器重复响应同一个 ESC。 */
 function hpKronos(idx){
   var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
   var h = arr[idx];
