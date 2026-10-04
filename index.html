@@ -1085,6 +1085,54 @@ html { scroll-behavior: smooth; }
 .hp-op.sell:hover{border-color:rgba(248,113,113,.42);color:#f87171}
 .hp-op.star:hover{border-color:rgba(251,191,36,.42);color:var(--amber)}
 .hp-op.ai:hover{border-color:rgba(74,124,255,.42);color:var(--blue)}
+/* Kronos 预测按钮（2026-10-04）：与 AI 分析同级，紫色系区分「模型预测」而非「分析」 */
+.hp-op.kronos:hover{border-color:rgba(168,85,247,.45);color:#c084fc}
+/* 无预测数据时置灰但仍可点（点开告诉用户为什么没有，而不是按钮凭空消失） */
+.hp-op.kronos.none{opacity:.5}
+.hp-op.kronos.none:hover{border-color:rgba(168,85,247,.3);color:#a855f7}
+/* ── Kronos 预测弹层 ── */
+.hp-kbox{position:fixed;inset:0;z-index:9999;display:none;
+  align-items:center;justify-content:center;background:rgba(6,9,14,.72);
+  backdrop-filter:blur(3px);padding:20px}
+.hp-kbox.on{display:flex}
+.hp-kcard{width:min(560px,100%);max-height:86vh;overflow:auto;
+  background:var(--surface);border:1px solid var(--border-hi);border-radius:14px;
+  padding:18px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.hp-kcard h3{margin:0 0 2px;font-size:15px;font-weight:750;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:8px}
+.hp-kcard h3 .tag{font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;
+  background:rgba(168,85,247,.16);color:#c084fc;border:1px solid rgba(168,85,247,.3)}
+.hp-ksub{font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.6}
+/* 预测结论条：现价 → 预测价 */
+.hp-kbig{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  padding:12px 14px;border-radius:10px;background:var(--surface2);
+  border:1px solid var(--border);margin-bottom:12px}
+.hp-kbig .now{font-size:12px;color:var(--text3)}
+.hp-kbig .arrow{color:var(--text3);font-size:13px}
+.hp-kbig .pred{font-size:22px;font-weight:800;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.hp-kbig .chg{margin-left:auto;font-size:15px;font-weight:750;
+  font-variant-numeric:tabular-nums}
+.hp-kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.hp-kgrid .c{padding:8px 10px;border-radius:8px;background:var(--surface2);
+  border:1px solid var(--border)}
+.hp-kgrid .c .k{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text3);font-weight:600;margin-bottom:3px}
+.hp-kgrid .c .v{font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
+/* 预测曲线（真实 series 数据画迷你折线） */
+.hp-kchart{height:96px;margin-bottom:10px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);padding:6px 8px}
+.hp-kchart svg{display:block;width:100%;height:100%}
+.hp-kfoot{font-size:10.5px;color:var(--text3);line-height:1.65;
+  padding-top:10px;border-top:1px solid var(--border)}
+.hp-kfoot b{color:var(--text2)}
+.hp-kclose{margin-top:12px;width:100%;padding:7px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2);
+  font-size:12px;cursor:pointer}
+.hp-kclose:hover{background:var(--surface);color:var(--text)}
+.hp-kempty{padding:26px 10px;text-align:center;color:var(--text3);font-size:12.5px;
+  line-height:1.9}
+.hp-kempty .big{font-size:26px;opacity:.4;margin-bottom:8px}
 @media(max-width:640px){
   .hp-ops{flex-wrap:wrap;gap:6px}
   .hp-op{flex:1;min-width:84px;text-align:center}
@@ -5763,6 +5811,12 @@ window.recData = recData;
 window.WEAR_MAP = WEAR_MAP;
 window.CAT_MAP = CAT_MAP;
 window.CAT_LABELS = CAT_LABELS;
+// Kronos 预测：持仓明细(S3 块)要用 fcOf/FC，必须导出到全局，否则跨 script 不可见
+window.FC = FC;
+window.loadForecast = loadForecast;
+window.fcOf = fcOf;
+window.fcChip = fcChip;
+window.fcLine = fcLine;
 
 })();
 </script>
@@ -7217,6 +7271,9 @@ function hpSelect(idx){
    + '<button class="hp-op sell" onclick="hpSell('+idx+')">卖出此件</button>'
    + '<button class="hp-op star" onclick="hpStar('+idx+')">加星关注</button>'
    + '<button class="hp-op ai" onclick="hpDetail('+idx+')">AI 分析</button>'
+   + '<button class="hp-op kronos'+(fcOf(h) ? '' : ' none')+'" onclick="hpKronos('+idx+')"'
+   + ' title="'+(fcOf(h) ? '查看 Kronos 时序模型 14 日预测（实验性，仅方向参考）'
+                      : '这件饰品暂无 Kronos 预测数据（预测仅覆盖推荐池前10 + AI精选 + 持仓）')+'">Kronos 预测</button>'
    + '</div>'
    + '<div class="hp-grid">'
    + '<div class="hp-cell"><div class="k">成本</div><div class="v mono">'
@@ -7594,6 +7651,125 @@ function hpInitZoom(root){
     mini.addEventListener('dblclick', function(e){ e.preventDefault(); reset(); });
   }
   apply();
+}
+/* ══════════════════════════════════════════════════════════════════════════
+   Kronos 预测弹层（2026-10-04 义轩要求：持仓详情里加个按钮看预测）
+   ──────────────────────────────────────────────────────────────────────────
+   数据来源：ai_forecast.json（服务器 update.py 每天生成，14 日预测）。
+   覆盖范围：推荐池前10 + AI 精选 + 持仓三类标的 —— 所以**不是每件都有**，
+   没有的按钮置灰但仍可点，点开明确告知原因（不装成"坏了"）。
+   ⚠ 定位必须写清楚：Kronos 是金融K线基础模型迁移到饰品，域外外推，
+     只作方向参考，不参与推荐评分、不作买卖依据（红线上不能误导）。
+   ══════════════════════════════════════════════════════════════════════════ */
+function hpKronosClose(){ var b=document.getElementById('hpKronosBox'); if(b) b.classList.remove('on'); }
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    var b = document.getElementById('hpKronosBox');
+    if (b && b.classList.contains('on')) hpKronosClose();
+  }
+});
+function hpKronos(idx){
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+  var h = arr[idx];
+  if (!h) return;
+  var box = document.getElementById('hpKronosBox');
+  if (!box){
+    box = document.createElement('div');
+    box.id = 'hpKronosBox';
+    box.className = 'hp-kbox';
+    box.onclick = function(e){ if (e.target === box) hpKronosClose(); };
+    document.body.appendChild(box);
+  }
+  var f = fcOf(h);
+  var days = (FC.meta && FC.meta.days) ? FC.meta.days : 14;
+  var fdate = (FC.meta && FC.meta.date) ? FC.meta.date : '—';
+  var name = esc(hpName(h));
+
+  if (!f || typeof f.change_pct !== 'number'){
+    box.innerHTML = '<div class="hp-kcard">'
+      + '<h3>Kronos 预测</h3>'
+      + '<div class="hp-ksub">' + name + '</div>'
+      + '<div class="hp-kempty"><div class="big">◌</div>'
+      + '这件饰品暂无 Kronos 预测<br>'
+      + '<span style="font-size:11px;opacity:.8">预测目前只覆盖「推荐池前10 + AI 精选 + 持仓」，<br>不是全市场每件都有</span></div>'
+      + '<button class="hp-kclose" onclick="hpKronosClose()">知道了</button></div>';
+    box.classList.add('on');
+    return;
+  }
+
+  var up = f.change_pct >= 0;
+  var col = up ? 'var(--rise)' : 'var(--fall)';
+  var arrow = up ? '▲' : '▼';
+  /* 迷你走势图：用 forecast.series 画真实折线。
+     分界点用后端给的 hist_len（历史段点数），不再按固定比例猜 ——
+     否则预测段会被画成历史实线（2026-10-04 修掉的失真）。
+     hist_len 缺失时（旧数据）不画历史线，只画预测虚线。 */
+  var chart = (function(){
+      var ss = f.series || [];
+      var hl = (typeof f.hist_len === 'number' && f.hist_len > 0) ? f.hist_len : 0;
+      var futPts = ss.slice(hl);
+      var histPts = hl > 0 ? ss.slice(0, hl) : [];
+      if (!futPts.length){
+        return '<div class="hp-kchart" style="display:flex;align-items:center;'
+          + 'justify-content:center;color:var(--text3);font-size:11px">无预测曲线数据</div>';
+      }
+      var VW = 100, VH = 100, i, lo = Infinity, hi = -Infinity, v;
+      for (i=0;i<ss.length;i++){
+        v = Number(ss[i][1]);
+        if (isFinite(v)){ if (v<lo) lo=v; if (v>hi) hi=v; }
+      }
+      if (!isFinite(lo)){ lo = 0; hi = 1; }
+      var rng = (hi - lo) || 1;
+      function px(i, n){ return (n<=1 ? 0 : (i/(n-1)*VW)).toFixed(1); }
+      function py(v){ return (6 + (hi - v)/rng*(VH-12)).toFixed(1); }
+      var total = ss.length;
+      var hp = histPts.map(function(p,k){ return px(k,total)+','+py(Number(p[1])); }).join(' ');
+      // 预测段从历史最后一点接上，折线不断开
+      var startAt = hl > 0 ? hl - 1 : 0;
+      var fp = [];
+      if (hl > 0 && histPts.length) fp.push(px(startAt,total)+','+py(Number(histPts[histPts.length-1][1])));
+      for (i=hl;i<total;i++) fp.push(px(i,total)+','+py(Number(ss[i][1])));
+      fp = fp.join(' ');
+      var lastX = px(total-1,total), lastY = py(Number(ss[total-1][1]));
+      return '<div class="hp-kchart"><svg viewBox="0 0 '+VW+' '+VH+'" preserveAspectRatio="none">'
+        + (hp ? '<polyline fill="none" stroke="var(--blue)" stroke-width="1.6" vector-effect="non-scaling-stroke" points="'+hp+'"/>' : '')
+        + '<polyline fill="none" stroke="'+col+'" stroke-width="1.6" stroke-dasharray="3 2.5"'
+        + ' vector-effect="non-scaling-stroke" points="'+fp+'"/>'
+        + '<circle cx="'+lastX+'" cy="'+lastY+'" r="2.6" fill="'+col+'"/>'
+        + '</svg></div>'
+        + '<div style="display:flex;gap:12px;font-size:10px;color:var(--text3);margin:-4px 2px 10px">'
+        + (hp ? '<span><i style="display:inline-block;width:11px;height:2px;background:var(--blue);'
+          + 'vertical-align:middle;margin-right:4px"></i>历史 ' + hl + ' 天</span>' : '')
+        + '<span><i style="display:inline-block;width:11px;height:0;border-top:2px dashed '+col+';'
+        + 'vertical-align:middle;margin-right:4px"></i>预测（虚线）</span></div>';
+    })();
+
+  box.innerHTML = '<div class="hp-kcard">'
+    + '<h3>Kronos 预测<span class="tag">实验性</span></h3>'
+    + '<div class="hp-ksub">' + name + ' · 模型生成于 ' + esc(fdate) + '</div>'
+    + '<div class="hp-kbig">'
+    +   '<span class="now">现价 ¥' + f.current + '</span>'
+    +   '<span class="arrow">→</span>'
+    +   '<span class="pred" style="color:'+col+'">¥' + f.forecast + '</span>'
+    +   '<span class="chg" style="color:'+col+'">' + arrow + ' ' + (up?'+':'') + f.change_pct + '%</span>'
+    + '</div>'
+    + '<div class="hp-kgrid">'
+    +   '<div class="c"><div class="k">预测跨度</div><div class="v">' + days + ' 日</div></div>'
+    +   '<div class="c"><div class="k">历史天数</div><div class="v">' + (f.history_days != null ? f.history_days : '—') + '</div></div>'
+    +   '<div class="c"><div class="k">入选来源</div><div class="v" style="font-size:12px">'
+    +     (f.source === 'top10' ? '推荐池前10' : (f.source === 'holdings' ? '持仓' : (f.source === 'ai_select' ? 'AI 精选' : (f.source || '—'))))
+    +   '</div></div>'
+    + '</div>'
+    + chart
+    + '<div class="hp-kfoot">'
+    + '<b>怎么读：</b>虚线是模型对未来 '+days+' 天的外推，不是已发生的价格。<br>'
+    + '<b>局限：</b>Kronos 是金融 K 线基础模型迁移到饰品市场的域外预测，'
+    + '对「哪件会涨」的判断没有胜率保证；<b>不参与站内推荐评分，不构成买卖依据</b>。<br>'
+    + '<b>覆盖：</b>目前仅推荐池前10 + AI 精选 + 持仓，不是全市场每件都有。'
+    + '</div>'
+    + '<button class="hp-kclose" onclick="hpKronosClose()">关闭</button>'
+    + '</div>';
+  box.classList.add('on');
 }
 function hpSell(idx){
   /* ★ 2026-09-25：原来这里用原生 confirm + removeMyHolding 直接移除持仓，

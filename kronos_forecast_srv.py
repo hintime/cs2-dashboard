@@ -18,6 +18,8 @@ import sys
 KRONOS = os.environ.get('KRONOS_HOME') or '/home/ubuntu/cs2-kronos'
 REPO = os.path.dirname(os.path.abspath(__file__))
 DB = os.environ.get('PRICE_HIST_DB') or '/home/ubuntu/cs2-run/price_history.db'
+# 迷你走势图用的历史段点数（最后 N 天）。全量 58 天会让前端 svg 过长，故只取尾部。
+HIST_TAIL = int(os.environ.get('KRONOS_HIST_TAIL') or 30)
 
 sys.path.insert(0, KRONOS)
 os.chdir(KRONOS)
@@ -134,12 +136,19 @@ def main():
             y['close'] = _pd.Series(_acc / max(1, samples), index=_y.index)
             cur = float(df['close'].iloc[-1])
             last = float(y['close'].iloc[-1])
+            # series = 历史尾部(实线) + 预测段(虚线)，用 hist_len 标出分界点。
+            # ★ 2026-10-04 修正：原实现只写预测段，前端拿不到分界就把预测画成了历史实线。
+            hist_tail = df[['timestamps', 'close']].tail(HIST_TAIL)
+            hist_pts = [[str(d)[:10], round(float(v), 2)] for d, v in
+                        zip(hist_tail['timestamps'], hist_tail['close'])]
+            fut_pts = [[str(d)[:10], round(float(v), 2)] for d, v in zip(y.index, y['close'])]
             items.append({
                 'name': t.get('name'), 'hash_name': hn, 'rank': t.get('rank'),
                 'source': t.get('source'), 'score': t.get('score'),
                 'history_days': len(df), 'current': round(cur, 2), 'forecast': round(last, 2),
                 'change_pct': round((last / cur - 1) * 100, 2),
-                'series': [[str(d)[:10], round(float(v), 2)] for d, v in zip(y.index, y['close'])],
+                'hist_len': len(hist_pts),
+                'series': hist_pts + fut_pts,
             })
             print('  ✓ %-28s %8.2f → %8.2f (%+.1f%%)' % (str(t.get('name'))[:26], cur, last,
                                                          (last / cur - 1) * 100), flush=True)
