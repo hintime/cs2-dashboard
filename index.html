@@ -1638,6 +1638,33 @@ html { scroll-behavior: smooth; }
    只变宽不变高，避免 ≥1700px 视口下无限增高吃掉视野。 */
 #holdingsPanel .hp-chart .hc-svg{flex:0 0 auto!important;min-height:0!important;
   max-height:320px!important;height:auto!important}
+
+/* ══════════════ ⑧ 走势图缩放 / 拖动（2026-10-04 义轩要求）══════════════
+   参照 TradingView 交互范式：滚轮以光标为锚缩放、拖动平移、双击复位。
+   ⚠ 实现关键：**不碰 viewBox 宽高**。
+     图表的十字光标/顶部读数全靠 svg 上的 data-pts + data-w/data-h 反算屏幕坐标
+     （见 hpChartTooltip 的 move()），一旦改 viewBox 宽度整套坐标就全错位。
+     所以缩放走 <g> 的 transform + data-w 改写逻辑宽度，两者始终自洽。 */
+.hc-zoomable{cursor:crosshair}
+.hc-body.hc-zoomed .hc-zoomable{cursor:grab}
+.hc-body.hc-panning .hc-zoomable{cursor:grabbing}
+/* 缩放提示角标：只在 >1× 时出现，告诉用户「怎么回去」 */
+.hc-zbadge{position:absolute;top:6px;left:8px;z-index:9;display:none;
+  align-items:center;gap:5px;padding:2px 7px;border-radius:5px;
+  background:rgba(15,20,28,.82);border:1px solid var(--border-hi);
+  font-size:10px;color:var(--text2);font-variant-numeric:tabular-nums;
+  pointer-events:none;backdrop-filter:blur(2px)}
+.hc-zbadge.on{display:inline-flex}
+.hc-zbadge b{color:var(--blue);font-weight:700}
+/* 底部缩略导航条：全区间走势 + 当前视窗指示块（可拖动） */
+.hc-mini{position:relative;height:30px;margin-top:4px;padding-right:62px;cursor:pointer}
+.hc-mini-in{position:relative;width:100%;height:30px;border:1px solid var(--border);
+  border-radius:5px;background:var(--surface2);overflow:hidden}
+.hc-mini svg{display:block;width:100%;height:100%}
+.hc-mini-win{position:absolute;top:0;bottom:0;border:1.5px solid var(--blue);
+  border-radius:3px;background:rgba(96,165,250,.14);pointer-events:none;
+  box-shadow:0 0 0 1px rgba(0,0,0,.25) inset}
+.hc-mini:hover .hc-mini-win{background:rgba(96,165,250,.2)}
 </style>
   </div>
 
@@ -6882,14 +6909,21 @@ function hpChart(vals, cost, reason, days, volName){
   var yaxis = '<div class="hc-yaxis">' + ticks.join('')
     + '<b class="hc-cur" data-now="¥'+hpFmt(last)+'" style="top:'+(ly/H*100).toFixed(2)
     + '%;background:'+col+'">¥'+hpFmt(last)+'</b></div>';
-  /* ⑦ 绘图本体 */
-  var svg = '<svg class="hc-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" '
+  /* ⑦ 绘图本体
+     ★ 2026-10-04 加缩放/拖动：整段图形包进 <g class="hc-vp">，
+       缩放平移只改这个 g 的 transform，viewBox 保持 0 0 W H 不变。
+       关键：data-w 写**变换后的逻辑宽度**（W*缩放倍率），
+       hover 反算（hpChartTooltip.move）用 data-w 把鼠标 x 映射回数据坐标，
+       这样放大后十字光标和顶部读数依然精确落在真实点位上。 */
+  var svg = '<svg class="hc-svg hc-zoomable" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" '
     + 'data-w="'+W+'" data-h="'+H+'" data-n="'+n+'" data-dec="'+dec+'" data-pts="'+pts.join(';')+'">'
     + '<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="0" y2="1">'
     +   '<stop offset="0%" stop-color="'+col+'" stop-opacity=".3"/>'
     +   '<stop offset="72%" stop-color="'+col+'" stop-opacity=".07"/>'
     +   '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'
     + '</linearGradient></defs>'
+    /* 网格线/布林带/面积/均线/价格线/标记 全在 <g> 内，随它一起被缩放平移 */
+    + '<g class="hc-vp">'
     + grid
     + boll
     + '<polygon fill="url(#'+uid+')" points="'+area+'"/>'
@@ -6901,7 +6935,8 @@ function hpChart(vals, cost, reason, days, volName){
         + 'stroke-linejoin="round" vector-effect="non-scaling-stroke" points="'+pts.join(' ')+'"/>'))
     + marks + crossMark
     + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="3.6" fill="'+col+'"/>'
-    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="8" fill="'+col+'" opacity=".16"/></svg>';
+    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="8" fill="'+col+'" opacity=".16"/>'
+    + '</g></svg>';
   /* ⑧ 底部日期轴：取该位置对应点的真实日期（X 按日期差排，按点数折算会错位）
      ⚠ 必须留在 svg 变量之外 —— 起初把日期轴和图例一起拼进 svg 字符串里，
        结果它们落进 .hc-plot，把绘图区撑高 53px（22+31），
@@ -6945,8 +6980,37 @@ function hpChart(vals, cost, reason, days, volName){
   /* ⑩ 挂单量副图：数据来自 buff_recent.json（近 12 小时）。
      没有就整块不出现 —— 宁可没有，也不画一条假曲线。 */
   var volHtml = hpVolHtml(volName);
+  /* ⑪ 缩略导航条（2026-10-04）：全区间迷你走势 + 当前视窗指示块。
+     放大后能立刻看出「我在整段区间的哪个位置」，并可直接拖动视窗。
+     用真实 pts 画，不用任何近似曲线。 */
+  var mini = (function(){
+      if (n < 3) return '';
+      var MW = 1000, MH = 30, pad = 2;
+      var mxs = [], mnx = [];
+      for (var q=0;q<pts.length;q++){
+        var xy = pts[q].split(',');
+        mxs.push(parseFloat(xy[0])); mnx.push(parseFloat(xy[1]));
+      }
+      var lo = Math.min.apply(null, mnx), hi = Math.max.apply(null, mnx);
+      var rng2 = (hi - lo) || 1;
+      var mp = [];
+      for (var q2=0;q2<pts.length;q2++){
+        var xy2 = pts[q2].split(',');
+        var px = parseFloat(xy2[0]), py = parseFloat(xy2[1]);
+        mp.push((px).toFixed(1) + ',' + (pad + (hi - py)/rng2*(MH-pad*2)).toFixed(1));
+      }
+      return '<div class="hc-mini"><div class="hc-mini-in">'
+        + '<svg viewBox="0 0 '+MW+' '+MH+'" preserveAspectRatio="none">'
+        + '<polyline fill="none" stroke="'+col+'" stroke-width="1.1" opacity=".75" '
+        + 'vector-effect="non-scaling-stroke" points="'+mp.join(' ')+'"/>'
+        + '</svg><span class="hc-mini-win" style="left:0;width:100%"></span>'
+        + '</div></div>';
+    })();
   return stats
-    + '<div class="hc-body"><div class="hc-plot">' + svg + '</div>' + yaxis + '</div>'
+    + '<div class="hc-body"><div class="hc-plot">' + svg
+    + '<span class="hc-zbadge"><b>1.0×</b><span>滚轮缩放 · 拖动平移 · 双击复位</span></span>'
+    + '</div>' + yaxis + '</div>'
+    + mini
     + volHtml + xfoot;
 }
 /* 图表区间切换 / 图例开关：改状态后重渲染当前这件（hpSelect 幂等）*/
@@ -7186,6 +7250,9 @@ function hpSelect(idx){
   } catch (e) {}
   /* ★ 走势图鼠标跟随 tooltip（TradingView 模式）*/
   try { hpChartTooltip(idx); } catch(e) {}
+  /* ★ 缩放/平移交互（2026-10-04）：必须在 innerHTML 写回、tooltip 挂好之后初始化，
+     因为它要接管 wheel/mousedown 并改 svg 的 data-w。 */
+  try { hpInitZoom(document.querySelector('#hpDetail .hp-chart')); } catch(e) {}
   /* ★ 详情区高度按视口自适应（每次渲染后重算）*/
   try { hpFitDetail(); } catch(e) {}
 }
@@ -7396,6 +7463,137 @@ function hpChartTooltip(idx){
     }
   }
   svg.addEventListener('mouseleave', leave);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   走势图缩放 / 拖动平移（2026-10-04 义轩要求，参照 TradingView）
+   ──────────────────────────────────────────────────────────────────────────
+   手势：滚轮缩放（以光标为锚）· 左键拖动平移 · 双击复位 · 底部导航条可拖视窗。
+
+   ⚠ 为什么不动 viewBox
+     十字光标与顶部读数靠 svg 的 data-pts + data-w 反算屏幕坐标（上面 move()）。
+     一旦把 viewBox 宽度改掉，鼠标 x → 数据 x 的映射关系就变了，整套读数错位。
+     所以本模块只做两件事，二者恒自洽：
+       1) 给 <g class="hc-vp"> 加 transform="translate(tx,0) scale(sx,1)"；
+       2) 把 svg 的 data-w 改写成 W*sx（逻辑宽度），hover 反算自动跟上。
+     纵向不缩放（scale 只作用于 x），保持 Y 轴刻度与价格读数稳定。
+   ══════════════════════════════════════════════════════════════════════════ */
+function hpInitZoom(root){
+  if (!root) return;
+  var svg = root.querySelector('svg.hc-svg');
+  var vp  = root.querySelector('g.hc-vp');
+  if (!svg || !vp) return;
+  var body = root.querySelector('.hc-body');
+  var plot = root.querySelector('.hc-plot');
+  var badge = root.querySelector('.hc-zbadge');
+  var mini = root.querySelector('.hc-mini-in');
+  var win  = root.querySelector('.hc-mini-win');
+  if (!body || !plot) return;
+
+  var W0 = parseFloat(svg.getAttribute('data-w')) || 780;   /* 渲染时的原始宽度 */
+  var MIN = 1, MAX = 5;
+  var sx = 1, tx = 0;      /* sx=横向缩放倍率；tx=平移量（viewBox 单位，向左为正 */
+
+  function clampX(nx, nsx){
+    if (nsx <= MIN){ return { s: MIN, t: 0 }; }
+    var maxT = W0 * (nsx - 1);      /* 放大后可平移的总余量 */
+    var t = Math.max(0, Math.min(maxT, nx));
+    return { s: nsx, t: t };
+  }
+  function apply(){
+    var r = clampX(tx, sx);
+    sx = r.s; tx = r.t;
+    vp.setAttribute('transform', 'translate('+(-tx).toFixed(2) + ',0) scale(' + sx.toFixed(4) + ',1)');
+    /* 逻辑宽度同步 —— hover 反算靠它，不同步十字光标就会偏 */
+    svg.setAttribute('data-w', (W0 * sx).toFixed(2));
+    if (badge){
+      if (sx > MIN + 0.001){
+        badge.className = 'hc-zbadge on';
+        badge.querySelector('b').textContent = sx.toFixed(1) + '×';
+      } else {
+        badge.className = 'hc-zbadge';
+      }
+    }
+    if (win){
+      var wpct = 100 / sx;
+      var leftPct = (tx / (W0 * (sx - 1 || 1))) * wpct;
+      win.style.width = wpct + '%';
+      win.style.left = Math.max(0, Math.min(100 - wpct, leftPct)) + '%';
+    }
+    body.classList.toggle('hc-zoomed', sx > MIN + 0.001);
+  }
+  function reset(){ sx = 1; tx = 0; apply(); }
+
+  /* ── 滚轮缩放：以光标位置为锚点 ── */
+  plot.addEventListener('wheel', function(e){
+    if (e.target.closest && e.target.closest('.hc-mini')) return;   /* 导航条自己处理 */
+    e.preventDefault();
+    var r = svg.getBoundingClientRect();
+    var w = r.width || 1;
+    var frac = (e.clientX - r.left) / w;                 /* 光标在图上的相对位置 0~1 */
+    if (frac < 0) frac = 0; if (frac > 1) frac = 1;
+    var anchorDataX = (frac * W0 + tx);                  /* 光标下的数据坐标 */
+    var nsx = sx * (e.deltaY < 0 ? 1.18 : 1/1.18);
+    if (nsx > MAX) nsx = MAX;
+    if (nsx < MIN) nsx = MIN;
+    /* 让 anchorDataX 在新倍率下仍停在 frac 处 */
+    tx = anchorDataX - frac * W0 * nsx;
+    sx = nsx;
+    apply();
+  }, { passive: false });
+
+  /* ── 拖动平移 ── */
+  var dragging = false, moved = false, sx0 = 0, tx0 = 0, px0 = 0;
+  plot.addEventListener('mousedown', function(e){
+    if (e.button !== 0) return;
+    if (e.target.closest && e.target.closest('.hc-mini')) return;
+    dragging = true; moved = false;
+    px0 = e.clientX; tx0 = tx; sx0 = sx;
+    body.classList.add('hc-panning');
+  });
+  window.addEventListener('mousemove', function(e){
+    if (!dragging) return;
+    var r = svg.getBoundingClientRect();
+    var w = r.width || 1;
+    var dxData = (e.clientX - px0) / w * (W0 * sx0);
+    if (Math.abs(e.clientX - px0) > 3) moved = true;
+    if (sx0 > MIN + 0.001){
+      tx = tx0 + dxData;
+      apply();
+    }
+  });
+  window.addEventListener('mouseup', function(){
+    if (!dragging) return;
+    dragging = false;
+    body.classList.remove('hc-panning');
+  });
+  /* 双击复位 */
+  plot.addEventListener('dblclick', function(e){
+    if (e.target.closest && e.target.closest('.hc-mini')) return;
+    e.preventDefault();
+    reset();
+  });
+
+  /* ── 底部导航条：点/拖视窗定位 ── */
+  if (mini){
+    var jump = function(clientX){
+      var r = mini.getBoundingClientRect();
+      var f = (clientX - r.left) / (r.width || 1);
+      if (f < 0) f = 0; if (f > 1) f = 1;
+      var c = f * W0;                          /* 视窗中心对应的数据坐标 */
+      tx = c - (W0 * sx) / 2;
+      apply();
+    };
+    var navDown = false;
+    mini.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      navDown = true; jump(e.clientX);
+    });
+    window.addEventListener('mousemove', function(e){ if (navDown) jump(e.clientX); });
+    window.addEventListener('mouseup', function(){ navDown = false; });
+    mini.addEventListener('dblclick', function(e){ e.preventDefault(); reset(); });
+  }
+  apply();
 }
 function hpSell(idx){
   /* ★ 2026-09-25：原来这里用原生 confirm + removeMyHolding 直接移除持仓，
