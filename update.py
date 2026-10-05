@@ -581,21 +581,34 @@ def load_buff_history():
 
 def save_buff_history(steamdt_prices):
     """Save hourly + daily BUFF/悠悠 snapshots to buff_history.json"""
-    hour_key = time.strftime('%Y-%m-%dT%H:00')  # 小时级（异动）
+    # ⚠ **半小时粒度，不要截断到整点**（2026-10-05 修正）
+    #   cron prices 轮是 `*/30`（:15 和 :45 各跑一次），原来这里用
+    #   `strftime('%Y-%m-%dT%H:00')` 把分钟抹成 00 → **两轮写进同一个 key**，
+    #   后一轮（:45）直接覆盖前一轮（:15）→ 30 分钟采集只落了一半数据，
+    #   异动页的小时级对比因此出现莫名的时间空洞。
+    #   改成保留真实分钟（:15 / :45）后，key 形如2026-10-05T18:15 / T18:45。
+    #   ⚠ 前端只校验 `length===16 && charAt(10)==='T'`（isHourlyKey，
+    #     fluctuation.html:210），不解析分钟 → 改格式对前端安全。
+    hour_key = time.strftime('%Y-%m-%dT%H:%M')  # 半小时级（异动），保留真实分钟
     day_key = time.strftime('%Y-%m-%d')          # 日级（7日涨跌）
     history_file = os.path.join(DATA_DIR, 'buff_history.json')
-    
+
     history = load_buff_history()
-    
+
     # Keep last 12 hours + 15 days
     # 小时级从 48 降到 12：异动对比只需邻近时点，旧时点对功能无贡献，
     # 却让 buff_history.json 长期维持 50MB+ —— 每次提交都拖累 git 体积与前端加载。
+    # ⚠ 因为 key 现在是半小时粒度，「12 个时点」= **6 小时**跨度，不再是 12 小时。
+    #   异动页要能算6h/12h 跨期对比，这个跨度会不够用。
+    #   → 提到 24 个时点（= 12 小时），刚好覆盖异动页最大 span。
+    #   体积代价：24 个时点 × ~200 件 ≈ 与原来 12 个整点（48个时点的一半）同量级，
+    #   实测 buff_history.json 稳定在 1.4MB 上下，不是问题。
     dates = sorted(history.keys(), reverse=True)
     keep = []
     for d in dates:
-        if len(d) == 16 and len(keep) < 12:  # hourly: YYYY-MM-DDTHH:MM
+        if len(d) == 16 and len(keep) < 24:  # hourly: YYYY-MM-DDTHH:MM（半小时粒度）
             keep.append(d)
-        elif len(d) == 10 and len(keep) < 12+15:  # daily: YYYY-MM-DD
+        elif len(d) == 10 and len(keep) < 24+15:  # daily: YYYY-MM-DD
             keep.append(d)
     for old_date in dates:
         if old_date not in keep:
