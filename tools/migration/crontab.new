@@ -1,0 +1,11 @@
+*/30 * * * * /usr/bin/python3 /home/ubuntu/cs2-run/watchdog/check.py >> /home/ubuntu/cs2-run/watchdog/cron.log 2>&1
+# CS2-DASHBOARD-CRON 由 tools/deploy_cron.py 管理，勿手改
+# prices 30min / index 2h / all 6h / history 3h  (flock 防并发)
+*/30 * * * * flock -n /tmp/cs2_prices.lock -c '/home/ubuntu/cs2-run/tools/run_cycle.sh prices >> /home/ubuntu/cs2-run/logs/cron_prices.log 2>&1'
+0 */2 * * * flock -n /tmp/cs2_index.lock -c '/home/ubuntu/cs2-run/tools/run_cycle.sh index >> /home/ubuntu/cs2-run/logs/cron_index.log 2>&1'
+0 */6 * * * flock -n /tmp/cs2_all.lock -c '/home/ubuntu/cs2-run/tools/run_cycle.sh all >> /home/ubuntu/cs2-run/logs/cron_all.log 2>&1'
+# CS2-DASHBOARD-CRON END
+15 4 * * * /home/ubuntu/cs2-snapshots/snapshot.sh >> /home/ubuntu/cs2-snapshots/snapshot.log 2>&1
+0 9 * * * cd /home/ubuntu/cs2-run && venv/bin/python tools/kronos_ready.py --push >> /home/ubuntu/cs2-run/logs/kronos_ready_cron.log 2>&1
+15 * * * * flock -n /tmp/cs2_history.lock -c '/home/ubuntu/cs2-run/tools/run_cycle.sh history >> /home/ubuntu/cs2-run/logs/cron_history.log 2>&1'
+# */10 * * * * flock -n /tmp/cs2_push_retry.lock -c '/home/ubuntu/cs2-run/tools/push_retry.sh >> /home/ubuntu/cs2-run/logs/push_retry_cron.log 2>&1'   # DISABLED 2026-10-04: API channel handles push; git push to throttled github.com:443 removed
