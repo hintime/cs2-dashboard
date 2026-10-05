@@ -2,44 +2,56 @@
   {
     "date": "2026-10-05",
     "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 20:37"
+    "title": "verify git channel auth 13:21:20",
+    "desc": "verify git channel auth 13:21:20"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "title": "verify git channel 13:13:19",
+    "desc": "verify git channel 13:13:19"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "title": "test: verify git channel after untracked rootfix",
+    "desc": "test: verify git channel after untracked rootfix"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "title": "feat(inventory): 差异面板新增「⬇ 补齐新增（写入持仓）」按钮 —— 显式点击才写入，只补「库存有、持仓",
+    "desc": "记」的项；不删任何记录、不改已有成本价"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "title": "merge: 与远端对齐（-X ours 保留本地数据文件）",
+    "desc": "merge: 与远端对齐（-X ours 保留本地数据文件）"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "title": "pre-realign snapshot 2026-10-05 13:10",
+    "desc": "pre-realign snapshot 2026-10-05 13:10"
   },
   {
     "date": "2026-10-05",
     "tag": "chore",
     "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 20:37"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 20:34",
-    "desc": "wip: local snapshot 2026-10-05 20:34"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 20:15",
-    "desc": "wip: local snapshot 2026-10-05 20:15"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 19:36"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 19:30",
-    "desc": "wip: local snapshot 2026-10-05 19:30"
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 21:06"
   },
   {
     "date": "2026-10-05",
     "tag": "fix",
     "title": "wip: local snapshot 2026-10-05 21:00",
     "desc": "wip: local snapshot 2026-10-05 21:00"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "title": "fix(import): 弹窗加 max-height/overflow 使其可滚动 + 预览出现后自动滚过去 —— 此",
+    "desc": "预览表(含「确认导入」按钮)在弹窗底部被裁掉，用户根本够不着"
   },
   {
     "date": "2026-10-05",
@@ -50,6 +62,18 @@
   {
     "date": "2026-10-05",
     "tag": "chore",
+    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
+    "desc": "n, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 20:45"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "title": "feat(inventory): 绑定 SteamID 后可一键「刷新库存」，与持仓对比差异（新增 / 已不在库存(可能",
+    "desc": "卖出) / 数量不符），只读不改动持仓与成本价"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
     "title": "update buff_history.json, buff_recent.json, changelog.json,",
     "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 20:37"
   },
@@ -68,91 +92,31 @@
   {
     "date": "2026-10-05",
     "tag": "fix",
+    "title": "feat(inventory): 绑定 SteamID 后可一键「刷新库存」，与持仓对比差异（新增 / 已不在库存(可能",
+    "desc": "卖出) / 数量不符），只读不改动持仓与成本价"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "title": "fix(import): 修复三条导入路径全部报 \"cnName is not defined\" —— 块1是IIFE，",
+    "desc": "nName/overrideKey/wearCN 是局部函数未挂 window，块3的 parseSteamJson 跨块调用必然 ReferenceError；显式挂载 + 加防御兜底"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "title": "fix(import): 修复三条导入路径全部报 \"cnName is not defined\" —— 块1是IIFE，",
+    "desc": "nName/overrideKey/wearCN 是局部函数未挂 window，块3的 parseSteamJson 跨块调用必然 ReferenceError；显式挂载 + 加防御兜底"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-10-05 20:15",
     "desc": "wip: local snapshot 2026-10-05 20:15"
   },
   {
     "date": "2026-10-05",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 19:36"
-  },
-  {
-    "date": "2026-10-05",
     "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 19:30",
-    "desc": "wip: local snapshot 2026-10-05 19:30"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 19:15",
-    "desc": "wip: local snapshot 2026-10-05 19:15"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-04 17:00",
-    "desc": "wip: local snapshot 2026-10-04 17:00"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-04 16:56",
-    "desc": "wip: local snapshot 2026-10-04 16:56"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "title": "test cleanup",
-    "desc": "test cleanup"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "title": "test cleanup",
-    "desc": "test cleanup"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "title": "test: api push self-test",
-    "desc": "test: api push self-test"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-04 16:36"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-04 16:15",
-    "desc": "wip: local snapshot 2026-10-04 16:15"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "title": "feat(ux): 持仓页自动刷新 60s→30s 智能轮询（新数据上线≤30s 自动重载，不丢滚动/面板状态）",
-    "desc": "feat(ux): 持仓页自动刷新 60s→30s 智能轮询（新数据上线≤30s 自动重载，不丢滚动/面板状态）"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-04 16:06"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-04 16:00",
-    "desc": "wip: local snapshot 2026-10-04 16:00"
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-04 15:36"
+    "title": "feat(import): ① 直接导入区新增「如何获取 SteamID64」可折叠指引 + 输入框支持粘贴资料页 UR",
+    "desc": "自动提取 ID"
   }
 ]
