@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 960.85,
-    "change": -3.91,
-    "change_pct": -3.91,
-    "market_value": 294938205.39,
-    "total_items": 4302,
-    "updated": "2026-10-06T00:00:03+08:00",
+    "latest": 909.88,
+    "change": -9.01,
+    "change_pct": -9.01,
+    "market_value": 279292584.14,
+    "total_items": 4079,
+    "updated": "2026-10-06T02:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4286,6 +4286,14 @@
         "close": 960.85,
         "high": 1000.72,
         "low": 960.85
+      },
+      {
+        "date": "2026-10-06",
+        "dateFull": "2026-10-06 02:00",
+        "open": 909.88,
+        "close": 909.88,
+        "high": 909.88,
+        "low": 909.88
       }
     ],
     "volBar": [],
@@ -12841,12 +12849,20 @@
         "index": 960.85,
         "change_pct": -3.91,
         "market_value": 294938205.39
+      },
+      {
+        "time": "02:00",
+        "date": "2026-10-06",
+        "timestamp": 1791223203,
+        "index": 909.88,
+        "change_pct": -9.01,
+        "market_value": 279292584.14
       }
     ],
     "selling": {
-      "total_selling": 1421863,
+      "total_selling": 1372285,
       "total_selling_prev": 0,
-      "total_selling_delta": 1421863,
+      "total_selling_delta": 1372285,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12854,7 +12870,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791216003554,
+  "index_updated": 1791223203144,
   "alerts": [
     {
       "name": "Prof. Shahmat | Elite Crew",
@@ -31559,7 +31575,7 @@
     "MP9 | 滑移 (崭新出厂)",
     "MP9 | 潘多拉魔盒 (崭新出厂)"
   ],
-  "updated": "2026-10-05T17:36:02Z",
+  "updated": "2026-10-05T18:06:14Z",
   "steam_market_items": 77,
   "steam_market_recs": {
     "momentum": [],
