@@ -1,122 +1,162 @@
 [
   {
     "date": "2026-10-05",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 23:00",
-    "desc": "wip: local snapshot 2026-10-05 23:00"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 22:36"
+    "tag": "feat",
+    "scope": "inventory",
+    "sha": "595823a",
+    "title": "差异面板新增「⬇ 补齐新增（写入持仓）」按钮 —— 显式点击才写入，只补「库存有、持仓没记」的项；不删任何记录、不改已有成本价",
+    "desc": ""
   },
   {
     "date": "2026-10-05",
     "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 22:30",
-    "desc": "wip: local snapshot 2026-10-05 22:30"
+    "scope": "import",
+    "sha": "d563a97",
+    "title": "弹窗加 max-height/overflow 使其可滚动 + 预览出现后自动滚过去 —— 此前预览表(含「确认导入」按钮)在弹窗底部被裁掉，用户根本够不着",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "inventory",
+    "sha": "0f25f91",
+    "title": "绑定 SteamID 后可一键「刷新库存」，与持仓对比差异（新增 / 已不在库存(可能已卖出) / 数量不符），只读不改动持仓与成本价",
+    "desc": ""
   },
   {
     "date": "2026-10-05",
     "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 22:15",
-    "desc": "wip: local snapshot 2026-10-05 22:15"
+    "scope": "import",
+    "sha": "abe1644",
+    "title": "修复三条导入路径全部报 \"cnName is not defined\" —— 块1是IIFE，cnName/overrideKey/wearCN 是局部函数未挂",
+    "desc": "window，块3的 parseSteamJson 跨块调用必然 ReferenceError；显式挂载 + 加防御兜底"
   },
   {
     "date": "2026-10-05",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 22:06"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 22:00",
-    "desc": "wip: local snapshot 2026-10-05 22:00"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 21:36"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "verify git channel auth 13:21:20",
-    "desc": "verify git channel auth 13:21:20"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "verify git channel 13:13:19",
-    "desc": "verify git channel 13:13:19"
+    "tag": "feat",
+    "scope": "import",
+    "sha": "5171cb0",
+    "title": "① 直接导入区新增「如何获取 SteamID64」可折叠指引 + 输入框支持粘贴资料页 URL 自动提取 ID",
+    "desc": ""
   },
   {
     "date": "2026-10-05",
     "tag": "fix",
-    "title": "test: verify git channel after untracked rootfix",
-    "desc": "test: verify git channel after untracked rootfix"
+    "scope": "buff_history",
+    "sha": "ef67934",
+    "title": "hour_key 保留分钟 + 就绪度口径澄清 - save_buff_history 的 hour_key 从 T%H:00 改 T%H:%M：   cron",
+    "desc": "prices 轮 */30（:15/:45）两轮原本写进同一 key，后一轮覆盖前一轮，   30 分钟采集实际只落了一半 - 保留上限 12 → 24 个时点（半小时粒度下= 12 小时，够异动页 6h/12h 跨期） - kronos_ready.py：1.00 h/点经实测确认正确（prices 表由 history 轮每小时   :15 写入，不是 prices 轮）。报告新增 cadence_evidence() 直接打出证据   （:45 出现 0 次），并删除已失效的「eco 节奏慢 4.5 倍」注释"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "inventory",
+    "sha": "efae6d7",
+    "title": "bookmarklet 分页拉全库存 + 聚合传输（防 window.name 截断） + more_items 宽松比较 + 兜底路径统一聚合",
+    "desc": ""
   },
   {
     "date": "2026-10-05",
     "tag": "fix",
-    "title": "feat(inventory): 差异面板新增「⬇ 补齐新增（写入持仓）」按钮 —— 显式点击才写入，只补「库存有、持仓",
-    "desc": "记」的项；不删任何记录、不改已有成本价"
+    "scope": "wear",
+    "sha": "ea1ef64",
+    "title": "统一磨损中文译名并补全 datalist 翻译 - 新增 HP_WEAR_CN/cnWear()，datalist 自动补全不再出中英混杂条目   （截图里 F",
+    "desc": "ield-Tested 未翻译 → 现在 5 种磨损都有中文项） - WW 统一为官方「破损不堪」（原 cnName 译「战地风云」、下拉写「战火纷飞」、   上游数据是「破损不堪」，三处不一致） - eco_catalog/generate_correlation 的 WW 排除判据同时收「破旧不堪」"
   },
   {
     "date": "2026-10-05",
     "tag": "fix",
-    "title": "merge: 与远端对齐（-X ours 保留本地数据文件）",
-    "desc": "merge: 与远端对齐（-X ours 保留本地数据文件）"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "pre-realign snapshot 2026-10-05 13:10",
-    "desc": "pre-realign snapshot 2026-10-05 13:10"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 21:06"
+    "scope": "kronos",
+    "sha": "66da0c7",
+    "title": "独立环境探测从「路径存在」改为「真 import torch」+ Linux 候选路径兜底扫描；两种失败原因分开报错",
+    "desc": ""
   },
   {
     "date": "2026-10-05",
     "tag": "fix",
-    "title": "wip: local snapshot 2026-10-05 21:00",
-    "desc": "wip: local snapshot 2026-10-05 21:00"
+    "scope": "kline",
+    "sha": "cf1a606",
+    "title": "校正采样口径 4-6小时 → 30分钟/次（实测 cron */30、每天28个采样点，high/low 覆盖度远高于原描述）",
+    "desc": ""
   },
   {
     "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "kline",
+    "sha": "a06290d",
+    "title": "刷新日K数据 2026-10-05 18:50（1200 件 / 68399 根）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "kline",
+    "sha": "3197b2a",
+    "title": "刷新日K数据 2026-10-05 18:47（1200 件 / 68399 根）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "rec",
+    "sha": "a9e7249",
+    "title": "周度记分卡 + 双体检 2026-10-05",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "kline",
+    "sha": "5019fce",
+    "title": "刷新日K数据 2026-10-05 04:41（1200 件 / 68208 根）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "",
+    "sha": "8b6932d",
+    "title": "删除临时 K线验证探针",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "",
+    "sha": "6911f51",
+    "title": "临时 K线线上验证探针（验证后删除）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "367b5fe",
+    "title": "持仓走势图加 K线视图（日K 由日内采样聚合）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "chart",
+    "sha": "0c5b2e6",
+    "title": "走势图全屏看大图（搬DOM不重画，viewBox不变，Esc/✕/双击退出，缩放与读数联动全部复用）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "feat",
+    "scope": "watchdog",
+    "sha": "7234a87",
+    "title": "生成物停更监控（41个产物/5档阈值，企微告警+6h重提醒，cron每小时第7分）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
     "tag": "fix",
-    "title": "fix(import): 弹窗加 max-height/overflow 使其可滚动 + 预览出现后自动滚过去 —— 此",
-    "desc": "预览表(含「确认导入」按钮)在弹窗底部被裁掉，用户根本够不着"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 20:45"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "update ai_analysis.json, ai_anomaly.json, ai_daily_report.js",
-    "desc": "n, ai_market_insight.json, ai_meta.json, ai_news_impact.json, ai_recommendations.json, ai_stock_picks.json, buff_history.json, buff_recent.json, changelog.json, correlation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 20:45"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "title": "feat(inventory): 绑定 SteamID 后可一键「刷新库存」，与持仓对比差异（新增 / 已不在库存(可能",
-    "desc": "卖出) / 数量不符），只读不改动持仓与成本价"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "title": "update buff_history.json, buff_recent.json, changelog.json,",
-    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 20:37"
+    "scope": "update",
+    "sha": "5d3649d",
+    "title": "删 main() 内多余 import json（污染局部变量致 name_map 自 9-22 停更）+ 补齐 name_map 18992→41977 条",
+    "desc": ""
   }
 ]
