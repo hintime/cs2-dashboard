@@ -6432,6 +6432,7 @@ function refreshInventory(){
       }
       if(!d.ok){ say('拉取失败：' + e2(d.error || '未知错误'), 'var(--amber)'); return; }
       say('✓ 拉到 ' + (d.total_inventory_count || 0) + ' 件 / 去重 ' + (d.distinct_items || 0) + ' 类，正在对比持仓…', 'var(--fall)');
+      window._lastInvItems = d.items || [];   // 供「补齐新增」使用
       renderInventoryDiff(d.items || [], d.total_inventory_count || 0);
     })
     .catch(function(e){ say('出错了：' + e2(e.message), 'var(--amber)'); })
@@ -6493,7 +6494,8 @@ function renderInventoryDiff(items, totalCount){
   }
   h += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
      + '<button onclick="closeSteamImport();try{switchView(\'holdingsPanel\')}catch(e){}" style="padding:6px 14px;background:var(--blue);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer">→ 去持仓明细处理</button>'
-     + '<span style="font-size:10px;color:var(--text3)">差异只是提示，不会自动改你的持仓</span></div>';
+     + '<button onclick="syncInventoryToHoldings()" style="padding:6px 14px;background:var(--amber);color:#000;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">⬇ 补齐新增（写入持仓）</button>'
+     + '<span style="font-size:10px;color:var(--text3)">默认只提示；点「补齐新增」才会写入持仓</span></div>';
   panel.innerHTML = h;
   panel.style.display = '';
 }
@@ -6559,6 +6561,32 @@ function importBySteamId(){
       say('出错了：' + e2(e.message) + '（若是网络 / 404 类错误，请确认 Worker 已上线 /api/inventory）', 'var(--amber)');
     })
     .then(function(){ if(btn){ btn.disabled = false; btn.textContent = '拉取库存'; } });
+}
+
+// ── 补齐新增：把「库存里有、持仓没记」的写进持仓（用户显式点击才执行）──
+//    红线：只新增；绝不删除任何记录、绝不改动已有物品的成本价
+function syncInventoryToHoldings(){
+  var items = window._lastInvItems || [];
+  if(!items.length){ alert('请先点「🔄 刷新库存」拉一次最新库存，再点补齐。'); return; }
+  var inv = {};
+  items.forEach(function(it){ var mh = it.market_hash_name || ''; if(mh) inv[mh] = (inv[mh] || 0) + (it.amount || 1); });
+  var existing = (typeof loadMyHoldings === 'function') ? (loadMyHoldings() || []) : [];
+  var have = {};
+  existing.forEach(function(h){ var mh = h.market_hash || h.hash || ''; if(mh) have[mh] = true; });
+  var added = 0, addedQty = 0;
+  Object.keys(inv).forEach(function(mh){
+    if(have[mh]) return;                      // 已记录 → 完全不动（保住其成本价）
+    var nm = mh;
+    try { if(typeof cnName === 'function') nm = cnName(mh); } catch(e){}
+    var wz = ''; try { if(typeof extractWear === 'function') wz = extractWear(mh) || ''; } catch(e){}
+    var pc = 0;  try { if(typeof priceForMh === 'function')  pc = priceForMh(mh) || 0; } catch(e){}
+    existing.push({ id: Date.now() + '_' + (Math.random() * 1e6 | 0), name: nm, market_hash: mh, cost: pc, qty: inv[mh], wear: wz, category: '' });
+    added++; addedQty += inv[mh];
+  });
+  if(!added){ alert('无需补齐：库存里的物品，你的持仓都已记录。'); return; }
+  saveMyHoldings(existing);
+  alert('✓ 已补齐 ' + added + ' 类 / ' + addedQty + ' 件新增物品\n（成本按现价预填，可在持仓明细里逐件改）\n\n只补了新增，没有删除任何记录、也没动已有成本价。');
+  location.reload();
 }
 
 // ── 自动检测剪贴板中的 Steam 库存 JSON ──
