@@ -3642,7 +3642,7 @@ function setupExportBtn() {
 function updateKPI() {
   if (!H.length) return;
   const tc = H.reduce((s,h) => s + (isNaN(h.c)?0:h.c), 0);
-  const tp = H.reduce((s,h) => s + (isNaN(h.p)?0:h.p), 0);
+  const tp = H.reduce((s,h) => s + hpPrice(h), 0);
   const tpct = tc > 0 ? (tp - tc) / tc * 100 : 0;
   const isUp = tp >= tc;
   
@@ -6921,7 +6921,10 @@ function openItemDetail(h) {
   /* ★ 数据充分性检查：完全没有价格就不给结论
      （印花/涂鸦/音乐盒等非追踪品类常见；此前会兜底成「持有观望 置信度50」，
        并且推荐入手区间会算成 ¥0 — ¥0）*/
-  var _p  = Number(h.p) || 0;
+  /* ⚠ 2026-10-05：这里原本也用 `Number(h.p)`，但 h.p 只在 CSQAQ 命中时才有值
+     → 印花恒为 0 → 走进「无价格」分支 → 明明有 price(17.43) 却按无价处理。
+     改用 hpPrice() 统一回退（见该函数注释：h.p → price → eco → buff）。*/
+  var _p  = hpPrice(h);
   var _eco = Number(h.eco_price) || 0;
   var _buf = Number(h.buff_sell) || 0;
   var _yy  = Number(h.yyyp_sell) || 0;
@@ -6953,7 +6956,7 @@ function openItemDetail(h) {
 
   var r7 = pdata.change_7d || h.rate_7 || 0;
   var r30 = pdata.change_30d || h.rate_30 || 0;
-  var curPrice = h.p || h.eco_price || h.buff_sell || 0;
+  var curPrice = hpPrice(h);
   var ecoPrice = h.eco_price || 0;
   var buffPrice = h.buff_sell || 0;
   var yyypPrice = h.yyyp_sell || 0;
@@ -7157,6 +7160,32 @@ function closeAbout(){var m=document.getElementById('aboutModal');if(m)m.style.d
 /* ═══════ 持仓·主从列表渲染 v2（新增，不动原 render）═══════ */
 function hpFmt(v){ try{ return Number(v).toLocaleString('zh-CN',{maximumFractionDigits:0}); }
   catch(e){ return v; } }
+
+/* 持仓现价的**唯一取值入口**（2026-10-05 加）
+   ⚠ 为什么必须有这个函数：
+     `h.p` 不是持仓自带字段，它只在 csqaqData[hn] 命中时才被赋值（见 mergeCSQAQ）。
+     而 csqaq_boards.json 里**没有印花 / 探员 / 武器箱 / 音乐盒**这类小众品类
+     → 这些件的 h.p 恒为 undefined。
+     之前各处直接 `Number(h.p)||0`，于是印花全部按 **0 元**参与计算：
+       · 批量补录弹窗显示「—」
+       · 持仓详情弹窗现价 0
+       · 盈亏汇总把 0 当现价 → **总盈亏虚高**（虚高 = 把亏损当没了）
+     而 holdings.json 里本来就有 price 字段（印花 FaZe Clan 全息 = 17.43），
+     只是没人读。
+   回退顺序（从「实时」到「日线」）：
+     h.p（CSQAQ 实时，服务器刚算的）→ h.price（服务器日线，最新）
+     → h.eco_platform_price（ECO 平台价）→ h.buff_sell（BUFF 在售价）
+   ⚠ 注意 h.buff_sell 放最后：它是「在售价」不是「当前成交价」，
+     单件样本少时可能明显偏高，放前面会让「现价」失真。*/
+function hpPrice(h){
+  if (!h) return 0;
+  var v = Number(h.p); if (v > 0) return v;
+  v = Number(h.price); if (v > 0) return v;
+  v = Number(h.eco_platform_price); if (v > 0) return v;
+  v = Number(h.eco_price); if (v > 0) return v;
+  v = Number(h.buff_sell); if (v > 0) return v;
+  return 0;
+}
 /* 价格轴/读数的通用数字格式：按量级选小数位（>=40 不给小数，8~40 一位，其余两位），
    与折线图 hpChart 里的 dec 口径一致 —— 同一件饰品在两种视图下价格写法必须相同，
    否则切换视图时会以为价格变了。千分位用 toLocaleString 而不是手写正则。 */
@@ -8031,7 +8060,7 @@ function hpSelect(idx){
   var box = document.getElementById('hpDetail');
   if(!h || !box) return;
   hpMark(idx);
-  var c = Number(h.c)||0, p = Number(h.p)||0;
+  var c = Number(h.c)||0, p = hpPrice(h);
   var pnl = Number(h.pnl)||0, pct = Number(h.pnlPct)||0;
   var up = pnl >= 0, cls = up ? 'rise' : 'fall', sg = up ? '+' : '-';
   var wear = (h.w && h.w !== 'other') ? ('  <span style="font-size:12px;color:var(--text3)">'+h.w+'</span>') : '';
@@ -8988,8 +9017,17 @@ function hpBatchCost(){
     var oldC = Number(h.c) || 0;
     var nm = (typeof hpName === 'function') ? hpName(h) : h.n;
     var wear = (h.w && h.w !== 'other') ? (' · ' + h.w) : '';
+    // ⚠ 现价必须做多级回退（2026-10-05 修：印花等全部显示「—」）
+    //   根因：`h.p` 只在 csqaqData[hn] 命中时才被赋值（index.html:4402），
+    //   而 csqaq_boards.json 里**没有印花/探员/箱子**这类小众品类
+    //   → 这些件的 h.p 恒为 undefined → `hpFmt(h.p || 0)` 渲染成「—」。
+    //   但 holdings.json 里**本来就有** price 字段（印花 FaZe Clan 全息 = 17.43），
+    //   只是这里没读。回退顺序：h.p（CSQAQ 实时）→ h.price（服务器日线）
+    //   → eco_platform_price → 「暂无报价」而不是「—」（明确是"没有"不是"缺数据"）
+    var _p = hpPrice(h);
+    var curTxt = _p > 0 ? ('现价 ¥' + hpFmt(_p)) : '暂无报价';
     rows += '<div class="hp-brow"><span class="nm">' + esc(nm) + wear + '</span>'
-      + '<span class="cur">现价 ¥' + hpFmt(h.p || 0) + '</span>'
+      + '<span class="cur">' + curTxt + '</span>'
       + '<input type="number" step="0.01" min="0" id="hpb_' + idx + '" '
       + 'placeholder="买入价 ¥" value="' + (oldC > 0 ? oldC : '') + '"></div>';
   }
@@ -9093,7 +9131,7 @@ function hpCellTip(el){
   var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
   var h = arr[idx];
   if (!h) return;
-  var eco = Number(h.p) || 0, buf = Number(h.buff_sell) || 0;
+  var eco = hpPrice(h), buf = Number(h.buff_sell) || 0;
   var yy = Number(h.yyyp_sell) || 0, st = Number(h.n_steam) || 0;
   var rows = [];
   if (eco > 0) rows.push({ k: 'ECO', v: eco, tag: '' });
@@ -9215,7 +9253,7 @@ function hpKpiTip(el, kind){
   var n = H.length, tc = 0, tp = 0, win = 0;
   for (var i = 0; i < n; i++){
     var h = H[i];
-    var c = Number(h.c) || 0, p = Number(h.p) || 0;
+    var c = Number(h.c) || 0, p = hpPrice(h);
     tc += c; tp += p;
     if (p > c) win++;
   }
