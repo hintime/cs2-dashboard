@@ -12,6 +12,7 @@ CS2 Dashboard 数据更新脚本 (优化版)
 - 批量处理
 """
 import json, time, base64, urllib.request, urllib.error, urllib.parse, subprocess, os, sys, ssl, gzip, socket, shutil
+import re# 2026-10-05：changelog 解析conventional commits 需要（_CL_MULTI_TYPE 等）
 
 # ── 计划任务 GBK 兼容：强制 UTF-8 ──
 os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -3172,40 +3173,131 @@ def generate_ai_recommendations():
         print('[AI] Recommendations failed: %s' % e)
 
 # ═══════════════ PUSH (single atomic commit) ═══════════════
+# ── changelog 解析规则（2026-10-05 义轩要求，六项一起修）──
+# ① conventional commits 完整支持：`fix:` / `fix(scope):` / `feat(kronos):`
+#    旧版 tag_map 的键是 'fix:'（无空格），而实际提交全是 'fix(kline):'（带括号）
+#    → **一个都匹配不上**，全被降级成默认 tag='fix'，scope 也丢了。
+_CL_TAG_MAP = {
+    'feat': 'feat', 'feature': 'feat',
+    'fix': 'fix', 'hotfix': 'fix',
+    'style': 'style', 'perf': 'perf',
+    'refactor': 'refactor', 'revert': 'fix',
+    'docs': 'docs', 'test': 'test', 'build': 'build',
+    'chore': 'chore', 'ci': 'chore', 'remove': 'chore',
+}
+# ② 该整条丢弃的提交（不进用户可见日志）
+#    - Merge：合并提交，用户不关心
+#    - chore: update *.json：每 30 分钟一批的数据刷新，纯噪音
+#    - wip: local snapshot：本地中转提交（一轮会产生好几个），纯噪音
+#    - verify/test 开头的临时提交：是我自己验证时留下的
+_CL_DROP_PREFIX = ('merge', 'wip:', 'chore: update', 'chore: pre-realign',
+                    'chore: verify', 'test: verify', 'test: git channel')
+# ⚠ 2026-10-05 追加：这些是我（AI）自己做验证时留下的临时提交，对用户无意义。
+#   实测服务器 changelog 里出现过「verify git channel auth 13:21:20」
+#   「pre-realign snapshot」这类 —— 原本被当成真功能显示出来了。
+_CL_DROP_PATTERNS = ('update changelog', 'local snapshot', 'pre-realign',
+                     'verify git channel', 'verify ', 'test: git channel')
+_CL_TITLE_MAX = 80# 旧版 60 对中文太短：`chore: update ai_analysis.json, ...` 会被吃光
+# 仓库里出现过 `fix(tracking)+ci: xxx` 这种**括号外带 +第二个type** 的写法
+# （本项目 2026-09-21 的提交），标准 conventional 正则不认它。
+_CL_MULTI_TYPE = re.compile(r'^(\w+)\(([^)]*)\)\+(\w+)\s*:\s*(.*)$')
+
+
+def _parse_conventional(subject):
+    """解析 `type(scope): title` → (tag, scope, title)；不匹配返回 (None, '', subject)。
+
+    正则要兼容四种写法（实测本仓库都出现过）：
+        fix: xxx                 无 scope
+        fix(kline): xxx          带 scope
+        fix(a)+ci: xxx           括号外还有第二个 type（见 _CL_MULTI_TYPE）
+        Merge branch 'main' into ...  不是 conventional
+    ⚠ scope 里可能带括号外的 `+`（如 `fix(tracking)+ci:`）——
+      scope 只取第一段，剩下的 `+ci` 归入 title 会让标题出现垃圾前缀。
+    """
+    m = _CL_MULTI_TYPE.match(subject)
+    if m:
+        raw_type, scope, _second, title = m.group(1), m.group(2), m.group(3), m.group(4)
+        tag = _CL_TAG_MAP.get(raw_type.lower())
+        if tag:
+            return tag, (scope or '').split('+')[0].strip(), title.strip()
+    m = re.match(r'^(\w+)(?:\(([^)]*)\))?:\s*(.*)$', subject)
+    if not m:
+        return None, '', subject
+    raw_type, scope, title = m.group(1), (m.group(2) or ''), m.group(3)
+    tag = _CL_TAG_MAP.get(raw_type.lower())
+    if not tag:
+        return None, '', subject
+    # scope 只取第一段（`tracking+ci` -> `tracking`），其余 `+xx` 丢掉
+    if scope:
+        scope = scope.split('+')[0].strip()
+    return tag, scope, title.strip()
+
+
 def sync_changelog():
-    """从 git log 自动生成 changelog.json"""
+    """从 git log 自动生成 changelog.json（给用户看的「变动日志」）。
+
+    ⚠ **过滤必须在取条数之前**（2026-10-05 修）：
+       旧版先 `git log -30` 取 30 条、再过滤 → 实际有效提交只剩 8 条，
+       而 `fix(kline):` / `feat(inventory):` 这类真功能改动被 `wip:` 和
+       `chore: update *.json` 挤出了窗口（实测线上 20 条里 12 条是噪音）。
+       现在改成「先扫足够多，再过滤，最后取前N 条有效提交」。
+    """
     import subprocess as _sp
     try:
         cf = _sp.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-        r = _sp.run(['git', 'log', '--oneline', '--date=short', '--format=%h|%ad|%s', '-30'],
+        # ⚠ 扫 300 条（不是 30）：数据刷新提交密度极高（每 30 分钟一批），
+        #   扫 300 条大约能覆盖最近 3~5 天的真功能改动。
+        r = _sp.run(['git', 'log', '--date=short', '--format=%h|%ad|%s', '-300'],
                     capture_output=True, text=True, encoding='utf-8', cwd=DATA_DIR, creationflags=cf)
         if r.returncode != 0:
             return
         entries = []
-        tag_map = {
-            'fix:':'fix','feat:':'feat','style:':'style','perf:':'perf','refactor:':'refactor',
-            'chore:':'chore','remove:':'fix'
-        }
+        seen_titles = set()
         for line in r.stdout.strip().split('\n'):
             parts = line.split('|', 2)
             if len(parts) < 3:
                 continue
             sha, date, subject = parts
-            tag = 'fix'
-            for prefix, t in tag_map.items():
-                if subject.lower().startswith(prefix):
-                    tag = t
-                    subject = subject[len(prefix):].strip()
-                    break
-            # 跳过合并和琐碎提交
-            if 'Merge' in subject or 'update changelog' in subject:
+            low = subject.lower()
+
+            # ── ② 过滤：先判断「要不要丢」，在计数之前 ──
+            if low.startswith(_CL_DROP_PREFIX):
                 continue
+            if any(p in low for p in _CL_DROP_PATTERNS):
+                continue
+
+            # ── ① 解析 type(scope): title ──
+            tag, scope, title = _parse_conventional(subject)
+            if tag is None:
+                # 不是 conventional：只有 chore/ci 类的琐碎提交才丢，
+                # 其余（如「feat(inventory): ...」被截断的边缘情况）保留原样但标 fix
+                if low.startswith(('chore:', 'ci:')):
+                    continue
+                tag, title = 'fix', subject
+            if not title:
+                continue
+            # 同一句话重复出现（rebase/多次合并）只留一条
+            key = title[:_CL_TITLE_MAX]
+            if key in seen_titles:
+                continue
+            seen_titles.add(key)
+
+            # ── ④ 标题截断：60 → 80，且按语义留 desc ──
+            full = title
+            t_short = full[:_CL_TITLE_MAX].strip()
+            t_desc = full[_CL_TITLE_MAX:].strip() if len(full) > _CL_TITLE_MAX else ''
             entries.append({
                 'date': date,
                 'tag': tag,
-                'title': subject[:60].strip(),
-                'desc': subject[61:].strip() if len(subject) > 60 else subject.strip()
+                'scope': scope,      # 新增：组件名（kline / inventory / kronos…）
+                'sha': sha[:7],
+                'title': t_short,
+                'desc': t_desc,
             })
+            # ── ③ 数量：取够 20 条「有效」提交就停 ──
+            if len(entries) >= 20:
+                break
+
         if entries:
             changelog_path = os.path.join(DATA_DIR, 'changelog.json')
             write_json(changelog_path, entries[:20])  # 最多20条

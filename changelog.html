@@ -82,7 +82,16 @@ body{
 .e-tag.perf{background:rgba(52,211,153,.15);color:var(--fall)}
 .e-tag.chore{background:rgba(148,163,184,.14);color:var(--text2)}
 .e-tag.wip{background:rgba(251,191,36,.13);color:var(--amber)}
-.e-tag.docs{background:rgba(52,211,153,.12);color:var(--fall)}
+/* ⚠ docs 原来和 chore 一样是绿色（.12 vs .14几乎看不出差别）→ 改青色区分。
+   2026-10-05 补refactor/test/build 三种 tag 的样式（sync_changelog 归一化后会产出它们）。*/
+.e-tag.docs{background:rgba(56,189,248,.14);color:#38bdf8}
+.e-tag.refactor{background:rgba(168,85,247,.14);color:#c084fc}
+.e-tag.test{background:rgba(74,222,128,.13);color:#4ade80}
+.e-tag.build{background:rgba(251,146,60,.13);color:#fb923c}
+/* scope 徽章（2026-10-05 新增）：跟在类型标签后面，说明「改的是哪个组件」 */
+.e-scope{font-size:10px;padding:2px 6px;border-radius:4px;flex-shrink:0;
+  background:rgba(255,255,255,.05);color:var(--text3);border:1px solid var(--border);
+  white-space:nowrap;letter-spacing:.2px}
 
 /* 右列详情 */
 .detail-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
@@ -159,7 +168,11 @@ var SCOPE_ZH = {
   fluct: '异动监控页', holdings: '持仓面板', revenue: '卖出复盘', backtest: '持仓回测',
   boards: '盘口监控', watchdog: '看门狗巡检', daemon: '本机调度器', git: '提交通道',
   index: '首页', dashboard: '看板', worker: '云函数', ai: 'AI 分析', kronos: '价格预测',
-  changelog: '更新日志', data: '数据采集', lint: '代码检查'
+  changelog: '更新日志', data: '数据采集', lint: '代码检查',
+  /* 2026-10-05 补：sync_changelog 加了 scope 字段后，这几个 scope 开始真实出现 */
+  kline: 'K 线图', inventory: '库存导入', wear: '磨损译名', filter: '过滤器',
+  price_db: '价格库', rec: '周度记分卡', scan: '扫描页', status: '状态页',
+  tracking: '追踪页', hp: '持仓', csqaq: 'CSQAQ 数据', eco: 'ECO 平台'
 };
 /* 数据文件 → 中文类别 */
 var FILE_ZH = [
@@ -184,11 +197,25 @@ function fileCat(f) {
 
 /* 解析一条提交，产出 {typeZh, scopeZh, titleZh, detailLines[], files[], raw} */
 function parseEntry(e) {
+  /* ⚠ 2026-10-05：update.py 的 sync_changelog() 已改版——
+     它现在**把 `type(scope): ` 前缀从 title 里剥掉了**，并单独给出
+     `tag`（归一化后）和 `scope` 字段。所以这里**优先用 e.scope**，
+     同时保留对旧格式（title 里仍带前缀）的兼容。
+     旧实现只认 title 里的前缀，一改 update.py 就会失效
+     （标题会显示成「fix: 校正采样口径」这种带冒号的脏标题）。*/
   var raw = String(e.title || e.desc || '');
   var type = (e.tag || 'chore').toLowerCase();
-  var scope = '', subj = raw;
+  var scope = String(e.scope || '');
+  var subj = raw;
+  // 兼容旧格式：title 里仍带 `type(scope):` 前缀
   var m = raw.match(/^(feat|fix|style|perf|chore|wip|docs|refactor|test|build|ci)(?:\(([^)]*)\))?\s*:\s*([\s\S]*)$/i);
-  if (m) { type = m[1].toLowerCase(); scope = m[2] || ''; subj = m[3].trim(); }
+  if (m) {
+    type = m[1].toLowerCase();
+    if (!scope) scope = m[2] || '';
+    subj = m[3].trim();
+  }
+  // scope 里可能带 `+xx`（如 `tracking+ci`），只取第一段
+  if (scope) scope = scope.split('+')[0].trim();
 
   var titleZh = '', lines = [], files = [];
 
@@ -245,6 +272,10 @@ function render() {
     '<div class="stat-pill">✨ <span class="num">' + (tagCount.feat || 0) + '</span> 新功能</div>' +
     '<div class="stat-pill">🎨 <span class="num">' + (tagCount.style || 0) + '</span> 样式</div>' +
     '<div class="stat-pill">⚡ <span class="num">' + (tagCount.perf || 0) + '</span> 优化</div>' +
+    /* 2026-10-05：sync_changelog 的 tag_map 扩了（refactor/docs/test/build），
+       这里补上计数，否则这些类型在统计条上完全不可见。 */
+    '<div class="stat-pill">🔧 <span class="num">' + ((tagCount.refactor || 0) + (tagCount.test || 0) + (tagCount.build || 0)) + '</span> 工程</div>' +
+    '<div class="stat-pill">📖 <span class="num">' + (tagCount.docs || 0) + '</span> 文档</div>' +
     '<div class="stat-pill">📦 <span class="num">' + ENTRIES.length + '</span> 总计</div>';
 
   var groups = {};
@@ -258,6 +289,9 @@ function render() {
       listHtml += '<div class="li" data-i="' + g.i + '">' +
         '<div class="l-head">' +
           '<span class="e-tag ' + g.e.tag + '">' + p.typeZh + '</span>' +
+          /* scope 徽章（2026-10-05 新增）：告诉用户「改的是哪个组件」，
+             以前只能从标题文字里猜。旧数据没有 scope 就不显示。 */
+          (p.scopeZh ? '<span class="e-scope">' + esc(p.scopeZh) + '</span>' : '') +
           '<span class="l-title" title="' + esc(p.titleZh) + '">' + esc(p.titleZh) + '</span>' +
         '</div></div>';
     });
