@@ -6388,17 +6388,132 @@ function importSteamInventory(){
 }
 function closeSteamImport(){ document.getElementById('steamImportModal').style.display='none'; }
 
+// ── 记住绑定的 SteamID + 一键刷新库存（只对比差异，绝不改动持仓）──
+var STEAM_ID_KEY = 'cs2_steam_id';
+function getBoundSteamId(){ try { return localStorage.getItem(STEAM_ID_KEY) || ''; } catch(e){ return ''; } }
+function setBoundSteamId(sid){ try { localStorage.setItem(STEAM_ID_KEY, sid); } catch(e){} restoreSteamBinding(); }
+function restoreSteamBinding(){
+  var bar = document.getElementById('steamRefreshBar');
+  var lbl = document.getElementById('steamBoundId');
+  var inp = document.getElementById('steamIdInput');
+  if(!bar) return;
+  var sid = getBoundSteamId();
+  if(sid){
+    if(lbl) lbl.textContent = sid;
+    if(inp && !inp.value) inp.value = sid;
+    bar.style.display = 'flex';
+  } else { bar.style.display = 'none'; }
+}
+function refreshInventory(){
+  var sid = getBoundSteamId();
+  var btn = document.getElementById('steamRefreshBtn');
+  var msg = document.getElementById('steamIdMsg');
+  function e2(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function say(html, color){ if(msg){ msg.style.display=''; msg.style.color = color || 'var(--text3)'; msg.innerHTML = html; } }
+  if(!sid){ say('还没有绑定 SteamID64，请在上面的输入框填一次再刷新。', 'var(--amber)'); return; }
+  if(btn){ btn.disabled = true; btn.textContent = '刷新中…'; }
+  say('正在拉取最新库存…');
+  fetch('/api/inventory?steamid=' + encodeURIComponent(sid) + '&nocache=1')
+    .then(function(r){ return r.text(); })
+    .then(function(txt){
+      var d = null; try { d = JSON.parse(txt); } catch(e) { d = null; }
+      if(!d){ say('服务暂时不可用（返回的不是 JSON）。请确认 Worker 已上线 /api/inventory。', 'var(--amber)'); return; }
+      if(d.error_code === 'INVENTORY_PRIVATE' && d.guide){
+        var g = d.guide, L = g.links || {};
+        say('<b style="color:var(--amber)">库存不是「公开」状态，读不到</b><br>'
+          + (g.steps || []).map(function(s){ return '· ' + e2(s); }).join('<br>')
+          + '<br><a href="' + e2(L.privacy_settings) + '" target="_blank" style="color:var(--blue)">→ 打开 Steam 隐私设置</a>', 'var(--amber)');
+        return;
+      }
+      if(d.error_code === 'RATE_LIMITED'){ say('被 Steam 限流了（429），等一两分钟再试。', 'var(--amber)'); return; }
+      if(d.error_code === 'STEAM_ERROR' && /401/.test(String(d.error || ''))){
+        say('Steam 拒绝了这次请求（401）——最常见是<b>出口 IP 被临时限流</b>，等 5~10 分钟再试；也可能是库存未公开、或该账号没有 CS2 库存。', 'var(--amber)');
+        return;
+      }
+      if(!d.ok){ say('拉取失败：' + e2(d.error || '未知错误'), 'var(--amber)'); return; }
+      say('✓ 拉到 ' + (d.total_inventory_count || 0) + ' 件 / 去重 ' + (d.distinct_items || 0) + ' 类，正在对比持仓…', 'var(--fall)');
+      window._lastInvItems = d.items || [];   // 供「补齐新增」使用
+      renderInventoryDiff(d.items || [], d.total_inventory_count || 0);
+    })
+    .catch(function(e){ say('出错了：' + e2(e.message), 'var(--amber)'); })
+    .then(function(){ if(btn){ btn.disabled = false; btn.textContent = '🔄 刷新库存'; } });
+}
+function renderInventoryDiff(items, totalCount){
+  var panel = document.getElementById('steamDiffPanel');
+  if(!panel) return;
+  var inv = {};
+  (items || []).forEach(function(it){
+    var mh = it.market_hash_name || '';
+    if(mh) inv[mh] = (inv[mh] || 0) + (it.amount || 1);
+  });
+  var hold = {}, held = [];
+  try { held = (typeof loadMyHoldings === 'function') ? (loadMyHoldings() || []) : []; } catch(e){ held = []; }
+  held.forEach(function(h){
+    var mh = h.market_hash || h.hash || '';
+    if(mh) hold[mh] = (hold[mh] || 0) + (h.qty || 1);
+  });
+  var added = [], missing = [], diff = [];
+  Object.keys(inv).forEach(function(mh){
+    if(!(mh in hold)) added.push({ mh: mh, q: inv[mh] });
+    else if(inv[mh] !== hold[mh]) diff.push({ mh: mh, inv: inv[mh], hold: hold[mh] });
+  });
+  Object.keys(hold).forEach(function(mh){ if(!(mh in inv)) missing.push({ mh: mh, q: hold[mh] }); });
+  function nm(mh){ try { return (typeof cnName === 'function') ? cnName(mh) : mh; } catch(e){ return mh; } }
+  function row(mh, color, qtyText){
+    return '<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);align-items:baseline">'
+      + '<span style="flex:1;min-width:0;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(nm(mh)) + '</span>'
+      + '<span style="color:' + color + ';font-family:monospace;white-space:nowrap">' + qtyText + '</span></div>';
+  }
+  var h = '';
+  h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">🔍 库存 vs 持仓对比'
+     + '<span style="font-weight:400;color:var(--text3);font-size:10px">（仅供参考，不会改动你的持仓和成本价）</span></div>';
+  h += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:11px">'
+     + '<span style="color:var(--text2)">库存 <b>' + totalCount + '</b> 件 / <b>' + Object.keys(inv).length + '</b> 类</span>'
+     + '<span style="color:var(--text3)">持仓 <b>' + Object.keys(hold).length + '</b> 类</span>'
+     + '<span style="color:var(--fall)">新增 <b>' + added.length + '</b></span>'
+     + '<span style="color:var(--amber)">已不在库存 <b>' + missing.length + '</b></span>'
+     + '<span style="color:var(--text3)">数量不符 <b>' + diff.length + '</b></span></div>';
+  if(!held.length){
+    h += '<div style="color:var(--text3);padding:6px 0">你还没有持仓记录，无法对比。先用上面的导入功能把库存加进持仓吧。</div>';
+  } else {
+    if(added.length){
+      h += '<div style="color:var(--fall);font-weight:600;margin:6px 0 2px">＋ 库存里有、持仓没记（' + added.length + '）</div>'
+        + added.slice(0, 60).map(function(x){ return row(x.mh, 'var(--fall)', '×' + x.q); }).join('');
+    }
+    if(missing.length){
+      h += '<div style="color:var(--amber);font-weight:600;margin:8px 0 2px">－ 持仓有、库存已没有（可能已卖出）（' + missing.length + '）</div>'
+        + missing.slice(0, 60).map(function(x){ return row(x.mh, 'var(--amber)', '持仓×' + x.q); }).join('');
+    }
+    if(diff.length){
+      h += '<div style="color:var(--text2);font-weight:600;margin:8px 0 2px">≠ 数量不一致（' + diff.length + '）</div>'
+        + diff.slice(0, 60).map(function(x){ return row(x.mh, 'var(--text2)', '库存×' + x.inv + ' / 持仓×' + x.hold); }).join('');
+    }
+    if(!added.length && !missing.length && !diff.length){
+      h += '<div style="color:var(--fall);padding:6px 0">✓ 库存与持仓完全一致。</div>';
+    }
+  }
+  h += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+     + '<button onclick="closeSteamImport();try{switchView(\'holdingsPanel\')}catch(e){}" style="padding:6px 14px;background:var(--blue);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer">→ 去持仓明细处理</button>'
+     + '<button onclick="syncInventoryToHoldings()" style="padding:6px 14px;background:var(--amber);color:#000;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer">⬇ 补齐新增（写入持仓）</button>'
+     + '<span style="font-size:10px;color:var(--text3)">默认只提示；点「补齐新增」才会写入持仓</span></div>';
+  panel.innerHTML = h;
+  panel.style.display = '';
+}
+
 // ── ① 直接导入：输 SteamID64 → 经 Worker 拉公开库存 ──
 function importBySteamId(){
   var inp = document.getElementById('steamIdInput');
   var btn = document.getElementById('steamIdBtn');
   var msg = document.getElementById('steamIdMsg');
   if(!inp || !msg) return;
-  var sid = (inp.value || '').trim();
+  var raw = (inp.value || '').trim();
+  var sid = raw;
+  // 支持直接粘贴资料页 URL / 任意含 17 位 ID 的文本
+  if(!/^\d{17}$/.test(sid)){ var _m = raw.match(/(\d{17})/); if(_m) sid = _m[1]; }
   function e2(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function say(html, color){ msg.style.display=''; msg.style.color = color || 'var(--text3)'; msg.innerHTML = html; }
   if(!/^\d{17}$/.test(sid)){
-    say('SteamID64 必须是 17 位数字。获取方式：打开你的 Steam 资料页，地址栏 /profiles/ 后面那串就是。', 'var(--amber)');
+    say('没找到 17 位 SteamID64。展开下方「怎么找我的 SteamID64？」看步骤；也可以把资料页网址整条粘进来（会自动提取）。', 'var(--amber)');
     return;
   }
   if(btn){ btn.disabled = true; btn.textContent = '拉取中…'; }
@@ -6413,6 +6528,7 @@ function importBySteamId(){
         return;
       }
       if(d.ok){
+        setBoundSteamId(sid);   // 记住绑定，之后可一键刷新
         var items = (d.items || []).map(function(it){ return { market_hash: it.market_hash_name, qty: it.amount }; });
         if(!items.length){
           say('库存为空，或物品都在交易保护期内（新买入约 7 天内不对外显示）。', 'var(--amber)');
@@ -6435,10 +6551,14 @@ function importBySteamId(){
         say('服务器被 Steam 限流了（429），等一两分钟再试。', 'var(--amber)');
         return;
       }
+      if(d.error_code === 'STEAM_ERROR' && /401/.test(String(d.error || ''))){
+        say('Steam 拒绝了这次请求（401）。最常见原因是<b>同一出口 IP 请求太频繁、被临时限流</b>——等 5~10 分钟再试通常就好；若反复出现，也可能是库存未设为公开，或该账号没有 CS2 库存。', 'var(--amber)');
+        return;
+      }
       say('拉取失败：' + e2(d.error || '未知错误'), 'var(--amber)');
     })
     .catch(function(e){
-      say('请求失败：' + e2(e.message) + '。若刚开始用，请确认 Worker 已上线 /api/inventory。', 'var(--amber)');
+      say('出错了：' + e2(e.message) + '（若是网络 / 404 类错误，请确认 Worker 已上线 /api/inventory）', 'var(--amber)');
     })
     .then(function(){ if(btn){ btn.disabled = false; btn.textContent = '拉取库存'; } });
 }
@@ -6611,7 +6731,7 @@ function showImportPreview(items){
 function commitImport(){
   var items = window._importItems || [];
   if(!items.length) return;
-  var strat = (document.getElementById('ipStrategy') || {}).value || 'merge';
+  var strat = (document.getElementById('ipStrategy') || {}).value || 'add';   // 兜底也用最安全的「仅新增」
   var existing = loadMyHoldings() || [];
   var map = {};
   if(strat !== 'replace') existing.forEach(function(it){ map[overrideKey(it.name, it.wear)] = it; });
@@ -6802,6 +6922,25 @@ window.addEventListener('focus', function(){
         <button id="steamIdBtn" onclick="importBySteamId()" style="padding:7px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">拉取库存</button>
       </div>
       <div id="steamIdMsg" style="display:none;margin-top:8px;font-size:11px;line-height:1.75;color:var(--text3)"></div>
+
+      <!-- 已绑定 SteamID → 一键刷新库存（只对比差异，绝不改动持仓） -->
+      <div id="steamRefreshBar" style="display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;align-items:center;gap:8px">
+        <span style="font-size:11px;color:var(--text3);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">已绑定 <b id="steamBoundId" style="color:var(--text2);font-family:monospace"></b></span>
+        <button id="steamRefreshBtn" onclick="refreshInventory()" style="padding:6px 14px;background:var(--fall);color:#000;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">🔄 刷新库存</button>
+      </div>
+      <div id="steamDiffPanel" style="display:none;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;max-height:290px;overflow:auto"></div>
+
+      <!-- 获取 SteamID64 指引（常驻可折叠，无弹窗） -->
+      <details id="steamIdGuide" style="margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px">
+        <summary style="font-size:11px;color:var(--blue);cursor:pointer;font-weight:600;user-select:none;outline:none">❓ 怎么找我的 SteamID64？点开看步骤</summary>
+        <div style="margin-top:9px;font-size:11px;line-height:1.9;color:var(--text2)">
+          <div>① 先登录 Steam，然后点开 <a href="https://steamcommunity.com/my/inventory/" target="_blank" style="color:var(--blue);text-decoration:none">我的 Steam 库存</a>（或任意个人资料页）</div>
+          <div>② 页面打开后看浏览器<b style="color:var(--amber)">地址栏</b>，它会自动变成这样：</div>
+          <div style="font-family:monospace;font-size:10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 7px;margin:4px 0;color:var(--text3);word-break:break-all">steamcommunity.com/profiles/<b style="color:var(--amber)">76561198xxxxxxxxx</b>/inventory/</div>
+          <div>③ <b style="color:var(--amber)">profiles/</b> 后面那串 <b>17 位数字</b>就是 SteamID64，复制它填到上面的输入框</div>
+          <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--border);color:var(--text3)">💡 懒人办法：把整条资料页网址直接粘进输入框，会自动提取 ID。</div>
+        </div>
+      </details>
     </div>
 
     <!-- ② 主路径：书签一键 -->
@@ -6842,9 +6981,9 @@ window.addEventListener('focus', function(){
       <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
         <span style="font-size:11px;color:var(--text3)">合并方式</span>
         <select id="ipStrategy" style="padding:5px 8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px">
-          <option value="merge">增量合并（相同饰品数量累加）</option>
-          <option value="replace">整表替换（清空原持仓）</option>
-          <option value="add">仅新增（不覆盖已有）</option>
+          <option value="merge">增量合并 —— 相同饰品数量累加（持仓 2 + 库存 2 = 4），慎防翻倍</option>
+          <option value="replace">⚠ 整表替换 —— 清空原持仓后重建，成本价会全部丢失</option>
+          <option value="add" selected>仅新增 —— 已有物品完全不动，只加新的（推荐）</option>
         </select>
         <button onclick="commitImport()" style="padding:7px 18px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600">确认导入</button>
         <button onclick="document.getElementById('importPreview').style.display='none'" style="padding:7px 16px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">返回</button>
