@@ -917,6 +917,44 @@ def _rate_from_hist(hist, days):
     return round((cur - base) / base * 100, 2)
 
 
+_KRONOS_PY_CACHE = {}
+
+
+def _kronos_python_ok(venv_py):
+    """探测 Kronos venv 是否**真的能用**（而不是只看文件存在）。
+
+    ⚠ 为什么必须真探测（2026-10-05 踩坑）：
+    「venv_py 路径存在」≠「能 import torch」。今天排查时发现服务器的 torch 只在
+    `/home/ubuntu/kronos-venv`。如果只判存在性，一旦路径漂移就会：
+      · 静默 return None → 预测不产出 → 前端继续读上一版 ai_forecast.json，
+      · **且没有任何报错**。数据静默陈旧比直接失败更难发现。
+    所以这里真跑一次 `import torch`（约 1-2s），失败就把原因原样打出来。
+    同一进程内缓存结果（预测每 6h 才跑一次，探测开销可忽略）。
+    """
+    if venv_py in _KRONOS_PY_CACHE:
+        return _KRONOS_PY_CACHE[venv_py]
+    if not os.path.exists(venv_py):
+        _KRONOS_PY_CACHE[venv_py] = (False, '解释器不存在')
+        return _KRONOS_PY_CACHE[venv_py]
+    _env = dict(os.environ)
+    _env.pop('PYTHONPATH', None)   # 剥掉注入的 sitecustomize，避免干扰 import
+    for _k in ('HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'FTP_PROXY'):
+        _env.pop(_k, None)
+    try:
+        r = subprocess.run(
+            [venv_py, '-c', 'import torch;print(torch.__version__)'],
+            env=_env, capture_output=True, text=True, encoding='utf-8',
+            errors='replace', timeout=120)
+        if r.returncode == 0:
+            _KRONOS_PY_CACHE[venv_py] = (True, (r.stdout or '').strip().splitlines()[-1])
+        else:
+            tail = ((r.stderr or r.stdout or '').strip().splitlines() or ['?'])[-1]
+            _KRONOS_PY_CACHE[venv_py] = (False, tail[:120])
+    except Exception as e:
+        _KRONOS_PY_CACHE[venv_py] = (False, str(e)[:120])
+    return _KRONOS_PY_CACHE[venv_py]
+
+
 def run_kronos_forecast(top_n=10, days=14, samples=3):
     """Kronos 批量价格预测：只预测「推荐池前 top_n 名」+「AI 精选」的标的。
 
@@ -927,23 +965,39 @@ def run_kronos_forecast(top_n=10, days=14, samples=3):
     if str(os.environ.get('KRONOS_FORECAST', '1')).strip() == '0':
         return None
     # 平台自适应：Windows=本机 venv；Linux=服务器 kronos-venv（方案 C，2026-09-26 实测峰值 478MB）
+    # Windows 侧 2026-09-26 做过 C→E 盘迁移：按存在性探测根目录，两机共用同一份代码，
+    # 互推时不会把对方的路径打回旧值（此前本机 E:\ 与服务器 C:\ 分叉过）
     if os.name == 'nt':
-        # Windows 侧 2026-09-26 做过 C→E 盘迁移：按存在性探测根目录，两机共用
-        # 同一份代码，互推时不会把对方的路径打回旧值（此前 E:\ 与 C:\ 分叉过）
         _kroot = next((_p for _p in (r'E:\cs2-kronos', r'C:\Users\Lenovo\cs2-kronos')
                        if os.path.isdir(_p)), r'E:\cs2-kronos')
         default_py = os.path.join(_kroot, 'venv', 'Scripts', 'python.exe')
         default_local = os.path.join(_kroot, 'forecast_batch.py')
     else:
-        default_py = '/home/ubuntu/kronos-venv/bin/python'
+        # ⚠ 服务器上 torch 只在 /home/ubuntu/kronos-venv（2026-10-05 实测确认：
+        #   cs2-run/venv 没 torch，cs2-kronos/ 下根本没有 venv，只有模型和数据）。
+        #   扫一圈候选作兜底 —— 万一路径再变，至少挑到一个存在的，
+        #   而不是第一候选不存在就静默跳过。能不能用交给 _kronos_python_ok 判。
+        _cands = ['/home/ubuntu/kronos-venv/bin/python',
+                  '/home/ubuntu/cs2-run/venv/bin/python',
+                  '/home/ubuntu/venv/bin/python']
+        _existing = [p for p in _cands if os.path.exists(p)]
+        default_py = _existing[0] if _existing else _cands[0]
         default_local = '/home/ubuntu/cs2-run/kronos_forecast_srv.py'
     venv_py = os.environ.get('KRONOS_PY') or default_py
     _local_script = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                  'kronos_forecast.py' if os.name == 'nt' else 'kronos_forecast_srv.py')
     script = os.environ.get('KRONOS_SCRIPT') or (_local_script if os.path.exists(_local_script) else default_local)
-    if not (os.path.exists(venv_py) and os.path.exists(script)):
-        print('[Kronos] 未找到独立环境（%s），跳过预测' % venv_py)
+    # ⚠ 脚本路径与解释器**分开报错**：之前合并成一句「未找到独立环境」，
+    #   两种原因混在一起排查只能靠猜。分开后一眼看出是「代码没同步」还是「环境没 torch」。
+    if not os.path.exists(script):
+        print('[Kronos] 跳过：预测脚本不存在 %s' % script, file=sys.stderr)
         return None
+    _ok, _why = _kronos_python_ok(venv_py)
+    if not _ok:
+        print('[Kronos] 跳过：独立环境不可用（%s）→ %s' % (venv_py, _why), file=sys.stderr)
+        print('[Kronos]   若 torch 确实已装只是路径变了，设 KRONOS_PY=/实际/路径/bin/python', file=sys.stderr)
+        return None
+    print('[Kronos] 环境就绪：%s（torch %s）' % (venv_py, _why))
     env = dict(os.environ)
     # 剥掉 WorkBuddy 注入的 sitecustomize —— 其批量删除守卫会拦住 matplotlib 建字体缓存
     env.pop('PYTHONPATH', None)
@@ -3124,53 +3178,28 @@ def push_all():
             print(f'  [DIRTY] {filename}')
         return
     else:
-        # Local: GitHub API 通道（稳，替代被限速的 git push / github.com:443）
-        # 失败处理：API 主通道 → git 兜底；仍失败才 raise（daemon 下轮重试），
-        # 且彻底失败时发企微告警，避免「静默空转 10 小时」。
-        try:
-            from github_api_push import api_push_all
-            ok, failed = api_push_all(sorted(dirty_files), message,
-                                     repo=REPO, token=GH_TOKEN, ctx=ctx,
-                                     base_dir=SCRIPT_DIR)
-            if ok:
-                print('[PUSH] API 通道推送成功（%d 文件）' % len(dirty_files))
-            else:
-                print('[PUSH] API 通道有 %d 个文件未推送: %s，回退 git' % (len(failed), failed),
-                      file=sys.stderr)
-                try:
-                    git_push_locally(sorted(dirty_files), message)
-                    print('[PUSH] git 兜底推送成功')
-                except Exception as e2:
-                    print('[PUSH] git 兜底也失败: %s' % e2, file=sys.stderr)
-                    _alert_push_failed('API+git 均失败: %s' % e2)
-                    raise RuntimeError('push 失败，数据未推送: %s' % e2)
-        except Exception as e:
-            print('[PUSH] API 通道异常: %s，回退 git' % e, file=sys.stderr)
+        # Local: single git commit + push（带重试）
+        last_err = None
+        for attempt in range(3):
             try:
                 git_push_locally(sorted(dirty_files), message)
-            except Exception as e2:
-                _alert_push_failed('git 兜底失败: %s' % e2)
-                raise RuntimeError('push 失败，数据未推送: %s' % e2)
-
-def _alert_push_failed(detail):
-    """推送彻底失败时发企微告警（2 小时冷却，避免刷屏）。"""
-    try:
-        import subprocess
-        state = os.path.join(SCRIPT_DIR, '.last_push_alert')
-        now = time.time()
-        if os.path.exists(state):
-            try:
-                if now - float((open(state).read().strip() or '0')) < 7200:
-                    return
-            except Exception:
-                pass
-        open(state, 'w').write(str(now))
-        msg = '⚠️ CS2 推送通道异常：%s' % detail
-        subprocess.run([sys.executable, 'watchdog/wecom_notify.py', msg],
-                       cwd=SCRIPT_DIR, timeout=25, capture_output=True)
-    except Exception:
-        pass
-
+                last_err = None
+                break
+            except Exception as e:
+                last_err = e
+                print(f'[PUSH] Attempt {attempt+1} failed: {e}', file=sys.stderr)
+                if attempt < 2:
+                    time.sleep(3)
+                    # ⚠️ 重试**不再** fetch + rebase。
+                    #   实测（2026-09-16）这条仓库里 fetch 从没真正下到对象
+                    #   （FETCH_HEAD 写了、对象没下来），而 rebase 一旦被超时
+                    #   强杀就会清空 refs/ → 仓库变 "not a git repository"。
+                    #   更关键的是：远端数据比本地旧，rebase 进来只会覆盖新数据。
+                    #   所以重试只做纯 push —— push 不需要远端对象在本地存在。
+                    pass
+        if last_err is not None:
+            # 必须让调用方知道数据没推上去 —— 否则自动任务会「静默成功」地空转。
+            raise RuntimeError(f'push 重试 3 次全部失败，数据未推送: {last_err}')
 
 def github_push_file(path, content_str, message):
     """Push a single file via GitHub Contents API"""
@@ -3829,10 +3858,8 @@ def git_sync_safe():
     # 把工作区改动落成本地提交，保证后续 push 有内容可推。
     # 注意：这只是"落地"，不 push —— 真正的 push 由 push_all()/git_push_locally()
     # 在数据生成完之后统一做（那时才知道哪些文件真的变了）。
-    # 2026-10-04 API 通道已接管推送；停用本地 wip 中转快照，
-    # 避免本地 main 与 origin/main(API 推送)分叉导致 push_retry 合并冲突。
-    # if not _commit_all_local(f'wip: local snapshot {time.strftime("%Y-%m-%d %H:%M")}'):
-    # print('[GIT][WARN] 本地中转提交未完成，继续跑数据更新（不影响推送）', file=sys.stderr)
+    if not _commit_all_local(f'wip: local snapshot {time.strftime("%Y-%m-%d %H:%M")}'):
+        print('[GIT][WARN] 本地中转提交未完成，继续跑数据更新（不影响推送）', file=sys.stderr)
 
 
 # ═══════════════ MAIN ═══════════════
@@ -4702,10 +4729,8 @@ def main():
         print('[FirePulse] 大盘生成失败: %s' % _e, file=sys.stderr)
 
     # ── 同步生成数据状态摘要 ──
-    # 2026-10-04 修：这里原有的 `import json` 是多余的（模块顶部已 import），
-    # 且它把 json 变成 main() 的局部变量 → 后面 4573 行 name_map 段用的
-    # json.load 变成 UnboundLocalError，name_map.json 从 9-22 起就再没更新过。
     try:
+        import json
         status_summary = {'updated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         # price_history (SQLite) dates
         try:
