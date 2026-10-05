@@ -4401,6 +4401,8 @@ async function fetchLivePrices(items, holdNames) {
         var dp = csqaqData[hn]
         if (dp.buff_sell > 0) { h.p = dp.buff_sell; h.buff_sell = dp.buff_sell; h.buff_sell_num = dp.buff_sell_num || 0; }
         if (dp.yyyp_sell > 0) { h.yyyp_sell = dp.yyyp_sell; h.yyyp_sell_num = dp.yyyp_sell_num || 0; }
+      });          // 闭合上面的 forEach
+    }              // 闭合 if ((holdNames || []).length)
     // ⚠ 2026-10-05：这里原来判 `h.p > 0`，而 h.p 只在 CSQAQ 命中时才有值 →
     //   印花/探员/箱子等 24 件永远不满足 → 它们的 pnl / pnlPct 一直是 0，
     //   列表上就显示「0.0% / ±¥0」—— 即使刚统一了 hpPrice() 取价，盈亏还是错的。
@@ -4412,7 +4414,7 @@ async function fetchLivePrices(items, holdNames) {
         h.pnl = _pp - Number(h.c || 0);
         h.pnlPct = (Number(h.c) > 0) ? (h.pnl / h.c * 100) : 0;
       }
-    })
+    });
   } catch(e) {}
 }
 
