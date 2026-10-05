@@ -6437,10 +6437,14 @@ function importBySteamId(){
         say('服务器被 Steam 限流了（429），等一两分钟再试。', 'var(--amber)');
         return;
       }
+      if(d.error_code === 'STEAM_ERROR' && /401/.test(String(d.error || ''))){
+        say('Steam 拒绝了这次请求（401）。最常见原因是<b>同一出口 IP 请求太频繁、被临时限流</b>——等 5~10 分钟再试通常就好；若反复出现，也可能是库存未设为公开，或该账号没有 CS2 库存。', 'var(--amber)');
+        return;
+      }
       say('拉取失败：' + e2(d.error || '未知错误'), 'var(--amber)');
     })
     .catch(function(e){
-      say('请求失败：' + e2(e.message) + '。若刚开始用，请确认 Worker 已上线 /api/inventory。', 'var(--amber)');
+      say('出错了：' + e2(e.message) + '（若是网络 / 404 类错误，请确认 Worker 已上线 /api/inventory）', 'var(--amber)');
     })
     .then(function(){ if(btn){ btn.disabled = false; btn.textContent = '拉取库存'; } });
 }
