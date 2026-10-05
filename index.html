@@ -6386,11 +6386,14 @@ function importBySteamId(){
   var btn = document.getElementById('steamIdBtn');
   var msg = document.getElementById('steamIdMsg');
   if(!inp || !msg) return;
-  var sid = (inp.value || '').trim();
+  var raw = (inp.value || '').trim();
+  var sid = raw;
+  // 支持直接粘贴资料页 URL / 任意含 17 位 ID 的文本
+  if(!/^\d{17}$/.test(sid)){ var _m = raw.match(/(\d{17})/); if(_m) sid = _m[1]; }
   function e2(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function say(html, color){ msg.style.display=''; msg.style.color = color || 'var(--text3)'; msg.innerHTML = html; }
   if(!/^\d{17}$/.test(sid)){
-    say('SteamID64 必须是 17 位数字。获取方式：打开你的 Steam 资料页，地址栏 /profiles/ 后面那串就是。', 'var(--amber)');
+    say('没找到 17 位 SteamID64。展开下方「怎么找我的 SteamID64？」看步骤；也可以把资料页网址整条粘进来（会自动提取）。', 'var(--amber)');
     return;
   }
   if(btn){ btn.disabled = true; btn.textContent = '拉取中…'; }
@@ -6764,6 +6767,18 @@ window.addEventListener('focus', function(){
         <button id="steamIdBtn" onclick="importBySteamId()" style="padding:7px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">拉取库存</button>
       </div>
       <div id="steamIdMsg" style="display:none;margin-top:8px;font-size:11px;line-height:1.75;color:var(--text3)"></div>
+
+      <!-- 获取 SteamID64 指引（常驻可折叠，无弹窗） -->
+      <details id="steamIdGuide" style="margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px">
+        <summary style="font-size:11px;color:var(--blue);cursor:pointer;font-weight:600;user-select:none;outline:none">❓ 怎么找我的 SteamID64？点开看步骤</summary>
+        <div style="margin-top:9px;font-size:11px;line-height:1.9;color:var(--text2)">
+          <div>① 先登录 Steam，然后点开 <a href="https://steamcommunity.com/my/inventory/" target="_blank" style="color:var(--blue);text-decoration:none">我的 Steam 库存</a>（或任意个人资料页）</div>
+          <div>② 页面打开后看浏览器<b style="color:var(--amber)">地址栏</b>，它会自动变成这样：</div>
+          <div style="font-family:monospace;font-size:10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 7px;margin:4px 0;color:var(--text3);word-break:break-all">steamcommunity.com/profiles/<b style="color:var(--amber)">76561198xxxxxxxxx</b>/inventory/</div>
+          <div>③ <b style="color:var(--amber)">profiles/</b> 后面那串 <b>17 位数字</b>就是 SteamID64，复制它填到上面的输入框</div>
+          <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--border);color:var(--text3)">💡 懒人办法：把整条资料页网址直接粘进输入框，会自动提取 ID。</div>
+        </div>
+      </details>
     </div>
 
     <!-- ② 主路径：书签一键 -->
