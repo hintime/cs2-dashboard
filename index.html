@@ -2688,21 +2688,21 @@ window.syncHoldingsToGitHub = async function() {
 
 window.loadHoldingsFromGitHub = async function() {
   var key = getMyKey();
-  if (!ghToken || !key) { alert('请先登录并配置 GitHub Token'); return; }
+  if (!ghToken || !key) { appToast('请先登录并配置 GitHub Token', 'warn'); return; }
   try {
     var r = await fetch('https://api.github.com/repos/'+GH_REPO+'/contents/holdings_'+key+'.json?ref=main', {headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
-    if (!r.ok) { alert('远程没有持仓数据（状态码：'+r.status+'）'); return; }
+    if (!r.ok) { appToast('远程没有持仓数据（状态码：' + r.status + '）', 'warn'); return; }
     var d = await r.json();
     var content = JSON.parse(decodeURIComponent(escape(atob(d.content))));
     if (content && content.items && content.items.length) {
       saveMyHoldings(content.items);
-      alert('✅ 已恢复 '+content.items.length+' 件持仓，即将刷新');
+      appToast('已恢复 ' + content.items.length + ' 件持仓，即将刷新', 'ok');
       location.reload();
     } else {
-      alert('远程持仓数据为空');
+      appToast('远程持仓数据为空', 'warn');
     }
   } catch(e) {
-    alert('加载失败：'+e.message);
+    appToast('加载失败：' + e.message, 'err');
   }
 }
 
@@ -5563,7 +5563,7 @@ if (addBtn) {
     var name = document.getElementById('addItemName').value.trim();
     var wear = document.getElementById('addItemWear').value;
     var cost = parseFloat(document.getElementById('addItemCost').value) || 0;
-    if (!name) { alert('请输入饰品名称'); return; }
+    if (!name) { appToast('请输入饰品名称', 'warn'); return; }
     var customs = loadCustomHoldings();
     customs.push({ n: name, w: wear, c: cost, p: cost,
                    category: CAT_LABELS[inferCatFromName(name)] || '其他' });
@@ -6350,6 +6350,91 @@ function removeWatchlist(idx){
 }
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+// ══════════ 统一提示组件：Toast（轻提示）+ Confirm（确认框）══════════
+// 取代原生 alert/confirm（原生弹窗样式丑、无法定制、且在无头/自动化下会阻塞）。
+(function(){
+  var st = document.createElement('style');
+  st.textContent = ''
+    + '#appToastBox{position:fixed;top:16px;right:16px;z-index:10050;display:flex;flex-direction:column;gap:8px;pointer-events:none}'
+    + '.app-toast{pointer-events:auto;min-width:230px;max-width:min(390px,92vw);background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:10px;padding:11px 13px;box-shadow:0 10px 32px rgba(0,0,0,.45);display:flex;gap:9px;align-items:flex-start;cursor:pointer;animation:appToastIn .22s cubic-bezier(.2,.9,.3,1.2)}'
+    + '.app-toast.hide{animation:appToastOut .18s ease forwards}'
+    + '.app-toast .ti{font-size:14px;line-height:1.35;flex-shrink:0}'
+    + '.app-toast .tm{font-size:12px;line-height:1.55;color:var(--text);white-space:pre-wrap;word-break:break-word}'
+    + '.app-toast.ok{border-left-color:var(--fall)}'
+    + '.app-toast.warn{border-left-color:var(--amber)}'
+    + '.app-toast.err{border-left-color:var(--rise)}'
+    + '@keyframes appToastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}'
+    + '@keyframes appToastOut{to{opacity:0;transform:translateX(30px)}}'
+    + '#appConfirmOv{position:fixed;inset:0;z-index:10060;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px}'
+    + '#appConfirmOv.show{display:flex}'
+    + '#appConfirmCard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:430px;max-width:95vw;box-shadow:0 18px 50px rgba(0,0,0,.5);animation:appToastIn .18s ease}'
+    ;
+  document.head.appendChild(st);
+
+  var box = null;
+  function ensureBox(){
+    if(!box){ box = document.createElement('div'); box.id = 'appToastBox'; document.body.appendChild(box); }
+    return box;
+  }
+  function kill(el){
+    if(!el || el._dead) return; el._dead = 1;
+    el.classList.add('hide');
+    setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 200);
+  }
+  window.appToast = function(msg, type, ms){
+    var t = type || 'info';
+    var icons = { ok:'✓', warn:'⚠', err:'✗', info:'ℹ' };
+    var cols  = { ok:'var(--fall)', warn:'var(--amber)', err:'var(--rise)', info:'var(--blue)' };
+    var el = document.createElement('div');
+    el.className = 'app-toast ' + (t === 'info' ? '' : t);
+    var ic = document.createElement('div'); ic.className = 'ti'; ic.style.color = cols[t] || cols.info; ic.textContent = icons[t] || 'ℹ';
+    var tx = document.createElement('div'); tx.className = 'tm'; tx.textContent = String(msg == null ? '' : msg);
+    el.appendChild(ic); el.appendChild(tx);
+    el.onclick = function(){ kill(el); };
+    ensureBox().appendChild(el);
+    setTimeout(function(){ kill(el); }, ms || (t === 'ok' ? 3200 : 4400));
+    return el;
+  };
+  window.appConfirm = function(msg, onOk, opts){
+    opts = opts || {};
+    var ov = document.getElementById('appConfirmOv');
+    if(!ov){
+      ov = document.createElement('div'); ov.id = 'appConfirmOv';
+      ov.innerHTML = '<div id="appConfirmCard"></div>';
+      document.body.appendChild(ov);
+    }
+    var card = ov.querySelector('#appConfirmCard');
+    card.innerHTML = '';
+    var h = document.createElement('div');
+    h.style.cssText = 'font-size:14px;font-weight:700;color:var(--text);margin-bottom:10px';
+    h.textContent = opts.title || '请确认';
+    var p = document.createElement('div');
+    p.style.cssText = 'font-size:12px;line-height:1.75;color:var(--text2);white-space:pre-wrap;word-break:break-word;margin-bottom:16px';
+    p.textContent = String(msg == null ? '' : msg);
+    var bar = document.createElement('div');
+    bar.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
+    var cancel = document.createElement('button');
+    cancel.textContent = opts.cancelText || '取消';
+    cancel.style.cssText = 'padding:7px 16px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer';
+    var ok = document.createElement('button');
+    ok.textContent = opts.okText || '确定';
+    ok.style.cssText = 'padding:7px 18px;background:' + (opts.danger ? 'var(--rise)' : 'var(--blue)') + ';color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer';
+    function close(flag){
+      ov.classList.remove('show');
+      document.body.style.overflow = '';
+      if(flag && typeof onOk === 'function'){ try { onOk(); } catch(e){} }
+    }
+    cancel.onclick = function(){ close(false); };
+    ok.onclick = function(){ close(true); };
+    ov.onclick = function(e){ if(e.target === ov) close(false); };
+    bar.appendChild(cancel); bar.appendChild(ok);
+    card.appendChild(h); card.appendChild(p); card.appendChild(bar);
+    ov.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ try { ok.focus(); } catch(e){} }, 30);
+  };
+})();
+
 // ── 个人持仓（localStorage 按账号隔离）──
 function getMyKey(){ var u=localStorage.getItem('cs2_user'); if(!u)return''; try{return JSON.parse(u).account||'';}catch(e){return'';} }
 function loadMyHoldings(){
@@ -6567,7 +6652,7 @@ function importBySteamId(){
 //    红线：只新增；绝不删除任何记录、绝不改动已有物品的成本价
 function syncInventoryToHoldings(){
   var items = window._lastInvItems || [];
-  if(!items.length){ alert('请先点「🔄 刷新库存」拉一次最新库存，再点补齐。'); return; }
+  if(!items.length){ appToast('请先点「🔄 刷新库存」拉一次最新库存，再点补齐。', 'warn'); return; }
   var inv = {};
   items.forEach(function(it){ var mh = it.market_hash_name || ''; if(mh) inv[mh] = (inv[mh] || 0) + (it.amount || 1); });
   var existing = (typeof loadMyHoldings === 'function') ? (loadMyHoldings() || []) : [];
@@ -6583,10 +6668,10 @@ function syncInventoryToHoldings(){
     existing.push({ id: Date.now() + '_' + (Math.random() * 1e6 | 0), name: nm, market_hash: mh, cost: pc, qty: inv[mh], wear: wz, category: '' });
     added++; addedQty += inv[mh];
   });
-  if(!added){ alert('无需补齐：库存里的物品，你的持仓都已记录。'); return; }
+  if(!added){ appToast('无需补齐：库存里的物品，你的持仓都已记录。', 'info'); return; }
   saveMyHoldings(existing);
-  alert('✓ 已补齐 ' + added + ' 类 / ' + addedQty + ' 件新增物品\n（成本按现价预填，可在持仓明细里逐件改）\n\n只补了新增，没有删除任何记录、也没动已有成本价。');
-  location.reload();
+  appToast('已补齐 ' + added + ' 类 / ' + addedQty + ' 件新增物品\n（成本按现价预填，可在持仓明细里逐件改）\n\n只补了新增：没有删除任何记录，也没有改动已有成本价。', 'ok', 4500);
+  setTimeout(function(){ location.reload(); }, 1400);   // 留时间让提示可见（原来 reload 会把 alert 一起刷掉）
 }
 
 // ── 自动检测剪贴板中的 Steam 库存 JSON ──
@@ -6612,9 +6697,9 @@ function checkClipboard(){
             ta.value = txt;
             ta.style.borderColor = 'var(--fall)';
             setTimeout(function() {
-              if(confirm('✓ 检测到库存 JSON（'+d.assets.length+' 件物品）\n是否立即导入？')){
+              appConfirm('检测到库存 JSON（' + d.assets.length + ' 件物品），是否立即导入？', function(){
                 showImportPreview(parseSteamJson(d));
-              }
+              }, { title: '检测到库存数据', okText: '立即导入' });
             }, 200);
           } else {
             ta.placeholder = '✓ 剪贴板有库存JSON，但物品数为0（库存为空或未公开）';
@@ -6626,9 +6711,9 @@ function checkClipboard(){
             ta.value = txt;
             ta.style.borderColor = 'var(--fall)';
             setTimeout(function() {
-              if(confirm('✓ 检测到库存 JSON（'+cnt+' 件物品）\n是否立即导入？')){
+              appConfirm('检测到库存 JSON（' + cnt + ' 件物品），是否立即导入？', function(){
                 showImportPreview(parseSteamJson(d));
-              }
+              }, { title: '检测到库存数据', okText: '立即导入' });
             }, 200);
           } else {
             ta.placeholder = '有 rgInventory 但物品数为0';
@@ -6653,8 +6738,8 @@ function checkClipboard(){
 }
 function doSteamImport(){
   var raw = document.getElementById('steamJson').value.trim();
-  if(!raw){ alert('请先粘贴JSON'); return; }
-  try { var data=JSON.parse(raw); showImportPreview(parseSteamJson(data)); } catch(e){ alert('JSON解析失败: '+e.message); }
+  if(!raw){ appToast('请先粘贴 JSON', 'warn'); return; }
+  try { var data=JSON.parse(raw); showImportPreview(parseSteamJson(data)); } catch(e){ appToast('JSON 解析失败：' + e.message, 'err'); }
 }
 // ── 磨损解析：从 market_hash_name 提取（忽略 StatTrak™ / Souvenir / ★ 等品质词）──
 function extractWear(mh){
@@ -6707,8 +6792,8 @@ function parseSteamJson(data){
 }
 // ── 导入预览表（逐件可改成本 + 合并策略）──
 function showImportPreview(items){
-  if(items === null){ alert('✗ 数据格式不对 — 请确认复制的是 inventory/.../730/2 的纯文本 JSON（开头 {"success":true,...}）'); return; }
-  if(!items || !items.length){ alert('未解析出任何物品（库存可能为空或未公开）'); return; }
+  if(items === null){ appToast('数据格式不对 — 请确认复制的是 inventory/.../730/2 的纯文本 JSON（开头 {"success":true,...}）', 'err'); return; }
+  if(!items || !items.length){ appToast('未解析出任何物品（库存可能为空或未公开）', 'warn'); return; }
   window._importItems = items;
   var tbody = '';
   items.forEach(function(it, i){
@@ -6756,8 +6841,8 @@ function commitImport(){
   });
   saveMyHoldings(existing);
   closeSteamImport();
-  alert('✓ 导入 ' + imported + ' 件（' + ({merge:'增量合并',replace:'整表替换',add:'仅新增'})[strat] + '）');
-  location.reload();
+  appToast('已导入 ' + imported + ' 件（' + ({merge:'增量合并',replace:'整表替换',add:'仅新增'})[strat] + '）', 'ok', 4000);
+  setTimeout(function(){ location.reload(); }, 1300);   // 留时间让提示可见（原来 reload 会把 alert 一起刷掉）
 }
 
 // ═══ 检测书签跳转导入（window.name 跨域传递数据）═══
@@ -8667,9 +8752,9 @@ function hpSell(idx){
   var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H||[]);
   var h = arr[idx]; if(!h) return;
   if (typeof window.openSellConfirm === 'function') { window.openSellConfirm(h); return; }
-  if (confirm('确认卖出「'+hpName(h)+'」？')) {
+  appConfirm('确认卖出「' + hpName(h) + '」？', function(){
     if (typeof removeMyHolding === 'function') removeMyHolding(h.n, h.w);
-  }
+  }, { title: '确认卖出', okText: '确认卖出', danger: true });
 }
 function hpStar(idx){
   var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H||[]);
