@@ -18,6 +18,8 @@ import sys
 KRONOS = os.environ.get('KRONOS_HOME') or '/home/ubuntu/cs2-kronos'
 REPO = os.path.dirname(os.path.abspath(__file__))
 DB = os.environ.get('PRICE_HIST_DB') or '/home/ubuntu/cs2-run/price_history.db'
+# 迷你走势图用的历史段点数（最后 N 天）。全量 58 天会让前端 svg 过长，故只取尾部。
+HIST_TAIL = int(os.environ.get('KRONOS_HIST_TAIL') or 30)
 
 sys.path.insert(0, KRONOS)
 os.chdir(KRONOS)
@@ -109,9 +111,19 @@ def main():
         sys.exit(1)
 
     from src.predictor import CS2SkinPredictor  # noqa: E402
-    pred = CS2SkinPredictor(
-        model_name=os.path.join(KRONOS, 'hf', 'Kronos-small'),
-        tokenizer_name=os.path.join(KRONOS, 'hf', 'Kronos-Tokenizer-base'))
+    # ★ 2026-10-05 支持换模型：微调模型（best_model）验证需要与基线 Kronos-small
+    #   对比，而两者不能互相覆盖 —— 微调模型先跑一次看结果，再决定是否上线。
+    #   所以这里不写死路径，改读环境变量（KRONOS_MODEL / KRONOS_TOKENIZER）。
+    #   不设就退回原来的 Kronos-small，行为不变。
+    m_path = os.environ.get('KRONOS_MODEL') or os.path.join(KRONOS, 'hf', 'Kronos-small')
+    t_path = (os.environ.get('KRONOS_TOKENIZER')
+              or os.path.join(KRONOS, 'hf', 'Kronos-Tokenizer-base'))
+    print('模型: %s' % m_path, flush=True)
+    print('分词: %s' % t_path, flush=True)
+    if not os.path.isdir(m_path):
+        print('模型目录不存在：%s' % m_path, file=sys.stderr)
+        sys.exit(2)
+    pred = CS2SkinPredictor(model_name=m_path, tokenizer_name=t_path)
     print('模型已加载', flush=True)
 
     conn = sqlite3.connect('file:%s?mode=ro' % DB.replace('\\', '/'), uri=True)
@@ -134,12 +146,19 @@ def main():
             y['close'] = _pd.Series(_acc / max(1, samples), index=_y.index)
             cur = float(df['close'].iloc[-1])
             last = float(y['close'].iloc[-1])
+            # series = 历史尾部(实线) + 预测段(虚线)，用 hist_len 标出分界点。
+            # ★ 2026-10-04 修正：原实现只写预测段，前端拿不到分界就把预测画成了历史实线。
+            hist_tail = df[['timestamps', 'close']].tail(HIST_TAIL)
+            hist_pts = [[str(d)[:10], round(float(v), 2)] for d, v in
+                        zip(hist_tail['timestamps'], hist_tail['close'])]
+            fut_pts = [[str(d)[:10], round(float(v), 2)] for d, v in zip(y.index, y['close'])]
             items.append({
                 'name': t.get('name'), 'hash_name': hn, 'rank': t.get('rank'),
                 'source': t.get('source'), 'score': t.get('score'),
                 'history_days': len(df), 'current': round(cur, 2), 'forecast': round(last, 2),
                 'change_pct': round((last / cur - 1) * 100, 2),
-                'series': [[str(d)[:10], round(float(v), 2)] for d, v in zip(y.index, y['close'])],
+                'hist_len': len(hist_pts),
+                'series': hist_pts + fut_pts,
             })
             print('  ✓ %-28s %8.2f → %8.2f (%+.1f%%)' % (str(t.get('name'))[:26], cur, last,
                                                          (last / cur - 1) * 100), flush=True)
@@ -148,7 +167,11 @@ def main():
     conn.close()
 
     out = {'date': __import__('time').strftime('%Y-%m-%d %H:%M'), 'days': days, 'samples': samples,
-           'model': 'Kronos-small (服务器 CPU)', 'top_n': top_n, 'n': len(items),
+           # 记下真实用的模型路径：否则事后看到 ai_forecast.json 不知道是哪个模型跑的
+           'model': os.path.basename(os.environ.get('KRONOS_MODEL')
+                                     or os.path.join(KRONOS, 'hf', 'Kronos-small'))
+                   + ' (服务器 CPU)',
+           'top_n': top_n, 'n': len(items),
            'source_note': 'Kronos 时序基础模型迁移预测（域外迁移），多次采样取均值，仅作方向参考',
            'items': items}
     json.dump(out, open(out_path, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)

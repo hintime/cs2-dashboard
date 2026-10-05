@@ -27,7 +27,7 @@ sys.path.insert(0, '/home/ubuntu/cs2-run/watchdog')
 BASE = "https://cs2wyx.asia"
 D = "/home/ubuntu/cs2-run/watchdog"
 RESULT = os.path.join(D, "last_result.json")
-STALE_MIN = 180
+STALE_MIN = 45
 EXPECT_RECS = 30
 REMIND_HOURS = 6
 BAD_KW = ["Sticker", "Patch", "Capsule", "贴纸", "胶囊", "印花"]

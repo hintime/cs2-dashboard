@@ -1085,6 +1085,54 @@ html { scroll-behavior: smooth; }
 .hp-op.sell:hover{border-color:rgba(248,113,113,.42);color:#f87171}
 .hp-op.star:hover{border-color:rgba(251,191,36,.42);color:var(--amber)}
 .hp-op.ai:hover{border-color:rgba(74,124,255,.42);color:var(--blue)}
+/* Kronos 预测按钮（2026-10-04）：与 AI 分析同级，紫色系区分「模型预测」而非「分析」 */
+.hp-op.kronos:hover{border-color:rgba(168,85,247,.45);color:#c084fc}
+/* 无预测数据时置灰但仍可点（点开告诉用户为什么没有，而不是按钮凭空消失） */
+.hp-op.kronos.none{opacity:.5}
+.hp-op.kronos.none:hover{border-color:rgba(168,85,247,.3);color:#a855f7}
+/* ── Kronos 预测弹层 ── */
+.hp-kbox{position:fixed;inset:0;z-index:9999;display:none;
+  align-items:center;justify-content:center;background:rgba(6,9,14,.72);
+  backdrop-filter:blur(3px);padding:20px}
+.hp-kbox.on{display:flex}
+.hp-kcard{width:min(560px,100%);max-height:86vh;overflow:auto;
+  background:var(--surface);border:1px solid var(--border-hi);border-radius:14px;
+  padding:18px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.hp-kcard h3{margin:0 0 2px;font-size:15px;font-weight:750;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:8px}
+.hp-kcard h3 .tag{font-size:10px;font-weight:600;padding:2px 6px;border-radius:5px;
+  background:rgba(168,85,247,.16);color:#c084fc;border:1px solid rgba(168,85,247,.3)}
+.hp-ksub{font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.6}
+/* 预测结论条：现价 → 预测价 */
+.hp-kbig{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  padding:12px 14px;border-radius:10px;background:var(--surface2);
+  border:1px solid var(--border);margin-bottom:12px}
+.hp-kbig .now{font-size:12px;color:var(--text3)}
+.hp-kbig .arrow{color:var(--text3);font-size:13px}
+.hp-kbig .pred{font-size:22px;font-weight:800;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.hp-kbig .chg{margin-left:auto;font-size:15px;font-weight:750;
+  font-variant-numeric:tabular-nums}
+.hp-kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.hp-kgrid .c{padding:8px 10px;border-radius:8px;background:var(--surface2);
+  border:1px solid var(--border)}
+.hp-kgrid .c .k{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text3);font-weight:600;margin-bottom:3px}
+.hp-kgrid .c .v{font-size:14px;font-weight:750;font-variant-numeric:tabular-nums}
+/* 预测曲线（真实 series 数据画迷你折线） */
+.hp-kchart{height:96px;margin-bottom:10px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);padding:6px 8px}
+.hp-kchart svg{display:block;width:100%;height:100%}
+.hp-kfoot{font-size:10.5px;color:var(--text3);line-height:1.65;
+  padding-top:10px;border-top:1px solid var(--border)}
+.hp-kfoot b{color:var(--text2)}
+.hp-kclose{margin-top:12px;width:100%;padding:7px;border-radius:8px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text2);
+  font-size:12px;cursor:pointer}
+.hp-kclose:hover{background:var(--surface);color:var(--text)}
+.hp-kempty{padding:26px 10px;text-align:center;color:var(--text3);font-size:12.5px;
+  line-height:1.9}
+.hp-kempty .big{font-size:26px;opacity:.4;margin-bottom:8px}
 @media(max-width:640px){
   .hp-ops{flex-wrap:wrap;gap:6px}
   .hp-op{flex:1;min-width:84px;text-align:center}
@@ -1546,6 +1594,22 @@ html { scroll-behavior: smooth; }
    ══════════════════════════════════════════════════════════════════════════ */
 .hp-chart{position:relative;padding:0;margin:9px 0 2px}
 .hp-chart svg{display:block;width:100%;height:auto}
+/* ★ 全屏按钮（2026-10-04 义轩：加个按钮点开看一整个大图）
+   放在顶部指标条右侧，与「7日/14日/全部」区间切换同排。
+   图标用 CSS 画四个角（比引入图标字体更省，且跟随主题）。 */
+.hc-fs{position:absolute;top:-2px;right:52px;z-index:6;
+  width:24px;height:22px;padding:0;border:1px solid var(--border);border-radius:6px;
+  background:var(--surface2);cursor:pointer;opacity:.62;
+  transition:opacity .13s,border-color .13s,background .13s}
+.hc-fs:hover{opacity:1;border-color:var(--text3);background:var(--surface)}
+.hc-fs::before{content:'';position:absolute;inset:5px;
+  border:1.4px solid var(--text2);border-radius:1px;
+  clip-path:polygon(0 0,34% 0,34% 12%,12% 12%,12% 34%,0 34%,
+                    0 66%,12% 66%,12% 88%,34% 88%,34% 100%,0 100%,
+                    100% 100%,66% 100%,66% 88%,88% 88%,88% 66%,100% 66%,
+                    100% 34%,88% 34%,88% 12%,66% 12%,66% 0,100% 0)}
+.hc-fs::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;
+  background:var(--border)}
 /* ① 顶部指标条
    ★ 2026-09-26「挡视野」优化：原来这里塞了 6 项（现价/MA5/MA20/布林带/成本/涨跌），
      而 MA5·MA20·布林带的数值在底部图例里又写了一遍 → 重复且把图表挤下去。
@@ -1631,12 +1695,139 @@ html { scroll-behavior: smooth; }
     rgba(255,255,255,0) 0%, rgba(255,255,255,.2) 10%,
     rgba(255,255,255,.2) 90%, rgba(255,255,255,0) 100%)}
 /* ⑦ 面板内：图表不再被 flex 拉高。原本 svg 被 stretch 到 220~400px，
-   同一张图在不同视口会被纵向拉成不同形状；改由图 viewBox 比例决定（780:180）。 */
+   同一张图在不同视口会被纵向拉成不同形状；改由图 viewBox 比例决定（780:260）。
+   ★ 2026-10-04 义轩反馈「图太小」：max-height 210→320 配合 H=260 的放大。 */
 #holdingsPanel .hp-chart{flex:0 0 auto!important;min-height:0!important;display:block!important}
-/* ★ max-height 从 none 改成 210px：图表高度原本随面板宽度等比增长，
-   超宽屏（≥1700px）下会涨到 250px+ 又把视野吃掉；210px 封顶后宽屏只变宽不变高。 */
+/* ★ max-height 320px：图表高度随面板宽度等比增长（宽/3），超宽屏封顶 320，
+   只变宽不变高，避免 ≥1700px 视口下无限增高吃掉视野。 */
 #holdingsPanel .hp-chart .hc-svg{flex:0 0 auto!important;min-height:0!important;
-  max-height:210px!important;height:auto!important}
+  max-height:320px!important;height:auto!important}
+
+/* ══════════════ ⑧ 走势图缩放 / 拖动（2026-10-04 义轩要求）══════════════
+   参照 TradingView 交互范式：滚轮以光标为锚缩放、拖动平移、双击复位。
+   ⚠ 实现关键：**不碰 viewBox 宽高**。
+     图表的十字光标/顶部读数全靠 svg 上的 data-pts + data-w/data-h 反算屏幕坐标
+     （见 hpChartTooltip 的 move()），一旦改 viewBox 宽度整套坐标就全错位。
+     所以缩放走 <g> 的 transform + data-w 改写逻辑宽度，两者始终自洽。 */
+.hc-zoomable{cursor:crosshair}
+.hc-body.hc-zoomed .hc-zoomable{cursor:grab}
+.hc-body.hc-panning .hc-zoomable{cursor:grabbing}
+/* 缩放提示角标：只在 >1× 时出现，告诉用户「怎么回去」 */
+.hc-zbadge{position:absolute;top:6px;left:8px;z-index:9;display:none;
+  align-items:center;gap:5px;padding:2px 7px;border-radius:5px;
+  background:rgba(15,20,28,.82);border:1px solid var(--border-hi);
+  font-size:10px;color:var(--text2);font-variant-numeric:tabular-nums;
+  pointer-events:none;backdrop-filter:blur(2px)}
+.hc-zbadge.on{display:inline-flex}
+.hc-zbadge b{color:var(--blue);font-weight:700}
+/* 底部缩略导航条：全区间走势 + 当前视窗指示块（可拖动） */
+.hc-mini{position:relative;height:30px;margin-top:4px;padding-right:62px;cursor:pointer}
+.hc-mini-in{position:relative;width:100%;height:30px;border:1px solid var(--border);
+  border-radius:5px;background:var(--surface2);overflow:hidden}
+.hc-mini svg{display:block;width:100%;height:100%}
+.hc-mini-win{position:absolute;top:0;bottom:0;border:1.5px solid var(--blue);
+  border-radius:3px;background:rgba(96,165,250,.14);pointer-events:none;
+  box-shadow:0 0 0 1px rgba(0,0,0,.25) inset}
+.hc-mini:hover .hc-mini-win{background:rgba(96,165,250,.2)}
+/* ── K 线视图（2026-10-05 义轩要求：走势图加 K 线版）──
+   数据来自 kline.json（服务器 build_kline.py 从 price_history.db 的日内采样
+   按天聚合）。⚠ 口径必须写清楚：采样每 30 分钟一次（一天约 28 个点），
+   high/low 是「当天采样到的极值」（半小时粒度）而非逐笔成交 → 只能做日K，
+   小时K 没有意义（一天 28 点摊到 24 小时）。前端也要如实提示。 */
+/* 视图开关（折线 / K线），与区间切换同排 */
+.hc-vt{display:inline-flex;margin-left:auto;border:1px solid var(--border);
+  border-radius:6px;overflow:hidden;vertical-align:middle}
+.hc-vt button{padding:3px 9px;border:0;border-left:1px solid var(--border);
+  background:transparent;color:var(--text3);font-size:10.5px;cursor:pointer;
+  font-family:inherit;transition:background .13s,color .13s}
+.hc-vt button:first-child{border-left:0}
+.hc-vt button:hover{color:var(--text2);background:var(--surface)}
+.hc-vt button.on{background:var(--surface);color:var(--text);font-weight:650}
+.hc-stats .hc-rg{margin-left:auto}
+.hc-stats .hc-rg + .hc-vt{margin-left:6px}
+.hc-stats .hc-vt{margin-left:auto}
+/* 蜡烛图容器：class 挂在 .hc-plot 上，svg 仍是 .hc-svg（沿用折线那套高度/缩放 CSS，
+   这里不要再写 svg 的 display/height，否则会跟 #holdingsPanel .hc-svg 的 flex 规则打架） */
+.hc-kl{position:relative}
+/* 实体与影线：涨用 --rise、跌用 --fall（跟随站内红涨绿跌口径） */
+.hc-kl .w-up{fill:var(--rise);stroke:var(--rise)}
+.hc-kl .w-dn{fill:var(--fall);stroke:var(--fall)}
+.hc-kl .wick{stroke-width:1;vector-effect:non-scaling-stroke}
+.hc-kl .wick-up{stroke:var(--rise)}
+.hc-kl .wick-dn{stroke:var(--fall)}
+/* 采样点不足的日子：影线画淡一点 + 顶部打点，视觉上就区分开了 */
+.hc-kl .wick-weak{opacity:.42}
+/* 开收盘标记：右端一条小横，标明该日收在哪 */
+.hc-kl .cd{stroke:var(--text3);stroke-width:1;opacity:.7;
+  vector-effect:non-scaling-stroke}
+/* 口径提示条 */
+.hc-knote{display:flex;align-items:center;gap:6px;margin:2px 0 6px;
+  padding:4px 8px;border-radius:6px;background:var(--surface2);
+  border:1px solid var(--border);font-size:10px;color:var(--text3);line-height:1.5}
+.hc-knote b{color:var(--text2);font-weight:650}
+/* 无 K 线数据时的空态 */
+.hc-kempty{height:150px;display:flex;flex-direction:column;gap:6px;
+  align-items:center;justify-content:center;color:var(--text3);font-size:12px;
+  border:1px dashed var(--border);border-radius:8px;line-height:1.7}
+/* ── 全屏看大图（2026-10-04 义轩：加个按钮点开看一整个图）──
+   实现方式：**把图表 DOM 整体搬进全屏层，用 CSS 放大，绝不重画、绝不改 viewBox**。
+   这么做的三个理由：
+     ① tooltip / 十字光标 / 滚轮缩放 / 底部导航条 全部原样复用（它们都绑在这棵
+        DOM 上，搬走就跟着走），不需要写第二套交互代码，也不会出现两套行为不一致；
+     ② 改 viewBox 会让 data-pts 反算的屏幕坐标全错位（2026-10-04 已踩过一次）；
+     ③ 内存/耗时零开销 —— 就是一次 DOM 移动 + 一行 style。
+   关闭时把 DOM 搬回原位，缩放倍率与区间选择原样保留。 */
+.hp-fs-layer{position:fixed;inset:0;z-index:9000;display:none;
+  background:var(--bg);overflow:hidden}
+.hp-fs-layer.on{display:flex;flex-direction:column}
+/* 顶部一条：标题 + 操作。ESC / 双击遮罩 / 关闭按钮都能退出。 */
+.hp-fs-bar{display:flex;align-items:center;gap:10px;flex:0 0 auto;
+  padding:10px 16px;border-bottom:1px solid var(--border);
+  background:var(--surface)}
+.hp-fs-title{font-size:13px;font-weight:650;color:var(--text);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hp-fs-title small{font-weight:400;color:var(--text3);margin-left:8px;font-size:11px}
+.hp-fs-hint{margin-left:auto;font-size:11px;color:var(--text3);white-space:nowrap}
+.hp-fs-x{width:26px;height:26px;padding:0;border:1px solid var(--border);
+  border-radius:6px;background:var(--surface2);color:var(--text2);
+  font-size:14px;line-height:1;cursor:pointer;font-family:inherit;
+  transition:border-color .13s,color .13s}
+.hp-fs-x:hover{border-color:var(--text3);color:var(--text)}
+/* 图表容器：搬来的 .hp-chart 在这里被放大 */
+.hp-fs-body{flex:1 1 auto;position:relative;overflow-y:auto;overflow-x:hidden;
+  display:flex;align-items:stretch;padding:14px 20px 20px}
+/* 放大态覆盖：图表撑满可用空间，右侧留出价格轴的位置。
+   ⚠ 关键：要 svg 真的等比变大，**整条父链每一级都必须有确定高度**，
+     否则 .hc-svg{height:100%} 的百分比基准是 auto → 等于没设，实测只放大 8%。
+     所以 .hp-fs-body(定高) > .hp-chart(flex) > .hc-body(flex) > .hc-plot(flex)
+     四级全部显式接管高度，svg 才有 100% 可依。 */
+.hp-fs-body .hp-chart{flex:1 1 auto;display:flex;flex-direction:column;
+  min-width:0;min-height:0;height:100%;margin:0}
+.hp-fs-body .hc-stats{flex:0 0 auto;font-size:12px;padding:3px 1px 7px}
+.hp-fs-body .hc-stats .it.k-cur b{font-size:15px}
+.hp-fs-body .hc-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.hp-fs-body .hc-plot{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+  padding-right:78px}
+.hp-fs-body .hc-yaxis{width:66px}
+.hp-fs-body .hc-yaxis span{font-size:11px}
+.hp-fs-body .hc-mini{height:46px;flex:0 0 auto;padding-right:78px}
+.hp-fs-body .hc-mini-in{height:46px}
+/* ⚠ 特异性必须压过 #holdingsPanel .hp-chart .hc-svg 的 height:auto!important /
+   max-height:320px!important（那是面板内的上限，全屏要突破它）。
+   用 body:not(.hp-fs-off) 提一级特异性，不靠 !important 对拼。
+   ⚠ min-height 保底：视口很矮时（无头 488px / 分屏），flex 分配会把 svg 压到
+     150px —— 比面板内还小。给 280px 下限，保证「全屏永远 ≥ 面板内」。 */
+body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
+  flex:1 1 auto!important;min-height:280px!important;height:100%!important;
+  max-height:none!important;width:100%!important}
+.hp-fs-body .hc-vol-h{font-size:11.5px}
+.hp-fs-body .hc-xaxis{font-size:11px}
+.hp-fs-body .hc-lg{font-size:11.5px;padding:3px 8px}
+/* 副图（挂单量）在全屏下也一起放大，但别喧宾夺主 —— 限高 1/5 */
+.hp-fs-body .hc-vol{flex:0 0 auto}
+.hp-fs-body .hc-vol svg{height:90px!important}
+/* 全屏下把「全屏按钮」自己隐藏（已在全屏，没什么可点的），换上退出按钮 */
+.hp-fs-layer .hc-fs{display:none}
 </style>
   </div>
 
@@ -5735,6 +5926,12 @@ window.recData = recData;
 window.WEAR_MAP = WEAR_MAP;
 window.CAT_MAP = CAT_MAP;
 window.CAT_LABELS = CAT_LABELS;
+// Kronos 预测：持仓明细(S3 块)要用 fcOf/FC，必须导出到全局，否则跨 script 不可见
+window.FC = FC;
+window.loadForecast = loadForecast;
+window.fcOf = fcOf;
+window.fcChip = fcChip;
+window.fcLine = fcLine;
 
 })();
 </script>
@@ -6569,6 +6766,16 @@ function closeAbout(){var m=document.getElementById('aboutModal');if(m)m.style.d
 /* ═══════ 持仓·主从列表渲染 v2（新增，不动原 render）═══════ */
 function hpFmt(v){ try{ return Number(v).toLocaleString('zh-CN',{maximumFractionDigits:0}); }
   catch(e){ return v; } }
+/* 价格轴/读数的通用数字格式：按量级选小数位（>=40 不给小数，8~40 一位，其余两位），
+   与折线图 hpChart 里的 dec 口径一致 —— 同一件饰品在两种视图下价格写法必须相同，
+   否则切换视图时会以为价格变了。千分位用 toLocaleString 而不是手写正则。 */
+function hpAxisNum(v){
+  var n = Number(v);
+  if (!isFinite(n)) return '—';
+  var d = Math.abs(n) >= 40 ? 0 : (Math.abs(n) >= 8 ? 1 : 2);
+  try { return n.toLocaleString('zh-CN', {minimumFractionDigits:d, maximumFractionDigits:d}); }
+  catch (e) { return n.toFixed(d); }
+}
 /* 中文名：优先查映射表，查不到原样返回 */
 function hpName(h){
   var n = h && h.n ? h.n : '';
@@ -6694,7 +6901,291 @@ function hpTech(v){
            verdict: verdict, reasons: reasons, n: n };
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   K 线视图（2026-10-05 义轩要求：走势图再做个 K 线版）
+   ──────────────────────────────────────────────────────────────────────────
+   为什么必须新建而不能改造折线：折线用的是「每天一个均价」（hpCurve → price_history），
+   只有单值，K 线需要 open/high/low/close 四个值 —— 拿均价造影线等于编数据。
+   所以另走一路数据：kline.json（服务器 build_kline.py 从 price_history.db 的
+   日内采样按天聚合，每 30 分钟一个点，一天约 28 个 —— 口径是 2026-10-05
+   实测校正的，别再改回「4-6 小时」）。
+
+   ⚠ 口径边界（前端必须如实转达，别装成真实成交）：
+     · 采样 30 分钟一次 → high/low 是「当天 28 个采样点里的极值」，半小时粒度、
+       覆盖度很高，但仍不等于真实成交高低点；
+     · 采样点极少的当天（r=0，实测罕见）影线不可信 → 画淡一点，并在提示条里说；
+     · 一天 28 点摊到 24 小时 → **小时K 没有意义**（平均每小时 1.2 点），只做日K；
+     · 数据只覆盖最近有成交的 1200 件，不是全站所有饰品。
+   ══════════════════════════════════════════════════════════════════════════ */
+var KL = { map: {}, loaded: false, meta: null };
+function loadKline(){
+  if (KL._loading) return KL._p || null;
+  var t0 = Math.floor(Date.now() / 900000);
+  KL._loading = true;
+  KL._p = fetch('kline.json?v=' + t0)
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .catch(function () { return null; })
+    .then(function (d) {
+      var m = {};
+      if (d && d.items) {
+        for (var i = 0; i < d.items.length; i++) {
+          var it = d.items[i];
+          if (it && it.hash_name) m[it.hash_name] = it;
+        }
+      }
+      KL.map = m; KL.meta = d; KL.loaded = true; KL._loading = false;
+      return m;
+    })
+    .catch(function () { KL.loaded = true; KL._loading = false; return null; });
+  return KL._p;
+}
+function klOf(item){
+  if (!item) return null;
+  var m = KL.map || {};
+  return (item.mh && m[item.mh]) || (item.market_hash && m[item.market_hash])
+      || m[item.n] || null;
+}
+/* 折线/K线 视图切换开关（两种视图共用一个渲染函数）
+   ⚠ 必须两边都用它、各自写一份的话，迟早会出现「只有折线态有开关」这类不一致
+     （2026-10-05 第一版就漏在折线侧 → 用户根本进不去 K 线）。
+   ⚠ 样式：当前选中项加 .on；margin-left:auto 让它顶到行末（CSS 里两处都有）。 */
+function hpViewToggleHtml(){
+  return '<div class="hc-vt">'
+    + '<button type="button" class="' + (window._hpView === 'k' ? '' : 'on')
+    + '" onclick="hpSetView(\'l\')" title="折线图：每天一个均价，叠加 MA5/MA20/布林带">折线</button>'
+    + '<button type="button" class="' + (window._hpView === 'k' ? 'on' : '')
+    + '" onclick="hpSetView(\'k\')" title="K线图：每天的开高低收，由日内采样聚合（仅日K）">K线</button></div>';
+}
+function hpKline(vals, cost, reason, days, volName, h){
+  var k = klOf(h);
+  var bars = (k && k.bars) ? k.bars : [];
+  var nAll = bars.length;
+  var range = Number(window._hpRange) || 30;
+  var view = (nAll >= 2) ? bars.slice(-range) : bars;
+
+  if (view.length < 2){
+    return '<div class="hc-kempty"><div style="font-size:18px;opacity:.45">◌</div>'
+      + '<span>' + (bars.length ? '该饰品 K 线不足 2 天' : '暂无 K 线数据') + '</span>'
+      + '<span style="font-size:11px;opacity:.75">K 线由服务器每日采样聚合而成<br>'
+      + (bars.length ? '需要连续更多天才能成图' : '只覆盖最近有成交的饰品') + '</span></div>';
+  }
+
+  var W = 780, H = 260, PT = 13, PB = 13;
+  /* Y 轴范围取所有 high/low（含成本线），保证影线不被裁掉 */
+  var ext = [];
+  for (var i = 0; i < view.length; i++){ ext.push(view[i].h, view[i].l); }
+  var hasCost = (typeof cost === 'number') && cost > 0;
+  if (hasCost) ext.push(cost);
+  var mx = Math.max.apply(null, ext);
+  var mn = Math.min.apply(null, ext.concat(hasCost ? [cost * 0.94] : []));
+  var rng = (mx - mn) || 1;
+  var plotH = H - PT - PB;
+  var Y = function (v){ return PT + (mx - v) / rng * plotH; };
+
+  /* X 按真实日期差（与折线同一套算法，两种视图切换时坐标不会跳） */
+  var xs = [], ts = [], ok = true;
+  for (var k2 = 0; k2 < view.length; k2++){
+    var t = Date.parse(view[k2].d);
+    if (isNaN(t)){ ok = false; break; }
+    ts.push(t);
+  }
+  if (ok && ts.length === view.length){
+    var t0 = ts[0], t1 = ts[ts.length - 1], span = (t1 - t0) || 1;
+    for (var m2 = 0; m2 < ts.length; m2++) xs.push((ts[m2] - t0) / span * W);
+  } else {
+    for (var i3 = 0; i3 < view.length; i3++) xs.push(i3 * (W / (view.length - 1)));
+  }
+
+  /* 蜡烛宽度：按间距自适应 */
+  var gap = view.length > 1 ? (xs[1] - xs[0]) : 20;
+  var bw = Math.max(2.2, Math.min(11, gap * 0.62));
+  /* ★ 蜡烛是**居中**在 x 上画的（x = xs[b] - bw/2），所以首尾两根各有一半在
+     viewBox 之外：实测 bodyMinX=-5、bodyMaxRight=786（W=780）→ 两端各被裁半个身位。
+     折线是纯折线（只有 1px 线宽）看不出来，蜡烛实体宽 11px 就很明显。
+     修法：X 映射时两端各留半个身位的余量（padX），让整根蜡烛都在界内。
+     ⚠ padX 依赖 bw，而 bw 又依赖 gap（gap 由 X 映射决定）→ 存在循环。
+       解决办法：先用未留白的 X 算出 gap 与 bw，再用最终的 bw 定 padX，
+       最后把 X 整体线性压缩到 [padX, W-padX]。这样蜡烛不再被裁，
+       且左右两端各留半根身位，视觉上与常规行情软件一致。 */
+  if (ok && ts.length === view.length && view.length > 1){
+    var padX = Math.min(bw / 2 + 1, W * 0.04);
+    var span2 = (t1 - t0) || 1;
+    var usable = W - padX * 2;
+    for (var m3 = 0; m3 < ts.length; m3++) xs[m3] = padX + (ts[m3] - t0) / span2 * usable;
+  }
+  var parts = [], nWeak = 0;
+  var dataPts = [];
+  for (var b = 0; b < view.length; b++){
+    var bar = view[b];
+    var up = bar.c >= bar.o;
+    var cls = up ? 'up' : 'dn';
+    var x = xs[b];
+    var yO = Y(bar.o), yH = Y(bar.h), yL = Y(bar.l), yC = Y(bar.c);
+    var top = Math.min(yO, yC), bh = Math.max(0.9, Math.abs(yC - yO));
+    var weak = bar.r ? '' : ' weak';
+    if (!bar.r) nWeak++;
+    /* 影线：高→低 */
+    parts.push('<line class="wick wick-' + cls + weak + '" x1="' + x.toFixed(1)
+      + '" y1="' + yH.toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + yL.toFixed(1) + '"/>');
+    /* 实体：开→收（涨为空心描边、跌为实心，跟 A 股/TradingView 习惯一致） */
+    parts.push('<rect class="w-' + cls + '" x="' + (x - bw / 2).toFixed(1)
+      + '" y="' + top.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="'
+      + bh.toFixed(1) + '"' + (up ? ' fill="none" stroke-width="1.1"' : '') + '/>');
+    /* 收/开标记：实体太矮时（|c-o| 很小）画一条横线表示收在哪 */
+    if (bh < 1.6){
+      parts.push('<line class="cd" x1="' + (x - bw / 2).toFixed(1) + '" y1="' + yC.toFixed(1)
+        + '" x2="' + (x + bw / 2).toFixed(1) + '" y2="' + yC.toFixed(1) + '"/>');
+    }
+    /* data-pts 给 hover 读数用。12 列：
+       x, 收盘y, 开盘y, 最高y, 最低y, 日期, o, h, l, c, 采样点数, **弱标记**
+       ⚠ 最后一列写的是「是否弱」(bar.r ? 0 : 1)，与 wick-weak 的判定同源。
+         早先写成 bar.r（r=1 表示可靠）却被 tooltip 当成 weak 读 → 反了，
+         结果所有影线都被判成弱（反之亦然）。这种「同一语义两处各写一遍」的地方，
+         必须让两处引用同一个表达式，不要各自重写。 */
+    dataPts.push([x.toFixed(1), yC.toFixed(1), yO.toFixed(1), yH.toFixed(1), yL.toFixed(1),
+                  bar.d, bar.o, bar.h, bar.l, bar.c, bar.n, weak ? 1 : 0].join(','));
+  }
+
+  /* 右侧价格轴 */
+  var yaxis = '<div class="hc-yaxis">';
+  for (var t5 = 0; t5 < 5; t5++){
+    var f5 = t5 / 4;
+    var vv = mx - rng * f5;
+    /* ⚠ 定位一律用**百分比**，不用 px —— svg 的实际显示高度由 CSS 决定
+       （#holdingsPanel .hc-svg 的 flex + max-height），不等于 viewBox 的 H。
+       写 px 的话在全屏/面板两种高度下刻度都会与网格线错位（折线版就是这么做的）。 */
+    yaxis += '<span style="top:' + (f5 * 100).toFixed(2) + '%">' + hpAxisNum(vv) + '</span>';
+  }
+  var lastBar = view[view.length - 1];
+  yaxis += '<span class="hc-cur" data-now="¥' + hpAxisNum(lastBar.c) + '" style="top:'
+    + (Y(lastBar.c) / H * 100).toFixed(2) + '%;background:'
+    + (lastBar.c >= lastBar.o ? 'var(--rise)' : 'var(--fall)') + '">¥'
+    + hpAxisNum(lastBar.c) + '</span></div>';
+
+  /* 顶部读数 + 区间切换 + 视图开关（开关在 K 线态下才有意义） */
+  var chgAll = view.length > 1 && view[0].o > 0
+    ? ((lastBar.c / view[0].o - 1) * 100) : null;
+  var col2 = chgAll === null ? 'var(--text2)' : (chgAll >= 0 ? 'var(--rise)' : 'var(--fall)');
+  var chgTxt = (chgAll === null) ? null : ((chgAll >= 0 ? '+' : '') + chgAll.toFixed(1) + '%');
+  var rng2 = (function(){
+      var opts = [];
+      if (nAll >= 7)  opts.push([7,  '7 日']);
+      if (nAll >= 14) opts.push([14, '14 日']);
+      if (nAll >= 10) opts.push([30, '全部']);
+      if (opts.length < 2) return '';
+      var s = '<div class="hc-rg">';
+      for (var oi = 0; oi < opts.length; oi++){
+        s += '<button type="button" class="' + (range === opts[oi][0] ? 'on' : '')
+          + '" onclick="hpSetRange(' + opts[oi][0] + ')" title="只看最近 ' + opts[oi][0] + ' 天">'
+          + opts[oi][1] + '</button>';
+      }
+      return s + '</div>';
+    })();
+  var viewTog = hpViewToggleHtml();
+  /* 顶部读数行：结构与折线的 .hc-stats 一致（.it > .lb + b），
+     每个 <b> 带 data-hc + data-latest，K 线 tooltip 悬停时改写、移出时读回 data-latest 还原。
+     键名用 ko/kh/kl/kc/kchg（k 前缀 = kline），不与折线的 price/ma5/chg 混用 ——
+     两套语义不同，共用键名会让还原逻辑拿错值。 */
+  var kIt = function(k, label, val, color, cls){
+    if (val === null || val === undefined || val === '') return '';
+    return '<span class="it'+(cls ? ' '+cls : '') + '">'
+      + '<span class="lb" data-hcl="' + k + '" data-ll="' + label + '">' + label + '</span>'
+      + '<b data-hc="' + k + '" data-latest="' + val + '" data-lc="' + (color||'') + '"'
+      + (color ? ' style="color:' + color + '"' : '') + '>' + val + '</b></span>';
+  };
+  var stats = '<div class="hc-stats">'
+    + kIt('kc',  '收盘', '¥' + hpAxisNum(lastBar.c), col2, 'k-cur')
+    + kIt('ko',  '今开', '¥' + hpAxisNum(lastBar.o), null)
+    + kIt('kh',  '最高', '¥' + hpAxisNum(lastBar.h), 'var(--rise)')
+    + kIt('kl',  '最低', '¥' + hpAxisNum(lastBar.l), 'var(--fall)')
+    + (hasCost ? kIt('kcost', '成本', '¥' + hpAxisNum(cost), null) : '')
+    /* 「区间涨跌」在悬停时含义会变（变成该日相对前一日的涨跌）→ 标签一起换，
+       否则用户会以为在看区间涨跌，实际看的是日涨跌。 */
+    + kIt('kchg', '区间涨跌', chgTxt, col2)
+    + rng2 + viewTog + '</div>';
+
+  /* 口径提示：把不可信的部分说清楚，不能让用户误以为是真实成交 */
+  var weakTxt = nWeak
+    ? '，其中 <b>' + nWeak + ' 天</b>采样点不足（影线画淡了，仅供参考）' : '';
+  var note = '<div class="hc-knote"><b>口径</b>'
+    + '<span>日K · 由每 30 分钟一次的采样（一天约 28 个点）按天聚合，'
+    + '高低点是<b>当天采样到的极值</b>（半小时粒度）而非逐笔成交' + weakTxt + '。'
+    + '仅支持日K，不支持小时K。</span></div>';
+
+  /* 底部日期轴 + 悬停读数用的 data */
+  var xfoot = '<div class="hc-xfoot"><div class="hc-xaxis">';
+  for (var fx = 0; fx < view.length; fx += Math.max(1, Math.floor(view.length / 6))){
+    xfoot += '<span>' + String(view[fx].d).slice(5) + '</span>';
+  }
+  xfoot += '</div><div class="hc-foot">'
+    + '<span class="hc-lg" style="cursor:default"><i style="background:var(--rise)"></i>上涨</span>'
+    + '<span class="hc-lg" style="cursor:default"><i style="background:var(--fall)"></i>下跌</span>'
+    + '<span class="hc-lg" style="cursor:default"><i style="background:linear-gradient(var(--rise),var(--rise)) 0 50%,transparent 50%"></i>影线</span>'
+    + '</div></div>';
+
+  /* 缩略导航条：与折线同一套（hpInitZoom 直接复用），用收盘价迷你走势。
+     没有它放大后就没法一眼看出「我在整段区间的哪个位置」。 */
+  var mini = (function(){
+      if (view.length < 3) return '';
+      var MW = 1000, MH = 30, pad = 2, mp = [], lo = Infinity, hi = -Infinity;
+      for (var q = 0; q < view.length; q++){
+        var yy = Y(view[q].c);
+        if (yy < lo) lo = yy; if (yy > hi) hi = yy;
+      }
+      var rg = (hi - lo) || 1;
+      for (var q2 = 0; q2 < view.length; q2++){
+        var px = (xs[q2] / (W || 1) * MW).toFixed(1);
+        var py = (pad + (hi - Y(view[q2].c)) / rg * (MH - pad * 2)).toFixed(1);
+        mp.push(px + ',' + py);
+      }
+      return '<div class="hc-mini"><div class="hc-mini-in">'
+        + '<svg viewBox="0 0 ' + MW + ' ' + MH + '" preserveAspectRatio="none">'
+        + '<polyline fill="none" stroke="var(--text3)" stroke-width="1.1" opacity=".8" '
+        + 'vector-effect="non-scaling-stroke" points="' + mp.join(' ') + '"/>'
+        + '</svg><span class="hc-mini-win" style="left:0;width:100%"></span>'
+        + '</div></div>';
+    })();
+
+  return stats + note
+    /* ★ class 挂在 .hc-plot 上（不是 svg）：CSS 写的是 `.hc-kl .w-up` / `.hc-kl .wick`，
+       靠祖先选择器上色。挂到 svg 自身上这些规则全匹配不到 → 蜡烛全黑。 */
+    + '<div class="hc-body"><div class="hc-plot hc-kl">'
+    + '<svg class="hc-svg hc-zoomable" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" '
+    + 'data-w="' + W + '" data-h="' + H + '" data-pts="' + dataPts.join(';') + '" '
+    + 'data-kl="1" data-dec="2">'
+    /* 整段图形包进 <g class="hc-vp">：滚轮缩放/拖动平移只改它的 transform，
+       viewBox 与 data-w 保持不变 —— 与折线完全同一套机制。 */
+    + '<g class="hc-vp">' + parts.join('') + '</g></svg>'
+    + '<span class="hc-zbadge"><b>日K</b><span>' + view.length + ' 天 · 悬停看每日 OHLC</span></span>'
+    /* 全屏按钮与折线同位置，保证两种视图都能全屏 */
+    + '<button class="hc-fs" title="全屏看大图（Esc 退出）" onclick="hpFullscreen()"></button>'
+    + '</div>' + yaxis + '</div>'
+    + mini
+    + xfoot;
+}
+/* 切换折线 / K线视图（幂等：重渲染当前这件）
+   ⚠ 这里必须用 window._hpCur（当前详情下标），**不能用 hpSelectedIdx()** ——
+     后者返回的是「已勾选的下标数组」，拿它当下标会把整段 HTML 当 idx 用，
+     结果是详情区空白（之前就是这么错的）。
+   数据没到时先触发加载，加载完再重渲染一次（否则首点 K 线只看到空态）。 */
+function hpSetView(v){
+  window._hpView = (v === 'k') ? 'k' : 'l';
+  try { hpSelect(window._hpCur || 0); } catch (e) { renderList(); }
+  if (window._hpView === 'k' && !KL.loaded){
+    loadKline().then(function () {
+      try { hpSelect(window._hpCur || 0); } catch (e) {}
+    });
+  }
+}
 function hpChart(vals, cost, reason, days, volName){
+  /* K 线走独立数据源（kline.json 的 OHLC），不能拿折线的日均价凑 */
+  if (window._hpView === 'k'){
+    try {
+      var _h = (window._hpList && window._hpList.length)
+        ? window._hpList[window._hpCur] : (window.H || [])[window._hpCur];
+      return hpKline(null, cost, reason, null, volName, _h);
+    } catch (e) {}
+  }
   /* vals 现为 {p:[], d:[]}；兼容旧的纯数组写法
      volName：饰品 market_hash，用于下方挂单量副图（没有就传空，副图整块不出现） */
   var pts0 = vals, dts = days;
@@ -6727,12 +7218,11 @@ function hpChart(vals, cost, reason, days, volName){
   var hasCost = (typeof cost === 'number') && cost > 0;
   var ext = hasCost ? [cost] : [];
   if (tk){ for (var ti=0;ti<tk.up.length;ti++){ if (tk.up[ti]!=null) ext.push(tk.up[ti]); if (tk.dn[ti]!=null) ext.push(tk.dn[ti]); } }
-  /* W:H = 780:180 —— ★ 2026-09-26「挡视野」优化：
-     上一版把 H 从 112 一口气加到 252（700px 视口下 226px），加上顶部指标条和底部
-     两行，整块占到 ~313px，把下面的内容全顶出屏幕。
-     现在回到 180（同视口 ~161px）：5 档刻度仍然放得下（间距 38.5px > 字号 10px），
-     同时把顶部指标条精简、底部两行并成一行 —— 省下的高度正好留给新增的挂单量副图。 */
-  var W=780, H=180, PT=13, PB=13;
+  /* W:H = 780:260 —— ★ 2026-09-26「挡视野」优化曾把 H 从 252 压回 180；
+     ★ 2026-10-04 义轩反馈「图太小」，重新放大：180→260（视口下渲染高约 宽/3，
+     800px 宽 ≈ 266px），max-height 上限同步 210→320。顶部指标条与底部图例
+     仍保持单行，不会像 252 时代那样把内容顶出屏幕。 */
+  var W=780, H=260, PT=13, PB=13;
   var mx=Math.max.apply(null,vals.concat(ext)),
       mn=Math.min.apply(null,vals.concat(hasCost?[cost*0.9]:[],ext)), rng=(mx-mn)||1, pts=[];
   var plotH = H - PT - PB;
@@ -6877,19 +7367,28 @@ function hpChart(vals, cost, reason, days, volName){
     + (hasCost ? hcIt('cost', '成本', '¥'+hpFmt(cost), null) : '')
     + hcIt('chg', '区间涨跌', chgTxt, chgCol)
     + range
+    /* 折线/K线 开关（与 K 线态同一个渲染函数，两边形态保证一致） */
+    + hpViewToggleHtml()
     + '</div>';
   /* ⑥ 右侧价格轴：5 档刻度 + 当前价高亮标签（悬停时标签跟着变成该点的值）*/
   var yaxis = '<div class="hc-yaxis">' + ticks.join('')
     + '<b class="hc-cur" data-now="¥'+hpFmt(last)+'" style="top:'+(ly/H*100).toFixed(2)
     + '%;background:'+col+'">¥'+hpFmt(last)+'</b></div>';
-  /* ⑦ 绘图本体 */
-  var svg = '<svg class="hc-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" '
+  /* ⑦ 绘图本体
+     ★ 2026-10-04 加缩放/拖动：整段图形包进 <g class="hc-vp">，
+       缩放平移只改这个 g 的 transform，viewBox 保持 0 0 W H 不变。
+       关键：data-w 写**变换后的逻辑宽度**（W*缩放倍率），
+       hover 反算（hpChartTooltip.move）用 data-w 把鼠标 x 映射回数据坐标，
+       这样放大后十字光标和顶部读数依然精确落在真实点位上。 */
+  var svg = '<svg class="hc-svg hc-zoomable" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" '
     + 'data-w="'+W+'" data-h="'+H+'" data-n="'+n+'" data-dec="'+dec+'" data-pts="'+pts.join(';')+'">'
     + '<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="0" y2="1">'
     +   '<stop offset="0%" stop-color="'+col+'" stop-opacity=".3"/>'
     +   '<stop offset="72%" stop-color="'+col+'" stop-opacity=".07"/>'
     +   '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'
     + '</linearGradient></defs>'
+    /* 网格线/布林带/面积/均线/价格线/标记 全在 <g> 内，随它一起被缩放平移 */
+    + '<g class="hc-vp">'
     + grid
     + boll
     + '<polygon fill="url(#'+uid+')" points="'+area+'"/>'
@@ -6901,7 +7400,8 @@ function hpChart(vals, cost, reason, days, volName){
         + 'stroke-linejoin="round" vector-effect="non-scaling-stroke" points="'+pts.join(' ')+'"/>'))
     + marks + crossMark
     + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="3.6" fill="'+col+'"/>'
-    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="8" fill="'+col+'" opacity=".16"/></svg>';
+    + '<circle cx="'+lastX.toFixed(1)+'" cy="'+ly+'" r="8" fill="'+col+'" opacity=".16"/>'
+    + '</g></svg>';
   /* ⑧ 底部日期轴：取该位置对应点的真实日期（X 按日期差排，按点数折算会错位）
      ⚠ 必须留在 svg 变量之外 —— 起初把日期轴和图例一起拼进 svg 字符串里，
        结果它们落进 .hc-plot，把绘图区撑高 53px（22+31），
@@ -6945,8 +7445,39 @@ function hpChart(vals, cost, reason, days, volName){
   /* ⑩ 挂单量副图：数据来自 buff_recent.json（近 12 小时）。
      没有就整块不出现 —— 宁可没有，也不画一条假曲线。 */
   var volHtml = hpVolHtml(volName);
+  /* ⑪ 缩略导航条（2026-10-04）：全区间迷你走势 + 当前视窗指示块。
+     放大后能立刻看出「我在整段区间的哪个位置」，并可直接拖动视窗。
+     用真实 pts 画，不用任何近似曲线。 */
+  var mini = (function(){
+      if (n < 3) return '';
+      var MW = 1000, MH = 30, pad = 2;
+      var mxs = [], mnx = [];
+      for (var q=0;q<pts.length;q++){
+        var xy = pts[q].split(',');
+        mxs.push(parseFloat(xy[0])); mnx.push(parseFloat(xy[1]));
+      }
+      var lo = Math.min.apply(null, mnx), hi = Math.max.apply(null, mnx);
+      var rng2 = (hi - lo) || 1;
+      var mp = [];
+      for (var q2=0;q2<pts.length;q2++){
+        var xy2 = pts[q2].split(',');
+        var px = parseFloat(xy2[0]), py = parseFloat(xy2[1]);
+        mp.push((px).toFixed(1) + ',' + (pad + (hi - py)/rng2*(MH-pad*2)).toFixed(1));
+      }
+      return '<div class="hc-mini"><div class="hc-mini-in">'
+        + '<svg viewBox="0 0 '+MW+' '+MH+'" preserveAspectRatio="none">'
+        + '<polyline fill="none" stroke="'+col+'" stroke-width="1.1" opacity=".75" '
+        + 'vector-effect="non-scaling-stroke" points="'+mp.join(' ')+'"/>'
+        + '</svg><span class="hc-mini-win" style="left:0;width:100%"></span>'
+        + '</div></div>';
+    })();
   return stats
-    + '<div class="hc-body"><div class="hc-plot">' + svg + '</div>' + yaxis + '</div>'
+    + '<div class="hc-body"><div class="hc-plot">' + svg
+    + '<span class="hc-zbadge"><b>1.0×</b><span>滚轮缩放 · 拖动平移 · 双击复位</span></span>'
+    /* 全屏按钮：与「7日/14日/全部」同排（stats 行右侧），点开看大图 */
+    + '<button class="hc-fs" title="全屏看大图（Esc 退出）" onclick="hpFullscreen()"></button>'
+    + '</div>' + yaxis + '</div>'
+    + mini
     + volHtml + xfoot;
 }
 /* 图表区间切换 / 图例开关：改状态后重渲染当前这件（hpSelect 幂等）*/
@@ -7153,6 +7684,9 @@ function hpSelect(idx){
    + '<button class="hp-op sell" onclick="hpSell('+idx+')">卖出此件</button>'
    + '<button class="hp-op star" onclick="hpStar('+idx+')">加星关注</button>'
    + '<button class="hp-op ai" onclick="hpDetail('+idx+')">AI 分析</button>'
+   + '<button class="hp-op kronos'+(fcOf(h) ? '' : ' none')+'" onclick="hpKronos('+idx+')"'
+   + ' title="'+(fcOf(h) ? '查看 Kronos 时序模型 14 日预测（实验性，仅方向参考）'
+                      : '这件饰品暂无 Kronos 预测数据（预测仅覆盖推荐池前10 + AI精选 + 持仓）')+'">Kronos 预测</button>'
    + '</div>'
    + '<div class="hp-grid">'
    + '<div class="hp-cell"><div class="k">成本</div><div class="v mono">'
@@ -7172,6 +7706,10 @@ function hpSelect(idx){
    + '</div>'
    + '<div class="hp-chart">'+hpChart(cv, c, (c<=0 ? '未录入成本价' : (p<=0 ? '尚未匹配到现价' : null)),
         null, (h.mh || h.market_hash || h.n))+'</div>';
+  /* ★ 2026-10-04：图表在全屏层里时，hpSelect 重渲染会 innerHTML 清空 #hpDetail，
+     而真正的图表 DOM 此刻挂在全屏层上（不在这棵子树里）→ 重渲染完图表就没了。
+     所以先检测并关掉全屏（把 DOM 搬回来），让下面这次渲染照常进行。 */
+  try { hpFullscreenClose(); } catch (e) {}
   box.innerHTML = html;
   window._hpCur = idx;
   /* 挂单量副图：buff_recent.json 由 init 异步载入，首屏渲染时可能还没到。
@@ -7186,8 +7724,123 @@ function hpSelect(idx){
   } catch (e) {}
   /* ★ 走势图鼠标跟随 tooltip（TradingView 模式）*/
   try { hpChartTooltip(idx); } catch(e) {}
+  /* ★ 缩放/平移交互（2026-10-04）：必须在 innerHTML 写回、tooltip 挂好之后初始化，
+     因为它要接管 wheel/mousedown 并改 svg 的 data-w。 */
+  try { hpInitZoom(document.querySelector('#hpDetail .hp-chart')); } catch(e) {}
   /* ★ 详情区高度按视口自适应（每次渲染后重算）*/
   try { hpFitDetail(); } catch(e) {}
+}
+/* K 线态的十字光标 + 顶部读数联动（2026-10-04）
+   与折线版 hpChartTooltip 的区别：
+     · 读的是 12 列 data-pts，能拿到当日 OHLC 与采样点数 n；
+     · 顶部读数不是 MA/布林，而是 收盘/今开/最高/最低/日涨跌；
+     · 水平准线画在**收盘价**上（不是最高价），与常见行情软件一致。
+   ⚠ 坐标反算口径与折线完全一致（svg rect 基准 + data-w/data-h），
+     因为缩放时 hpInitZoom 改的正是 data-w，两套逻辑必须对得上。 */
+function hpKlineTooltip(svg, holder){
+  if (!svg || !holder) return;
+  var P = (svg.getAttribute('data-pts') || '').split(';').map(function (s) {
+    var a = s.split(',');
+    return {
+      x: parseFloat(a[0]), yC: parseFloat(a[1]), yO: parseFloat(a[2]),
+      yH: parseFloat(a[3]), yL: parseFloat(a[4]),
+      d: a[5], o: parseFloat(a[6]), h: parseFloat(a[7]),
+      l: parseFloat(a[8]), c: parseFloat(a[9]),
+      n: parseInt(a[10], 10) || 0, weak: a[11] === '1'
+    };
+  }).filter(function (o) { return !isNaN(o.x) && !isNaN(o.yC); });
+  if (P.length < 2) return;
+  var vbW = parseFloat(svg.getAttribute('data-w')) || 780;
+  var vbH = parseFloat(svg.getAttribute('data-h')) || 260;
+
+  holder.style.position = 'relative';
+  var line = document.createElement('span'); line.className = 'hp-tip-line';
+  var hline = document.createElement('span'); hline.className = 'hp-tip-h';
+  var dot = document.createElement('span'); dot.className = 'hp-tip-dot';
+  holder.appendChild(line); holder.appendChild(hline); holder.appendChild(dot);
+
+  var D = document.getElementById('hpDetail');
+  var ycur = D ? D.querySelector('.hc-yaxis .hc-cur') : null;
+  var ynow = ycur ? (ycur.getAttribute('data-now') || '') : '';
+  var readouts = D ? D.querySelectorAll('.hc-stats [data-hc]') : [];
+  var relabels = D ? D.querySelectorAll('.hc-stats [data-hcl]') : [];
+
+  function setReadout(i){
+    var b = P[i], p = P[i - 1];
+    var chg = (p && p.c > 0) ? ((b.c - p.c) / p.c * 100) : null;
+    var chgCol = (chg === null || Math.abs(chg) < 0.05) ? 'var(--text2)'
+               : (chg > 0 ? 'var(--rise)' : 'var(--fall)');
+    var map = {
+      kc:  '¥' + hpAxisNum(b.c),
+      ko:  '¥' + hpAxisNum(b.o),
+      kh:  '¥' + hpAxisNum(b.h),
+      kl:  '¥' + hpAxisNum(b.l),
+      kchg: (chg === null) ? '—' : ((chg >= 0 ? '+' : '') + chg.toFixed(2) + '%')
+    };
+    for (var q = 0; q < readouts.length; q++){
+      var el = readouts[q], key = el.getAttribute('data-hc');
+      if (!(key in map)) continue;
+      if (el.textContent !== map[key]) el.textContent = map[key];
+      if (key === 'kchg') el.style.color = chgCol;
+      else if (key === 'kc') el.style.color = b.c >= b.o ? 'var(--rise)' : 'var(--fall)';
+    }
+    /* 标签：收盘 → 该日日期；区间涨跌 → 日涨跌。移出时靠 data-ll 还原。 */
+    var md = String(b.d || '').slice(5).replace('-', '/');
+    for (var m = 0; m < relabels.length; m++){
+      var le = relabels[m], k2 = le.getAttribute('data-hcl');
+      if (k2 === 'kc') le.textContent = md || '该日';
+      else if (k2 === 'kchg') le.textContent = '日涨跌';
+    }
+    /* 采样点数写进 title（不占版面，但鼠标停住能查） */
+    dot.setAttribute('title', md + ' 采样 ' + b.n + ' 点' + (b.weak ? '（不足 3 点，影线仅供参考）' : ''));
+  }
+  function resetReadout(){
+    for (var q2 = 0; q2 < readouts.length; q2++){
+      var el2 = readouts[q2], lv = el2.getAttribute('data-latest');
+      if (lv !== null) el2.textContent = lv;
+      el2.style.color = el2.getAttribute('data-lc') || '';
+    }
+    for (var m2 = 0; m2 < relabels.length; m2++){
+      var le2 = relabels[m2], ll = le2.getAttribute('data-ll');
+      if (ll !== null) le2.textContent = ll;
+    }
+  }
+  function move(e){
+    var rect = holder.getBoundingClientRect();
+    var srect = svg.getBoundingClientRect();
+    var offX = srect.left - rect.left, offY = srect.top - rect.top;
+    var w = srect.width || 1, hgt = srect.height || 1;
+    var vx = (e.clientX - srect.left) / w * vbW;
+    var best = 0, bestD = Infinity;
+    for (var i = 0; i < P.length; i++){
+      var dd = Math.abs(P[i].x - vx);
+      if (dd < bestD){ bestD = dd; best = i; }
+    }
+    var b = P[best];
+    var cx = b.x / vbW * w + offX;
+    var cy = b.yC / vbH * hgt + offY;
+    line.style.left = cx.toFixed(1) + 'px'; line.style.display = 'block';
+    hline.style.top = cy.toFixed(1) + 'px'; hline.style.display = 'block';
+    dot.style.left = (cx - 4).toFixed(1) + 'px';
+    dot.style.top = (cy - 4).toFixed(1) + 'px';
+    dot.style.background = (b.c >= b.o) ? 'var(--rise)' : 'var(--fall)';
+    dot.style.display = 'block';
+    if (ycur){
+      ycur.style.top = (b.yC / vbH * 100).toFixed(2) + '%';
+      ycur.textContent = '¥' + hpAxisNum(b.c);
+    }
+    setReadout(best);
+  }
+  function leave(){
+    dot.style.display = 'none'; line.style.display = 'none'; hline.style.display = 'none';
+    if (ycur){
+      ycur.style.top = (P[P.length - 1].yC / vbH * 100).toFixed(2) + '%';
+      ycur.textContent = ynow;
+    }
+    resetReadout();
+  }
+  svg.addEventListener('mousemove', move);
+  svg.addEventListener('mouseleave', leave);
 }
 /* 详情走势图：十字光标 + 鼠标跟随 tooltip（TradingView 模式）
    2026-09-26 重写，修一个旧 bug：
@@ -7202,6 +7855,14 @@ function hpChartTooltip(idx){
   var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
   var h = arr[idx];
   if (!h) return;
+  /* ★ K 线态走独立分支（2026-10-04）：svg 上带 data-kl="1"。
+     为什么不能复用下面的折线逻辑：
+       ① data-pts 是 12 列（x,收盘y,开盘y,高y,低y,日期,o,h,l,c,n,弱标记），
+          折线分支只取 a[0]/a[1] 当 x/y，其余列会被当成脏数据丢掉；
+       ② 折线分支的下标要与 hpCurve 的日均价序列对齐，而 K 线序列来自
+          kline.json（另一份数据、另一种天数），两者长度对不上就会 return。
+     所以 K 线自己解析 OHLC，并把顶部读数行换成 收盘/今开/最高/最低 + 采样点数。 */
+  if (svg.getAttribute('data-kl') === '1'){ try { hpKlineTooltip(svg, holder); } catch(e){} return; }
   var cv = hpCurve(h);
   if (!cv || !cv.p || cv.p.length < 2) return;
   /* 区间必须与图一致，否则下标错位 */
@@ -7397,6 +8058,332 @@ function hpChartTooltip(idx){
   }
   svg.addEventListener('mouseleave', leave);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   走势图缩放 / 拖动平移（2026-10-04 义轩要求，参照 TradingView）
+   ──────────────────────────────────────────────────────────────────────────
+   手势：滚轮缩放（以光标为锚）· 左键拖动平移 · 双击复位 · 底部导航条可拖视窗。
+
+   ⚠ 为什么不动 viewBox
+     十字光标与顶部读数靠 svg 的 data-pts + data-w 反算屏幕坐标（上面 move()）。
+     一旦把 viewBox 宽度改掉，鼠标 x → 数据 x 的映射关系就变了，整套读数错位。
+     所以本模块只做两件事，二者恒自洽：
+       1) 给 <g class="hc-vp"> 加 transform="translate(tx,0) scale(sx,1)"；
+       2) 把 svg 的 data-w 改写成 W*sx（逻辑宽度），hover 反算自动跟上。
+     纵向不缩放（scale 只作用于 x），保持 Y 轴刻度与价格读数稳定。
+   ══════════════════════════════════════════════════════════════════════════ */
+function hpInitZoom(root){
+  if (!root) return;
+  var svg = root.querySelector('svg.hc-svg');
+  var vp  = root.querySelector('g.hc-vp');
+  if (!svg || !vp) return;
+  var body = root.querySelector('.hc-body');
+  var plot = root.querySelector('.hc-plot');
+  var badge = root.querySelector('.hc-zbadge');
+  var mini = root.querySelector('.hc-mini-in');
+  var win  = root.querySelector('.hc-mini-win');
+  if (!body || !plot) return;
+
+  var W0 = parseFloat(svg.getAttribute('data-w')) || 780;   /* 渲染时的原始宽度 */
+  var MIN = 1, MAX = 5;
+  var sx = 1, tx = 0;      /* sx=横向缩放倍率；tx=平移量（viewBox 单位，向左为正 */
+
+  function clampX(nx, nsx){
+    if (nsx <= MIN){ return { s: MIN, t: 0 }; }
+    var maxT = W0 * (nsx - 1);      /* 放大后可平移的总余量 */
+    var t = Math.max(0, Math.min(maxT, nx));
+    return { s: nsx, t: t };
+  }
+  function apply(){
+    var r = clampX(tx, sx);
+    sx = r.s; tx = r.t;
+    vp.setAttribute('transform', 'translate('+(-tx).toFixed(2) + ',0) scale(' + sx.toFixed(4) + ',1)');
+    /* 逻辑宽度同步 —— hover 反算靠它，不同步十字光标就会偏 */
+    svg.setAttribute('data-w', (W0 * sx).toFixed(2));
+    if (badge){
+      if (sx > MIN + 0.001){
+        badge.className = 'hc-zbadge on';
+        badge.querySelector('b').textContent = sx.toFixed(1) + '×';
+      } else {
+        badge.className = 'hc-zbadge';
+      }
+    }
+    if (win){
+      var wpct = 100 / sx;
+      var leftPct = (tx / (W0 * (sx - 1 || 1))) * wpct;
+      win.style.width = wpct + '%';
+      win.style.left = Math.max(0, Math.min(100 - wpct, leftPct)) + '%';
+    }
+    body.classList.toggle('hc-zoomed', sx > MIN + 0.001);
+  }
+  function reset(){ sx = 1; tx = 0; apply(); }
+
+  /* ── 滚轮缩放：以光标位置为锚点 ── */
+  plot.addEventListener('wheel', function(e){
+    if (e.target.closest && e.target.closest('.hc-mini')) return;   /* 导航条自己处理 */
+    e.preventDefault();
+    var r = svg.getBoundingClientRect();
+    var w = r.width || 1;
+    var frac = (e.clientX - r.left) / w;                 /* 光标在图上的相对位置 0~1 */
+    if (frac < 0) frac = 0; if (frac > 1) frac = 1;
+    var anchorDataX = (frac * W0 + tx);                  /* 光标下的数据坐标 */
+    var nsx = sx * (e.deltaY < 0 ? 1.18 : 1/1.18);
+    if (nsx > MAX) nsx = MAX;
+    if (nsx < MIN) nsx = MIN;
+    /* 让 anchorDataX 在新倍率下仍停在 frac 处 */
+    tx = anchorDataX - frac * W0 * nsx;
+    sx = nsx;
+    apply();
+  }, { passive: false });
+
+  /* ── 拖动平移 ── */
+  var dragging = false, moved = false, sx0 = 0, tx0 = 0, px0 = 0;
+  plot.addEventListener('mousedown', function(e){
+    if (e.button !== 0) return;
+    if (e.target.closest && e.target.closest('.hc-mini')) return;
+    dragging = true; moved = false;
+    px0 = e.clientX; tx0 = tx; sx0 = sx;
+    body.classList.add('hc-panning');
+  });
+  window.addEventListener('mousemove', function(e){
+    if (!dragging) return;
+    var r = svg.getBoundingClientRect();
+    var w = r.width || 1;
+    var dxData = (e.clientX - px0) / w * (W0 * sx0);
+    if (Math.abs(e.clientX - px0) > 3) moved = true;
+    if (sx0 > MIN + 0.001){
+      tx = tx0 + dxData;
+      apply();
+    }
+  });
+  window.addEventListener('mouseup', function(){
+    if (!dragging) return;
+    dragging = false;
+    body.classList.remove('hc-panning');
+  });
+  /* 双击复位 */
+  plot.addEventListener('dblclick', function(e){
+    if (e.target.closest && e.target.closest('.hc-mini')) return;
+    e.preventDefault();
+    reset();
+  });
+
+  /* ── 底部导航条：点/拖视窗定位 ── */
+  if (mini){
+    var jump = function(clientX){
+      var r = mini.getBoundingClientRect();
+      var f = (clientX - r.left) / (r.width || 1);
+      if (f < 0) f = 0; if (f > 1) f = 1;
+      var c = f * W0;                          /* 视窗中心对应的数据坐标 */
+      tx = c - (W0 * sx) / 2;
+      apply();
+    };
+    var navDown = false;
+    mini.addEventListener('mousedown', function(e){
+      e.preventDefault();
+      navDown = true; jump(e.clientX);
+    });
+    window.addEventListener('mousemove', function(e){ if (navDown) jump(e.clientX); });
+    window.addEventListener('mouseup', function(){ navDown = false; });
+    mini.addEventListener('dblclick', function(e){ e.preventDefault(); reset(); });
+  }
+  apply();
+}
+/* ══════════════════════════════════════════════════════════════════════════
+   走势图全屏看大图（2026-10-04 义轩要求：加个按钮点开能看到一整个图）
+   ──────────────────────────────────────────────────────────────────────────
+   设计取舍：**搬 DOM，不重画**。
+     · 图表这棵 DOM 上已经绑好了 tooltip / 十字光标 / 滚轮缩放 / 拖动平移 /
+       底部导航条（hpChartTooltip + hpInitZoom），整体搬进全屏层后这些交互
+       全部原样可用 —— 不必写第二套，也就不会出现「全屏里滚轮失灵」这类不一致。
+     · 绝不能改 viewBox 宽高来「放大」：十字光标与顶部读数靠 svg 的
+       data-pts + data-w 反算屏幕坐标（hpChartTooltip.move），改 viewBox 会全错位。
+       所以全屏只做 CSS 层的放大（.hp-fs-body 里的覆盖规则），viewBox 一个字不动。
+     · 缩放倍率/区间选择会原样带过去；退出时搬回原位，状态不丢。
+   退出：右上角 ✕ / ESC / 双击标题栏，三种都行。
+   ══════════════════════════════════════════════════════════════════════════ */
+function hpFullscreen(){
+  var layer = document.getElementById('hpFsLayer');
+  var src = document.querySelector('#hpDetail .hp-chart');
+  if (!src) return;
+  if (!layer){
+    layer = document.createElement('div');
+    layer.id = 'hpFsLayer';
+    layer.className = 'hp-fs-layer';
+    document.body.appendChild(layer);
+  }
+  /* 记住来源容器，退出时搬回去（innerHTML 重渲染后容器会变，故每次现取） */
+  var holder = src.parentNode;
+  /* 标题：hpName 依赖异步加载的 _cnNameMap，首屏可能还没到 → 退回英文名/HashName，
+     宁可显示英文名也不要只显示「走势详情」这种等于没写。 */
+  var title = '';
+  try {
+    var hArr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+    var hCur = hArr[window._hpCur];
+    if (hCur) title = hpName(hCur) || hCur.name || hCur.mh || hCur.market_hash || hCur.n || '';
+    if (!title) title = hCur ? String(hCur.n || hCur.mh || '') : '';
+  }
+  catch (e) { title = ''; }
+
+  layer.innerHTML = '<div class="hp-fs-bar">'
+    + '<div class="hp-fs-title">' + esc(title || '走势详情')
+    + '<small>滚轮缩放 · 拖动平移 · 双击复位</small></div>'
+    + '<div class="hp-fs-hint">按 Esc 或双击此处退出</div>'
+    + '<button class="hp-fs-x" title="退出全屏（Esc）" onclick="hpFullscreenClose()">✕</button>'
+    + '</div>'
+    + '<div class="hp-fs-body" id="hpFsBody"></div>';
+  var bodyEl = document.getElementById('hpFsBody');
+  bodyEl.appendChild(src);            /* ← 整棵搬走 */
+  /* 标题栏双击退出（点空白处也算，这里给整条 bar 绑 dblclick 而不是只有标题文字） */
+  bodyEl.parentNode.querySelector('.hp-fs-bar')
+    .addEventListener('dblclick', hpFullscreenClose);
+  layer.classList.add('on');
+  document.body.style.overflow = 'hidden';   /* 背景不跟着滚 */
+  /* 搬过来之后 tooltip 用的 getBoundingClientRect 会自动跟着变，无需重算；
+     但 hpInitZoom 里缓存的 svg 引用仍指向同一个元素，无需重调。 */
+  try { hpInitZoom(src); } catch (e) {}
+}
+function hpFullscreenClose(){
+  var layer = document.getElementById('hpFsLayer');
+  if (!layer) return;
+  var bodyEl = document.getElementById('hpFsBody');
+  var chart = bodyEl ? bodyEl.querySelector('.hp-chart') : null;
+  if (chart){
+    /* 搬回持仓详情。用 #hpDetail 本身当落点即可 —— hpSelect 每次重渲染都会
+       重新生成 .hp-chart 容器，appendChild 会插到 #hpDetail 末尾，
+       而 #hpDetail 里只有这一个走势图，位置不会错乱。 */
+    var back = document.getElementById('hpDetail');
+    if (back) back.appendChild(chart);
+  }
+  layer.classList.remove('on');
+  layer.innerHTML = '';
+  document.body.style.overflow = '';
+  /* 搬回后 tooltip 的坐标基准变了（滚动位置），让它自己重算一次 */
+  try { hpInitZoom(chart); } catch (e) {}
+}
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    var fl = document.getElementById('hpFsLayer');
+    if (fl && fl.classList.contains('on')) { hpFullscreenClose(); return; }
+    var b = document.getElementById('hpKronosBox');
+    if (b && b.classList.contains('on')) hpKronosClose();
+  }
+});
+/* ══════════════════════════════════════════════════════════════════════════
+   Kronos 预测弹层（2026-10-04 义轩要求：持仓详情里加个按钮看预测）
+   ──────────────────────────────────────────────────────────────────────────
+   数据来源：ai_forecast.json（服务器 update.py 每天生成，14 日预测）。
+   覆盖范围：推荐池前10 + AI 精选 + 持仓三类标的 —— 所以**不是每件都有**，
+   没有的按钮置灰但仍可点，点开明确告知原因（不装成"坏了"）。
+   ⚠ 定位必须写清楚：Kronos 是金融K线基础模型迁移到饰品，域外外推，
+     只作方向参考，不参与推荐评分、不作买卖依据（红线上不能误导）。
+   ══════════════════════════════════════════════════════════════════════════ */
+function hpKronosClose(){ var b=document.getElementById('hpKronosBox'); if(b) b.classList.remove('on'); }
+/* ESC 关闭的公共监听统一放在 hpFullscreenClose 之后（全屏 / Kronos 两个弹层一起管），
+   避免两个 keydown 监听器重复响应同一个 ESC。 */
+function hpKronos(idx){
+  var arr = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+  var h = arr[idx];
+  if (!h) return;
+  var box = document.getElementById('hpKronosBox');
+  if (!box){
+    box = document.createElement('div');
+    box.id = 'hpKronosBox';
+    box.className = 'hp-kbox';
+    box.onclick = function(e){ if (e.target === box) hpKronosClose(); };
+    document.body.appendChild(box);
+  }
+  var f = fcOf(h);
+  var days = (FC.meta && FC.meta.days) ? FC.meta.days : 14;
+  var fdate = (FC.meta && FC.meta.date) ? FC.meta.date : '—';
+  var name = esc(hpName(h));
+
+  if (!f || typeof f.change_pct !== 'number'){
+    box.innerHTML = '<div class="hp-kcard">'
+      + '<h3>Kronos 预测</h3>'
+      + '<div class="hp-ksub">' + name + '</div>'
+      + '<div class="hp-kempty"><div class="big">◌</div>'
+      + '这件饰品暂无 Kronos 预测<br>'
+      + '<span style="font-size:11px;opacity:.8">预测目前只覆盖「推荐池前10 + AI 精选 + 持仓」，<br>不是全市场每件都有</span></div>'
+      + '<button class="hp-kclose" onclick="hpKronosClose()">知道了</button></div>';
+    box.classList.add('on');
+    return;
+  }
+
+  var up = f.change_pct >= 0;
+  var col = up ? 'var(--rise)' : 'var(--fall)';
+  var arrow = up ? '▲' : '▼';
+  /* 迷你走势图：用 forecast.series 画真实折线。
+     分界点用后端给的 hist_len（历史段点数），不再按固定比例猜 ——
+     否则预测段会被画成历史实线（2026-10-04 修掉的失真）。
+     hist_len 缺失时（旧数据）不画历史线，只画预测虚线。 */
+  var chart = (function(){
+      var ss = f.series || [];
+      var hl = (typeof f.hist_len === 'number' && f.hist_len > 0) ? f.hist_len : 0;
+      var futPts = ss.slice(hl);
+      var histPts = hl > 0 ? ss.slice(0, hl) : [];
+      if (!futPts.length){
+        return '<div class="hp-kchart" style="display:flex;align-items:center;'
+          + 'justify-content:center;color:var(--text3);font-size:11px">无预测曲线数据</div>';
+      }
+      var VW = 100, VH = 100, i, lo = Infinity, hi = -Infinity, v;
+      for (i=0;i<ss.length;i++){
+        v = Number(ss[i][1]);
+        if (isFinite(v)){ if (v<lo) lo=v; if (v>hi) hi=v; }
+      }
+      if (!isFinite(lo)){ lo = 0; hi = 1; }
+      var rng = (hi - lo) || 1;
+      function px(i, n){ return (n<=1 ? 0 : (i/(n-1)*VW)).toFixed(1); }
+      function py(v){ return (6 + (hi - v)/rng*(VH-12)).toFixed(1); }
+      var total = ss.length;
+      var hp = histPts.map(function(p,k){ return px(k,total)+','+py(Number(p[1])); }).join(' ');
+      // 预测段从历史最后一点接上，折线不断开
+      var startAt = hl > 0 ? hl - 1 : 0;
+      var fp = [];
+      if (hl > 0 && histPts.length) fp.push(px(startAt,total)+','+py(Number(histPts[histPts.length-1][1])));
+      for (i=hl;i<total;i++) fp.push(px(i,total)+','+py(Number(ss[i][1])));
+      fp = fp.join(' ');
+      var lastX = px(total-1,total), lastY = py(Number(ss[total-1][1]));
+      return '<div class="hp-kchart"><svg viewBox="0 0 '+VW+' '+VH+'" preserveAspectRatio="none">'
+        + (hp ? '<polyline fill="none" stroke="var(--blue)" stroke-width="1.6" vector-effect="non-scaling-stroke" points="'+hp+'"/>' : '')
+        + '<polyline fill="none" stroke="'+col+'" stroke-width="1.6" stroke-dasharray="3 2.5"'
+        + ' vector-effect="non-scaling-stroke" points="'+fp+'"/>'
+        + '<circle cx="'+lastX+'" cy="'+lastY+'" r="2.6" fill="'+col+'"/>'
+        + '</svg></div>'
+        + '<div style="display:flex;gap:12px;font-size:10px;color:var(--text3);margin:-4px 2px 10px">'
+        + (hp ? '<span><i style="display:inline-block;width:11px;height:2px;background:var(--blue);'
+          + 'vertical-align:middle;margin-right:4px"></i>历史 ' + hl + ' 天</span>' : '')
+        + '<span><i style="display:inline-block;width:11px;height:0;border-top:2px dashed '+col+';'
+        + 'vertical-align:middle;margin-right:4px"></i>预测（虚线）</span></div>';
+    })();
+
+  box.innerHTML = '<div class="hp-kcard">'
+    + '<h3>Kronos 预测<span class="tag">实验性</span></h3>'
+    + '<div class="hp-ksub">' + name + ' · 模型生成于 ' + esc(fdate) + '</div>'
+    + '<div class="hp-kbig">'
+    +   '<span class="now">现价 ¥' + f.current + '</span>'
+    +   '<span class="arrow">→</span>'
+    +   '<span class="pred" style="color:'+col+'">¥' + f.forecast + '</span>'
+    +   '<span class="chg" style="color:'+col+'">' + arrow + ' ' + (up?'+':'') + f.change_pct + '%</span>'
+    + '</div>'
+    + '<div class="hp-kgrid">'
+    +   '<div class="c"><div class="k">预测跨度</div><div class="v">' + days + ' 日</div></div>'
+    +   '<div class="c"><div class="k">历史天数</div><div class="v">' + (f.history_days != null ? f.history_days : '—') + '</div></div>'
+    +   '<div class="c"><div class="k">入选来源</div><div class="v" style="font-size:12px">'
+    +     (f.source === 'top10' ? '推荐池前10' : (f.source === 'holdings' ? '持仓' : (f.source === 'ai_select' ? 'AI 精选' : (f.source || '—'))))
+    +   '</div></div>'
+    + '</div>'
+    + chart
+    + '<div class="hp-kfoot">'
+    + '<b>怎么读：</b>虚线是模型对未来 '+days+' 天的外推，不是已发生的价格。<br>'
+    + '<b>局限：</b>Kronos 是金融 K 线基础模型迁移到饰品市场的域外预测，'
+    + '对「哪件会涨」的判断没有胜率保证；<b>不参与站内推荐评分，不构成买卖依据</b>。<br>'
+    + '<b>覆盖：</b>目前仅推荐池前10 + AI 精选 + 持仓，不是全市场每件都有。'
+    + '</div>'
+    + '<button class="hp-kclose" onclick="hpKronosClose()">关闭</button>'
+    + '</div>';
+  box.classList.add('on');
+}
 function hpSell(idx){
   /* ★ 2026-09-25：原来这里用原生 confirm + removeMyHolding 直接移除持仓，
      **不写卖出记录** → 卖出复盘页永远看不到这类卖出。现统一走确认弹窗：
@@ -7438,6 +8425,16 @@ function renderList(){
         try { renderList(); } catch(e) {}      // 数据到位后刷新曲线
       })
       .catch(function(){ window._priceSummaryLoaded = true; });
+  }
+  /* ★ K 线数据同样后台预热（2026-10-04）。kline.json 约 4.7MB，不预热的话
+     用户第一次点「K线」会先看到空态，等几百毫秒才出图 —— 像是坏了。
+     加载完成后**只在当前正处于 K 线态时**才重渲染，避免白白重绘折线。 */
+  if (!KL.loaded && !KL._loading){
+    loadKline().then(function () {
+      if (window._hpView === 'k'){
+        try { hpSelect(window._hpCur || 0); } catch(e) {}
+      }
+    });
   }
   var items;
   try {

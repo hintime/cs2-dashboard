@@ -1,6 +1,6 @@
 {
-  "date": "2026-10-04 13:15",
-  "total_sec": 245.6,
+  "date": "2026-10-05 13:18",
+  "total_sec": 235.4,
   "ok": 7,
   "failed": 0,
   "provider_fast": "zhipu",
@@ -10,49 +10,49 @@
   "stages": [
     {
       "stage": "Analysis",
-      "sec": 100.8,
+      "sec": 81.9,
       "ok": true,
       "provider": "zhipu",
       "model": "glm-4-flash"
     },
     {
       "stage": "Daily report",
-      "sec": 12.7,
+      "sec": 14.9,
       "ok": true,
       "provider": "zhipu",
       "model": "glm-4-flash"
     },
     {
       "stage": "Anomaly",
-      "sec": 3.7,
+      "sec": 5.4,
       "ok": true,
       "provider": "zhipu",
       "model": "glm-4-flash"
     },
     {
       "stage": "Stock picks",
-      "sec": 17.6,
+      "sec": 19.6,
       "ok": true,
       "provider": "zhipu",
       "model": "glm-4-flash"
     },
     {
       "stage": "Market insight",
-      "sec": 3.3,
+      "sec": 5.7,
       "ok": true,
       "provider": "zhipu",
       "model": "glm-4-flash"
     },
     {
       "stage": "News impact",
-      "sec": 21.6,
+      "sec": 20.4,
       "ok": true,
       "provider": "zhipu",
       "model": "glm-4-flash"
     },
     {
       "stage": "Recommendations",
-      "sec": 85.9,
+      "sec": 87.5,
       "ok": true,
       "provider": "zhipu",
       "model": "glm-4-flash"
