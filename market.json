@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 940.76,
-    "change": -5.92,
-    "change_pct": -5.92,
-    "market_value": 288768834.8,
-    "total_items": 4040,
-    "updated": "2026-10-05T08:00:03+08:00",
+    "latest": 946.3,
+    "change": -5.37,
+    "change_pct": -5.37,
+    "market_value": 290469450.64,
+    "total_items": 4023,
+    "updated": "2026-10-05T10:00:02+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4254,6 +4254,14 @@
         "close": 940.76,
         "high": 942.27,
         "low": 940.76
+      },
+      {
+        "date": "2026-10-05",
+        "dateFull": "2026-10-05 10:00",
+        "open": 946.3,
+        "close": 946.3,
+        "high": 946.3,
+        "low": 946.3
       }
     ],
     "volBar": [],
@@ -12745,12 +12753,20 @@
         "index": 940.76,
         "change_pct": -5.92,
         "market_value": 288768834.8
+      },
+      {
+        "time": "10:00",
+        "date": "2026-10-05",
+        "timestamp": 1791165602,
+        "index": 946.3,
+        "change_pct": -5.37,
+        "market_value": 290469450.64
       }
     ],
     "selling": {
-      "total_selling": 1341751,
+      "total_selling": 1376858,
       "total_selling_prev": 0,
-      "total_selling_delta": 1341751,
+      "total_selling_delta": 1376858,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12758,7 +12774,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791158403177,
+  "index_updated": 1791165602977,
   "alerts": [
     {
       "name": "Sticker | Ninjas in Pyjamas (Holo) | Stockholm 2021",
@@ -31469,7 +31485,7 @@
     "MP9 | 红宝石毒镖 (久经沙场)",
     "MP9 | 红宝石毒镖 (崭新出厂)"
   ],
-  "updated": "2026-10-05T01:35:48Z",
+  "updated": "2026-10-05T02:06:10Z",
   "steam_market_items": 78,
   "steam_market_recs": {
     "momentum": [
