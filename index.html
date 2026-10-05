@@ -6816,32 +6816,26 @@ function showImportPreview(items){
 function commitImport(){
   var items = window._importItems || [];
   if(!items.length) return;
-  var strat = (document.getElementById('ipStrategy') || {}).value || 'add';   // 兜底也用最安全的「仅新增」
-  var existing = loadMyHoldings() || [];
+  var strat = (document.getElementById('ipStrategy') || {}).value || 'add';   // 策略只有「仅新增」/「整表替换」
+  var existing = (strat === 'replace') ? [] : (loadMyHoldings() || []);
   var map = {};
   if(strat !== 'replace') existing.forEach(function(it){ map[overrideKey(it.name, it.wear)] = it; });
-  if(strat === 'replace'){ existing = []; map = {}; }
-  var imported = 0;
+  var imported = 0, skipped = 0;
   items.forEach(function(it, i){
     var costStr = (document.getElementById('ipcost-' + i) || {}).value;
     var cost = parseFloat(costStr);
     if(isNaN(cost) || cost < 0) cost = priceForMh(it.mh) || 0; // 留空→按现价填
     var key = overrideKey(it.cn, it.wear);
-    var ex = map[key];
-    if(ex){
-      if(strat === 'add') return;            // 仅新增：已存在跳过
-      ex.qty = (Number(ex.qty) || 1) + (it.qty || 1);
-      if((Number(ex.cost) || 0) === 0 && cost > 0) ex.cost = cost;  // 原成本为0且用户填了才更新
-      imported += (it.qty || 1);
-    } else {
-      var ni = { id: Date.now() + '_' + (Math.random()*1e6|0), name: it.cn, market_hash: it.mh, cost: cost, qty: it.qty || 1, wear: it.wear || '', category: '' };
-      map[key] = ni; existing.push(ni);
-      imported += (it.qty || 1);
-    }
+    // 仅新增：已存在 → 整条跳过（**不动数量、不动成本价**）
+    if(strat === 'add' && map[key]){ skipped += (it.qty || 1); return; }
+    var ni = { id: Date.now() + '_' + (Math.random()*1e6|0), name: it.cn, market_hash: it.mh, cost: cost, qty: it.qty || 1, wear: it.wear || '', category: '' };
+    map[key] = ni; existing.push(ni);
+    imported += (it.qty || 1);
   });
   saveMyHoldings(existing);
   closeSteamImport();
-  appToast('已导入 ' + imported + ' 件（' + ({merge:'增量合并',replace:'整表替换',add:'仅新增'})[strat] + '）', 'ok', 4000);
+  if(!imported){ appToast('没有新增物品（' + skipped + ' 件已在你持仓里，已跳过）', 'info'); return; }
+  appToast('已导入 ' + imported + ' 件（' + ({replace:'整表替换',add:'仅新增'})[strat] + '）' + (skipped ? '，跳过 ' + skipped + ' 件已有' : ''), 'ok', 4000);
   setTimeout(function(){ location.reload(); }, 1300);   // 留时间让提示可见（原来 reload 会把 alert 一起刷掉）
 }
 
@@ -7066,7 +7060,6 @@ window.addEventListener('focus', function(){
       <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap">
         <span style="font-size:11px;color:var(--text3)">合并方式</span>
         <select id="ipStrategy" style="padding:5px 8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px">
-          <option value="merge">增量合并 —— 相同饰品数量累加（持仓 2 + 库存 2 = 4），慎防翻倍</option>
           <option value="replace">⚠ 整表替换 —— 清空原持仓后重建，成本价会全部丢失</option>
           <option value="add" selected>仅新增 —— 已有物品完全不动，只加新的（推荐）</option>
         </select>
