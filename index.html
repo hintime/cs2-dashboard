@@ -2178,7 +2178,7 @@ body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
       <option value="FN">崭新出厂 (FN)</option>
       <option value="MW">略有磨损 (MW)</option>
       <option value="FT">久经沙场 (FT)</option>
-      <option value="WW">战火纷飞 (WW)</option>
+      <option value="WW">破损不堪 (WW)</option>
       <option value="BS">战痕累累 (BS)</option>
     </select>
     <label style="display:block;font-size:11px;color:var(--text3);margin-bottom:4px">买入价 (¥)</label>
@@ -2349,7 +2349,7 @@ const WEAR_MAP = {
   'FN': '崭新出厂',
   'MW': '略有磨损',
   'FT': '久经沙场',
-  'WW': '战地风云',
+  'WW': '破损不堪',
   'BS': '战痕累累'
 };
 
@@ -2502,12 +2502,35 @@ function cnName(name) {
   var nm = window._cnNameMap || {};
   var cn = nm[name] || name;
   // 替换磨损
+  // ⚠ 中文名必须与上游数据源（CSQAQ/SteamDT 的 GoodsName）逐字一致 ——
+  //   「破损不堪」同时是 eco_catalog.py:89 与 generate_correlation.py:17 的**排除判据**，
+  //   这里若译成「战地风云/破旧不堪」等，WW 饰品就会漏进追踪池、相关性也会算错。
+  //   官方国服叫法：崭新出厂/略有磨损/久经沙场/破损不堪/战痕累累。
   cn = cn.replace(/\(Factory New\)/g,'(崭新出厂)')
     .replace(/\(Minimal Wear\)/g,'(略有磨损)')
     .replace(/\(Field-Tested\)/g,'(久经沙场)')
-    .replace(/\(Well-Worn\)/g,'(战地风云)')
+    .replace(/\(Well-Worn\)/g,'(破损不堪)')
     .replace(/\(Battle-Scarred\)/g,'(战痕累累)');
   return cn;
+}
+
+/* 磨损英文 → 中文。datalist 自动补全、持仓表等「直接展示英文名」的地方共用这一份。
+   ⚠ 为什么要独立出来而不是复用 cnName()：
+   cnName() 依赖 window._cnNameMap（中文名映射表），那份表**不一定已加载**
+   （例如下拉框在 market 拉回来之前就可能被读到）。而磨损是纯词缀替换，
+   任何时候都能可靠翻译 —— 之前就是这里漏了，导致下拉框里
+   「AWP | CMYK (Field-Tested)」这种中英混杂的条目。 */
+var HP_WEAR_CN = {
+  'Factory New':   '崭新出厂',
+  'Minimal Wear':  '略有磨损',
+  'Field-Tested':  '久经沙场',
+  'Well-Worn':     '破损不堪',
+  'Battle-Scarred':'战痕累累'
+};
+function cnWear(name) {
+  if (!name) return name;
+  return String(name).replace(/\((Factory New|Minimal Wear|Field-Tested|Well-Worn|Battle-Scarred)\)/g,
+    function (_, en) { return '(' + (HP_WEAR_CN[en] || en) + ')'; });
 }
 
 function overrideKey(name, wear) {
@@ -2883,10 +2906,18 @@ window.__hpGetFiltered = function(){ try { return getFiltered(); } catch(e) { re
           var cn = h.n || '';           // 中文名 "M4A1消音版 | 苔藓石英 (崭新出厂)"
           var en = h.mh || '';          // 英文名 "M4A1-S | Moss Quartz (Factory New)"
           if (cn && !seen[cn]) { seen[cn] = true; addOpt(cn); }
-          if (en && !seen[en]) { seen[en] = true; addOpt(en); }
+          // ⚠ 英文名也要过一遍磨损翻译：原来直接塞原名，导致下拉框里
+          //   「AWP | CMYK (Field-Tested)」这种中英混杂（Factory New 恰好在
+          //   持仓中文名里出现过所以看着像译好了，其实是没有的）。在下面选它
+          //   存进持仓，持仓表就会一直是英文。
+          var enCn = en ? cnWear(en) : '';
+          if (enCn && !seen[enCn]) { seen[enCn] = true; addOpt(enCn); }
+          if (en && !seen[en]) { seen[en] = true; addOpt(en); }  // 保留原名，用户可能照抄英文
         });
         marketR.eco_tracked_names.slice(0, 3000).forEach(function(n) {
-          if (!seen[n]) { seen[n] = true; addOpt(n); }
+          var t = cnWear(n);
+          if (t && !seen[t]) { seen[t] = true; addOpt(t); }
+          if (n && !seen[n]) { seen[n] = true; addOpt(n); }
         });
       }
       function addOpt(v) { var o = document.createElement('option'); o.value = v; dl.appendChild(o); }
@@ -6349,6 +6380,61 @@ function importSteamInventory(){
 }
 function closeSteamImport(){ document.getElementById('steamImportModal').style.display='none'; }
 
+// ── ① 直接导入：输 SteamID64 → 经 Worker 拉公开库存 ──
+function importBySteamId(){
+  var inp = document.getElementById('steamIdInput');
+  var btn = document.getElementById('steamIdBtn');
+  var msg = document.getElementById('steamIdMsg');
+  if(!inp || !msg) return;
+  var sid = (inp.value || '').trim();
+  function e2(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function say(html, color){ msg.style.display=''; msg.style.color = color || 'var(--text3)'; msg.innerHTML = html; }
+  if(!/^\d{17}$/.test(sid)){
+    say('SteamID64 必须是 17 位数字。获取方式：打开你的 Steam 资料页，地址栏 /profiles/ 后面那串就是。', 'var(--amber)');
+    return;
+  }
+  if(btn){ btn.disabled = true; btn.textContent = '拉取中…'; }
+  say('正在从服务器拉取库存…');
+  fetch('/api/inventory?steamid=' + encodeURIComponent(sid))
+    .then(function(r){ return r.text(); })
+    .then(function(txt){
+      var d = null;
+      try { d = JSON.parse(txt); } catch(e) { d = null; }
+      if(!d){
+        say('服务暂时不可用（返回的不是 JSON）。可能 /api/inventory 还没部署，或稍后再试；也可改用下方②书签 /③粘贴导入。', 'var(--amber)');
+        return;
+      }
+      if(d.ok){
+        var items = (d.items || []).map(function(it){ return { market_hash: it.market_hash_name, qty: it.amount }; });
+        if(!items.length){
+          say('库存为空，或物品都在交易保护期内（新买入约 7 天内不对外显示）。', 'var(--amber)');
+          return;
+        }
+        say('✓ 拉到 ' + (d.total_inventory_count || 0) + ' 件 / 去重 ' + (d.distinct_items || 0) + ' 类，正在生成预览…', 'var(--fall)');
+        showImportPreview(parseSteamJson({ items: items }));
+        return;
+      }
+      if(d.error_code === 'INVENTORY_PRIVATE' && d.guide){
+        var g = d.guide, L = g.links || {};
+        var steps = (g.steps || []).map(function(s){ return '· ' + e2(s); }).join('<br>');
+        say('<b style="color:var(--amber)">库存不是「公开」状态，读不到</b><br>' + steps
+          + '<br><a href="' + e2(L.privacy_settings) + '" target="_blank" style="color:var(--blue)">→ 打开 Steam 隐私设置</a>'
+          + '　<a href="' + e2(L.profile) + '" target="_blank" style="color:var(--blue)">我的个人资料</a>'
+          + '　<a href="' + e2(L.verify) + '" target="_blank" style="color:var(--blue)">自检库存页</a>');
+        return;
+      }
+      if(d.error_code === 'RATE_LIMITED'){
+        say('服务器被 Steam 限流了（429），等一两分钟再试。', 'var(--amber)');
+        return;
+      }
+      say('拉取失败：' + e2(d.error || '未知错误'), 'var(--amber)');
+    })
+    .catch(function(e){
+      say('请求失败：' + e2(e.message) + '。若刚开始用，请确认 Worker 已上线 /api/inventory。', 'var(--amber)');
+    })
+    .then(function(){ if(btn){ btn.disabled = false; btn.textContent = '拉取库存'; } });
+}
+
 // ── 自动检测剪贴板中的 Steam 库存 JSON ──
 function checkClipboard(){
   var ta = document.getElementById('steamJson');
@@ -6521,7 +6607,7 @@ function commitImport(){
   if(window.name && location.search.indexOf('auto_import=1') >= 0){
     try {
       var data = JSON.parse(window.name);
-      if(data && data.assets) {
+      if(data && (data.assets || data.items)) {
         window.name = ''; // 清空防止重复导入
         importSteamInventory(); showImportPreview(parseSteamJson(data));
       }
@@ -6667,9 +6753,22 @@ window.addEventListener('focus', function(){
     <h3 style="font-size:16px;margin-bottom:6px;color:var(--text)">🚀 导入 Steam 库存</h3>
     <p style="font-size:10px;color:var(--text3);margin-bottom:12px">所有用户可用 · 数据只存你本地浏览器</p>
 
-    <!-- ① 主路径：书签一键 -->
+    <!-- ① 最省事：输 SteamID 直接拉 -->
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px">
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">① 推荐：书签一键导入</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">① 直接导入：输 SteamID64</div>
+      <p style="font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:8px">
+        不用装书签、不用开加速器。<b style="color:var(--amber)">库存需设为「公开」</b>；私密的读不到，会给出切换指引。
+      </p>
+      <div style="display:flex;gap:6px">
+        <input id="steamIdInput" inputmode="numeric" placeholder="76561198xxxxxxxxx（17 位）" onkeydown="if(event.key==='Enter')importBySteamId()" style="flex:1;min-width:0;padding:7px 10px;background:var(--surface);color:var(--text);border:2px solid var(--border);border-radius:8px;font-size:12px;font-family:monospace">
+        <button id="steamIdBtn" onclick="importBySteamId()" style="padding:7px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">拉取库存</button>
+      </div>
+      <div id="steamIdMsg" style="display:none;margin-top:8px;font-size:11px;line-height:1.75;color:var(--text3)"></div>
+    </div>
+
+    <!-- ② 主路径：书签一键 -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">② 推荐：书签一键导入</div>
       <p style="font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:8px">
         装一个浏览器书签 → 在 Steam 库存页点一下 → 自动跳回并导入。<br>
         <b style="color:var(--amber)">需先开 Steam++ 能访问社区</b>，书签只在 steamcommunity.com 上生效。
@@ -6677,8 +6776,8 @@ window.addEventListener('focus', function(){
       <button onclick="window.open('bookmarklet.html','_blank')" style="padding:7px 16px;background:var(--amber);color:#000;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600">🔖 安装书签</button>
     </div>
 
-    <!-- ② 兜底：粘贴 JSON -->
-    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">② 兜底：粘贴 JSON</div>
+    <!-- ③ 兜底：粘贴 JSON -->
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">③ 兜底：粘贴 JSON</div>
     <p style="font-size:11px;color:var(--text3);margin-bottom:6px">
       打开 <a href="https://steamcommunity.com/my/inventory/json/730/2" target="_blank" style="color:var(--blue)">Steam 库存 JSON 页</a> → Ctrl+A 全选 → Ctrl+C → 切回本页自动识别
     </p>

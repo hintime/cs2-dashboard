@@ -86,7 +86,11 @@ def _passes_filter(item):
         return False
     if 'Battle-Scarred' in hn or '战痕累累' in gn:
         return False
-    if 'Well-Worn' in hn or '破损不堪' in gn:
+    # ⚠ WW 的中文判据**必须与上游 GoodsName 逐字一致**，否则这里永远匹配不上 →
+    #   WW 饰品会漏进追踪池（且不报错），相关性/板块统计也跟着被污染。
+    #   官方国服叫「破损不堪」，社区也常写「破旧不堪」，两种都收。
+    #   前端显示统一用「破损不堪」（见 index.html 的 HP_WEAR_CN / WEAR_ZH）。
+    if 'Well-Worn' in hn or '破损不堪' in gn or '破旧不堪' in gn:
         return False
     return True
 

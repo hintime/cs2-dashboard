@@ -14,7 +14,9 @@ def main():
     ph = price_db.get_raw_history()
 
     # Extract daily average prices per item (filter excluded)
-    exclude_kw = ['Well-Worn', 'Battle-Scarred', '破损不堪', '战痕累累', 'Souvenir',
+    # ⚠ WW 的中文判据须与 eco_catalog.py:89 保持一致（上游 GoodsName 用「破损不堪」，
+    #   社区也写「破旧不堪」）。这里漏一个，WW 就会混进相关性计算。
+    exclude_kw = ['Well-Worn', 'Battle-Scarred', '破损不堪', '破旧不堪', '战痕累累', 'Souvenir',
                   'Music Kit', 'Sticker', '印花', 'Patch', '布章', 'Charm', 'Pin',
                   'Case', 'Container', '武器箱', '胶囊', 'Terminal', 'Graffiti',
                   'Capsule', 'Holo-Foil', 'Confetti', 'Autograph', 'Pass']
