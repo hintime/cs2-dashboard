@@ -6265,6 +6265,7 @@ function localSignIn() {
   var a=document.getElementById('authEmail').value.trim(),p=document.getElementById('authPass').value.trim();
   if (AUTH_ACCOUNTS[a] === p) {
     localStorage.setItem('cs2_user', JSON.stringify({account:a,time:Date.now()}));
+    try { clearInvState(); } catch(e) {}   // 换账号 → 清掉上一个账号的库存缓存/差异面板，防串号
     showLoggedIn(a);
     loadAll(); // 刷新数据
   } else { document.getElementById('authMsg').textContent='账号或密码错误'; document.getElementById('authMsg').style.display=''; }
@@ -6272,6 +6273,7 @@ function localSignIn() {
 function localSignOut() {
   document.body.classList.remove('logged-in');
   localStorage.removeItem('cs2_user');
+  try { clearInvState(); } catch(e) {}   // 退出登录 → 清库存缓存，防串号
   document.getElementById('userSection').style.display='none';
   document.getElementById('loginBtn').style.display='';
   document.getElementById('loginGate').style.display='none';
@@ -6439,8 +6441,11 @@ function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/<
 function getMyKey(){ var u=localStorage.getItem('cs2_user'); if(!u)return''; try{return JSON.parse(u).account||'';}catch(e){return'';} }
 function loadMyHoldings(){
   var key = getMyKey(); if(!key) return [];
-  var raw = localStorage.getItem('cs2_holdings_'+key);
-  return raw ? JSON.parse(raw) : [];
+  try {
+    var raw = localStorage.getItem('cs2_holdings_'+key);
+    var arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch(e){ return []; }   // 坏 JSON 不应让「导入/补齐」整体炸掉
 }
 function saveMyHoldings(items){
   try { hpCloudSync(); } catch(e) {}
@@ -6475,8 +6480,21 @@ function closeSteamImport(){ document.getElementById('steamImportModal').style.d
 
 // ── 记住绑定的 SteamID + 一键刷新库存（只对比差异，绝不改动持仓）──
 var STEAM_ID_KEY = 'cs2_steam_id';
-function getBoundSteamId(){ try { return localStorage.getItem(STEAM_ID_KEY) || ''; } catch(e){ return ''; } }
-function setBoundSteamId(sid){ try { localStorage.setItem(STEAM_ID_KEY, sid); } catch(e){} restoreSteamBinding(); }
+// 按登录账号隔离：同一浏览器下不同账号各绑各的 SteamID
+function steamIdKey(){
+  var k = '';
+  try { k = (typeof getMyKey === 'function') ? (getMyKey() || '') : ''; } catch(e){ k = ''; }
+  return k ? (STEAM_ID_KEY + '_' + k) : STEAM_ID_KEY;
+}
+function getBoundSteamId(){ try { return localStorage.getItem(steamIdKey()) || ''; } catch(e){ return ''; } }
+function setBoundSteamId(sid){ try { localStorage.setItem(steamIdKey(), sid); } catch(e){} restoreSteamBinding(); }
+// 切换账号 / 退出登录时调用：清掉库存缓存与差异面板，防止串号
+function clearInvState(){
+  window._lastInvItems = [];
+  window._lastInvSid = null;
+  var p = document.getElementById('steamDiffPanel');
+  if(p){ p.innerHTML = ''; p.style.display = 'none'; }
+}
 function restoreSteamBinding(){
   var bar = document.getElementById('steamRefreshBar');
   var lbl = document.getElementById('steamBoundId');
@@ -6517,7 +6535,8 @@ function refreshInventory(){
       }
       if(!d.ok){ say('拉取失败：' + e2(d.error || '未知错误'), 'var(--amber)'); return; }
       say('✓ 拉到 ' + (d.total_inventory_count || 0) + ' 件 / 去重 ' + (d.distinct_items || 0) + ' 类，正在对比持仓…', 'var(--fall)');
-      window._lastInvItems = d.items || [];   // 供「补齐新增」使用
+      window._lastInvItems = Array.isArray(d.items) ? d.items : [];   // 非数组守卫，防污染
+      window._lastInvSid = sid;                                       // 记录来源 ID，供「补齐」校验
       renderInventoryDiff(d.items || [], d.total_inventory_count || 0);
     })
     .catch(function(e){ say('出错了：' + e2(e.message), 'var(--amber)'); })
@@ -6563,15 +6582,18 @@ function renderInventoryDiff(items, totalCount){
   } else {
     if(added.length){
       h += '<div style="color:var(--fall);font-weight:600;margin:6px 0 2px">＋ 库存里有、持仓没记（' + added.length + '）</div>'
-        + added.slice(0, 60).map(function(x){ return row(x.mh, 'var(--fall)', '×' + x.q); }).join('');
+        + added.slice(0, 60).map(function(x){ return row(x.mh, 'var(--fall)', '×' + x.q); }).join('')
+        + (added.length > 60 ? '<div style="color:var(--text3);font-size:10px;padding:4px 0">…仅列出前 60 条，另有 ' + (added.length - 60) + ' 条未显示</div>' : '');
     }
     if(missing.length){
       h += '<div style="color:var(--amber);font-weight:600;margin:8px 0 2px">－ 持仓有、库存已没有（可能已卖出）（' + missing.length + '）</div>'
-        + missing.slice(0, 60).map(function(x){ return row(x.mh, 'var(--amber)', '持仓×' + x.q); }).join('');
+        + missing.slice(0, 60).map(function(x){ return row(x.mh, 'var(--amber)', '持仓×' + x.q); }).join('')
+        + (missing.length > 60 ? '<div style="color:var(--text3);font-size:10px;padding:4px 0">…仅列出前 60 条，另有 ' + (missing.length - 60) + ' 条未显示</div>' : '');
     }
     if(diff.length){
       h += '<div style="color:var(--text2);font-weight:600;margin:8px 0 2px">≠ 数量不一致（' + diff.length + '）</div>'
-        + diff.slice(0, 60).map(function(x){ return row(x.mh, 'var(--text2)', '库存×' + x.inv + ' / 持仓×' + x.hold); }).join('');
+        + diff.slice(0, 60).map(function(x){ return row(x.mh, 'var(--text2)', '库存×' + x.inv + ' / 持仓×' + x.hold); }).join('')
+        + (diff.length > 60 ? '<div style="color:var(--text3);font-size:10px;padding:4px 0">…仅列出前 60 条，另有 ' + (diff.length - 60) + ' 条未显示</div>' : '');
     }
     if(!added.length && !missing.length && !diff.length){
       h += '<div style="color:var(--fall);padding:6px 0">✓ 库存与持仓完全一致。</div>';
@@ -6651,8 +6673,16 @@ function importBySteamId(){
 // ── 补齐新增：把「库存里有、持仓没记」的写进持仓（用户显式点击才执行）──
 //    红线：只新增；绝不删除任何记录、绝不改动已有物品的成本价
 function syncInventoryToHoldings(){
-  var items = window._lastInvItems || [];
-  if(!items.length){ appToast('请先点「🔄 刷新库存」拉一次最新库存，再点补齐。', 'warn'); return; }
+  var items = Array.isArray(window._lastInvItems) ? window._lastInvItems : [];
+  // ① 从没刷过
+  if(!window._lastInvSid){ appToast('请先点「🔄 刷新库存」拉一次最新库存，再点补齐。', 'warn'); return; }
+  // ② 缓存属于别的 SteamID（换号/改了输入框）→ 拒绝，防止把 A 的库存写进 B 的持仓
+  if(window._lastInvSid !== getBoundSteamId()){
+    appToast('这份库存属于另一个 SteamID（' + window._lastInvSid + '），请先重新点「🔄 刷新库存」。', 'warn');
+    return;
+  }
+  // ③ 刷过了但库存为空（与①区分开，避免提示自相矛盾）
+  if(!items.length){ appToast('最近一次刷新：库存是空的，没有可补齐的物品。', 'info'); return; }
   var inv = {};
   items.forEach(function(it){ var mh = it.market_hash_name || ''; if(mh) inv[mh] = (inv[mh] || 0) + (it.amount || 1); });
   var existing = (typeof loadMyHoldings === 'function') ? (loadMyHoldings() || []) : [];
@@ -6670,8 +6700,10 @@ function syncInventoryToHoldings(){
   });
   if(!added){ appToast('无需补齐：库存里的物品，你的持仓都已记录。', 'info'); return; }
   saveMyHoldings(existing);
-  appToast('已补齐 ' + added + ' 类 / ' + addedQty + ' 件新增物品\n（成本按现价预填，可在持仓明细里逐件改）\n\n只补了新增：没有删除任何记录，也没有改动已有成本价。', 'ok', 4500);
-  setTimeout(function(){ location.reload(); }, 1400);   // 留时间让提示可见（原来 reload 会把 alert 一起刷掉）
+  // ⚠️ reload 会掐掉 hpCloudSync 的 2500ms 防抖 → 先立即推一次云端，否则换设备看不到
+  try { if(typeof window.hpCloudSyncNow === 'function') window.hpCloudSyncNow(); } catch(e){}
+  appToast('已补齐 ' + added + ' 类 / ' + addedQty + ' 件新增物品\n（成本尽量按现价预填；查不到行情的记 0，可在持仓明细里补录）\n\n只补了新增：没有删除任何记录，也没有改动已有成本价。', 'ok', 4500);
+  setTimeout(function(){ location.reload(); }, 1500);
 }
 
 // ── 自动检测剪贴板中的 Steam 库存 JSON ──
@@ -6792,6 +6824,9 @@ function parseSteamJson(data){
 }
 // ── 导入预览表（逐件可改成本 + 合并策略）──
 function showImportPreview(items){
+  // 剪贴板路径可能是在弹窗关闭时触发的 → 先把弹窗打开，否则预览渲染进隐藏节点、用户点了没反应
+  var _md = document.getElementById('steamImportModal');
+  if(_md && _md.style.display === 'none') _md.style.display = 'flex';
   if(items === null){ appToast('数据格式不对 — 请确认复制的是 inventory/.../730/2 的纯文本 JSON（开头 {"success":true,...}）', 'err'); return; }
   if(!items || !items.length){ appToast('未解析出任何物品（库存可能为空或未公开）', 'warn'); return; }
   window._importItems = items;
@@ -6819,13 +6854,13 @@ function commitImport(){
   var strat = (document.getElementById('ipStrategy') || {}).value || 'add';   // 策略只有「仅新增」/「整表替换」
   var existing = (strat === 'replace') ? [] : (loadMyHoldings() || []);
   var map = {};
-  if(strat !== 'replace') existing.forEach(function(it){ map[overrideKey(it.name, it.wear)] = it; });
+  if(strat !== 'replace') existing.forEach(function(it){ map[it.market_hash || overrideKey(it.name, it.wear)] = it; });
   var imported = 0, skipped = 0;
   items.forEach(function(it, i){
     var costStr = (document.getElementById('ipcost-' + i) || {}).value;
     var cost = parseFloat(costStr);
     if(isNaN(cost) || cost < 0) cost = priceForMh(it.mh) || 0; // 留空→按现价填
-    var key = overrideKey(it.cn, it.wear);
+    var key = it.mh || it.market_hash || overrideKey(it.cn, it.wear);   // 全站主键统一用 market_hash
     // 仅新增：已存在 → 整条跳过（**不动数量、不动成本价**）
     if(strat === 'add' && map[key]){ skipped += (it.qty || 1); return; }
     var ni = { id: Date.now() + '_' + (Math.random()*1e6|0), name: it.cn, market_hash: it.mh, cost: cost, qty: it.qty || 1, wear: it.wear || '', category: '' };
@@ -6835,8 +6870,10 @@ function commitImport(){
   saveMyHoldings(existing);
   closeSteamImport();
   if(!imported){ appToast('没有新增物品（' + skipped + ' 件已在你持仓里，已跳过）', 'info'); return; }
+  // ⚠️ reload 会掐掉 hpCloudSync 的 2500ms 防抖 → 先立即推一次云端
+  try { if(typeof window.hpCloudSyncNow === 'function') window.hpCloudSyncNow(); } catch(e){}
   appToast('已导入 ' + imported + ' 件（' + ({replace:'整表替换',add:'仅新增'})[strat] + '）' + (skipped ? '，跳过 ' + skipped + ' 件已有' : ''), 'ok', 4000);
-  setTimeout(function(){ location.reload(); }, 1300);   // 留时间让提示可见（原来 reload 会把 alert 一起刷掉）
+  setTimeout(function(){ location.reload(); }, 1500);   // 留时间让提示可见（原来 reload 会把 alert 一起刷掉）
 }
 
 // ═══ 检测书签跳转导入（window.name 跨域传递数据）═══
@@ -8986,28 +9023,35 @@ function hpBatchSave(){
 
 /* ═══ 持仓云端同步（Worker KV 通道，手机/PC 共用）═══ */
 var _hpCloudTimer = null;
+function _hpCloudPushNow(){
+  try{
+    var key = (typeof getMyKey === 'function') ? getMyKey() : 'admin';
+    var items = [];
+    try { items = JSON.parse(localStorage.getItem('cs2_holdings_' + key) || '[]'); } catch(e) {}
+    if (!Array.isArray(items)) items = [];
+    var payload = items.map(function(it){
+      return { market_hash: it.market_hash || it.mh || it.n || '',
+               name: it.name || it.n || '',
+               cost: Number(it.cost) || 0,
+               qty: Number(it.qty) || 1,
+               wear: it.wear || '' };
+    }).filter(function(it){ return it.market_hash; });
+    fetch('/api/holdings-sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: payload })
+    }).catch(function(){});
+  }catch(e){}
+}
+// ⚠️ 立即推送：reload 前必须调它，否则 2500ms 防抖定时器会被 reload 掐掉 → 云端永远收不到
+window.hpCloudSyncNow = function(){
+  clearTimeout(_hpCloudTimer);
+  _hpCloudTimer = null;
+  _hpCloudPushNow();
+};
 function hpCloudSync(){
   clearTimeout(_hpCloudTimer);
-  _hpCloudTimer = setTimeout(function(){
-    try{
-      var key = (typeof getMyKey === 'function') ? getMyKey() : 'admin';
-      var items = [];
-      try { items = JSON.parse(localStorage.getItem('cs2_holdings_' + key) || '[]'); } catch(e) {}
-      if (!Array.isArray(items)) items = [];
-      var payload = items.map(function(it){
-        return { market_hash: it.market_hash || it.mh || it.n || '',
-                 name: it.name || it.n || '',
-                 cost: Number(it.cost) || 0,
-                 qty: Number(it.qty) || 1,
-                 wear: it.wear || '' };
-      }).filter(function(it){ return it.market_hash; });
-      fetch('/api/holdings-sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: payload })
-      }).catch(function(){});
-    }catch(e){}
-  }, 2500);   // 与成本同步同节奏，防抖
+  _hpCloudTimer = setTimeout(_hpCloudPushNow, 2500);   // 与成本同步同节奏，防抖
 }
 
 /* ═══ hover 增强：平台比价 / sparkline / 快捷键提示（2026-09-23）═══ */
