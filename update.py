@@ -3210,9 +3210,54 @@ def push_all():
                     #   更关键的是：远端数据比本地旧，rebase 进来只会覆盖新数据。
                     #   所以重试只做纯 push —— push 不需要远端对象在本地存在。
                     pass
+
+        # ★ git 通道失败 → 自动降级 API 通道（2026-10-05 加）
+        #   为什么必须降级而不是直接 raise：
+        #   服务器到 github.com:443 **间歇性完全不通**（实测单次 connect 超时 135s，
+        #   2026-10-05 20:15 那轮prices 因此整个进程抛 RuntimeError 崩掉，
+        #   buff_history 快照没写、cron 记成失败）。
+        #   而 api.github.com 走的是另一条路，正常（实测 1.2s 返回 200）。
+        #   build_kline.py 的 push_out() 早就在用这条通道了，只是主流程没接上。
         if last_err is not None:
-            # 必须让调用方知道数据没推上去 —— 否则自动任务会「静默成功」地空转。
-            raise RuntimeError(f'push 重试 3 次全部失败，数据未推送: {last_err}')
+            print('[PUSH] git 通道失败，降级到 GitHub API 通道…', file=sys.stderr)
+            try:
+                from github_api_push import api_push_all as _api_push, _ssl_ctx as _ssl_ctx_f
+                _ok, _failed = _api_push(
+                    files=sorted(dirty_files), message=message,
+                    repo=REPO, token=GH_TOKEN, ctx=_ssl_ctx_f(), base_dir=SCRIPT_DIR)
+                if _ok:
+                    print('[PUSH] API 通道推送成功（%d 文件）' % len(dirty_files))
+                    last_err = None
+                else:
+                    print('[PUSH] API 通道也失败，未能推送: %s' % _failed, file=sys.stderr)
+            except Exception as _e:
+                print('[PUSH] API 通道异常: %s' % str(_e)[:160], file=sys.stderr)
+
+        if last_err is not None:
+            # ★ 两条通道都失败 → **不 raise**。
+            #   push_all() 位于 main() 末尾，但 raise 仍会让 cron 把整轮记成失败，
+            #   而此时数据已经采集并落盘了（下一轮会覆盖），raise 只会掩盖真实情况。
+            #   改成：显式告警 + 写一个标记文件，交给 watchdog/staleness_watch.py 兜底告警。
+            #   这样「推送失败」会被监控看到，但不会把「数据已采集」误报成「采集失败」。
+            print('[PUSH] ⚠️ git 与 API 两条通道都失败，数据未推送', file=sys.stderr)
+            print('[PUSH]    （数据已落盘，下一轮会覆盖；staleness_watch 会就「线上数据陈旧」告警）',
+                  file=sys.stderr)
+            try:
+                _mk = os.path.join(DATA_DIR, '.push_failed')
+                with open(_mk, 'w', encoding='utf-8') as _f:
+                    _f.write('%s\t%d files\t%s\n' % (
+                        time.strftime('%Y-%m-%d %H:%M:%S'), len(dirty_files),
+                        str(last_err)[:200]))
+            except Exception as _e2:
+                print('[PUSH] 标记文件写入失败: %s' % str(_e2)[:80], file=sys.stderr)
+            return
+        # 推送成功 → 清掉失败标记
+        try:
+            _mk = os.path.join(DATA_DIR, '.push_failed')
+            if os.path.exists(_mk):
+                os.remove(_mk)
+        except Exception:
+            pass
 
 def github_push_file(path, content_str, message):
     """Push a single file via GitHub Contents API"""
