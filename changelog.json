@@ -2,6 +2,24 @@
   {
     "date": "2026-10-05",
     "tag": "fix",
+    "title": "wip: local snapshot 2026-10-05 22:30",
+    "desc": "wip: local snapshot 2026-10-05 22:30"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "title": "wip: local snapshot 2026-10-05 22:15",
+    "desc": "wip: local snapshot 2026-10-05 22:15"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "title": "update buff_history.json, buff_recent.json, changelog.json,",
+    "desc": "orrelation_data.json, daily_report.json, data_status.json, eco_tracked.json, firepulse_ids.json, fluct_recent.json, holdings.json, market.json, market_overview.json, market_overview_history.json, market_scan.json, market_sectors.json, sectors.json, track_view.json 2026-10-05 22:06"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
     "title": "wip: local snapshot 2026-10-05 22:00",
     "desc": "wip: local snapshot 2026-10-05 22:00"
   },
@@ -100,23 +118,5 @@
     "tag": "fix",
     "title": "wip: local snapshot 2026-10-05 20:34",
     "desc": "wip: local snapshot 2026-10-05 20:34"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "title": "feat(inventory): 绑定 SteamID 后可一键「刷新库存」，与持仓对比差异（新增 / 已不在库存(可能",
-    "desc": "卖出) / 数量不符），只读不改动持仓与成本价"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "title": "fix(import): 修复三条导入路径全部报 \"cnName is not defined\" —— 块1是IIFE，",
-    "desc": "nName/overrideKey/wearCN 是局部函数未挂 window，块3的 parseSteamJson 跨块调用必然 ReferenceError；显式挂载 + 加防御兜底"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "title": "fix(import): 修复三条导入路径全部报 \"cnName is not defined\" —— 块1是IIFE，",
-    "desc": "nName/overrideKey/wearCN 是局部函数未挂 window，块3的 parseSteamJson 跨块调用必然 ReferenceError；显式挂载 + 加防御兜底"
   }
 ]
