@@ -5955,6 +5955,13 @@ initDashboard = function() {
 window.H = H;
 window.recData = recData;
 window.WEAR_MAP = WEAR_MAP;
+// ⚠️ 本块是 IIFE：下列 helper 本是**局部函数**，而块 3 的 parseSteamJson()/importBySteamId()
+//    需要跨块调用 → 必须显式挂到 window。
+//    2026-10-05 修：此前只挂了 WEAR_MAP，漏挂 cnName/overrideKey，
+//    导致「①直接导入 ②书签 ③粘贴」三条路径全部报 "cnName is not defined"（本会话实测复现）。
+window.cnName = cnName;
+window.wearCN = wearCN;
+window.overrideKey = overrideKey;
 window.CAT_MAP = CAT_MAP;
 window.CAT_LABELS = CAT_LABELS;
 // Kronos 预测：持仓明细(S3 块)要用 fcOf/FC，必须导出到全局，否则跨 script 不可见
@@ -6525,8 +6532,10 @@ function parseSteamJson(data){
   function push(mhn, qty){
     if(!mhn) return;
     var w = extractWear(mhn);
-    var cn = cnName(mhn);
-    var key = overrideKey(cn, w);
+    // 防御：cnName/overrideKey 定义在块 1 的 IIFE 内，靠 window 暴露跨块访问；
+    // 万一未挂载也不崩（降级为英文名），只是中文名缺失。
+    var cn = (typeof cnName === 'function') ? cnName(mhn) : mhn;
+    var key = (typeof overrideKey === 'function') ? overrideKey(cn, w) : (cn + '|' + w);
     if(seen[key]){ seen[key].qty += (qty || 1); return; }
     var it = { mh: mhn, cn: cn, wear: w, qty: qty || 1 };
     seen[key] = it; out.push(it);
