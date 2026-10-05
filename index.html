@@ -6696,6 +6696,8 @@ function showImportPreview(items){
   pv.querySelector('#ipTbody').innerHTML = tbody;
   pv.querySelector('#ipCount').textContent = items.length;
   pv.style.display = '';
+  // 预览表（含「确认导入」）在弹窗底部，不滚动根本看不到 → 自动滚到它
+  try { pv.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(e) {}
 }
 // ── 确认导入：按策略合并 + 填成本 ──
 function commitImport(){
@@ -6877,7 +6879,7 @@ window.addEventListener('focus', function(){
 
 <!-- Steam 库存导入弹窗 -->
 <div id="steamImportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)closeSteamImport()">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:560px;max-width:95vw">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto">
     <h3 style="font-size:16px;margin-bottom:6px;color:var(--text)">🚀 导入 Steam 库存</h3>
     <p style="font-size:10px;color:var(--text3);margin-bottom:12px">所有用户可用 · 数据只存你本地浏览器</p>
 
