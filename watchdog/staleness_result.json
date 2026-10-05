@@ -1,0 +1,258 @@
+{
+  "problems": [],
+  "facts": {
+    "checked": 41,
+    "missing": 0,
+    "stale": 0,
+    "rows": [
+      {
+        "file": "ai_analysis.json",
+        "group": "all",
+        "age_min": 25.2,
+        "max_min": 900
+      },
+      {
+        "file": "ai_anomaly.json",
+        "group": "all",
+        "age_min": 24.7,
+        "max_min": 900
+      },
+      {
+        "file": "ai_daily_report.json",
+        "group": "all",
+        "age_min": 24.9,
+        "max_min": 900
+      },
+      {
+        "file": "ai_forecast.json",
+        "group": "all",
+        "age_min": 118.4,
+        "max_min": 900
+      },
+      {
+        "file": "ai_market_insight.json",
+        "group": "all",
+        "age_min": 24.2,
+        "max_min": 900
+      },
+      {
+        "file": "ai_meta.json",
+        "group": "all",
+        "age_min": 22.0,
+        "max_min": 900
+      },
+      {
+        "file": "ai_news_impact.json",
+        "group": "all",
+        "age_min": 23.7,
+        "max_min": 900
+      },
+      {
+        "file": "ai_recommendations.json",
+        "group": "all",
+        "age_min": 22.0,
+        "max_min": 900
+      },
+      {
+        "file": "ai_stock_picks.json",
+        "group": "all",
+        "age_min": 24.4,
+        "max_min": 900
+      },
+      {
+        "file": "buff_history.json",
+        "group": "prices",
+        "age_min": 4.3,
+        "max_min": 90
+      },
+      {
+        "file": "buff_recent.json",
+        "group": "prices",
+        "age_min": 4.3,
+        "max_min": 90
+      },
+      {
+        "file": "changelog.json",
+        "group": "all",
+        "age_min": 0.4,
+        "max_min": 900
+      },
+      {
+        "file": "correlation_data.json",
+        "group": "all",
+        "age_min": 2.8,
+        "max_min": 900
+      },
+      {
+        "file": "cost-overrides.json",
+        "group": "static",
+        "age_min": -1,
+        "max_min": null
+      },
+      {
+        "file": "csqaq_boards.json",
+        "group": "daily",
+        "age_min": 120.8,
+        "max_min": 2880
+      },
+      {
+        "file": "daily_report.json",
+        "group": "all",
+        "age_min": 2.2,
+        "max_min": 900
+      },
+      {
+        "file": "data_status.json",
+        "group": "all",
+        "age_min": 0.7,
+        "max_min": 900
+      },
+      {
+        "file": "eco_catalog.json",
+        "group": "all",
+        "age_min": 178.5,
+        "max_min": 900
+      },
+      {
+        "file": "eco_tracked.json",
+        "group": "all",
+        "age_min": 4.3,
+        "max_min": 900
+      },
+      {
+        "file": "event_study.json",
+        "group": "all",
+        "age_min": 117.3,
+        "max_min": 900
+      },
+      {
+        "file": "firepulse_ids.json",
+        "group": "prices",
+        "age_min": 1.0,
+        "max_min": 90
+      },
+      {
+        "file": "fluct_recent.json",
+        "group": "prices",
+        "age_min": 4.3,
+        "max_min": 90
+      },
+      {
+        "file": "history.json",
+        "group": "static",
+        "age_min": -1,
+        "max_min": null
+      },
+      {
+        "file": "holdings.json",
+        "group": "prices",
+        "age_min": 1.0,
+        "max_min": 90
+      },
+      {
+        "file": "market.json",
+        "group": "prices",
+        "age_min": 0.7,
+        "max_min": 90
+      },
+      {
+        "file": "market_history.json",
+        "group": "all",
+        "age_min": 116.4,
+        "max_min": 900
+      },
+      {
+        "file": "market_overview.json",
+        "group": "all",
+        "age_min": 2.2,
+        "max_min": 900
+      },
+      {
+        "file": "market_overview_history.json",
+        "group": "all",
+        "age_min": 1.8,
+        "max_min": 900
+      },
+      {
+        "file": "market_scan.json",
+        "group": "all",
+        "age_min": 3.7,
+        "max_min": 900
+      },
+      {
+        "file": "market_sectors.json",
+        "group": "all",
+        "age_min": 2.2,
+        "max_min": 900
+      },
+      {
+        "file": "name_map.json",
+        "group": "all",
+        "age_min": 114.3,
+        "max_min": 900
+      },
+      {
+        "file": "news.json",
+        "group": "daily",
+        "age_min": 178.5,
+        "max_min": 2880
+      },
+      {
+        "file": "news_history.json",
+        "group": "daily",
+        "age_min": 118.4,
+        "max_min": 2880
+      },
+      {
+        "file": "price_summary.json",
+        "group": "prices",
+        "age_min": 0.4,
+        "max_min": 90
+      },
+      {
+        "file": "rec_tag_map.json",
+        "group": "static",
+        "age_min": -1,
+        "max_min": null
+      },
+      {
+        "file": "rec_tracks.json",
+        "group": "daily",
+        "age_min": 120.8,
+        "max_min": 2880
+      },
+      {
+        "file": "sectors.json",
+        "group": "all",
+        "age_min": 1.8,
+        "max_min": 900
+      },
+      {
+        "file": "track_view.json",
+        "group": "prices",
+        "age_min": 0.4,
+        "max_min": 90
+      },
+      {
+        "file": "tracking_analysis.json",
+        "group": "all",
+        "age_min": 468.1,
+        "max_min": 900
+      },
+      {
+        "file": "tracking_lessons.json",
+        "group": "all",
+        "age_min": 468.1,
+        "max_min": 900
+      },
+      {
+        "file": "vercel.json",
+        "group": "static",
+        "age_min": -1,
+        "max_min": null
+      }
+    ]
+  },
+  "last_push": 1791202021.1084518,
+  "ts": 1791205621.6676548
+}

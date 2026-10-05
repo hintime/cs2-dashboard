@@ -1,0 +1,23 @@
+{
+  "split": "2026-09-28T06:00:00",
+  "days": 7,
+  "n_cases": 30,
+  "real_band_avg_width_pp": 8.14,
+  "model": "基线 Kronos-small",
+  "model_result": {
+    "label": "基线 Kronos-small",
+    "n": 30,
+    "cover_pct": 100.0,
+    "avg_width_pp": 0.16,
+    "lo_mae_pp": 6.11,
+    "hi_mae_pp": 1.97
+  },
+  "baseline": {
+    "label": "基准：近7天日高低区间",
+    "n": 30,
+    "cover_pct": 100.0,
+    "avg_width_pp": 7.94,
+    "lo_mae_pp": 3.09,
+    "hi_mae_pp": 3.12
+  }
+}

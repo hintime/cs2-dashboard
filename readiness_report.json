@@ -1,0 +1,77 @@
+{
+  "generated": "2026-10-04 18:10",
+  "db": "/home/ubuntu/cs2-run/price_history.db",
+  "thresholds": {
+    "seq_min": 512,
+    "gap_split_hours": 12,
+    "seq_gate": 300,
+    "dense_since": "2026-09-18"
+  },
+  "channels": {
+    "eco": {
+      "items": 5194,
+      "points": 867289,
+      "dense_since_points": 489137,
+      "dense_items": 4949,
+      "dense_cadence_h": 5.15,
+      "span": [
+        "2026-07-06T08:15:47",
+        "2026-10-04T09:15:09"
+      ],
+      "max_seg_points": {
+        "p50": 63,
+        "p90": 176,
+        "max": 295
+      },
+      "finetunable_seqs": 0,
+      "items_with_seq": 0
+    },
+    "buff": {
+      "items": 5122,
+      "points": 1668679,
+      "dense_since_points": 1300506,
+      "dense_items": 4923,
+      "dense_cadence_h": 1.0,
+      "span": [
+        "2026-07-06T08:15:47",
+        "2026-10-04T09:15:09"
+      ],
+      "max_seg_points": {
+        "p50": 399,
+        "p90": 399,
+        "max": 399
+      },
+      "finetunable_seqs": 0,
+      "items_with_seq": 0
+    },
+    "yy": {
+      "items": 5093,
+      "points": 1650059,
+      "dense_since_points": 1283767,
+      "dense_items": 4895,
+      "dense_cadence_h": 1.0,
+      "span": [
+        "2026-07-06T08:15:47",
+        "2026-10-04T09:15:09"
+      ],
+      "max_seg_points": {
+        "p50": 399,
+        "p90": 399,
+        "max": 399
+      },
+      "finetunable_seqs": 0,
+      "items_with_seq": 0
+    }
+  },
+  "regime": {
+    "up_weeks": 3,
+    "down_weeks": 6,
+    "weeks": 10
+  },
+  "check": {
+    "seq_total": 0,
+    "gate_seq_ok": false,
+    "gate_regime_ok": true
+  },
+  "verdict": "NOT_YET"
+}

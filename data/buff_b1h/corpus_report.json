@@ -1,0 +1,15 @@
+{
+  "generated": "2026-10-04 18:16",
+  "db": "/home/ubuntu/cs2-run/price_history.db",
+  "channel": "buff",
+  "window": 385,
+  "dense_since": "2026-09-18",
+  "gap_hours": 12,
+  "items_kept": 2000,
+  "csv_files": 2000,
+  "segments_kept": 2000,
+  "est_samples": 31822,
+  "max_seg": 400,
+  "target_samples": 20000,
+  "gate_ok": true
+}
