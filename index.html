@@ -1731,8 +1731,9 @@ html { scroll-behavior: smooth; }
 .hc-mini:hover .hc-mini-win{background:rgba(96,165,250,.2)}
 /* ── K 线视图（2026-10-05 义轩要求：走势图加 K 线版）──
    数据来自 kline.json（服务器 build_kline.py 从 price_history.db 的日内采样
-   按天聚合）。⚠ 口径必须写清楚：采样每 4-6 小时一次，high/low 是「当天采样到的
-   极值」而非真实成交极值 → 只能做日K，小时K 没有意义。前端也要如实提示。 */
+   按天聚合）。⚠ 口径必须写清楚：采样每 30 分钟一次（一天约 28 个点），
+   high/low 是「当天采样到的极值」（半小时粒度）而非逐笔成交 → 只能做日K，
+   小时K 没有意义（一天 28 点摊到 24 小时）。前端也要如实提示。 */
 /* 视图开关（折线 / K线），与区间切换同排 */
 .hc-vt{display:inline-flex;margin-left:auto;border:1px solid var(--border);
   border-radius:6px;overflow:hidden;vertical-align:middle}
@@ -6906,12 +6907,14 @@ function hpTech(v){
    为什么必须新建而不能改造折线：折线用的是「每天一个均价」（hpCurve → price_history），
    只有单值，K 线需要 open/high/low/close 四个值 —— 拿均价造影线等于编数据。
    所以另走一路数据：kline.json（服务器 build_kline.py 从 price_history.db 的
-   日内采样按天聚合，每 4-6 小时一个点）。
+   日内采样按天聚合，每 30 分钟一个点，一天约 28 个 —— 口径是 2026-10-05
+   实测校正的，别再改回「4-6 小时」）。
 
    ⚠ 口径边界（前端必须如实转达，别装成真实成交）：
-     · 采样 4-6 小时一次 → high/low 是「当天采样到的极值」，不是真实成交高低点；
-     · 采样点少的当天（r=0）影线不可信 → 画淡一点，并在提示条里说；
-     · 一天才 3-10 个点 → **小时K 没有意义**，只做日K；
+     · 采样 30 分钟一次 → high/low 是「当天 28 个采样点里的极值」，半小时粒度、
+       覆盖度很高，但仍不等于真实成交高低点；
+     · 采样点极少的当天（r=0，实测罕见）影线不可信 → 画淡一点，并在提示条里说；
+     · 一天 28 点摊到 24 小时 → **小时K 没有意义**（平均每小时 1.2 点），只做日K；
      · 数据只覆盖最近有成交的 1200 件，不是全站所有饰品。
    ══════════════════════════════════════════════════════════════════════════ */
 var KL = { map: {}, loaded: false, meta: null };
@@ -7105,8 +7108,8 @@ function hpKline(vals, cost, reason, days, volName, h){
   var weakTxt = nWeak
     ? '，其中 <b>' + nWeak + ' 天</b>采样点不足（影线画淡了，仅供参考）' : '';
   var note = '<div class="hc-knote"><b>口径</b>'
-    + '<span>日K · 由每 4-6 小时一次的采样按天聚合，'
-    + '高低点是<b>当天采样到的极值</b>而非真实成交' + weakTxt + '。'
+    + '<span>日K · 由每 30 分钟一次的采样（一天约 28 个点）按天聚合，'
+    + '高低点是<b>当天采样到的极值</b>（半小时粒度）而非逐笔成交' + weakTxt + '。'
     + '仅支持日K，不支持小时K。</span></div>';
 
   /* 底部日期轴 + 悬停读数用的 data */
