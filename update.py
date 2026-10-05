@@ -121,8 +121,53 @@ def _credential_manager_token():
     return ''
 
 
+def _read_gh_token_from_envfile():
+    """从仓库内的 local_keys.env 读 GH_TOKEN。
+
+    ⚠ 为什么必须读这个文件（2026-10-05 实测踩坑）：
+    服务器上 `local_keys.env` 明明有 GH_TOKEN，但**环境变量里没有**
+    （run_cycle.sh 注释写着「GH_TOKEN 由 update.py 从 local_keys.env 注入」，
+    可update.py 当时压根没实现这件事）。
+    结果：
+      · API 通道能用 —— 因为 tools/_api_push.py 自己会读 local_keys.env；
+      · git 通道不能 —— _git_auth_args() 看到 GH_TOKEN 为空就返回无鉴权参数，
+        git 于是退回向用户要密码 → `Invalid username or token`。
+    同一份 token、两条通道、两种结果，最难查的一类不一致。
+
+    保守：文件不存在 / 解析不出就返回 ''，行为与之前完全一致（不引入新风险）。
+    """
+    try:
+        # 仓库根目录下的 local_keys.env（可能有注释、export 前缀）
+        here = os.path.dirname(os.path.abspath(__file__))
+        paths = [os.path.join(here, 'local_keys.env'),
+                 os.path.join(here, os.pardir, 'cs2-run', 'local_keys.env'),
+                 '/home/ubuntu/cs2-run/local_keys.env']
+        for p in paths:
+            if not os.path.exists(p):
+                continue
+            with open(p, encoding='utf-8', errors='replace') as f:
+                for line in f:
+                    line = line.strip()
+                    # 支持 GH_TOKEN / GITHUB_TOKEN，也支持 export 前缀
+                    for key in ('GH_TOKEN', 'GITHUB_TOKEN'):
+                        for pre in ('', 'export '):
+                            if line.startswith(pre + key):
+                                # ⚠ 这里是 len(pre + key)，**不是** len(pre) + key
+                                #   （2026-10-05 实测踩坑）：切片下标里的 `+` 只作用于
+                                #   整数，写成 `line[len(pre) + key:]` 会变成
+                                #   `0 + 'GH_TOKEN'` → TypeError: int + str。
+                                #   语法能过、ast.parse 也过，只有真跑才炸。
+                                v = line[len(pre + key):].lstrip(' \t=:\'"')
+                                v = v.strip().strip('"').strip("'").strip()
+                                if v and len(v) >= 20:   # 太短的多半是占位符
+                                        return v
+    except Exception as _e:
+        print('[WARN] 读 local_keys.env 失败: ' + str(_e)[:120], file=sys.stderr)
+    return ''
+
+
 GH_TOKEN = (os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
-            or _credential_manager_token())
+            or _credential_manager_token() or _read_gh_token_from_envfile())
 DEEPSEEK_KEY = os.environ.get('DEEPSEEK_KEY', '')
 ZHIPU_KEY = os.environ.get('ZHIPU_KEY', '')
 AI_PROVIDER = os.environ.get('AI_PROVIDER', 'zhipu')  # 统一用智谱 GLM-4

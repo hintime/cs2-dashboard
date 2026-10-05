@@ -62,9 +62,51 @@ DB = os.environ.get('PRICE_HIST_DB') or '/home/ubuntu/cs2-run/price_history.db'
 LOG = '/home/ubuntu/cs2-run/logs/kronos_ready.log'
 
 # ── 门槛口径 ────────────────────────────────────────────────
-LOOKBACK = 512          # 与 configs/config_cs2_buff_1h.yaml 一致
-PREDICT = 48
-WINDOW = LOOKBACK + PREDICT + 1     # = 561
+# ⚠ **LOOKBACK 必须从训练 config 读，不能硬编码**（2026-10-05 修）
+#   这里原来写死 512，注释还写着「与 configs/config_cs2_buff_1h.yaml 一致」——
+#   但那份 config 实际是 **lookback_window: 336 / predict_window: 48**。
+#   两个数字不同步，导致看板按 561 算门槛、而训练只要 385，
+#   报出来的「还差 134 点」是**按错的门槛算的**。
+#   硬编码的坏处：config 改了这里不会跟着变，且注释会说谎。
+_CONFIG_CANDIDATES = (
+    os.environ.get('KRONOS_CONFIG'),
+    # 仓库内configs/ 是「单一事实源」——2026-10-05 把训练 config 复制进来，
+    # 原先它只存在于本机 E:\cs2-kronos-ft\，服务器上根本没有 → 口径必然分叉。
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                 'configs', 'config_cs2_buff_1h.yaml'),
+    '/home/ubuntu/cs2-kronos-ft/finetune_cs2/configs/config_cs2_buff_1h.yaml',
+    r'E:\cs2-kronos-ft\finetune_cs2\configs\config_cs2_buff_1h.yaml',
+)
+
+
+def _load_window():
+    """从训练 config 读 lookback/predict，读不到就用已知默认值。"""
+    lb, pw = 336, 48
+    for p in _CONFIG_CANDIDATES:
+        if not p or not os.path.exists(p):
+            continue
+        try:
+            import re
+            txt = open(p, encoding='utf-8', errors='replace').read()
+            m1 = re.search(r'^\s*lookback_window:\s*(\d+)', txt, re.M)
+            m2 = re.search(r'^\s*predict_window:\s*(\d+)', txt, re.M)
+            if m1:
+                lb = int(m1.group(1))
+            if m2:
+                pw = int(m2.group(1))
+            return lb, pw, p
+        except Exception as e:
+            print('[WARN] 读训练 config 失败 %s: %s' % (p, str(e)[:80]), file=sys.stderr)
+    return lb, pw, None
+
+
+LOOKBACK, PREDICT, _CONFIG_PATH = _load_window()
+WINDOW = LOOKBACK + PREDICT + 1     # = 385（336+48+1）
+# ⚠ WINDOW 的语义（以前报告里没讲清，导致我一度建议「门槛降到 336」——**那是错的**）：
+#   WINDOW 是**能切出第一条样本的最小段长**，不是「达标线」。
+#   段长= 384 → 样本数 = 384-385+1 = 0 → 一条都切不出来；
+#   段长 = 385 → 1条；段长 = 400 → 16 条。
+#   所以「段长 >= 336」这类门槛**毫无意义**（336 < window，永远 0 样本）。
 TARGET_SAMPLES = 20000              # 多段池化后的目标样本总数
 GAP_H = 12                          # 相邻点间隔超过该小时数 => 切段
 CHANNELS = ('buff', 'yy', 'eco')
@@ -244,8 +286,12 @@ def main():
     L = [head, '-' * 40]
     L.append('数据规模    %d 行 / 最新 %s（北京）'
              % (n_rows, bj(parse(latest)) if latest else '--'))
-    L.append('门槛        窗口 %d 步（lookback %d + predict %d + 1）' % (WINDOW, LOOKBACK, PREDICT))
-    L.append('            样本总数 >= %d（段长 < 窗口时切不出样本）' % TARGET_SAMPLES)
+    src = os.path.basename(_CONFIG_PATH) if _CONFIG_PATH else '(未找到 config，用默认 336/48)'
+    L.append('门槛窗口%d 步（lookback %d + predict %d + 1）← 训练 config %s'
+             % (WINDOW, LOOKBACK, PREDICT, src))
+    L.append('            样本总数 >= %d' % TARGET_SAMPLES)
+    L.append('            段长 < %d 切不出样本（每段样本数 = 段长 - %d + 1）'
+             % (WINDOW, WINDOW - 1))
     L.append('')
     for ch in CHANNELS:
         v = res[ch]

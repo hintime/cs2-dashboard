@@ -1,0 +1,74 @@
+# Kronos 微调配置 —— CS2 皮肤价格（buff 通道，1 小时节奏）
+#
+# 数据来源：E:\cs2-mirror\price_history.db（tools/cs2_pull.py 从服务器拉回）
+# 语料生成：tools/kronos_build_corpus.py --channel buff --min-len 640
+# 多段支持：finetune_cs2/finetune_base_model.py 内的 “CS2 多段补丁”
+#           data_path 指向【目录】时，目录下每个 csv 视为一条独立序列
+#
+# ⚠️ 一字线说明：当前采集节奏约 1 点/小时，bucket_hours=1 时
+#    open=high=low=close（K 线实体退化），volume/amount 恒为 0。
+#    因此默认 train_tokenizer: false —— 只微调 predictor（时序动态），
+#    tokenizer 沿用官方 Kronos-Tokenizer-base（其 BSQ 码本已在大规模
+#    真实 K 线上训练过，退化 K 线再训一遍收益有限、还容易过拟合）。
+
+data:
+  data_path: "E:/cs2-kronos-ft/finetune_cs2/data/buff_b1h"
+  lookback_window: 336
+  predict_window: 48
+  max_context: 336
+  clip: 5.0
+  train_ratio: 0.9
+  val_ratio: 0.1
+  test_ratio: 0.0
+
+training:
+  tokenizer_epochs: 30
+  basemodel_epochs: 20
+  batch_size: 32
+  log_interval: 50
+  # 2026-10-04: 4 → 0。Windows 下 DataLoader 多 worker(spawn) 在存 checkpoint
+  # 后会死锁：进程存活、GPU 显存仍占 1.2GB，但利用率掉到 10% 且 step 完全不推进
+  # （实测卡在 Epoch 6 Step 130，停 15 分钟无变化）。单进程加载本语料足够快
+  # （batch 32 × 336 窗口，语料仅 2.8MB），没必要冒死锁风险。
+  num_workers: 0
+  seed: 42
+
+  tokenizer_learning_rate: 0.0002
+  predictor_learning_rate: 0.000001
+
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_weight_decay: 0.1
+  accumulation_steps: 1
+
+model_paths:
+  pretrained_tokenizer: "E:/cs2-kronos/hf/Kronos-Tokenizer-base"
+  # 2026-10-04: 从上一轮死锁前的 best_model（Epoch 5，val loss 最优）接着训，
+  # 不从 Kronos-small 重新开始 —— 前 5 个 epoch 的 GPU 时间不白费。
+  pretrained_predictor: "E:/cs2-kronos-ft/finetune_cs2/finetuned/cs2_buff_1h/basemodel/best_model"
+
+  exp_name: "cs2_buff_1h"
+  base_path: "E:/cs2-kronos-ft/finetune_cs2/finetuned"
+
+  # 留空 = 按 base_path/exp_name 自动生成
+  base_save_path: ""
+  # 因为 train_tokenizer=false，这里必须显式指向基础 tokenizer，
+  # 否则 train_sequential/finetune_base_model 会去找那个不存在的微调产物而报错。
+  finetuned_tokenizer: "E:/cs2-kronos/hf/Kronos-Tokenizer-base"
+
+  tokenizer_save_name: "tokenizer"
+  basemodel_save_name: "basemodel"
+
+experiment:
+  name: "kronos_cs2_finetune"
+  description: "CS2 skin hourly price series, source channel = buff"
+  use_comet: false
+
+  # 只微调 predictor；若要连 tokenizer 一起训，改 true 并去掉上面的 finetuned_tokenizer
+  train_tokenizer: false
+  train_basemodel: true
+  skip_existing: false
+
+device:
+  use_cuda: true
+  device_id: 0
