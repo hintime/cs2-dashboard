@@ -4401,11 +4401,52 @@ async function fetchLivePrices(items, holdNames) {
         var dp = csqaqData[hn]
         if (dp.buff_sell > 0) { h.p = dp.buff_sell; h.buff_sell = dp.buff_sell; h.buff_sell_num = dp.buff_sell_num || 0; }
         if (dp.yyyp_sell > 0) { h.yyyp_sell = dp.yyyp_sell; h.yyyp_sell_num = dp.yyyp_sell_num || 0; }
-        if (h.p > 0) { h.pnl = h.p - h.c; h.pnlPct = h.c > 0 ? (h.p-h.c)/h.c*100 : 0; }
-      })
-    }
+    // ⚠ 2026-10-05：这里原来判 `h.p > 0`，而 h.p 只在 CSQAQ 命中时才有值 →
+    //   印花/探员/箱子等 24 件永远不满足 → 它们的 pnl / pnlPct 一直是 0，
+    //   列表上就显示「0.0% / ±¥0」—— 即使刚统一了 hpPrice() 取价，盈亏还是错的。
+    //   改用 hpPrice() 兜底：只要能取到价（h.p / h.price / eco / buff 任一）就重算盈亏。
+    ;(H || []).forEach(function(h){
+      if (Number(h.p) > 0) { h.pnl = h.p - h.c; h.pnlPct = h.c > 0 ? (h.p-h.c)/h.c*100 : 0; return; }
+      var _pp = hpPrice(h);
+      if (_pp > 0) {
+        h.pnl = _pp - Number(h.c || 0);
+        h.pnlPct = (Number(h.c) > 0) ? (h.pnl / h.c * 100) : 0;
+      }
+    })
   } catch(e) {}
 }
+
+/* ═══ 补全：给「能取到价但 h.p 为空」的件补 h.p / pnl / pnlPct ═══
+   ⚠ 为什么单独一个函数（2026-10-05）：
+     mergeCSQAQ() 只在 CSQAQ 命中时才给 h.p 赋值，而 csqaq_boards.json 里
+     没有印花 / 探员 / 武器箱 / 音乐盒 → 这些件 h.p 恒为 undefined，
+     导致依赖 h.p 的地方全按 0 处理（现价「—」、盈亏 0.0%、总盈亏虚高）。
+   统一在这里补一次：**只补原本没有的，绝不覆盖已有的**（已有的来自实时源，更准）。*/
+function hpBackfillPrices(){
+  var H = window.H || [];
+  var filled = 0;
+  for (var i = 0; i < H.length; i++) {
+    var h = H[i];
+    if (!h) continue;
+    if (!(Number(h.p) > 0)) {
+      var v = hpPrice(h);
+      if (v > 0) { h.p = v; filled++; }
+    }
+    if (Number(h.p) > 0) {
+      var c = Number(h.c) || 0;
+      h.pnl = Number(h.p) - c;
+      h.pnlPct = c > 0 ? (h.pnl / c * 100) : 0;
+    } else {
+      if (isNaN(h.pnl)) h.pnl = 0;
+      if (isNaN(h.pnlPct)) h.pnlPct = 0;
+    }
+    if (isNaN(h.c)) h.c = 0;
+  }
+  if (filled) console.log('[hp] 补全 %d 件缺失的现价（印花/探员等无 CSQAQ 报价的品类）', filled);
+  return filled;
+}
+/* 同上：initDashboard 在别的 script 块里，必须挂 window 才可见 */
+window.hpBackfillPrices = hpBackfillPrices;
 
 // ═══════════════ RECOMMENDATIONS ═══════════════
 const CHANNEL_LABELS = {eco:'📊 ECO信号', buff:'💰 BUFF信号'};
@@ -5947,6 +5988,9 @@ initDashboard = function() {
   filterHidden();
   _origInitDashboard();
   invalidateCache();
+  // ★ 2026-10-05：补全「有价但h.p 为空」的件（印花/探员/箱子等无 CSQAQ 报价的品类）。
+  //   必须在 render() 之前 —— 列表、盈亏汇总、总市值全依赖 h.p / h.pnl。
+  if (typeof hpBackfillPrices === 'function') hpBackfillPrices();
   render();
   renderScan();
 };
@@ -6421,9 +6465,10 @@ function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/<
     var ok = document.createElement('button');
     ok.textContent = opts.okText || '确定';
     ok.style.cssText = 'padding:7px 18px;background:' + (opts.danger ? 'var(--rise)' : 'var(--blue)') + ';color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer';
+    var _prevOverflow = '';   // 记住弹窗打开前的滚动锁状态，关闭时还原（避免误解开别人的锁）
     function close(flag){
       ov.classList.remove('show');
-      document.body.style.overflow = '';
+      document.body.style.overflow = _prevOverflow;
       if(flag && typeof onOk === 'function'){ try { onOk(); } catch(e){} }
     }
     cancel.onclick = function(){ close(false); };
@@ -6432,6 +6477,7 @@ function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/<
     bar.appendChild(cancel); bar.appendChild(ok);
     card.appendChild(h); card.appendChild(p); card.appendChild(bar);
     ov.classList.add('show');
+    _prevOverflow = document.body.style.overflow;   // 先记录，再上锁（顺序不能反）
     document.body.style.overflow = 'hidden';
     setTimeout(function(){ try { ok.focus(); } catch(e){} }, 30);
   };
@@ -6688,13 +6734,14 @@ function syncInventoryToHoldings(){
   var existing = (typeof loadMyHoldings === 'function') ? (loadMyHoldings() || []) : [];
   var have = {};
   existing.forEach(function(h){ var mh = h.market_hash || h.hash || ''; if(mh) have[mh] = true; });
-  var added = 0, addedQty = 0;
+  var added = 0, addedQty = 0, zeroCost = 0;
   Object.keys(inv).forEach(function(mh){
     if(have[mh]) return;                      // 已记录 → 完全不动（保住其成本价）
     var nm = mh;
     try { if(typeof cnName === 'function') nm = cnName(mh); } catch(e){}
     var wz = ''; try { if(typeof extractWear === 'function') wz = extractWear(mh) || ''; } catch(e){}
     var pc = 0;  try { if(typeof priceForMh === 'function')  pc = priceForMh(mh) || 0; } catch(e){}
+    if(!pc) zeroCost++;   // 没查到行情 → 成本留 0，提示里要如实说明
     existing.push({ id: Date.now() + '_' + (Math.random() * 1e6 | 0), name: nm, market_hash: mh, cost: pc, qty: inv[mh], wear: wz, category: '' });
     added++; addedQty += inv[mh];
   });
@@ -6702,7 +6749,10 @@ function syncInventoryToHoldings(){
   saveMyHoldings(existing);
   // ⚠️ reload 会掐掉 hpCloudSync 的 2500ms 防抖 → 先立即推一次云端，否则换设备看不到
   try { if(typeof window.hpCloudSyncNow === 'function') window.hpCloudSyncNow(); } catch(e){}
-  appToast('已补齐 ' + added + ' 类 / ' + addedQty + ' 件新增物品\n（成本尽量按现价预填；查不到行情的记 0，可在持仓明细里补录）\n\n只补了新增：没有删除任何记录，也没有改动已有成本价。', 'ok', 4500);
+  appToast('已补齐 ' + added + ' 类 / ' + addedQty + ' 件新增物品\n'
+    + (zeroCost ? '⚠ 其中 ' + zeroCost + ' 件没查到现价，成本先记 0，请到持仓明细里补录' : '成本已按现价预填')
+    + '\n\n只补了新增：没有删除任何记录，也没有改动已有成本价。',
+    zeroCost ? 'warn' : 'ok', 4500);
   setTimeout(function(){ location.reload(); }, 1500);
 }
 
@@ -7186,6 +7236,11 @@ function hpPrice(h){
   v = Number(h.buff_sell); if (v > 0) return v;
   return 0;
 }
+/* ⚠ 挂到 window：hpPrice 定义在本块，而 initDashboard() 在**另一个 script 块**里
+   （本块是持仓渲染的 IIFE 区域，initDashboard 在数据加载块）——
+   不挂 window 就可能跨块不可见，initDashboard 里的 typeof 判断会走「不补全」分支，
+   **症状是「没有报错但价格还是0」**，极难定位（同 2026-10-05 cnName 漏挂那次）。*/
+window.hpPrice = hpPrice;
 /* 价格轴/读数的通用数字格式：按量级选小数位（>=40 不给小数，8~40 一位，其余两位），
    与折线图 hpChart 里的 dec 口径一致 —— 同一件饰品在两种视图下价格写法必须相同，
    否则切换视图时会以为价格变了。千分位用 toLocaleString 而不是手写正则。 */
@@ -7199,8 +7254,7 @@ function hpAxisNum(v){
 /* 中文名：优先查映射表，查不到原样返回 */
 function hpName(h){
   var n = h && h.n ? h.n : '';
-  try{
-    var m = window._cnNameMap;
+  try{    var m = window._cnNameMap;
     if (m && m[n]) return m[n];
     if (h && h.mh && m && m[h.mh]) return m[h.mh];
   }catch(e){}
@@ -8812,7 +8866,9 @@ function hpSell(idx){
   var h = arr[idx]; if(!h) return;
   if (typeof window.openSellConfirm === 'function') { window.openSellConfirm(h); return; }
   appConfirm('确认卖出「' + hpName(h) + '」？', function(){
-    if (typeof removeMyHolding === 'function') removeMyHolding(h.n, h.w);
+    var gid = (h && (h.id || h.gid));   // removeMyHolding 按 id 过滤，不能传名字
+    if (gid && typeof removeMyHolding === 'function') removeMyHolding(gid);
+    else appToast('这条持仓没有可用的记录 ID，请到持仓明细里操作。', 'warn');
   }, { title: '确认卖出', okText: '确认卖出', danger: true });
 }
 function hpStar(idx){
@@ -8877,44 +8933,33 @@ function renderList(){
   }
   /* ★ 当前显示的数组存起来，点击/操作都基于它（索引不再错位） */
   window._hpList = items;
-  /* 分区：保留「按亏损状态分组」的信息架构；
-     ★ 但**组内顺序尊重 getFiltered 的结果**（即用户选的排序），不再强制按亏损额排 */
-  var sev = [], mid = [], ok = [], i;
-  for (i=0;i<items.length;i++){
-    var h0 = items[i], g = Number(h0.pnlPct)||0;
-    var rec = { h: h0, i: i };
-    if (g <= -50) sev.push(rec); else if (g <= -20) mid.push(rec); else ok.push(rec);
-  }
+  /* ⚠ 2026-10-05 义轩要求：去掉「重灾区 / 观察区 / 健康区」分区
+     之前按亏损档位强制分三组，组内再按亏损额排 —— 带来两个问题：
+       1) 每组一个标题 + 件数 + 小计，列表被切碎，扫视成本高；
+       2) **它会覆盖用户选的排序**（用户切到「按价格」也还是先重灾区后健康区），
+          排序控件形同虚设。
+     现在：只按 getFiltered() 的结果平铺 —— 用户选什么顺序就是什么顺序。
+     保留 hp-zlab 的 CSS 定义（可能还有别处用），只是不再渲染。 */
   var out = [], first = true;
-  var groups = [['重灾区 · 亏损 ≥ 50%', sev], ['观察区 · 亏损 20~50%', mid],
-                ['健康区 · 亏损 < 20%', ok]];
-  for (i=0;i<groups.length;i++){
-    var label = groups[i][0], arr = groups[i][1];
-    if (!arr.length) continue;
-    var tot = 0;
-    for (var k=0;k<arr.length;k++) tot += (Number(arr[k].h.p)-Number(arr[k].h.c));
-    out.push('<div class="hp-zlab"><span>'+label+' · '+arr.length+' 件</span><span>'
-      + (tot>=0?'+':'-')+'¥'+hpFmt(Math.abs(tot))+'</span></div>');
-    for (var m=0;m<arr.length;m++){
-      var rec2 = arr[m], h = rec2.h, idx = rec2.i;
-      var u = (Number(h.pnl)||0)>=0, cl = u?'rise':'fall', s2 = u?'+':'-';
-      var w2 = (h.w && h.w!=='other') ? (' · '+h.w) : '';
-      var noCost2 = (Number(h.c)||0) <= 0;
-      var selMode = !!window._hpSelMode;
-      var checked = !!(window._hpSelSet && window._hpSelSet[idx]);
-      out.push('<div class="hp-li'+(first?' on':'')+(selMode?' selmode':'')+'" data-i="'+idx+'"'
-        + ' onclick="hpSelect(' + idx + ')"'
-        + ' onmouseenter="hpSparkBig(this,' + idx + ')" onmouseleave="hpSparkBigHide()">'
-        + (selMode ? ('<span class="hp-ckcell" onclick="event.stopPropagation();hpToggleOne(' + idx + ',this)">'
-            + '<span class="hp-ck' + (checked ? ' on' : '') + '" data-i="' + idx + '"></span></span>') : '')
-        + '<div><div class="nm" title="'+esc(h.n)+'">'+esc(hpName(h))+'</div>'
-        + '<div class="sub">'+(noCost2 ? '<span style="color:var(--amber)">成本未录入</span>'
-            : ('¥'+hpFmt(h.c)+' → ¥'+hpFmt(h.p)))+w2+'</div></div>'
-        + '<div class="sp">'+hpSparkline(h)+'</div>'
-        + '<div class="p"><div class="v '+cl+'">'+s2+Math.abs(Number(h.pnlPct)||0).toFixed(1)+'%</div>'
-        + '<div class="a">'+s2+'¥'+hpFmt(Math.abs(Number(h.pnl)||0))+'</div></div></div>');
-      first = false;
-    }
+  for (var m=0;m<items.length;m++){
+    var h = items[m], idx = m;
+    var u = (Number(h.pnl)||0)>=0, cl = u?'rise':'fall', s2 = u?'+':'-';
+    var w2 = (h.w && h.w!=='other') ? (' · '+h.w) : '';
+    var noCost2 = (Number(h.c)||0) <= 0;
+    var selMode = !!window._hpSelMode;
+    var checked = !!(window._hpSelSet && window._hpSelSet[idx]);
+    out.push('<div class="hp-li'+(first?' on':'')+(selMode?' selmode':'')+'" data-i="'+idx+'"'
+      + ' onclick="hpSelect(' + idx + ')"'
+      + ' onmouseenter="hpSparkBig(this,' + idx + ')" onmouseleave="hpSparkBigHide()">'
+      + (selMode ? ('<span class="hp-ckcell" onclick="event.stopPropagation();hpToggleOne(' + idx + ',this)">'
+          + '<span class="hp-ck' + (checked ? ' on' : '') + '" data-i="' + idx + '"></span></span>') : '')
+      + '<div><div class="nm" title="'+esc(h.n)+'">'+esc(hpName(h))+'</div>'
+      + '<div class="sub">'+(noCost2 ? '<span style="color:var(--amber)">成本未录入</span>'
+          : ('¥'+hpFmt(h.c)+' → ¥'+hpFmt(hpPrice(h))))+w2+'</div></div>'
+      + '<div class="sp">'+hpSparkline(h)+'</div>'
+      + '<div class="p"><div class="v '+cl+'">'+s2+Math.abs(Number(h.pnlPct)||0).toFixed(1)+'%</div>'
+      + '<div class="a">'+s2+'¥'+hpFmt(Math.abs(Number(h.pnl)||0))+'</div></div></div>');
+    first = false;
   }
   list.innerHTML = out.join('');
   /* ★ 恢复上次选中项（数据刷新重渲染时不打回第一项）*/
