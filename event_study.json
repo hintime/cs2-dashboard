@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-06 07:08",
+  "generated": "2026-10-06 13:57",
   "window": {
     "from": "2026-06-28",
     "to": "2026-10-06"
@@ -8,39 +8,8 @@
   "data_quality": "⚠ 7 月价格更新稀疏，部分日期为重复落库（两日价格几乎全同）→ 该事件 有效=false 剔除；9/20 起才是真实高频数据，当前有效样本少，结论仅供弱先验",
   "note": "样本量=有效事件数（每事件内还有数千物品的同批样本）；n<5 时统计意义很弱",
   "n_events": 15,
-  "n_valid_events": 8,
+  "n_valid_events": 7,
   "events": [
-    {
-      "date": "2026-07-08",
-      "title": "Season 5, Armory, and More",
-      "cat": "major",
-      "base_day": "2026-07-07",
-      "d3": {
-        "day": "2026-07-12",
-        "n": 4438,
-        "med": -0.03,
-        "up": 26.4,
-        "dn3": 2.7,
-        "stale": false
-      },
-      "d7": {
-        "day": "2026-07-17",
-        "n": 4452,
-        "med": -0.03,
-        "up": 26.4,
-        "dn3": 2.6,
-        "stale": false
-      },
-      "d14": {
-        "day": "2026-07-23",
-        "n": 4433,
-        "med": -0.03,
-        "up": 26.5,
-        "dn3": 2.6,
-        "stale": false
-      },
-      "有效": true
-    },
     {
       "date": "2026-07-09",
       "title": "Counter-Strike 2 Update",
@@ -280,12 +249,12 @@
         "stale": false
       },
       "d14": {
-        "day": null,
-        "n": 0,
-        "med": null,
-        "up": null,
-        "dn3": null,
-        "stale": null
+        "day": "2026-10-06",
+        "n": 4554,
+        "med": -3.0,
+        "up": 23.3,
+        "dn3": 50.0,
+        "stale": false
       },
       "有效": true
     },
@@ -400,7 +369,7 @@
         "n": 4640,
         "med": -1.92,
         "up": 22.9,
-        "dn3": 40.3,
+        "dn3": 40.4,
         "stale": false
       },
       "d14": {
@@ -452,10 +421,41 @@
       "d3": {
         "day": "2026-10-05",
         "n": 4643,
-        "med": -0.81,
-        "up": 26.6,
-        "dn3": 27.2,
+        "med": -0.83,
+        "up": 26.5,
+        "dn3": 27.3,
         "stale": false
+      },
+      "d7": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "d14": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "有效": false
+    },
+    {
+      "date": "2026-10-05",
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-10-04",
+      "d3": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
       },
       "d7": {
         "day": null,
@@ -477,41 +477,41 @@
     }
   ],
   "summary": {
-    "n_events": 8,
-    "n_pool": 4644.5,
+    "n_events": 7,
+    "n_pool": 4649,
     "ret_3d": {
-      "event_mean": -0.34,
+      "event_mean": -0.39,
       "baseline_mean": -4.43,
-      "excess": 4.09,
+      "excess": 4.04,
       "n_base": 9,
-      "n_events": 8,
-      "up_pct": 33.55,
-      "dn3_pct": 18.32
+      "n_events": 7,
+      "up_pct": 34.57,
+      "dn3_pct": 20.56
     },
     "ret_7d": {
-      "event_mean": -0.94,
+      "event_mean": -1.07,
       "baseline_mean": -7.06,
-      "excess": 6.12,
+      "excess": 5.99,
       "n_base": 11,
-      "n_events": 8,
-      "up_pct": 30.68,
-      "dn3_pct": 26.9
+      "n_events": 7,
+      "up_pct": 31.29,
+      "dn3_pct": 30.39
     },
     "ret_14d": {
-      "event_mean": -1.74,
+      "event_mean": -2.73,
       "baseline_mean": -8.86,
-      "excess": 7.12,
+      "excess": 6.13,
       "n_base": 13,
       "n_events": 3,
-      "up_pct": 29.37,
-      "dn3_pct": 22.63
+      "up_pct": 28.3,
+      "dn3_pct": 38.43
     },
-    "verdict": "历史上 8 个有效公告事件后 7 天，同批物品中位涨跌 -0.94%，同期基准 -7.06%，超额 +6.12%（上涨物品占比 30.7%）→ 历史方向性支撑：中等",
+    "verdict": "历史上 7 个有效公告事件后 7 天，同批物品中位涨跌 -1.07%，同期基准 -7.06%，超额 +5.99%（上涨物品占比 31.3%）→ 历史方向性支撑：偏弱",
     "by_cat": {
       "major": {
-        "n": 2,
-        "med7": -0.62,
-        "up7": 27.55
+        "n": 1,
+        "med7": -1.22,
+        "up7": 28.7
       },
       "esports": {
         "n": 0
@@ -525,9 +525,9 @@
         "n": 0
       },
       "content": {
-        "n": 2,
-        "med7": -0.62,
-        "up7": 27.55
+        "n": 1,
+        "med7": -1.22,
+        "up7": 28.7
       }
     }
   }

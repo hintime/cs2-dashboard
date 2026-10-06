@@ -9,6 +9,13 @@
     },
     {
       "title": "反恐精英2更新",
+      "body": "photobook页面现在具有本地化的文本艺术。添加了播放菜单按钮来管理下载的Workshop地图。调整了VK着色器缓存扩展标志。",
+      "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1845383656394875",
+      "date": 1791243583,
+      "source": "社区公告"
+    },
+    {
+      "title": "反恐精英2更新",
       "body": "现在，在摄影亭摄影会议期间和购买菜单中佩戴配备的手套当十字准线厚度设置为3像素时，固定手榴弹十字准线渲染在赞扬和报告对话框中固定标题格式在仓库地图中改进照明使用新的十字准线设置更新车间卷曲白名单稳定性改进",
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1845383656387875",
       "date": 1790979853,
@@ -76,16 +83,16 @@
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1841579228663932",
       "date": 1787182593,
       "source": "社区公告"
-    },
-    {
-      "title": "反恐精英2更新",
-      "body": "到社区研讨会的最新版本（更新说明）庇护所更新到社区研讨会的最新版本（更新说明）",
-      "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1840944183775194",
-      "date": 1786575047,
-      "source": "社区公告"
     }
   ],
   "updates": [
+    {
+      "title": "反恐精英2更新",
+      "body": "photobook页面现在具有本地化的文本艺术。添加了播放菜单按钮来管理下载的Workshop地图。调整了VK着色器缓存扩展标志。",
+      "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1845383656394875",
+      "date": 1791243583,
+      "source": "社区公告"
+    },
     {
       "title": "反恐精英2更新",
       "body": "现在，在摄影亭摄影会议期间和购买菜单中佩戴配备的手套当十字准线厚度设置为3像素时，固定手榴弹十字准线渲染在赞扬和报告对话框中固定标题格式在仓库地图中改进照明使用新的十字准线设置更新车间卷曲白名单稳定性改进",
@@ -134,14 +141,7 @@
       "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1844751498216924",
       "date": 1790120256,
       "source": "社区公告"
-    },
-    {
-      "title": "反恐精英2更新",
-      "body": "various gaps in map.Fixed a wallbang spot on B site.Added a missing competitive CT spawn point.Added additional T spawn points. CSPlayerCamera:Renamed it to CustomPlayerCamera.Added GetPlayer, GetMode, SetMode, and SetFollowConfig.Deprecated IsEnabled, SetEnabled, and SetIsControllingAngles.Added an 'observable' property to custom_hud_layout that controls whether an observer sees the UI as the spectated player sees it. Defaults to false.Fixed several bugs related to stale custom_hud_layout state when changing spectator targets.Added top-level custom_hud_layout classes driven by client state:HUD_BUYMENU_VISIBLEHUD_SCOREBOARD_VISIBLEcustom_hud_layout now always draws on top of the base HUD. is now encrypted in demo files using the same rules as CS:GO :Team chat is no longer readable when playing back demo files.Global chat is only readable in demo files when played back via the in-game watch UI.",
-      "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1843481262690556",
-      "date": 1788994268,
-      "source": "社区公告"
     }
   ],
-  "updated": "2026-10-06 06:07:28"
+  "updated": "2026-10-06 12:23:47"
 }
