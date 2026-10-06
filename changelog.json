@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "kline",
+    "sha": "487acf3",
+    "title": "K线扩为三档粒度 2小时/日/周，日K周K 无上限 + 修跨平台价差污染振幅",
+    "desc": ""
+  },
+  {
     "date": "2026-10-05",
     "tag": "feat",
     "scope": "inventory",
@@ -149,14 +157,6 @@
     "scope": "watchdog",
     "sha": "7234a87",
     "title": "生成物停更监控（41个产物/5档阈值，企微告警+6h重提醒，cron每小时第7分）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-04",
-    "tag": "fix",
-    "scope": "update",
-    "sha": "5d3649d",
-    "title": "删 main() 内多余 import json（污染局部变量致 name_map 自 9-22 停更）+ 补齐 name_map 18992→41977 条",
     "desc": ""
   }
 ]
