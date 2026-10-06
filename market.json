@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 767.99,
-    "change": -23.2,
-    "change_pct": -23.2,
-    "market_value": 235738442.14,
-    "total_items": 3799,
-    "updated": "2026-10-06T20:00:03+08:00",
+    "latest": 775.93,
+    "change": -22.41,
+    "change_pct": -22.41,
+    "market_value": 238174796.49,
+    "total_items": 3802,
+    "updated": "2026-10-06T22:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4326,6 +4326,14 @@
         "close": 767.99,
         "high": 767.99,
         "low": 765.48
+      },
+      {
+        "date": "2026-10-06",
+        "dateFull": "2026-10-06 22:00",
+        "open": 775.93,
+        "close": 775.93,
+        "high": 775.93,
+        "low": 775.93
       }
     ],
     "volBar": [],
@@ -12961,12 +12969,20 @@
         "index": 767.99,
         "change_pct": -23.2,
         "market_value": 235738442.14
+      },
+      {
+        "time": "22:00",
+        "date": "2026-10-06",
+        "timestamp": 1791295203,
+        "index": 775.93,
+        "change_pct": -22.41,
+        "market_value": 238174796.49
       }
     ],
     "selling": {
-      "total_selling": 1376057,
+      "total_selling": 1373011,
       "total_selling_prev": 0,
-      "total_selling_delta": 1376057,
+      "total_selling_delta": 1373011,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12974,7 +12990,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791288003421,
+  "index_updated": 1791295203709,
   "alerts": [
     {
       "name": "M4A4 | 龍王 (Dragon King) (Minimal Wear)",
@@ -31678,7 +31694,7 @@
     "Maximus | Sabre",
     "Michael Syfers  | FBI Sniper"
   ],
-  "updated": "2026-10-06T13:36:26Z",
+  "updated": "2026-10-06T14:06:22Z",
   "steam_market_items": 54,
   "steam_market_recs": {
     "momentum": [
