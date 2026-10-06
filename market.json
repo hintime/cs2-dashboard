@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 797.53,
-    "change": -20.25,
-    "change_pct": -20.25,
-    "market_value": 244804800.59,
-    "total_items": 3936,
-    "updated": "2026-10-06T14:00:03+08:00",
+    "latest": 807.77,
+    "change": -19.22,
+    "change_pct": -19.22,
+    "market_value": 247947965.26,
+    "total_items": 3874,
+    "updated": "2026-10-06T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4315,8 +4315,8 @@
         "date": "2026-10-06",
         "dateFull": "2026-10-06 14:00",
         "open": 797.53,
-        "close": 797.53,
-        "high": 797.53,
+        "close": 807.77,
+        "high": 807.77,
         "low": 797.53
       }
     ],
@@ -12929,12 +12929,20 @@
         "index": 797.53,
         "change_pct": -20.25,
         "market_value": 244804800.59
+      },
+      {
+        "time": "16:00",
+        "date": "2026-10-06",
+        "timestamp": 1791273603,
+        "index": 807.77,
+        "change_pct": -19.22,
+        "market_value": 247947965.26
       }
     ],
     "selling": {
-      "total_selling": 1395186,
+      "total_selling": 1368235,
       "total_selling_prev": 0,
-      "total_selling_delta": 1395186,
+      "total_selling_delta": 1368235,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12942,7 +12950,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791266403470,
+  "index_updated": 1791273603287,
   "alerts": [
     {
       "name": "Blackwolf | Sabre",
@@ -31673,7 +31681,7 @@
     "Maximus | Sabre",
     "Michael Syfers  | FBI Sniper"
   ],
-  "updated": "2026-10-06T07:06:19Z",
+  "updated": "2026-10-06T08:06:26Z",
   "steam_market_items": 52,
   "steam_market_recs": {
     "momentum": [],
