@@ -1730,7 +1730,7 @@ html { scroll-behavior: smooth; }
   box-shadow:0 0 0 1px rgba(0,0,0,.25) inset}
 .hc-mini:hover .hc-mini-win{background:rgba(96,165,250,.2)}
 /* ── K 线视图（2026-10-05 义轩要求：走势图加 K 线版）──
-   数据来自 kline.json（服务器 build_kline.py 从 price_history.db 的日内采样
+   数据来自 kline_2h/1d/1w.json（服务器 build_kline.py 从 price_history.db 的采样
    按天聚合）。⚠ 口径必须写清楚：采样每 30 分钟一次（一天约 28 个点），
    high/low 是「当天采样到的极值」（半小时粒度）而非逐笔成交 → 只能做日K，
    小时K 没有意义（一天 28 点摊到 24 小时）。前端也要如实提示。 */
@@ -1746,6 +1746,16 @@ html { scroll-behavior: smooth; }
 .hc-stats .hc-rg{margin-left:auto}
 .hc-stats .hc-rg + .hc-vt{margin-left:6px}
 .hc-stats .hc-vt{margin-left:auto}
+/* 粒度切换（2小时/日K/周K），只在 K 线态出现。
+   放在区间切换左边，读图顺序是「切粒度 → 切区间 → 切视图」。 */
+.hc-gt{display:inline-flex;margin-left:8px;border:1px solid var(--border);
+  border-radius:6px;overflow:hidden;vertical-align:middle}
+.hc-gt button{padding:3px 9px;border:0;border-left:1px solid var(--border);
+  background:transparent;color:var(--text3);font-size:10.5px;cursor:pointer;
+  font-family:inherit;transition:background .13s,color .13s;white-space:nowrap}
+.hc-gt button:first-child{border-left:0}
+.hc-gt button:hover{color:var(--text2);background:var(--surface)}
+.hc-gt button.on{background:var(--surface);color:var(--text);font-weight:650}
 /* 蜡烛图容器：class 挂在 .hc-plot 上，svg 仍是 .hc-svg（沿用折线那套高度/缩放 CSS，
    这里不要再写 svg 的 display/height，否则会跟 #holdingsPanel .hc-svg 的 flex 规则打架） */
 .hc-kl{position:relative}
@@ -1755,8 +1765,12 @@ html { scroll-behavior: smooth; }
 .hc-kl .wick{stroke-width:1;vector-effect:non-scaling-stroke}
 .hc-kl .wick-up{stroke:var(--rise)}
 .hc-kl .wick-dn{stroke:var(--fall)}
-/* 采样点不足的日子：影线画淡一点 + 顶部打点，视觉上就区分开了 */
-.hc-kl .wick-weak{opacity:.42}
+/* 采样密度分三档：q=2 充足（正常）/ q=1 一般（略淡）/ q=0 稀疏（最淡）
+   ⚠ 为什么分三档而不是「可靠/不可靠」两档：同样是过了门槛的两根 K 线，
+     桶内 4 个点和 12 个点的 high/low 代表性差 3 倍（服务器实测日桶常态
+     4~11 个点，max=28），只分两档会把 4 点和 28 点画成一样可信。 */
+.hc-kl .wick-weak{opacity:.30}
+.hc-kl .wick-fair{opacity:.62}
 /* 开收盘标记：右端一条小横，标明该日收在哪 */
 .hc-kl .cd{stroke:var(--text3);stroke-width:1;opacity:.7;
   vector-effect:non-scaling-stroke}
@@ -4401,6 +4415,8 @@ async function fetchLivePrices(items, holdNames) {
         var dp = csqaqData[hn]
         if (dp.buff_sell > 0) { h.p = dp.buff_sell; h.buff_sell = dp.buff_sell; h.buff_sell_num = dp.buff_sell_num || 0; }
         if (dp.yyyp_sell > 0) { h.yyyp_sell = dp.yyyp_sell; h.yyyp_sell_num = dp.yyyp_sell_num || 0; }
+      });          // 闭合上面的 forEach
+    }              // 闭合 if ((holdNames || []).length)
     // ⚠ 2026-10-05：这里原来判 `h.p > 0`，而 h.p 只在 CSQAQ 命中时才有值 →
     //   印花/探员/箱子等 24 件永远不满足 → 它们的 pnl / pnlPct 一直是 0，
     //   列表上就显示「0.0% / ±¥0」—— 即使刚统一了 hpPrice() 取价，盈亏还是错的。
@@ -4412,7 +4428,7 @@ async function fetchLivePrices(items, holdNames) {
         h.pnl = _pp - Number(h.c || 0);
         h.pnlPct = (Number(h.c) > 0) ? (h.pnl / h.c * 100) : 0;
       }
-    })
+    });
   } catch(e) {}
 }
 
@@ -7380,7 +7396,7 @@ function hpTech(v){
    ──────────────────────────────────────────────────────────────────────────
    为什么必须新建而不能改造折线：折线用的是「每天一个均价」（hpCurve → price_history），
    只有单值，K 线需要 open/high/low/close 四个值 —— 拿均价造影线等于编数据。
-   所以另走一路数据：kline.json（服务器 build_kline.py 从 price_history.db 的
+   所以另走一路数据：kline_2h/1d/1w.json（服务器 build_kline.py 从 price_history.db 的
    日内采样按天聚合，每 30 分钟一个点，一天约 28 个 —— 口径是 2026-10-05
    实测校正的，别再改回「4-6 小时」）。
 
@@ -7391,12 +7407,60 @@ function hpTech(v){
      · 一天 28 点摊到 24 小时 → **小时K 没有意义**（平均每小时 1.2 点），只做日K；
      · 数据只覆盖最近有成交的 1200 件，不是全站所有饰品。
    ══════════════════════════════════════════════════════════════════════════ */
-var KL = { map: {}, loaded: false, meta: null };
-function loadKline(){
-  if (KL._loading) return KL._p || null;
-  var t0 = Math.floor(Date.now() / 900000);
-  KL._loading = true;
-  KL._p = fetch('kline.json?v=' + t0)
+/* ══════════════════════════════════════════════════════════════════════════
+   K 线视图 —— 三档粒度：2小时K / 日K / 周K
+   ──────────────────────────────────────────────────────────────────────────
+   为什么必须新建而不能改造折线：折线用的是「每天一个均价」（hpCurve → price_history），
+   只有单值，K 线需要 open/high/low/close 四个值 —— 拿均价造影线等于编数据。
+   所以另走一路数据：kline_2h.json / kline_1d.json / kline_1w.json
+   （服务器 build_kline.py 从 price_history.db 的采样聚合）。
+
+   ★ 三个文件各管一档，**按需加载**（2026-10-06）
+     一次全拉三份会多花 2.6MB，而且用户通常只看其中一档。
+     每份独立 map，切档时只补拉缺的那份，已加载的留在内存里来回切不重拉。
+
+   ⚠ 粒度为什么最小是 2 小时、不是 1 小时（服务器实测，别改回去）：
+     采样集中在每个整点的前几分钟（cron 每 30 分钟一次的 prices 轮实际都落在 :15），
+     所以「1 小时桶」里 96.1% 只有 1 个点 → open=high=low=close，影线完全退化，
+     画出来是一堆竖线、实质只是折线。2 小时桶实测 64% 有 2-3 个点，影线才有意义。
+     这是数据决定的，不是偷懒 —— 真想要 1 小时K，得先把采集改成小时内多点。
+
+   ⚠ 口径边界（前端必须如实转达，别装成真实成交）：
+     · high/low 是「桶内采样到的极值」，非逐笔成交；
+     · 每根 K 线带 q（0稀疏/1一般/2充足，服务器按桶内采样点数分档），
+       前端据此给不同影线透明度 + 悬停提示，不笼统地说「可靠/不可靠」；
+     · 三个文件各自覆盖不同件/不同时间范围（见各文件 meta.source_note）。
+   ══════════════════════════════════════════════════════════════════════════ */
+/* 粒度表：键=窗口状态，值=文件/标签/单位。改这里就能加第四档。 */
+var KL_GRANS = [
+  { g: '2h', file: 'kline_2h.json', label: '2小时', unit: '根' },
+  { g: '1d', file: 'kline_1d.json', label: '日K',   unit: '天' },
+  { g: '1w', file: 'kline_1w.json', label: '周K',   unit: '周' }
+];
+function klGranDef(g){
+  for (var i = 0; i < KL_GRANS.length; i++) if (KL_GRANS[i].g === g) return KL_GRANS[i];
+  return KL_GRANS[1];
+}
+/*每档一份 map + meta，互不覆盖 —— 这样来回切档不用重新拉。 */
+var KL = { maps: {}, metas: {}, loading: {} };
+function klState(){
+  if (!window._klGran) window._klGran = '1d';   // 默认日K：全量历史、最常用
+  return window._klGran;
+}
+function klMap(){
+  return KL.maps[klState()] || {};
+}
+function klMeta(){
+  return KL.metas[klState()] || null;
+}
+/* 拉某档数据。已加载过直接resolve，不重复请求。 */
+function loadKline(g){
+  g = g || klState();
+  var def = klGranDef(g);
+  if (KL.maps[g]) return Promise.resolve(KL.maps[g]);
+  if (KL.loading[g]) return KL.loading[g];
+  var t0 = Math.floor(Date.now() / 900000);      // 破 CDN 缓存（max-age=120）
+  KL.loading[g] = fetch(def.file + '?v=' + t0)
     .then(function (r) { return r.ok ? r.json() : null; })
     .catch(function () { return null; })
     .then(function (d) {
@@ -7407,17 +7471,27 @@ function loadKline(){
           if (it && it.hash_name) m[it.hash_name] = it;
         }
       }
-      KL.map = m; KL.meta = d; KL.loaded = true; KL._loading = false;
+      KL.metas[g] = d || null;
+      /* 拉回来发现没有这个档的K 线 → 记空对象，避免反复重试（0 件是真实结论） */
+      KL.maps[g] = m;
+      delete KL.loading[g];
       return m;
     })
-    .catch(function () { KL.loaded = true; KL._loading = false; return null; });
-  return KL._p;
+    .catch(function () { delete KL.loading[g]; KL.maps[g] = {}; return null; });
+  return KL.loading[g];
 }
-function klOf(item){
+function klOf(item, g){
   if (!item) return null;
-  var m = KL.map || {};
+  var m = klMap();
   return (item.mh && m[item.mh]) || (item.market_hash && m[item.market_hash])
       || m[item.n] || null;
+}
+function hpSetGran(g){
+  if (!g || g === klState()) return;
+  window._klGran = g;
+  /* 粒度换了，区间选择的语义也变了（天 vs 根）→ 区间重置回默认 */
+  window._hpRange = (g === '1w') ? 26 : (g === '1d' ? 60 : 48);
+  loadKline(g).then(function () { hpRenderKlineHost(); });
 }
 /* 折线/K线 视图切换开关（两种视图共用一个渲染函数）
    ⚠ 必须两边都用它、各自写一份的话，迟早会出现「只有折线态有开关」这类不一致
@@ -7428,20 +7502,43 @@ function hpViewToggleHtml(){
     + '<button type="button" class="' + (window._hpView === 'k' ? '' : 'on')
     + '" onclick="hpSetView(\'l\')" title="折线图：每天一个均价，叠加 MA5/MA20/布林带">折线</button>'
     + '<button type="button" class="' + (window._hpView === 'k' ? 'on' : '')
-    + '" onclick="hpSetView(\'k\')" title="K线图：每天的开高低收，由日内采样聚合（仅日K）">K线</button></div>';
+    + '" onclick="hpSetView(\'k\')" title="K线图：开高低收，由服务器采样聚合，可切2小时/日/周">K线</button></div>';
+}
+/* K 线粒度切换（只在 K 线态出现；折线态没有 OHLC，粒度无意义） */
+function hpGranToggleHtml(){
+  var cur = klState(), s = '<div class="hc-gt">';
+  for (var i = 0; i < KL_GRANS.length; i++){
+    var d = KL_GRANS[i];
+    s += '<button type="button" class="' + (cur === d.g ? 'on' : '')
+      + '" onclick="hpSetGran(\'' + d.g + '\')" title="'
+      + (d.g === '2h' ? '2小时K：每2 小时一根，桶内 2-3 个采样点，影线可用（1小时粒度因采样集中拿不到影线）'
+        : d.g === '1d' ? '日K：每天一根，全量历史（无上限）'
+        : '周K：每周一根，全量历史（无上限）')
+      + '">' + d.label + '</button>';
+  }
+  return s + '</div>';
 }
 function hpKline(vals, cost, reason, days, volName, h){
-  var k = klOf(h);
+  var g = klState();
+  var def = klGranDef(g);
+  var k = klOf(h, g);
   var bars = (k && k.bars) ? k.bars : [];
   var nAll = bars.length;
   var range = Number(window._hpRange) || 30;
   var view = (nAll >= 2) ? bars.slice(-range) : bars;
 
   if (view.length < 2){
+    var meta0 = klMeta();
+    var why = (bars.length ? '该饰品 ' + def.label + ' 不足 2 ' + def.unit
+      : '暂无' + def.label + ' 数据');
+    var sub = (bars.length ? '需要连续更多' + def.unit + '才能成图'
+      : (meta0 ? ('该档只覆盖 ' + meta0.n + ' 件饰品'
+         + (meta0.total_eligible ? '（合格 ' + meta0.total_eligible + ' 件里取的）' : '')
+         + '，覆盖 ' + (meta0.span || '-'))
+        : '只覆盖最近有成交的饰品'));
     return '<div class="hc-kempty"><div style="font-size:18px;opacity:.45">◌</div>'
-      + '<span>' + (bars.length ? '该饰品 K 线不足 2 天' : '暂无 K 线数据') + '</span>'
-      + '<span style="font-size:11px;opacity:.75">K 线由服务器每日采样聚合而成<br>'
-      + (bars.length ? '需要连续更多天才能成图' : '只覆盖最近有成交的饰品') + '</span></div>';
+      + '<span>' + esc(why) + '</span>'
+      + '<span style="font-size:11px;opacity:.75">' + esc(sub) + '</span></div>';
   }
 
   var W = 780, H = 260, PT = 13, PB = 13;
@@ -7496,8 +7593,14 @@ function hpKline(vals, cost, reason, days, volName, h){
     var x = xs[b];
     var yO = Y(bar.o), yH = Y(bar.h), yL = Y(bar.l), yC = Y(bar.c);
     var top = Math.min(yO, yC), bh = Math.max(0.9, Math.abs(yC - yO));
-    var weak = bar.r ? '' : ' weak';
-    if (!bar.r) nWeak++;
+    /* ★ 密度分级 q（服务器按桶内采样点数给：0稀疏/1一般/2充足）。
+       旧数据没有 q 字段 → 回退用 r（0=桶内点数不足）折算成 q=0/1。
+       为什么按 q 三档而不是只分「可靠/不可靠」：同样是「≥门槛」的两根 K 线，
+       桶内 4 个点和 12 个点的 high/low 代表性差 3 倍（服务器实测日桶常态
+       4~11 个点、max=28），只分两档等于把 4 点和 28 点画成同样可信。 */
+    var qv = (bar.q === undefined || bar.q === null) ? (bar.r ? 1 : 0) : bar.q;
+    var weak = (qv === 0) ? ' weak' : (qv === 1 ? ' fair' : '');
+    if (qv === 0) nWeak++;
     /* 影线：高→低 */
     parts.push('<line class="wick wick-' + cls + weak + '" x1="' + x.toFixed(1)
       + '" y1="' + yH.toFixed(1) + '" x2="' + x.toFixed(1) + '" y2="' + yL.toFixed(1) + '"/>');
@@ -7510,14 +7613,14 @@ function hpKline(vals, cost, reason, days, volName, h){
       parts.push('<line class="cd" x1="' + (x - bw / 2).toFixed(1) + '" y1="' + yC.toFixed(1)
         + '" x2="' + (x + bw / 2).toFixed(1) + '" y2="' + yC.toFixed(1) + '"/>');
     }
-    /* data-pts 给 hover 读数用。12 列：
-       x, 收盘y, 开盘y, 最高y, 最低y, 日期, o, h, l, c, 采样点数, **弱标记**
-       ⚠ 最后一列写的是「是否弱」(bar.r ? 0 : 1)，与 wick-weak 的判定同源。
-         早先写成 bar.r（r=1 表示可靠）却被 tooltip 当成 weak 读 → 反了，
-         结果所有影线都被判成弱（反之亦然）。这种「同一语义两处各写一遍」的地方，
-         必须让两处引用同一个表达式，不要各自重写。 */
+    /* data-pts 给 hover 读数用。13 列：
+       x, 收盘y, 开盘y, 最高y, 最低y, 桶标识, o, h, l, c, 采样点数, **q密度级**, 弱标记
+       ⚠ 最后两列语义不同，别混：q 是密度级（0/1/2），
+         weak 是「q 是否为 0」的布尔（0/1）—— CSS class 用 weak、tooltip 用 q，
+         两处都从同一个 qv 派生，不要各自重写判据（10-05 就因为写反过一次）。
+       ⚠ 13 列必须与后面 hover 解析处的列数一致，改一处就要改另一处。 */
     dataPts.push([x.toFixed(1), yC.toFixed(1), yO.toFixed(1), yH.toFixed(1), yL.toFixed(1),
-                  bar.d, bar.o, bar.h, bar.l, bar.c, bar.n, weak ? 1 : 0].join(','));
+                  bar.d, bar.o, bar.h, bar.l, bar.c, bar.n, qv, (qv === 0) ? 1 : 0].join(','));
   }
 
   /* 右侧价格轴 */
@@ -7541,21 +7644,38 @@ function hpKline(vals, cost, reason, days, volName, h){
     ? ((lastBar.c / view[0].o - 1) * 100) : null;
   var col2 = chgAll === null ? 'var(--text2)' : (chgAll >= 0 ? 'var(--rise)' : 'var(--fall)');
   var chgTxt = (chgAll === null) ? null : ((chgAll >= 0 ? '+' : '') + chgAll.toFixed(1) + '%');
+  /* 区间切换：档位按粒度给（周K 没有「7日」这种说法，要按周算） */
   var rng2 = (function(){
       var opts = [];
-      if (nAll >= 7)  opts.push([7,  '7 日']);
-      if (nAll >= 14) opts.push([14, '14 日']);
-      if (nAll >= 10) opts.push([30, '全部']);
+      if (g === '1w'){
+        if (nAll >= 8)  opts.push([8,  '8 周']);
+        if (nAll >= 13) opts.push([13, '13 周']);
+        if (nAll >= 26) opts.push([26, '26 周']);
+        if (nAll >= 52) opts.push([52, '1 年']);
+      } else if (g === '2h'){
+        if (nAll >= 24) opts.push([24, '2 天']);
+        if (nAll >= 48) opts.push([48, '4 天']);
+        if (nAll >= 96) opts.push([96, '8 天']);
+        if (nAll >= 168) opts.push([168, '14 天']);
+      } else {
+        if (nAll >= 14)opts.push([14, '14 日']);
+        if (nAll >= 30) opts.push([30, '1 个月']);
+        if (nAll >= 60) opts.push([60, '2 个月']);
+        if (nAll >= 120) opts.push([120, '4 个月']);
+      }
       if (opts.length < 2) return '';
+      /* 「全部」= 现有全部根数（用户已明确要求数据无上限、不砍历史） */
+      if (nAll > opts[opts.length - 1][0]) opts.push([nAll, '全部 ' + nAll + ' ' + def.unit]);
       var s = '<div class="hc-rg">';
       for (var oi = 0; oi < opts.length; oi++){
         s += '<button type="button" class="' + (range === opts[oi][0] ? 'on' : '')
-          + '" onclick="hpSetRange(' + opts[oi][0] + ')" title="只看最近 ' + opts[oi][0] + ' 天">'
-          + opts[oi][1] + '</button>';
+          + '" onclick="hpSetRange(' + opts[oi][0] + ')" title="只看最近 '
+          + opts[oi][0] + ' ' + def.unit + '">' + opts[oi][1] + '</button>';
       }
       return s + '</div>';
     })();
   var viewTog = hpViewToggleHtml();
+  var granTog = hpGranToggleHtml();
   /* 顶部读数行：结构与折线的 .hc-stats 一致（.it > .lb + b），
      每个 <b> 带 data-hc + data-latest，K 线 tooltip 悬停时改写、移出时读回 data-latest 还原。
      键名用 ko/kh/kl/kc/kchg（k 前缀 = kline），不与折线的 price/ma5/chg 混用 ——
@@ -7573,23 +7693,41 @@ function hpKline(vals, cost, reason, days, volName, h){
     + kIt('kh',  '最高', '¥' + hpAxisNum(lastBar.h), 'var(--rise)')
     + kIt('kl',  '最低', '¥' + hpAxisNum(lastBar.l), 'var(--fall)')
     + (hasCost ? kIt('kcost', '成本', '¥' + hpAxisNum(cost), null) : '')
-    /* 「区间涨跌」在悬停时含义会变（变成该日相对前一日的涨跌）→ 标签一起换，
-       否则用户会以为在看区间涨跌，实际看的是日涨跌。 */
+    /* 「区间涨跌」在悬停时含义会变（变成该桶相对前一个桶的涨跌）→ 标签一起换，
+       否则用户会以为在看区间涨跌，实际看的是单桶涨跌。 */
     + kIt('kchg', '区间涨跌', chgTxt, col2)
-    + rng2 + viewTog + '</div>';
+    + granTog + rng2 + viewTog + '</div>';
 
-  /* 口径提示：把不可信的部分说清楚，不能让用户误以为是真实成交 */
-  var weakTxt = nWeak
-    ? '，其中 <b>' + nWeak + ' 天</b>采样点不足（影线画淡了，仅供参考）' : '';
+  /* 口径提示：把不可信的部分说清楚，不能让用户误以为是真实成交。
+     文案按粒度走（NOTE/CAVEAT 来自服务器写在文件 meta 里的，口径以那边为准） */
+  var meta = klMeta() || {};
+  var qc = { 0: 0, 1: 0, 2: 0 };
+  for (var qi = 0; qi < view.length; qi++){
+    var qq = (view[qi].q === undefined) ? (view[qi].r ? 1 : 0) : view[qi].q;
+    qc[qq] = (qc[qq] || 0) + 1;
+  }
+  var qTxt = [];
+  if (qc[0]) qTxt.push('<b>' + qc[0] + ' ' + def.unit + '</b>采样稀疏（影线最淡）');
+  if (qc[1]) qTxt.push('<b>' + qc[1] + ' ' + def.unit + '</b>采样一般');
+  if (qc[2]) qTxt.push('<b>' + qc[2] + ' ' + def.unit + '</b>采样充足');
   var note = '<div class="hc-knote"><b>口径</b>'
-    + '<span>日K · 由每 30 分钟一次的采样（一天约 28 个点）按天聚合，'
-    + '高低点是<b>当天采样到的极值</b>（半小时粒度）而非逐笔成交' + weakTxt + '。'
-    + '仅支持日K，不支持小时K。</span></div>';
+    + '<span>' + (meta.label || def.label) + ' · '
+    + esc(meta.source_note || '') + '。'
+    + '高低点是<b>该' + def.unit + '内采样到的极值</b>而非逐笔成交'
+    + (qTxt.length ? '；本图密度：' + qTxt.join('、') : '') + '。</span></div>';
 
-  /* 底部日期轴 + 悬停读数用的 data */
+  /* 底部日期轴 + 悬停读数用的 data
+     ⚠ 标签格式必须按粒度分：2小时K 一根代表 2 小时，光写 MM/DD 会让相邻刻度
+       看不出区别（48 根全是同一天）→ 必须带时分。日K/周K 写 MM/DD 即可，
+       周K 的 d 已经是「该周周一日期」，不用额外处理。 */
+  var fmtX = (g === '2h')
+    ? function (s) { var t = String(s);
+        return t.length > 13 ? t.slice(5, 10).replace('-', '/') + ' ' + t.slice(11, 16)
+                             : t.slice(5); }
+    : function (s) { return String(s).slice(5); };
   var xfoot = '<div class="hc-xfoot"><div class="hc-xaxis">';
   for (var fx = 0; fx < view.length; fx += Math.max(1, Math.floor(view.length / 6))){
-    xfoot += '<span>' + String(view[fx].d).slice(5) + '</span>';
+    xfoot += '<span>' + esc(fmtX(view[fx].d)) + '</span>';
   }
   xfoot += '</div><div class="hc-foot">'
     + '<span class="hc-lg" style="cursor:default"><i style="background:var(--rise)"></i>上涨</span>'
@@ -7645,14 +7783,25 @@ function hpKline(vals, cost, reason, days, volName, h){
 function hpSetView(v){
   window._hpView = (v === 'k') ? 'k' : 'l';
   try { hpSelect(window._hpCur || 0); } catch (e) { renderList(); }
-  if (window._hpView === 'k' && !KL.loaded){
-    loadKline().then(function () {
-      try { hpSelect(window._hpCur || 0); } catch (e) {}
-    });
+  if (window._hpView === 'k'){
+    /*按需拉当前粒度那一档。已拉过（KL.maps[g] 存在）就不再请求。
+      ⚠ 不要用「已加载」的单标志判断 —— 那是单文件时代的写法，
+        现在每档独立，必须看 KL.maps[当前档]。*/
+    var g = klState();
+    if (!KL.maps[g]){
+      loadKline(g).then(function () {
+        try { hpSelect(window._hpCur || 0); } catch (e) {}
+      });
+    }
   }
 }
+/* 粒度切换后重渲当前持仓详情。抽成独立函数是因为 hpSetGran 是 onclick 入口，
+   拿不到内部闭包变量（当前选中项等），只能走 hpSelect 重渲。 */
+function hpRenderKlineHost(){
+  try { hpSelect(window._hpCur || 0); } catch (e) { renderList(); }
+}
 function hpChart(vals, cost, reason, days, volName){
-  /* K 线走独立数据源（kline.json 的 OHLC），不能拿折线的日均价凑 */
+  /* K 线走独立数据源（kline_2h/1d/1w.json 的 OHLC），不能拿折线的日均价凑 */
   if (window._hpView === 'k'){
     try {
       var _h = (window._hpList && window._hpList.length)
@@ -8206,13 +8355,16 @@ function hpSelect(idx){
 }
 /* K 线态的十字光标 + 顶部读数联动（2026-10-04）
    与折线版 hpChartTooltip 的区别：
-     · 读的是 12 列 data-pts，能拿到当日 OHLC 与采样点数 n；
-     · 顶部读数不是 MA/布林，而是 收盘/今开/最高/最低/日涨跌；
+     · 读的是 13 列 data-pts，能拿到该桶 OHLC、采样点数 n 与密度级 q；
+     · 顶部读数不是 MA/布林，而是 收盘/今开/最高/最低/单桶涨跌；
      · 水平准线画在**收盘价**上（不是最高价），与常见行情软件一致。
    ⚠ 坐标反算口径与折线完全一致（svg rect 基准 + data-w/data-h），
-     因为缩放时 hpInitZoom 改的正是 data-w，两套逻辑必须对得上。 */
+     因为缩放时 hpInitZoom 改的正是 data-w，两套逻辑必须对得上。
+   ⚠ 列序必须与 hpKline 里的 dataPts.push 严格一致（13 列，见那里的注释）。
+     少一列不会报错，只会让密度级读到 undefined → 全被判成「稀疏」。 */
 function hpKlineTooltip(svg, holder){
   if (!svg || !holder) return;
+  var granU = klGranDef(klState()).unit;
   var P = (svg.getAttribute('data-pts') || '').split(';').map(function (s) {
     var a = s.split(',');
     return {
@@ -8220,7 +8372,9 @@ function hpKlineTooltip(svg, holder){
       yH: parseFloat(a[3]), yL: parseFloat(a[4]),
       d: a[5], o: parseFloat(a[6]), h: parseFloat(a[7]),
       l: parseFloat(a[8]), c: parseFloat(a[9]),
-      n: parseInt(a[10], 10) || 0, weak: a[11] === '1'
+      n: parseInt(a[10], 10) || 0,
+      q: (a[11] === undefined || a[11] === '') ? (a[12] === '1' ? 0 : 1) : parseInt(a[11], 10),
+      weak: a[12] === '1'
     };
   }).filter(function (o) { return !isNaN(o.x) && !isNaN(o.yC); });
   if (P.length < 2) return;
@@ -8258,15 +8412,22 @@ function hpKlineTooltip(svg, holder){
       if (key === 'kchg') el.style.color = chgCol;
       else if (key === 'kc') el.style.color = b.c >= b.o ? 'var(--rise)' : 'var(--fall)';
     }
-    /* 标签：收盘 → 该日日期；区间涨跌 → 日涨跌。移出时靠 data-ll 还原。 */
-    var md = String(b.d || '').slice(5).replace('-', '/');
+    /* 标签：收盘 → 该桶标识；区间涨跌 → 单桶涨跌。移出时靠 data-ll 还原。
+       ⚠ 粒度不同、标识格式不同：2小时/日K 是日期，周K 也是周一日期 →
+         统一取后5 位转 MM/DD 就行，不用为三档各写一套。 */
+    var dRaw = String(b.d || '');
+    var md = dRaw.length > 10
+      ? dRaw.slice(5, 10).replace('-', '/') + ' ' + dRaw.slice(11, 16)   /* 2小时K 带时分 */
+      : dRaw.slice(5).replace('-', '/');
     for (var m = 0; m < relabels.length; m++){
       var le = relabels[m], k2 = le.getAttribute('data-hcl');
-      if (k2 === 'kc') le.textContent = md || '该日';
-      else if (k2 === 'kchg') le.textContent = '日涨跌';
+      if (k2 === 'kc') le.textContent = md || '该' + granU;
+      else if (k2 === 'kchg') le.textContent = (granU === '天' ? '日涨跌' : granU + '涨跌');
     }
-    /* 采样点数写进 title（不占版面，但鼠标停住能查） */
-    dot.setAttribute('title', md + ' 采样 ' + b.n + ' 点' + (b.weak ? '（不足 3 点，影线仅供参考）' : ''));
+    /* 采样点数 + 密度级写进 title（不占版面，但鼠标停住能查） */
+    dot.setAttribute('title', md + ' 采样 ' + b.n + ' 点'
+      + (b.q === 0 ? '（桶内点少，高低波动仅供参考）'
+        : b.q === 1 ? '（桶内点数一般）' : '（桶内采样充足）'));
   }
   function resetReadout(){
     for (var q2 = 0; q2 < readouts.length; q2++){
@@ -8331,10 +8492,11 @@ function hpChartTooltip(idx){
   if (!h) return;
   /* ★ K 线态走独立分支（2026-10-04）：svg 上带 data-kl="1"。
      为什么不能复用下面的折线逻辑：
-       ① data-pts 是 12 列（x,收盘y,开盘y,高y,低y,日期,o,h,l,c,n,弱标记），
+       ① data-pts 是 13 列（x,收盘y,开盘y,高y,低y,桶标识,o,h,l,c,n,q密度级,弱标记），
           折线分支只取 a[0]/a[1] 当 x/y，其余列会被当成脏数据丢掉；
        ② 折线分支的下标要与 hpCurve 的日均价序列对齐，而 K 线序列来自
-          kline.json（另一份数据、另一种天数），两者长度对不上就会 return。
+          kline_2h/1d/1w.json（三份独立数据、粒度各不相同），
+          两者长度对不上就会 return。
      所以 K 线自己解析 OHLC，并把顶部读数行换成 收盘/今开/最高/最低 + 采样点数。 */
   if (svg.getAttribute('data-kl') === '1'){ try { hpKlineTooltip(svg, holder); } catch(e){} return; }
   var cv = hpCurve(h);
@@ -8902,11 +9064,16 @@ function renderList(){
       })
       .catch(function(){ window._priceSummaryLoaded = true; });
   }
-  /* ★ K 线数据同样后台预热（2026-10-04）。kline.json 约 4.7MB，不预热的话
-     用户第一次点「K线」会先看到空态，等几百毫秒才出图 —— 像是坏了。
+  /* ★ K 线数据后台预热（2026-10-04）。不预热的话用户第一次点「K线」
+     会先看到空态，等几百毫秒才出图 —— 像是坏了。
+     ⚠ 2026-10-06：现在是三档独立文件，**只预热默认档（当前粒度）**，
+       不能三档全预热 —— 那是 2.6+5.2+2.6 = 10.4MB，会把首屏带宽吃光。
+       另外两档等用户点切档按钮时再按需拉（loadKline 内部有 maps 判重，
+       来回切档不会重复请求）。
      加载完成后**只在当前正处于 K 线态时**才重渲染，避免白白重绘折线。 */
-  if (!KL.loaded && !KL._loading){
-    loadKline().then(function () {
+  var _klPre = klState();
+  if (!KL.maps[_klPre] && !KL.loading[_klPre]){
+    loadKline(_klPre).then(function () {
       if (window._hpView === 'k'){
         try { hpSelect(window._hpCur || 0); } catch(e) {}
       }
