@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 781.86,
-    "change": -21.81,
-    "change_pct": -21.81,
-    "market_value": 239994564.54,
-    "total_items": 3833,
-    "updated": "2026-10-07T00:00:04+08:00",
+    "latest": 793.03,
+    "change": -20.7,
+    "change_pct": -20.7,
+    "market_value": 243422808.6,
+    "total_items": 3861,
+    "updated": "2026-10-07T02:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4334,6 +4334,14 @@
         "close": 781.86,
         "high": 1000.72,
         "low": 781.86
+      },
+      {
+        "date": "2026-10-07",
+        "dateFull": "2026-10-07 02:00",
+        "open": 793.03,
+        "close": 793.03,
+        "high": 793.03,
+        "low": 793.03
       }
     ],
     "volBar": [],
@@ -12985,12 +12993,20 @@
         "index": 781.86,
         "change_pct": -21.81,
         "market_value": 239994564.54
+      },
+      {
+        "time": "02:00",
+        "date": "2026-10-07",
+        "timestamp": 1791309603,
+        "index": 793.03,
+        "change_pct": -20.7,
+        "market_value": 243422808.6
       }
     ],
     "selling": {
-      "total_selling": 1368960,
+      "total_selling": 1412702,
       "total_selling_prev": 0,
-      "total_selling_delta": 1368960,
+      "total_selling_delta": 1412702,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -12998,7 +13014,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791302404502,
+  "index_updated": 1791309603525,
   "alerts": [
     {
       "name": "Prof. Shahmat | Elite Crew",
@@ -31702,7 +31718,7 @@
     "Michael Syfers  | FBI Sniper",
     "Name Tag"
   ],
-  "updated": "2026-10-06T17:36:23Z",
+  "updated": "2026-10-06T18:05:55Z",
   "steam_market_items": 74,
   "steam_market_recs": {
     "momentum": [
