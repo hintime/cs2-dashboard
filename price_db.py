@@ -247,7 +247,7 @@ def get_stats():
 # ═══════════════ 数据保持 ═══════════════
 
 def trim_old_data(max_days=90, vacuum_min_rows=200000):
-    """清理超过 max_days 天的数据。
+    """清理超过 max_days 天的数据。max_days <= 0 表示**永不删除**。
 
     ⚠ 2026-09-20 修：原来只要删了**任意一条**就 `VACUUM`。而本函数在 history 模式里
     **每次落库后都会调用**；history 提到 1h 后，一旦 db 越过保留期，就会变成
@@ -256,7 +256,18 @@ def trim_old_data(max_days=90, vacuum_min_rows=200000):
 
     改法：只有删除量足够大（默认 20 万行）才 VACUUM。日常少量删除**不需要**回收 ——
     SQLite 会把删掉的页标为空闲、后续插入直接复用，db 体积会稳定在保留期对应的大小。
+
+    ⚠⚠ 2026-10-06 加保护（这个坑很危险）：
+      义轩要求 price_history.db 永不删除（底线是必须一直积累数据），
+      于是把 PRICE_HIST_KEEP_DAYS 设成 0 表示「不删」。
+      但原实现 `cutoff = now - 0*86400 = 今天`，随后
+      `DELETE FROM prices WHERE date(ts) < 今天` → **把全部历史一次删光**。
+      而 trim_old_data 在 history 轮（每小时）里调用 → 一次误配就是数据全没。
+      所以这里必须显式判<= 0 直接返回，别让「0」被当成「保留 0 天」。
     """
+    # ★ 0 或负数 = 永不删除。必须在算 cutoff 之前判掉。
+    if max_days is None or int(max_days) <= 0:
+        return 0
     conn = get_db()
     try:
         cutoff = time.strftime('%Y-%m-%d', time.gmtime(time.time() - max_days * 86400))
@@ -365,21 +376,19 @@ def record_boards_batch(records):
         conn.close()
 
 
-def get_board_movers(steps=1, limit=8, min_base=3):
-    """盘口**即时**异动：相邻 steps 个采样点之间的变化（steps=1 → 本次 vs 上次）。
-
-    ★ 2026-09-21 义轩要求：异动要「即时」，不要与 24 小时比 ——
-      扫货 / 抛售 / 求购暴增这类事件当天就发生，24 小时窗口会把它稀释掉。
+def get_board_movers(hours=24, limit=8, min_base=3):
+    """盘口异动：在售 / 求购 相对 <hours> 小时前的变化。
 
     返回 {'sell': {'add': [...], 'drop': [...]},
           'buy':  {'add': [...], 'drop': [...]},
-          'base_ts': 最新采样, 'prev_ts': 对比采样, 'points': 采样点数, 'total': 标的数}
+          'base_ts': ..., 'span_hours': ..., 'total': ...}
     每项 {'name','old','new','diff','pct'}。
-    在售口径 = BUFF 在售数，求购口径 = BUFF 求购数（都从 eco_tracked.json 零成本取得）。
+    在售口径用 BUFF 在售数，求购用 BUFF 求购数（都能从 eco_tracked.json 零成本拿到）。
     """
     import collections
+    import datetime as _dt
     out = {'sell': {'add': [], 'drop': []}, 'buy': {'add': [], 'drop': []},
-           'base_ts': None, 'prev_ts': None, 'points': 0, 'total': 0}
+           'base_ts': None, 'span_hours': 0.0, 'total': 0}
     conn = get_db()
     try:
         rows = conn.execute(
@@ -394,28 +403,34 @@ def get_board_movers(steps=1, limit=8, min_base=3):
     for nm, ts, bs, bb in rows:
         series[nm].append((ts, bs or 0, bb or 0))
 
-    tss = sorted({r[1] for r in rows})
-    out['points'] = len(tss)
-    out['total'] = len(series)
-    out['base_ts'] = tss[-1]
-    if len(tss) <= steps:
-        return out                      # 采样点不够，无从对比
-    out['prev_ts'] = tss[-1 - steps]
+    all_ts = sorted({r[1] for r in rows})
+    newest = all_ts[-1]
+    oldest = all_ts[0]
+    try:
+        t_new = _dt.datetime.fromisoformat(newest.replace('Z', '+00:00'))
+        t_old = _dt.datetime.fromisoformat(oldest.replace('Z', '+00:00'))
+    except Exception:
+        return out
+    span = (t_new - t_old).total_seconds() / 3600.0
+    cutoff = (t_new - _dt.timedelta(hours=hours)).isoformat()
 
     def _delta(idx):
         res = []
         for nm, lst in series.items():
-            if len(lst) <= steps:
+            cur = None
+            old = None
+            for ts, bs, bb in lst:
+                v = (bs, bb)[idx]
+                if ts <= cutoff:
+                    old = v
+                cur = v
+            if cur is None or old is None or old < min_base:
                 continue
-            cur = lst[-1][1:][idx]
-            prev = lst[-1 - steps][1:][idx]
-            if prev < min_base:         # 基数太小的百分比噪声大
-                continue
-            d = cur - prev
+            d = cur - old
             if d == 0:
                 continue
-            res.append({'name': nm, 'old': prev, 'new': cur, 'diff': d,
-                        'pct': round(d / prev * 100, 1) if prev else 0.0})
+            res.append({'name': nm, 'old': old, 'new': cur, 'diff': d,
+                        'pct': round(d / old * 100, 1) if old else 0.0})
         return res
 
     sell = _delta(0)
@@ -428,8 +443,11 @@ def get_board_movers(steps=1, limit=8, min_base=3):
         buy={'add': sorted([x for x in buy if x['diff'] > 0],
                            key=lambda x: -x['diff'])[:limit],
              'drop': sorted([x for x in buy if x['diff'] < 0],
-                            key=lambda x: x['diff'])[:limit]})
+                            key=lambda x: x['diff'])[:limit]},
+        base_ts=newest, span_hours=round(span, 1), total=len(series))
     return out
+
+
 def get_movers_data():
     """为 generate_scan.py 提供涨跌榜所需数据"""
     conn = get_db()

@@ -4161,9 +4161,13 @@ def main():
             bw = price_db.record_boards_batch(board_recs) if board_recs else 0
             if bw:
                 print(f'[HISTORY] 盘口落库 {bw} 条（在售/求购）')
-            keep = int(os.environ.get('PRICE_HIST_KEEP_DAYS') or '365')
+            # ★ 2026-10-06 默认从 365 改为 0（永不删除）。义轩的底线是必须一直积累数据，
+            # 而日K/周K 都从这张表算出来 —— 删了历史就再也回不来。
+            # price_db.trim_old_data() 里已对 <=0 做保护（0 表示不删，不是「保留 0 天」）。
+            keep = int(os.environ.get('PRICE_HIST_KEEP_DAYS') or 0)
             price_db.trim_old_data(keep)
-            print(f'[HISTORY] 落库 {written} 条（eco {eco_n} / buff {buff_n} / yy {yy_n}），保留 {keep} 天')
+            print(f'[HISTORY] 落库 {written} 条（eco {eco_n} / buff {buff_n} / yy {yy_n}），保留 '
+                  + ('全部历史（不删）' if keep <= 0 else f'{keep} 天'))
         except Exception as e:
             print(f'[HISTORY] 失败: {e}', file=sys.stderr)
         return
@@ -4662,7 +4666,8 @@ def main():
                     # 定期修剪旧数据（保留90天）
                     # 保留期：默认从 90 天放宽到 365 天 —— 更长历史是后续微调 Kronos 的前提
                     # （实测每个标的只有约 51 根日线，不足以支撑时序基础模型的领域自适应）
-                    price_db.trim_old_data(int(os.environ.get('PRICE_HIST_KEEP_DAYS') or '365'))
+                    # 同上：默认 0 = 永不删除；trim_old_data 内部已判<=0 直接返回
+                    price_db.trim_old_data(int(os.environ.get('PRICE_HIST_KEEP_DAYS') or 0))
                     # Inject price history from SQLite into rec items
                     for r in recs.get('all', []):
                         hn = r.get('hash_name', '')
@@ -4925,7 +4930,13 @@ def main():
 
     # ── 同步生成数据状态摘要 ──
     try:
-        import json
+        # ⚠⚠️ 千万不要在这里写 `import json`！
+        #    Python 规则：函数体内只要出现对 `json` 的赋值/import，整个函数的 `json` 都变**局部变量**
+        #    → 上方 name_map.json 生成处的 json.load() 会抛
+        #      UnboundLocalError: cannot access local variable 'json' where it is not associated with a value
+        #    → 被 except 静默吞掉（只打 stderr）→ name_map.json 停更。
+        #    2026-10-06 实测：name_map 因此停了 17 小时，企微连报两条告警。
+        #    模块顶部已 `import json`，这里直接用即可。
         status_summary = {'updated': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         # price_history (SQLite) dates
         try:
