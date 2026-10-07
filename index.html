@@ -1771,6 +1771,14 @@ html { scroll-behavior: smooth; }
      4~11 个点，max=28），只分两档会把 4 点和 28 点画成一样可信。 */
 .hc-kl .wick-weak{opacity:.30}
 .hc-kl .wick-fair{opacity:.62}
+/* B1 异常振幅标记（2026-10-07）：影线顶端的小三角。
+   用 --amber 而不是涨跌色 —— 它标记的是「需要留意」而不是「涨或跌」，
+   跟随涨跌色会让人误以为它是某种K 线形态。 */
+.hc-kl .spike{fill:var(--amber);stroke:none;opacity:.85}
+/* 图例里的小三角（.hc-lg i 是个 <i>，默认 inline，要给尺寸才能看出形状） */
+.hc-lg .lg-spike{display:inline-block;width:0;height:0;
+  border-left:4px solid transparent;border-right:4px solid transparent;
+  border-bottom:6px solid var(--amber);vertical-align:middle}
 /* 开收盘标记：右端一条小横，标明该日收在哪 */
 .hc-kl .cd{stroke:var(--text3);stroke-width:1;opacity:.7;
   vector-effect:non-scaling-stroke}
@@ -7502,9 +7510,9 @@ function klMap(){
   var out = null;
   for (var i = def.sources.length - 1; i >= 0; i--){   // 低优先级先铺底
     var m = KL.maps[def.sources[i].f];
-    if (!m || !m.__count) continue;
+    if (!m || !KL.counts || !KL.counts[def.sources[i].f]) continue;
     if (!out){ out = {}; }
-    for (var k in m) out[k] = m[k];
+    for (var k in m) out[k] = m[k];                   // 高优先级后覆盖
   }
   return out || {};
 }
@@ -7555,8 +7563,16 @@ function loadKline(g){
             if (it && it.hash_name) m[it.hash_name] = it;
           }
         }
-        m.__count = Object.keys(m).length;
-        KL.metas[src.f] = (m.__count ? d : null);
+        /* ⚠ __count 不能挂在 map 上当属性 —— `for (var k in m)` 会把它
+           当成一个叫 "__count" 的饰品复制进合并表（实测合并表多出 1 个键）。
+           虽然不会撞上真实 hash_name，但它会:
+             ① 让「合并表键数」比实际饰品数多 1，排障时对不上；
+             ② 任何`for...in` 遍历 map 的下游逻辑都要记得跳过它 —— 典型的
+                「一处埋雷、处处要防」。
+           改成独立的 KL.counts[文件名]，map 只装饰品。 */
+        KL.counts = KL.counts || {};
+        KL.counts[src.f] = Object.keys(m).length;
+        KL.metas[src.f] = (KL.counts[src.f] ? d : null);
         /* 拉回来发现没有这个源的K 线 → 记空对象，避免反复重试（0 件是真实结论） */
         KL.maps[src.f] = m;
         return m;
@@ -7573,11 +7589,36 @@ function klOf(item, g){
       || m[item.n] || null;
 }
 function hpSetGran(g){
+  /* ⚠⚠ 2026-10-07 加诊断（义轩报「怎么都是一样的」时排查用的）。
+     之前这里只有 `if (!g || g === klState()) return;` ——
+     也就是说**点当前已选中的档位什么都不会发生**（这是对的，重复点击无意义）。
+     但排查时无法区分「没触发」和「触发了但取不到数据」。
+     现在每次点击都往console 打一行：当前档、目标档、各源的加载状态。
+     看浏览器 Console 就能立刻判断是加载没完成、文件 404，还是标识没匹配上。
+     保留这段是因为它成本极低（只console.log）而排障价值高。 */
+  var _def = klGranDef(g);
+  var _states = [];
+  for (var _i = 0; _i < _def.sources.length; _i++){
+    var _f = _def.sources[_i].f;
+    var _m = KL.maps[_f];
+    _states.push(_f + '=' + (KL.counts && KL.counts[_f] ? KL.counts[_f] + '件' : (_m ? '空' : '未加载')));
+  }
+  console.log('[KL] 切档 ' + klState() + ' -> ' + g + ' | 源状态: ' + _states.join(', '));
   if (!g || g === klState()) return;
   window._klGran = g;
   /* 粒度换了，区间选择的语义也变了（天 vs 根）→ 区间重置回默认 */
   window._hpRange = (g === '1w') ? 26 : (g === '1d' ? 60 : 48);
-  loadKline(g).then(function () { hpRenderKlineHost(); });
+  loadKline(g).then(function () {
+    var _after = [];
+    var _d2 = klGranDef(klState());
+    for (var _j = 0; _j < _d2.sources.length; _j++){
+      var _f2 = _d2.sources[_j].f;
+      var _m2 = KL.maps[_f2];
+      _after.push(_f2 + '=' + (KL.counts && KL.counts[_f2] ? KL.counts[_f2] + '件' : (_m2 ? '空' : '未加载')));
+    }
+    console.log('[KL] 加载完成，当前档 ' + klState() + ' | ' + _after.join(', '));
+    hpRenderKlineHost();
+  });
 }
 /* 折线/K线 视图切换开关（两种视图共用一个渲染函数）
    ⚠ 必须两边都用它、各自写一份的话，迟早会出现「只有折线态有开关」这类不一致
@@ -7691,8 +7732,26 @@ function hpKline(vals, cost, reason, days, volName, h){
     var usable = W - padX * 2;
     for (var m3 = 0; m3 < ts.length; m3++) xs[m3] = padX + (ts[m3] - t0) / span2 * usable;
   }
-  var parts = [], nWeak = 0;
+  var parts = [], nWeak = 0, nSpike = 0;
   var dataPts = [];
+  /* B1 异常 K 线标记（2026-10-07 义轩确认要「标出来但不改数据」）
+     ───────────────────────────────────────────────────────────────
+     为什么要标：实测库里379 根单日振幅 > 30% 的 K 线，例如
+       Galil AR | Vandal (Factory New) 2026-08-30
+         03:27eco=183.28 → 07:03 eco=109.50   （当天真跌 40%）
+     **数据完全正确**（open=早上的价、close=中午的价），但因为那天只有
+     3 个采样点，一根 K 线就把两次报价变化全吃掉 →视觉上是一根孤立的大柱子，
+     不知道的会以为渲染出错。
+
+     为什么不「修」数据：
+       · 用分位数收窄高低 → 能抹平这根，但会**隐藏真实暴跌**，是造假；
+       · 剔除异常点 → 同上，而且连真实信息一起丢了；
+       · 加密采集后同样情形会变常见（1 小时桶 3 个点也会出现日内两次报价变化）。
+     所以：**数据一个字节都不改，只在视觉上加可辨识的标记 + hover 说明**。
+
+     阈值 30% 不是随手定的：正常饰品的日振幅极少超 10%，
+     30% 足以把「真暴跌」和「采集稀疏导致的锯齿」区分开，又不会误伤妖娆饰品。*/
+  var SPIKE_PCT = 0.30;
   for (var b = 0; b < view.length; b++){
     var bar = view[b];
     var up = bar.c >= bar.o;
@@ -7720,14 +7779,27 @@ function hpKline(vals, cost, reason, days, volName, h){
       parts.push('<line class="cd" x1="' + (x - bw / 2).toFixed(1) + '" y1="' + yC.toFixed(1)
         + '" x2="' + (x + bw / 2).toFixed(1) + '" y2="' + yC.toFixed(1) + '"/>');
     }
-    /* data-pts 给 hover 读数用。13 列：
-       x, 收盘y, 开盘y, 最高y, 最低y, 桶标识, o, h, l, c, 采样点数, **q密度级**, 弱标记
+    /* B1 异常振幅标记：在影线顶端画一个小三角，hover 走 data-spike。
+       ⚠ 只标不���：数据一个字节都不改（见上方注释里的理由）。
+       ⚠ 三角要落在画布内：yH 可能就是最大值（贴顶），所以往上挪 5px 后
+         再做一次边界夹取，否则画到 viewBox 外会被裁掉。 */
+    var spike = (bar.l > 0) && ((bar.h - bar.l) / bar.l >= SPIKE_PCT);
+    if (spike){
+      nSpike++;
+      var ty = Math.max(4, yH - 5);
+      parts.push('<path class="spike" d="M' + x.toFixed(1) + ' ' + ty.toFixed(1)
+        + 'L' + (x - 3.2).toFixed(1) + ' ' + (ty + 5).toFixed(1)
+        + 'L' + (x + 3.2).toFixed(1) + ' ' + (ty + 5).toFixed(1) + 'Z"/>');
+    }
+    /* data-pts 给 hover 读数用。14 列：
+       x, 收盘y, 开盘y, 最高y, 最低y, 桶标识, o, h, l, c, 采样点数, q密度级, 弱标记, 异常标记
        ⚠ 最后两列语义不同，别混：q 是密度级（0/1/2），
          weak 是「q 是否为 0」的布尔（0/1）—— CSS class 用 weak、tooltip 用 q，
          两处都从同一个 qv 派生，不要各自重写判据（10-05 就因为写反过一次）。
-       ⚠ 13 列必须与后面 hover 解析处的列数一致，改一处就要改另一处。 */
+       ⚠ 14 列必须与后面 hover 解析处的列数一致，改一处就要改另一处。 */
     dataPts.push([x.toFixed(1), yC.toFixed(1), yO.toFixed(1), yH.toFixed(1), yL.toFixed(1),
-                  bar.d, bar.o, bar.h, bar.l, bar.c, bar.n, qv, (qv === 0) ? 1 : 0].join(','));
+                  bar.d, bar.o, bar.h, bar.l, bar.c, bar.n, qv, (qv === 0) ? 1 : 0,
+                  spike ? 1 : 0].join(','));
   }
 
   /* 右侧价格轴 */
@@ -7837,7 +7909,9 @@ function hpKline(vals, cost, reason, days, volName, h){
     noteTxt = '<b>自采采样</b>· 高低为该' + def.unit + '内'
       + '<b>采样到的极值</b>（非成交价，振幅偏窄）'
       + (src && src.note ? '。' + esc(src.note) : '')
-      + (qTxt.length ? '；本图密度：' + qTxt.join('、') : '') + '。';
+      + (qTxt.length ? '；本图密度：' + qTxt.join('、') : '')
+      + (nSpike ? '；<b>' + nSpike + ' 根</b>振幅超 30%（已用▲标记，数据未修改）' : '')
+      + '。';
   }
   var note = '<div class="hc-knote"><b>口径</b>'
     + '<span>' + noteTxt + '</span></div>';
@@ -7859,6 +7933,10 @@ function hpKline(vals, cost, reason, days, volName, h){
     + '<span class="hc-lg" style="cursor:default"><i style="background:var(--rise)"></i>上涨</span>'
     + '<span class="hc-lg" style="cursor:default"><i style="background:var(--fall)"></i>下跌</span>'
     + '<span class="hc-lg" style="cursor:default"><i style="background:linear-gradient(var(--rise),var(--rise)) 0 50%,transparent 50%"></i>影线</span>'
+    /* B1 异常振幅标记的图例：只在真有这种K 线时才出现，避免常驻占位 */
+    + (nSpike ? '<span class="hc-lg" style="cursor:default" title="振幅超过 30% 的'
+        + def.unit + '，多为桶内采样点少导致一天内报价变动被单根吃掉；数据未做任何修改">'
+        + '<i class="lg-spike"></i>振幅异常 ' + nSpike + ' 根</span>' : '')
     + '</div></div>';
 
   /* 缩略导航条：与折线同一套（hpInitZoom 直接复用），用收盘价迷你走势。
@@ -8501,7 +8579,8 @@ function hpKlineTooltip(svg, holder){
       l: parseFloat(a[8]), c: parseFloat(a[9]),
       n: parseInt(a[10], 10) || 0,
       q: (a[11] === undefined || a[11] === '') ? (a[12] === '1' ? 0 : 1) : parseInt(a[11], 10),
-      weak: a[12] === '1'
+      weak: a[12] === '1',
+      spike: a[13] === '1'          /* B1 异常振幅标记（14 列） */
     };
   }).filter(function (o) { return !isNaN(o.x) && !isNaN(o.yC); });
   if (P.length < 2) return;
@@ -8551,10 +8630,19 @@ function hpKlineTooltip(svg, holder){
       if (k2 === 'kc') le.textContent = md || '该' + granU;
       else if (k2 === 'kchg') le.textContent = (granU === '天' ? '日涨跌' : granU + '涨跌');
     }
-    /* 采样点数 + 密度级写进 title（不占版面，但鼠标停住能查） */
+    /* 采样点数 + 密度级 + 异常标记写进 title（不占版面，鼠标停住能查）
+       ⚠ B1 异常振幅的说明必须出现在这里 —— 用户看到孤立大柱子时会先 hover，
+         这时候给出「开/收差多少、可能是桶内只有 N 个点导致」，比让他去猜要直接得多。 */
+    var _sp = '';
+    if (b.spike){
+      var _amp = (b.l > 0) ? ((b.h - b.l) / b.l * 100).toFixed(1) : '—';
+      _sp = '\n⚠ 振幅' + _amp + '%（开 ¥' + hpAxisNum(b.o) + ' → 收 ¥' + hpAxisNum(b.c)
+         + '）' + (b.n > 0 ? ('，桶内仅 ' + b.n + ' 个采样点，可能一天内报价变动过')
+                            : '');
+    }
     dot.setAttribute('title', md + ' 采样 ' + b.n + ' 点'
       + (b.q === 0 ? '（桶内点少，高低波动仅供参考）'
-        : b.q === 1 ? '（桶内点数一般）' : '（桶内采样充足）'));
+        : b.q === 1 ? '（桶内点数一般）' : '（桶内采样充足）') + _sp);
   }
   function resetReadout(){
     for (var q2 = 0; q2 < readouts.length; q2++){
