@@ -2722,11 +2722,10 @@ window.syncHoldingsToServer = async function () {
     }
 
     // ② 持仓 → Worker KV（/api/holdings-sync，**无需任何 token**。
-    //    2026-10-07 改道：原来走 GitHub Contents API，依赖浏览器 ghToken，
-    //    义轩没配 → 实测 HTTP 401。而 Worker 这条通道零配置且一直在工作
-    //    （_hpCloudPushNow 就走它），服务器 cron 每 15 分钟从 KV 拉取合并。
-    //    ⚠ Worker POST 会把 qty=0 规整成 1，所以这里只送 live（qty>0），
-    //      卖出件已在上面单独走 /api/sold。）
+    //    2026-10-07 改道：原来走 GitHub Contents API 依赖 ghToken → 实测 401。
+    //    Worker 这条通道零配置且一直在工作，服务器 cron 每 15 分钟从 KV 拉取合并。
+    //    注意：这里只推「持有中」(live)。卖出件(qty=0) 已在上面第①步走 /api/sold，
+    //    不能进 KV（Worker 暂不支持 qty=0，会把卖出件规整成 1 → 误判为还持有）。
     var pushR = await fetch(WORKER_BASE + '/api/holdings-sync', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items: live }),
@@ -9587,26 +9586,69 @@ function hpBatchSave(){
 
 /* ═══ 持仓云端同步（Worker KV 通道，手机/PC 共用）═══ */
 var _hpCloudTimer = null;
-function _hpCloudPushNow(){
-  try{
+// ════════ 持仓自动同步到服务器（2026-10-07，免 token，心跳） ════════
+// 把 localStorage 持仓推到 Worker KV（服务器 cron 每 15 分钟自动合并）。
+// ⚠ qty 语义：显式 0/负数 = 已卖出 → 单独记 /api/sold 且 KV 里也带 qty<=0，
+//   服务器合并时据此自动移除；缺失/非数字 = 当 1 件（保持旧行为）。
+function _normQty(it){
+  if (it.qty === 0 || it.qty === '0') return 0;
+  var q = Number(it.qty);
+  return (q && q > 0) ? q : 1;
+}
+window.autoSyncHoldings = async function () {
+  try {
     var key = (typeof getMyKey === 'function') ? getMyKey() : 'admin';
     var items = [];
-    try { items = JSON.parse(localStorage.getItem('cs2_holdings_' + key) || '[]'); } catch(e) {}
-    if (!Array.isArray(items)) items = [];
-    var payload = items.map(function(it){
-      return { market_hash: it.market_hash || it.mh || it.n || '',
-               name: it.name || it.n || '',
-               cost: Number(it.cost) || 0,
-               qty: Number(it.qty) || 1,
-               wear: it.wear || '' };
-    }).filter(function(it){ return it.market_hash; });
-    fetch('/api/holdings-sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: payload })
+    try { items = JSON.parse(localStorage.getItem('cs2_holdings_' + key) || '[]'); } catch (e) {}
+    if (!Array.isArray(items) || !items.length) return;
+    // 去抖：localStorage 没变就不推（省 KV 写入）
+    var snap = JSON.stringify(items);
+    if (snap === window._autoSyncSnap) return;
+    window._autoSyncSnap = snap;
+    // ⚠ 拆成两路：
+    //   · KV（/api/holdings-sync）只放「持有中」(qty>0) —— Worker 暂不支持 qty=0，
+    //     卖出件放进去会被规整成 1 → 误判为还持有，所以不能进 KV。
+    //   · 卖出件(qty<=0) 走 /api/sold（这个接口本就通），服务器按它移除持仓。
+    var live = items.filter(function (it) { return _normQty(it) > 0; }).map(function (it) {
+      return {
+        market_hash: it.market_hash || it.mh || it.n || '',
+        name: it.name || it.n || '',
+        cost: Number(it.cost) || 0,
+        qty: _normQty(it),
+        wear: it.wear || '',
+      };
+    }).filter(function (it) { return it.market_hash; });
+    var sold = items.filter(function (it) { return _normQty(it) <= 0; });
+    // ① 持有中 → KV（服务器 cron 每 15 分钟并入持仓）
+    await fetch(WORKER_BASE + '/api/holdings-sync', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: live }),
     }).catch(function(){});
-  }catch(e){}
-}
+    // ② 卖出件 → /api/sold（留痕；服务器据它把持仓里的对应件移除）
+    sold.forEach(function (s) {
+      fetch(WORKER_BASE + '/api/sold', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ market_hash: s.market_hash || s.mh || s.n || '', name: s.name || s.n || '', qty: _normQty(s), ts: new Date().toISOString() }),
+      }).catch(function(){});
+    });
+  } catch (e) {}
+};
+
+// 心跳：每 3 分钟自动推一次（仅在页面可见时），切后台不推省流量
+window._autoSyncTimer = setInterval(function () {
+  if (document.visibilityState === 'visible') window.autoSyncHoldings();
+}, 180000);
+// 切回前台立刻补推一次（修正切后台期间的变化）
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState === 'visible') window.autoSyncHoldings();
+});
+// 页面关闭/刷新前 best-effort 推一次
+window.addEventListener('beforeunload', function () {
+  try { window.autoSyncHoldings(); } catch (e) {}
+});
+
+// 旧的「成本云同步」机制并入 autoSync（避免两条路径互相覆盖 qty）
+function _hpCloudPushNow(){ window.autoSyncHoldings(); }
 // ⚠️ 立即推送：reload 前必须调它，否则 2500ms 防抖定时器会被 reload 掐掉 → 云端永远收不到
 window.hpCloudSyncNow = function(){
   clearTimeout(_hpCloudTimer);
