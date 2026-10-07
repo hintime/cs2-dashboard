@@ -7285,12 +7285,35 @@ function hpCurve(h){
       }
     }
   } catch(e) {}
+  /* 数据源 3（2026-10-07 新增）：SteamDT 官方 K 线（kline_sd_*，经 klOf 取当前粒度）。
+     ★ 为什么必须加：前两个源（holdings.price_history / price_summary）都是**自采**，
+       而自采只走 ECO、**不覆盖容器**（箱子/印花）→ 这类件永远没有曲线
+       （实测 Glove Case 现价 ¥60 正常、但图空白，提示「该品类平台未采集历史价格」，
+         而官方其实有 1d 240 根 / 1w 204 根、回溯 4.3 年）。数据在，只是这条取数路径
+         以前压根没读官方 K 线。
+     ★ 放**最后**当兜底：已有自采历史的武器照旧走原样（不改变现有观感），
+       只有自采完全没有的件才落到这里。页面加载时会预热当前粒度(default 1d)，
+       所以通常能同步取到。 */
+  try {
+    if (typeof klOf === 'function'){
+      var kk = klOf(h, '1d') || klOf(h);     // 优先日K（30点≈30天），回落到当前粒度
+      if (kk && Array.isArray(kk.bars) && kk.bars.length >= 8){
+        var p3 = [], d3 = [];
+        for (var m3 = kk.bars.length - 1; m3 >= 0 && p3.length < 30; m3--){
+          var bb = kk.bars[m3];
+          var c3 = Number(bb && bb.c);
+          if (c3 > 0){ p3.unshift(c3); d3.unshift(bb.d || ''); }
+        }
+        if (p3.length >= 8) return { p: p3, d: d3 };
+      }
+    }
+  } catch(e) {}
     /* ⚠ 2026-09-24：原本这里还有一个「数据源 3」——用成本→现价线性插值
        + 固定抖动 wob 给没有真实历史的物品"造"一条曲线。
        问题：wob 只依赖索引 k，**所有走这条路的物品形状完全相同**
        （先平→降→平），义轩一眼看出"怎么都是一样的"。
        时间序列必须是真实数据：宁可显示"暂无走势数据"，也不画假曲线。
-       （上面两个数据源仍为真实数据：price_history / price_summary）*/
+       （上面几个数据源仍为真实数据：price_history / price_summary / 官方K线）*/
     return null;
 }
 /* ═══════════════ 单品技术指标（2026-09-25）═══════════════
