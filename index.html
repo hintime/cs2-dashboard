@@ -2687,7 +2687,7 @@ window.syncHoldingsToServer = async function () {
   try {
     var items = loadMyHoldings();
     if (!items.length) return fail('持仓为空（localStorage 没有记录）');
-    if (!ghToken) return fail('没有 GitHub Token（点右上齿轮 ⚙ 配置）');
+    // 不需要 ghToken —— 2026-10-07 改走 Worker KV 通道（零配置，见下）
 
     // qty<=0 视为卖出 → 单独放sold，**不放进 holdings**
     //   （服务器侧也会再判一次 qty，双保险；卖出记录要留痕，不能静默删）
@@ -2721,44 +2721,20 @@ window.syncHoldingsToServer = async function () {
       } catch (e) { /* 卖出记录失败不阻塞持仓同步 —— 它只是留痕 */ }
     }
 
-    // ② 持仓 → 推成仓库里的 holdings_inbox.json，服务器据此合并
-    var payload = JSON.stringify({
-      update_time: new Date().toISOString(),
-      source: 'browser-localStorage',
-      sold: sold,
-      items: live,
+    // ② 持仓 → Worker KV（/api/holdings-sync，**无需任何 token**。
+    //    2026-10-07 改道：原来走 GitHub Contents API，依赖浏览器 ghToken，
+    //    义轩没配 → 实测 HTTP 401。而 Worker 这条通道零配置且一直在工作
+    //    （_hpCloudPushNow 就走它），服务器 cron 每 15 分钟从 KV 拉取合并。
+    //    ⚠ Worker POST 会把 qty=0 规整成 1，所以这里只送 live（qty>0），
+    //      卖出件已在上面单独走 /api/sold。）
+    var pushR = await fetch(WORKER_BASE + '/api/holdings-sync', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: live }),
     });
-    var b64 = btoa(unescape(encodeURIComponent(payload)));
-    var auth = { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json' };
-    var blobR = await fetch('https://api.github.com/repos/' + GH_REPO + '/git/blobs', {
-      method: 'POST', headers: auth, body: JSON.stringify({ content: b64, encoding: 'base64' }),
-    });
-    if (!blobR.ok) return fail('blob 失败 HTTP ' + blobR.status);
-    var blobSha = (await blobR.json()).sha;
-    var refR = await fetch('https://api.github.com/repos/' + GH_REPO + '/git/refs/heads/main', { headers: auth });
-    if (!refR.ok) return fail('取 main ref 失败 HTTP ' + refR.status);
-    var ref = (await refR.json()).object;
-    var path = 'holdings_inbox.json';
-    var cR = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path, {
-      method: 'POST', headers: auth,
-      body: JSON.stringify({ message: 'chore(holdings): 浏览器持仓同步 ' + new Date().toISOString().slice(0, 16).replace('T', ' '), content: b64, sha: blobSha, branch: 'main' }),
-    });
-    var cj = await cR.json().catch(function () { return {}; });
-    // 409 = 文件已存在且 sha 不匹配（并发或上一轮残留）→ 用远端当前 sha 重试一次
-    if (!cR.ok && cR.status === 409) {
-      var gR = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path, { headers: auth });
-      if (gR.ok) {
-        var cur = (await gR.json()).sha;
-        cR = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path, {
-          method: 'POST', headers: auth,
-          body: JSON.stringify({ message: 'chore(holdings): 浏览器持仓同步（重试）', content: b64, sha: cur, branch: 'main' }),
-        });
-        cj = await cR.json().catch(function () { return {}; });
-      }
-    }
-    if (!cR.ok) return fail('提交失败 HTTP ' + cR.status + ' ' + JSON.stringify(cj).slice(0, 80));
-    say('✅ 已推送。服务器每 10 分钟合并一次（或跑 tools/holdings_push.py 立即生效）', 'ok');
-    try { showToast('持仓已推送，服务器会在 10 分钟内合并', 4000); } catch (e) {}
+    if (!pushR.ok) return fail('推送失败 HTTP ' + pushR.status);
+    var pj = await pushR.json().catch(function () { return {}; });
+    say('✅ 已推送 ' + (pj.count || live.length) + ' 条，服务器 15 分钟内自动合并', 'ok');
+    try { showToast('持仓已推送，服务器会在 15 分钟内合并', 4000); } catch (e) {}
     if (btn) { btn.classList.remove('syncing'); btn.innerHTML = orig; btn.style.opacity = ''; btn.style.pointerEvents = ''; }
     return true;
   } catch (e) {

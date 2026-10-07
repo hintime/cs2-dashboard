@@ -31,8 +31,13 @@ import urllib.request
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOLD = os.path.join(REPO, 'holdings.json')
-INBOX_URL = ('https://raw.githubusercontent.com/hintime/cs2-dashboard/main/'
-             'holdings_inbox.json')
+# 数据源（2026-10-07 改）：浏览器「⬆ 同步到服务器」→ Worker KV。
+#   原设计走 GitHub raw holdings_inbox.json，但浏览器推送依赖 ghToken，
+#   义轩没配 → 实测 HTTP 401，inbox 永远不存在。
+#   改从 Worker GET /api/holdings-sync 拉同一份 KV 数据：
+#   浏览器 POST 该端点零配置（_hpCloudPushNow 一直在用），且 KV 的 ts
+#   是 Worker（服务器时钟）生成的，比浏览器 update_time 可靠。
+KV_URL = 'https://cs2wyx.asia/api/holdings-sync'
 MARK = os.path.join(REPO, '.holdings_inbox_seen.json')
 PUSH = os.path.join(REPO, 'tools', 'holdings_push.py')
 
@@ -65,7 +70,8 @@ def need_change(inbox):
         'qty': sum(qty_of(x) for x in items if isinstance(x, dict)),
         'keys': sorted(str(x.get('market_hash') or x.get('mh') or '')
                        for x in items if isinstance(x, dict))[:200],
-        'ts': inbox.get('update_time') or '',
+        # KV 响应没有 update_time，ts（毫秒）是 Worker 生成的 → 更可靠
+        'ts': str(inbox.get('ts') or inbox.get('update_time') or ''),
     }
     prev = read_json(MARK, None)
     if prev == fp:
@@ -75,14 +81,14 @@ def need_change(inbox):
 
 def main():
     try:
-        req = urllib.request.Request(INBOX_URL, headers={
-            'User-Agent': 'cs2-holdings-auto/1.0'})
+        req = urllib.request.Request(KV_URL, headers={
+            'User-Agent': 'cs2-holdings-auto/1.0',
+            'Cache-Control': 'no-cache'})
         with urllib.request.urlopen(req, timeout=25) as r:
-            raw = r.read().decode('utf-8')
-        inbox = json.loads(raw)
+            inbox = json.loads(r.read().decode('utf-8'))
     except Exception as e:
         # 拉不到不是错误（可能浏览器还没推过、或者网络抖动）→ 安静跳过
-        print('[AP] 拉取 inbox 失败（跳过本轮）: %s' % str(e)[:90])
+        print('[AP] 拉取 KV 失败（跳过本轮）: %s' % str(e)[:90])
         return 0
 
     changed, fp, why = need_change(inbox)
