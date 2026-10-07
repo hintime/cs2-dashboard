@@ -2,6 +2,22 @@
   {
     "date": "2026-10-07",
     "tag": "fix",
+    "scope": "holdings",
+    "sha": "2e2155b",
+    "title": "一键同步改走 Worker KV（免 token）—— GitHub 通道实测 401",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "f2b8943",
+    "title": "一键同步持仓到服务器 + 自动合并（成本价红线：0 不覆盖）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "fix",
     "scope": "changelog",
     "sha": "fbbdc8d",
     "title": "读远端 main + 排除数据刷新噪音，今日功能提交 1 条补回 4 条",
@@ -141,22 +157,6 @@
     "scope": "inventory",
     "sha": "0f25f91",
     "title": "绑定 SteamID 后可一键「刷新库存」，与持仓对比差异（新增 / 已不在库存(可能已卖出) / 数量不符），只读不改动持仓与成本价",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "import",
-    "sha": "abe1644",
-    "title": "修复三条导入路径全部报 \"cnName is not defined\" —— 块1是IIFE，cnName/overrideKey/wearCN 是局部函数未挂",
-    "desc": "window，块3的 parseSteamJson 跨块调用必然 ReferenceError；显式挂载 + 加防御兜底"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "feat",
-    "scope": "import",
-    "sha": "5171cb0",
-    "title": "① 直接导入区新增「如何获取 SteamID64」可折叠指引 + 输入框支持粘贴资料页 URL 自动提取 ID",
     "desc": ""
   }
 ]
