@@ -538,9 +538,13 @@ tr.hold-row{cursor:pointer}
 .gear-btn{display:inline-flex;align-items:center;justify-content:center;background:none;border:1px solid var(--border);color:var(--text3);font-size:14px;width:30px;height:30px;border-radius:8px;cursor:pointer;margin-left:4px;transition:all .2s}
 .gear-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--glow-blue)}
 .sync-status{font-size:12px;color:var(--text3);margin-left:4px;opacity:0;transition:opacity .3s}
-.sync-status.show{opacity:1}.sync-status.ok{color:var(--fall)}.sync-status.err{color:var(--rise)}
+/* ⚠ ok 用 var(--rise)（本站红涨=绿跌口径里 rise 是绿）/ err 用 fall，
+   之前写反了（ok=fall 红、 err=rise 绿）→ 同步**成功**显示红色、失败显示绿色，
+   完全是反的。2026-10-07 顺手修正。*/
+.sync-status.show{opacity:1}.sync-status.ok{color:var(--rise)}.sync-status.err{color:var(--fall)}
 #syncBtn.syncing{opacity:.5;pointer-events:none}
 #syncBtn.syncing::before{content:'⏳'}
+#pushHoldingsBtn.syncing{opacity:.5;pointer-events:none}
 body.logged-in #loginLanding{display:none!important}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -919,6 +923,8 @@ html { scroll-behavior: smooth; }
       <button id="loginBtn" onclick="document.getElementById('authModal').style.display='flex'" style="background:var(--blue);color:#fff;border:none;padding:4px 14px;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap">登录</button>
       <span id="userSection" style="display:none;font-size:12px">
         <span id="userEmail" style="color:var(--text2)"></span>
+        <button onclick="syncHoldingsToServer()" id="pushHoldingsBtn" style="background:var(--surface2);color:var(--rise);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px;display:none" title="把本机持仓（含成本价）推送到服务器，让加密采集/K线覆盖到全部持仓。新买/卖出后点一次即可">⬆ 同步到服务器</button>
+        <span class="sync-status" id="pushHoldingsStatus"></span>
         <button onclick="syncHoldingsToGitHub()" id="syncBtn" style="background:var(--surface2);color:var(--fall);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px;display:none" title="持仓推送到GitHub仓库，换设备可恢复">↑ 同步</button>
         <button onclick="loadHoldingsFromGitHub()" style="background:var(--surface2);color:var(--blue);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px;display:none" title="从GitHub仓库恢复持仓">↓ 恢复</button>
         <button onclick="localSignOut()" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border);padding:2px 10px;border-radius:4px;font-size:11px;cursor:pointer;margin-left:4px">退出</button>
@@ -2646,6 +2652,119 @@ async function loadOverrides() {
     if (local && typeof local === 'object') Object.assign(costOverrides, local);
   } catch(e) {}
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+// 一键同步持仓到服务器（2026-10-07 义轩要求「肯定要扩，以后都扩」）
+// ──────────────────────────────────────────────────────────────────────────
+// 为什么需要这个（实测发现的三份数据不一致）：
+//   ① 浏览器 localStorage —— 页面显示的那份，义轩手工维护，**最准**（42 条/117 件）
+//   ② CF Worker KV       —— 只存不回写服务器，且实测 44 小时没更新
+//   ③ 服务器 holdings.json —— 采集/价格用，实测只有 32 条（**少的 10 条服务器从没见过**）
+// 而服务器那边加密采集/K 线覆盖都按③ 走 → 少的 10 件没被采到。
+//
+// 为什么走 GitHub Contents API（而不是新开一个接口）：
+//   服务器已有 `github_api_push` 这条通道（api_push_all + GH_TOKEN），
+//   前端已有 GH_REPO / ghToken配置 —— **不需要任何新配置、不需要新 Worker 路由**。
+//   前端把持仓写成 JSON → 推成仓库里的 `holdings_inbox.json`
+//   → 服务器 holdings_push.py 读它、合并进 holdings.json（成本价保守合并）。
+//
+// ⚠ 成本价红线：本函数**只上传不改动**任何成本价；
+//   服务器侧合并规则也是「服务器的 cost 优先，只有服务器为 0 才用浏览器值补」。
+//   成本价在整个链路上**只增不减、绝不被 0 覆盖**。
+window.syncHoldingsToServer = async function () {
+  const btn = document.getElementById('pushHoldingsBtn');
+  const st = document.getElementById('pushHoldingsStatus');
+  const orig = btn ? btn.innerHTML : '';
+  const say = (t, c) => { if (st) { st.textContent = t; st.className = 'sync-status show' + (c ? ' ' + c : ''); } };
+  const fail = (m) => {
+    say('❌ ' + m, 'err');
+    if (btn) { btn.classList.remove('syncing'); btn.innerHTML = orig; btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+    try { showToast('同步失败：' + m, 4000); } catch (e) {}
+    return false;
+  };
+  if (btn) { btn.classList.add('syncing'); btn.innerHTML = '⏳ 同步中…'; btn.style.opacity = '.6'; btn.style.pointerEvents = 'none'; }
+
+  try {
+    var items = loadMyHoldings();
+    if (!items.length) return fail('持仓为空（localStorage 没有记录）');
+    if (!ghToken) return fail('没有 GitHub Token（点右上齿轮 ⚙ 配置）');
+
+    // qty<=0 视为卖出 → 单独放sold，**不放进 holdings**
+    //   （服务器侧也会再判一次 qty，双保险；卖出记录要留痕，不能静默删）
+    var live = [], sold = [];
+    items.forEach(function (it) {
+      var q = Number(it.qty) || 0;
+      var rec = {
+        market_hash: it.market_hash || it.mh || it.n || '',
+        name: it.name || it.n || '',
+        cost: Number(it.cost) || 0,
+        qty: q,
+        wear: it.wear || '',
+        category: it.category || '',
+      };
+      if (!rec.market_hash) return;
+      if (q > 0) live.push(rec); else sold.push({ market_hash: rec.market_hash, name: rec.name, qty: q, ts: new Date().toISOString() });
+    });
+    if (!live.length) return fail('所有条目 qty 都是 0（是不是都标记卖出了？）');
+
+    say('⏳ 上传中（持仓 ' + live.length + ' 条' + (sold.length ? ' / 卖出 ' + sold.length + ' 条' : '') + '）…');
+
+    // ① 卖出记录 → 先走 Worker 已有的 /api/sold（服务器本来就在用它）
+    if (sold.length) {
+      try {
+        for (var i = 0; i < sold.length; i++) {
+          await fetch(WORKER_BASE + '/api/sold', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sold[i]),
+          });
+        }
+      } catch (e) { /* 卖出记录失败不阻塞持仓同步 —— 它只是留痕 */ }
+    }
+
+    // ② 持仓 → 推成仓库里的 holdings_inbox.json，服务器据此合并
+    var payload = JSON.stringify({
+      update_time: new Date().toISOString(),
+      source: 'browser-localStorage',
+      sold: sold,
+      items: live,
+    });
+    var b64 = btoa(unescape(encodeURIComponent(payload)));
+    var auth = { 'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github.v3+json' };
+    var blobR = await fetch('https://api.github.com/repos/' + GH_REPO + '/git/blobs', {
+      method: 'POST', headers: auth, body: JSON.stringify({ content: b64, encoding: 'base64' }),
+    });
+    if (!blobR.ok) return fail('blob 失败 HTTP ' + blobR.status);
+    var blobSha = (await blobR.json()).sha;
+    var refR = await fetch('https://api.github.com/repos/' + GH_REPO + '/git/refs/heads/main', { headers: auth });
+    if (!refR.ok) return fail('取 main ref 失败 HTTP ' + refR.status);
+    var ref = (await refR.json()).object;
+    var path = 'holdings_inbox.json';
+    var cR = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path, {
+      method: 'POST', headers: auth,
+      body: JSON.stringify({ message: 'chore(holdings): 浏览器持仓同步 ' + new Date().toISOString().slice(0, 16).replace('T', ' '), content: b64, sha: blobSha, branch: 'main' }),
+    });
+    var cj = await cR.json().catch(function () { return {}; });
+    // 409 = 文件已存在且 sha 不匹配（并发或上一轮残留）→ 用远端当前 sha 重试一次
+    if (!cR.ok && cR.status === 409) {
+      var gR = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path, { headers: auth });
+      if (gR.ok) {
+        var cur = (await gR.json()).sha;
+        cR = await fetch('https://api.github.com/repos/' + GH_REPO + '/contents/' + path, {
+          method: 'POST', headers: auth,
+          body: JSON.stringify({ message: 'chore(holdings): 浏览器持仓同步（重试）', content: b64, sha: cur, branch: 'main' }),
+        });
+        cj = await cR.json().catch(function () { return {}; });
+      }
+    }
+    if (!cR.ok) return fail('提交失败 HTTP ' + cR.status + ' ' + JSON.stringify(cj).slice(0, 80));
+    say('✅ 已推送。服务器每 10 分钟合并一次（或跑 tools/holdings_push.py 立即生效）', 'ok');
+    try { showToast('持仓已推送，服务器会在 10 分钟内合并', 4000); } catch (e) {}
+    if (btn) { btn.classList.remove('syncing'); btn.innerHTML = orig; btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+    return true;
+  } catch (e) {
+    return fail(String(e && e.message || e).slice(0, 100));
+  }
+};
 
 // ═══════════════ HOLDINGS SYNC (跨设备同步持仓) ═══════════════
 function getHoldingsGHPath() {
@@ -6383,6 +6502,11 @@ function showLoggedIn(account){
   document.body.classList.add('logged-in');
   document.getElementById('loginBtn').style.display='none';
   document.getElementById('userSection').style.display='';
+  /* ★2026-10-07：「⬆ 同步到服务器」按钮原来带 display:none 且从未被显示过
+     （跟syncBtn 一样是死代码，实测同步链路因此从来没建立）。
+     这次要真能用 —— 登录后就显示。*/
+  var pb = document.getElementById('pushHoldingsBtn');
+  if (pb) pb.style.display = '';
   document.getElementById('userEmail').textContent=account||'已登录';
   document.getElementById('authModal').style.display='none';
   document.getElementById('loginGate').style.display='';
