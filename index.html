@@ -2589,8 +2589,18 @@ window.__hpBatchSetCost = function(pairs){
     costOverrides[overrideKey(nm, wr || '')] = cost;
     n++;
   }
-  if (n > 0) saveOverrides();
+  if (n > 0) { saveOverrides(); try { if (typeof window.autoSyncHoldings === 'function') window.autoSyncHoldings(); } catch (e) {} }
   return n;
+};
+/* ★ 2026-10-07：详情卡「成本」格就地改价入口（hpCostEdit 调用）。
+   必须放在块 1 —— costOverrides / overrideKey 是本块作用域，跨块拿不到。 */
+window.__hpSetOneCost = function (nm, wr, cost) {
+  var v = Number(cost);
+  if (isNaN(v) || v < 0) return false;
+  costOverrides[overrideKey(nm, wr || '')] = v;
+  saveOverrides();
+  try { if (typeof window.autoSyncHoldings === 'function') window.autoSyncHoldings(); } catch (e) {}
+  return true;
 };
 window.__hpReload = function(){ try { loadAll(); } catch(e) {} };
 
@@ -3986,7 +3996,9 @@ if (DOM.tbody) {
       item.pnl = item.p - val;
       item.pnlPct = val > 0 ? (item.p - val) / val * 100 : 0;
       costOverrides[overrideKey(item.n, item.w)] = val;
-      saveOverridesDebounced();
+      saveOverrides();   // 同步落盘（非防抖），确保下面 autoSync 读到最新成本
+      // ⚠ 改成本后立即推一次云端，否则要等下一个 3 分钟心跳才生效
+      try { if (typeof window.autoSyncHoldings === 'function') window.autoSyncHoldings(); } catch (e) {}
     }
     invalidateCache(); updateKPI(); render();
   }
@@ -4485,7 +4497,7 @@ window.showPriceChart = async function(itemName, curPrice) {
   document.body.appendChild(overlay);
   
   try {
-    var r = await fetch('/api/pricechart?name=' + encodeURIComponent(itemName));
+    var r = await fetch(WORKER_BASE + '/api/pricechart?name=' + encodeURIComponent(itemName));
     if (!r.ok) {
       var cp0 = Number(curPrice) || 0;
       document.getElementById('chartLoading').textContent = cp0 > 0 ? ('当前价 ¥' + cp0.toFixed(2) + ' · 暂无历史走势') : '暂无走势数据';
@@ -6539,7 +6551,7 @@ function refreshInventory(){
   if(!sid){ say('还没有绑定 SteamID64，请在上面的输入框填一次再刷新。', 'var(--amber)'); return; }
   if(btn){ btn.disabled = true; btn.textContent = '刷新中…'; }
   say('正在拉取最新库存…');
-  fetch('/api/inventory?steamid=' + encodeURIComponent(sid) + '&nocache=1')
+  fetch(WORKER_BASE + '/api/inventory?steamid=' + encodeURIComponent(sid) + '&nocache=1')
     .then(function(r){ return r.text(); })
     .then(function(txt){
       var d = null; try { d = JSON.parse(txt); } catch(e) { d = null; }
@@ -6648,7 +6660,7 @@ function importBySteamId(){
   }
   if(btn){ btn.disabled = true; btn.textContent = '拉取中…'; }
   say('正在从服务器拉取库存…');
-  fetch('/api/inventory?steamid=' + encodeURIComponent(sid))
+  fetch(WORKER_BASE + '/api/inventory?steamid=' + encodeURIComponent(sid))
     .then(function(r){ return r.text(); })
     .then(function(txt){
       var d = null;
@@ -8390,6 +8402,43 @@ function hpMark(idx){
   }
   return hit;
 }
+/* ★ 2026-10-07：详情卡「成本」格就地编辑 —— 点成本格直接出输入框，
+   Enter/✓ 保存（写 costOverrides + 立即触发自动同步），Esc/✕ 取消。
+   与表格成本格同口径：存单价；key = overrideKey(h.n, h.w)，h.w 已把 other 归一成 ''。 */
+window.hpCostEdit = function (el) {
+  var idx = +el.getAttribute('data-idx');
+  var items = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
+  var h = items[idx];
+  if (!h) return;
+  var v = el.querySelector('.v');
+  if (!v || v.querySelector('input')) return;   // 已在编辑中
+  var old = Number(h.c) || 0;
+  v.innerHTML = '<input class="cost-input" type="number" step="0.01" min="0"'
+    + ' style="width:96px" value="' + (old > 0 ? old : '') + '" placeholder="成本 ¥">';
+  var inp = v.querySelector('input');
+  if (inp) { inp.focus(); if (old > 0) inp.select(); }
+  var fin = false;
+  function done(save) {
+    if (fin) return;
+    fin = true;
+    var val = parseFloat(inp ? inp.value : '');
+    if (save && !isNaN(val) && val >= 0) {
+      if (window.__hpSetOneCost) window.__hpSetOneCost(h.n, h.w, val);
+      h.c = val;                                   // 就地更新，不必等全量重算
+      h.pnl = (Number(h.p) || 0) - val;
+      h.pnlPct = val > 0 ? h.pnl / val * 100 : 0;
+    }
+    hpSelect(idx);                                 // 重渲染整卡（成本/盈亏/距回本跟着刷新）
+  }
+  if (inp) {
+    inp.onkeydown = function (e) {
+      if (e.key === 'Enter') done(true);
+      else if (e.key === 'Escape') done(false);
+    };
+    inp.onclick = function (e) { e.stopPropagation(); };  // 点输入框别再触发格子的 onclick
+    inp.onblur = function () { setTimeout(function () { done(true); }, 150); };
+  }
+};
 function hpSelect(idx){
   var items = (window._hpList && window._hpList.length) ? window._hpList : (window.H || []);
   var h = items[idx];
@@ -8445,9 +8494,10 @@ function hpSelect(idx){
                       : '这件饰品暂无 Kronos 预测数据（预测仅覆盖推荐池前10 + AI精选 + 持仓）')+'">Kronos 预测</button>'
    + '</div>'
    + '<div class="hp-grid">'
-   + '<div class="hp-cell"><div class="k">成本</div><div class="v mono">'
+   + '<div class="hp-cell" data-idx="'+idx+'" onclick="hpCostEdit(this)" title="点击修改成本" style="cursor:pointer">'
+   + '<div class="k">成本 ✎</div><div class="v mono">'
    + (noCost ? '<span style="color:var(--amber)">未录入</span>' : ('¥'+hpFmt(c)))+'</div>'
-   + '<div class="s">'+(noCost ? '点击上方「＋ 添加」补录' : '买入价')+'</div></div>'
+   + '<div class="s">'+(noCost ? '点击这里补录' : '点击修改')+'</div></div>'
    + '<div class="hp-cell hp-px" data-idx="'+idx+'" onmouseenter="hpCellTip(this)" onmouseleave="hpPopHide()"><div class="k">现价</div><div class="v mono">¥'+hpFmt(p)+'</div>'
    + '<div class="s">ECO 平台 · 悬停比价</div></div>'
    + '<div class="hp-cell hp-px" data-idx="'+idx+'" onmouseenter="hpCellTip(this)" onmouseleave="hpPopHide()"><div class="k">BUFF 卖价</div><div class="v mono">¥'
@@ -9431,7 +9481,11 @@ window.autoSyncHoldings = async function () {
     try { items = JSON.parse(localStorage.getItem('cs2_holdings_' + key) || '[]'); } catch (e) {}
     if (!Array.isArray(items) || !items.length) return;
     // 去抖：localStorage 没变就不推（省 KV 写入）
-    var snap = JSON.stringify(items);
+    // ⚠ costOverrides（表格点编辑填的成本，单价）也纳入快照 —— 否则只改了成本、
+    //   cs2_holdings 没变 → snap 不变 → 提前 return → 成本永不推送（KV cost 全 0 的根因）
+    var ovSnap = '{}';
+    try { ovSnap = localStorage.getItem('cs2_cost_overrides') || '{}'; } catch (e) {}
+    var snap = JSON.stringify(items) + '|' + ovSnap;
     if (snap === window._autoSyncSnap) return;
     window._autoSyncSnap = snap;
     // ⚠ 拆成两路：
@@ -9439,11 +9493,25 @@ window.autoSyncHoldings = async function () {
     //     卖出件放进去会被规整成 1 → 误判为还持有，所以不能进 KV。
     //   · 卖出件(qty<=0) 走 /api/sold（这个接口本就通），服务器按它移除持仓。
     var live = items.filter(function (it) { return _normQty(it) > 0; }).map(function (it) {
+      // ⚠ 成本打通：表格点编辑存的是 costOverrides（单价），与 cs2_holdings.cost（总价）平行，
+      //    此前只推 it.cost（多为 0 / 且是总价口径）→ KV/服务器 cost 全 0 或口径错。
+      //    这里合并 overrides（单价，优先）；没有 override 时回退 it.cost/qty（转单价对齐服务器）。
+      var nm = it.name || it.n || '';
+      var wr = it.wear || '';
+      if (wr === 'other') wr = '';
+      var ov = {};
+      try { ov = JSON.parse(localStorage.getItem('cs2_cost_overrides') || '{}'); } catch (e) {}
+      var okey = (typeof window.overrideKey === 'function') ? window.overrideKey(nm, wr) : (nm + '|' + wr);
+      var oc = ov[okey];
+      var base = Number(it.cost) || 0;
+      var q = _normQty(it);
+      var perUnit = (q > 0) ? (base / q) : base;   // cs2_holdings.cost 是总价 → 转单价
+      var cost = (oc !== undefined && oc !== null && !isNaN(Number(oc))) ? Number(oc) : perUnit;
       return {
         market_hash: it.market_hash || it.mh || it.n || '',
-        name: it.name || it.n || '',
-        cost: Number(it.cost) || 0,
-        qty: _normQty(it),
+        name: nm,
+        cost: cost,
+        qty: q,
         wear: it.wear || '',
       };
     }).filter(function (it) { return it.market_hash; });
@@ -9463,10 +9531,10 @@ window.autoSyncHoldings = async function () {
   } catch (e) {}
 };
 
-// 心跳：每 3 分钟自动推一次（仅在页面可见时），切后台不推省流量
+// 心跳：每 1 分钟自动推一次（仅在页面可见时），切后台不推省流量
 window._autoSyncTimer = setInterval(function () {
   if (document.visibilityState === 'visible') window.autoSyncHoldings();
-}, 180000);
+}, 60000);
 // ⚡ 页面加载后立即推一次（不等首个心跳）—— 新加/导入的条目最快同步
 setTimeout(function () {
   if (document.visibilityState === 'visible') window.autoSyncHoldings();
