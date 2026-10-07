@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "e381204",
+    "title": "成本同步打通+详情卡就地改成本+心跳1分钟+统一WORKER_BASE",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
     "tag": "chore",
     "scope": "holdings",
     "sha": "fb3c2cc",
@@ -150,13 +158,5 @@
     "sha": "3050d11",
     "title": "自建 Toast / Confirm 组件，替换全部 14 处原生 alert + 3 处 confirm —— 原生弹窗样式丑且不可定制；同时导入/补齐改为延",
     "desc": "迟刷新，提示不再被 reload 刷掉"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "import",
-    "sha": "210336b",
-    "title": "合并方式默认值改为「仅新增」（原默认「增量合并」在库存重复导入时会数量翻倍）+ 三个选项文案加警示（整表替换会丢成本价）",
-    "desc": ""
   }
 ]
