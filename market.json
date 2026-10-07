@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 889.16,
-    "change": -11.08,
-    "change_pct": -11.08,
-    "market_value": 272930362.49,
-    "total_items": 4047,
-    "updated": "2026-10-07T20:00:03+08:00",
+    "latest": 891.75,
+    "change": -10.83,
+    "change_pct": -10.83,
+    "market_value": 273726302.5,
+    "total_items": 4059,
+    "updated": "2026-10-07T22:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4374,6 +4374,14 @@
         "close": 889.16,
         "high": 889.16,
         "low": 838.72
+      },
+      {
+        "date": "2026-10-07",
+        "dateFull": "2026-10-07 22:00",
+        "open": 891.75,
+        "close": 891.75,
+        "high": 891.75,
+        "low": 891.75
       }
     ],
     "volBar": [],
@@ -13105,12 +13113,20 @@
         "index": 889.16,
         "change_pct": -11.08,
         "market_value": 272930362.49
+      },
+      {
+        "time": "22:00",
+        "date": "2026-10-07",
+        "timestamp": 1791381603,
+        "index": 891.75,
+        "change_pct": -10.83,
+        "market_value": 273726302.5
       }
     ],
     "selling": {
-      "total_selling": 1389127,
+      "total_selling": 1370372,
       "total_selling_prev": 0,
-      "total_selling_delta": 1389127,
+      "total_selling_delta": 1370372,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13118,7 +13134,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791374403422,
+  "index_updated": 1791381603128,
   "alerts": [
     {
       "name": "Sticker | HEROIC (Holo) | Shanghai 2024",
@@ -31819,7 +31835,7 @@
     "MP9 | 黑砂 (崭新出厂)",
     "Markus Delrow | FBI HRT"
   ],
-  "updated": "2026-10-07T13:07:29Z",
+  "updated": "2026-10-07T14:07:23Z",
   "steam_market_items": 81,
   "steam_market_recs": {
     "momentum": [],
