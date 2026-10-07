@@ -377,6 +377,23 @@ def main():
         if not args.no_push:
             push_out(out, meta)
 
+        # ★ 2026-10-07：日K 采完顺带重建「持仓裁剪版」kline_hold_1d.json。
+        #   为什么必须在这里做：整包日K 6.83MB，前端为画一张 30 点走势图要等它
+        #   （实测无压缩 504 秒），所以单独给持仓出一份 ~190KB 的裁剪版。
+        #   放在 1d 档之后是唯一正确的时机 —— 此刻磁盘上的 kline_sd_1d.json
+        #   刚被写成最新，裁剪出来才是新的；放在前面会裁到上一轮的旧数据。
+        if g == '1d' and not args.no_push:
+            try:
+                import subprocess
+                r = subprocess.run(
+                    [sys.executable, os.path.join(REPO, 'tools', 'build_kline_hold.py')],
+                    cwd=REPO, timeout=180,
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                txt = (r.stdout or b'').decode('utf-8', 'ignore').strip()
+                print('  [裁剪版] %s' % (txt.replace('\n', '\n           ') if txt else 'exit=%s' % r.returncode))
+            except Exception as e:
+                print('  ⚠ 裁剪版构建失败（不影响整包）: %s' % e)
+
 
 if __name__ == '__main__':
     main()
