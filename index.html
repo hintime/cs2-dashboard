@@ -9554,6 +9554,10 @@ window.autoSyncHoldings = async function () {
 window._autoSyncTimer = setInterval(function () {
   if (document.visibilityState === 'visible') window.autoSyncHoldings();
 }, 180000);
+// ⚡ 页面加载后立即推一次（不等首个心跳）—— 新加/导入的条目最快同步
+setTimeout(function () {
+  if (document.visibilityState === 'visible') window.autoSyncHoldings();
+}, 800);
 // 切回前台立刻补推一次（修正切后台期间的变化）
 document.addEventListener('visibilitychange', function () {
   if (document.visibilityState === 'visible') window.autoSyncHoldings();
