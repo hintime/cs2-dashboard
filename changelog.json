@@ -1,146 +1,162 @@
 [
   {
     "date": "2026-10-07",
+    "tag": "chore",
+    "scope": "holdings",
+    "sha": "fb3c2cc",
+    "title": "删除「↑同步」「↓恢复」两个 GitHub 跨设备死按钮 + 相关函数/CSS",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "perf",
+    "scope": "holdings",
+    "sha": "1f966d9",
+    "title": "页面加载后立即推送持仓（不等首个心跳）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "chore",
+    "scope": "holdings",
+    "sha": "baf34e0",
+    "title": "删除「同步到服务器」手动按钮 —— 同步已全自动",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "edd34b2",
+    "title": "全自动同步（心跳推送 + 卖出自动移除，无需改 Worker）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "fix",
+    "scope": "holdings",
+    "sha": "2e2155b",
+    "title": "一键同步改走 Worker KV（免 token）—— GitHub 通道实测 401",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "f2b8943",
+    "title": "一键同步持仓到服务器 + 自动合并（成本价红线：0 不覆盖）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "fix",
+    "scope": "changelog",
+    "sha": "fbbdc8d",
+    "title": "读远端 main + 排除数据刷新噪音，今日功能提交 1 条补回 4 条",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "12be992",
+    "title": "切档诊断日志 + 异常振幅标记(B1)，数据源计数移出 map",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
     "tag": "feat",
     "scope": "kline",
-    "sha": "487acf3",
+    "sha": "f310f0c",
+    "title": "接入 SteamDT 官方K线（1小时/日/周），双源回落+ 自采保底",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "perf",
+    "scope": "name_map",
+    "sha": "b7e3d76",
+    "title": "前端改用精简版中文名表 name_map_ui.json（41992->4063 条，3.81MB->0.33MB）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "8e14dd7",
+    "title": "同步三档 K线前端到服务器工作区后重推（首次 API 推送读的是旧文件）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "kline",
+    "sha": "a05596d",
     "title": "K线扩为三档粒度 2小时/日/周，日K周K 无上限 + 修跨平台价差污染振幅",
     "desc": ""
   },
   {
     "date": "2026-10-05",
-    "tag": "feat",
-    "scope": "inventory",
-    "sha": "595823a",
-    "title": "差异面板新增「⬇ 补齐新增（写入持仓）」按钮 —— 显式点击才写入，只补「库存有、持仓没记」的项；不删任何记录、不改已有成本价",
+    "tag": "chore",
+    "scope": "changelog",
+    "sha": "4178755",
+    "title": "用新规则重新生成日志（20 条 / 18 条带 scope）",
     "desc": ""
   },
   {
     "date": "2026-10-05",
     "tag": "fix",
-    "scope": "import",
-    "sha": "d563a97",
-    "title": "弹窗加 max-height/overflow 使其可滚动 + 预览出现后自动滚过去 —— 此前预览表(含「确认导入」按钮)在弹窗底部被裁掉，用户根本够不着",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "feat",
-    "scope": "inventory",
-    "sha": "0f25f91",
-    "title": "绑定 SteamID 后可一键「刷新库存」，与持仓对比差异（新增 / 已不在库存(可能已卖出) / 数量不符），只读不改动持仓与成本价",
+    "scope": "changelog",
+    "sha": "4331b9a",
+    "title": "更新日志六项修正（噪音 9/20 → 0/20）",
     "desc": ""
   },
   {
     "date": "2026-10-05",
     "tag": "fix",
-    "scope": "import",
-    "sha": "abe1644",
-    "title": "修复三条导入路径全部报 \"cnName is not defined\" —— 块1是IIFE，cnName/overrideKey/wearCN 是局部函数未挂",
-    "desc": "window，块3的 parseSteamJson 跨块调用必然 ReferenceError；显式挂载 + 加防御兜底"
+    "scope": "critical",
+    "sha": "c1d916e",
+    "title": "修复块1语法错误（4398行 forEach 未闭合 → 整个块1不执行，WEAR_MAP/cnName/switchView 等全部失效、页面核心功能瘫痪）+",
+    "desc": "补修 3 个低危项（滚动锁还原/无行情如实提示/卖出传 id）"
   },
   {
     "date": "2026-10-05",
-    "tag": "feat",
-    "scope": "import",
-    "sha": "5171cb0",
-    "title": "① 直接导入区新增「如何获取 SteamID64」可折叠指引 + 输入框支持粘贴资料页 URL 自动提取 ID",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "buff_history",
-    "sha": "ef67934",
-    "title": "hour_key 保留分钟 + 就绪度口径澄清 - save_buff_history 的 hour_key 从 T%H:00 改 T%H:%M：   cron",
-    "desc": "prices 轮 */30（:15/:45）两轮原本写进同一 key，后一轮覆盖前一轮，   30 分钟采集实际只落了一半 - 保留上限 12 → 24 个时点（半小时粒度下= 12 小时，够异动页 6h/12h 跨期） - kronos_ready.py：1.00 h/点经实测确认正确（prices 表由 history 轮每小时   :15 写入，不是 prices 轮）。报告新增 cadence_evidence() 直接打出证据   （:45 出现 0 次），并删除已失效的「eco 节奏慢 4.5 倍」注释"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "feat",
-    "scope": "inventory",
-    "sha": "efae6d7",
-    "title": "bookmarklet 分页拉全库存 + 聚合传输（防 window.name 截断） + more_items 宽松比较 + 兜底路径统一聚合",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "wear",
-    "sha": "ea1ef64",
-    "title": "统一磨损中文译名并补全 datalist 翻译 - 新增 HP_WEAR_CN/cnWear()，datalist 自动补全不再出中英混杂条目   （截图里 F",
-    "desc": "ield-Tested 未翻译 → 现在 5 种磨损都有中文项） - WW 统一为官方「破损不堪」（原 cnName 译「战地风云」、下拉写「战火纷飞」、   上游数据是「破损不堪」，三处不一致） - eco_catalog/generate_correlation 的 WW 排除判据同时收「破旧不堪」"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "kronos",
-    "sha": "66da0c7",
-    "title": "独立环境探测从「路径存在」改为「真 import torch」+ Linux 候选路径兜底扫描；两种失败原因分开报错",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "kline",
-    "sha": "cf1a606",
-    "title": "校正采样口径 4-6小时 → 30分钟/次（实测 cron */30、每天28个采样点，high/low 覆盖度远高于原描述）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "scope": "kline",
-    "sha": "a06290d",
-    "title": "刷新日K数据 2026-10-05 18:50（1200 件 / 68399 根）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "scope": "kline",
-    "sha": "3197b2a",
-    "title": "刷新日K数据 2026-10-05 18:47（1200 件 / 68399 根）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "scope": "rec",
-    "sha": "a9e7249",
-    "title": "周度记分卡 + 双体检 2026-10-05",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "scope": "kline",
-    "sha": "5019fce",
-    "title": "刷新日K数据 2026-10-05 04:41（1200 件 / 68208 根）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "scope": "",
-    "sha": "8b6932d",
-    "title": "删除临时 K线验证探针",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "scope": "",
-    "sha": "6911f51",
-    "title": "临时 K线线上验证探针（验证后删除）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "feat",
+    "tag": "style",
     "scope": "holdings",
-    "sha": "367b5fe",
-    "title": "持仓走势图加 K线视图（日K 由日内采样聚合）",
+    "sha": "7e67c7a",
+    "title": "去掉持仓列表的「重灾区/观察区/健康区」分区",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "holdings",
+    "sha": "d47eff3",
+    "title": "印花等小众品类现价全为 0（批量补录显示「—」、总盈亏虚高） - 根因：`h.p` 不是持仓自带字段，只在 csqaqData[hn] 命中时才被赋值（inde",
+    "desc": "x.html:4402），   而 csqaq_boards.json 里**没有印花/探员/武器箱/音乐盒** → 这些件 h.p 恒为 undefined - 影响面比想象的���：7 处直接 `Number(h.p)||0`，其中盈亏汇总与总市值把 0 当现价   → 32 件里 24 件现价被当成 0，总盈亏少算 ¥982（亏损被当成没亏） - 修法：新增 hpPrice() 作为唯一取值入口，回退链h.p → h.price → eco_platform_price   → eco_price → buff_sell（buff_sell 放最后：它是「在售价」不是成交价）   7 处调用点全部改用它；批量弹窗在完全无报价时显示「暂无报价」而非「—」"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "audit",
+    "sha": "d703360",
+    "title": "修复独立审计发现的 7 个缺陷 —— ①库存缓存跨SteamID/账号串号(加_lastInvSid校验+按账号隔离绑定) ②导入去重键与全站主键不一致(统一",
+    "desc": "market_hash) ③reload 掐掉云端同步防抖(新增 hpCloudSyncNow 立即推送) ④剪贴板预览渲染进隐藏弹窗 ⑤d.items 非数组污染 ⑥空库存提示自相矛盾 ⑦差异列表截断无提示"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "ui",
+    "sha": "3050d11",
+    "title": "自建 Toast / Confirm 组件，替换全部 14 处原生 alert + 3 处 confirm —— 原生弹窗样式丑且不可定制；同时导入/补齐改为延",
+    "desc": "迟刷新，提示不再被 reload 刷掉"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "import",
+    "sha": "210336b",
+    "title": "合并方式默认值改为「仅新增」（原默认「增量合并」在库存重复导入时会数量翻倍）+ 三个选项文案加警示（整表替换会丢成本价）",
     "desc": ""
   }
 ]
