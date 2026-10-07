@@ -1586,7 +1586,18 @@ def fetch_steamdt_klines(items_list):
         )
         print(f'[SteamDT] Test response: success={test.get("success")}, errorCode={test.get("errorCode")}, errorMsg={test.get("errorMsg")}')
         if not test.get('success'):
-            print(f'[WARN] SteamDT key invalid (code={test.get("errorCode")}, msg={test.get("errorMsg")}), skipping')
+            _ec = test.get('errorCode')
+            # ⚠ 2026-10-07 修：4005 不是「key 无效」，是**本小时/本日请求超上限**。
+            #   原来一律打印 "SteamDT key invalid ... skipping" 并return {}，
+            #   日志上看像是密钥坏了，实际是限频 —— 排查时被带偏过。
+            #   限频的正确表现：**本轮跳过即可，等下一个窗口**；
+            #   key 真无效（401/403 之类）才需要人处理。
+            if _ec in (4005, 429):
+                print('[SteamDT] 本轮命中接口限频（%s），跳过 K 线；'
+                      '下个 cron 窗口自动重试，无需处理' % _ec)
+            else:
+                print('[WARN] SteamDT key 无效或接口异常（code=%s, msg=%s），跳过'
+                      % (_ec, test.get('errorMsg')))
             return {}
     except Exception as e:
         print(f'[WARN] SteamDT unreachable: {e}, skipping')
@@ -3300,16 +3311,48 @@ def sync_changelog():
        而 `fix(kline):` / `feat(inventory):` 这类真功能改动被 `wip:` 和
        `chore: update *.json` 挤出了窗口（实测线上 20 条里 12 条是噪音）。
        现在改成「先扫足够多，再过滤，最后取前N 条有效提交」。
+
+    ⚠⚠ **必须读远端 main，不能只读本地 HEAD**（2026-10-07 修）：
+       服务器的 git 推送走的是 **GitHub API 通道**（github_api_push），
+       那条路只写远端、**不更新服务器本地的 .git**（API 拿不到本地 commit 对象，
+       也不可能凭空构造一个 commit）。于是：
+         · 服务器本地 HEAD 上只有手动 git commit 的那几条功能提交；
+         · 我一天里经 API 推的 8 次功能提交**全部只存在于远端 main**。
+       结果 changelog 只收录了 00:57 那一条，10-06 整天0 条 —— 而实际上
+       10-06 有 5 次功能提交（feat(inventory)/fix/feat 各若干）。
+       **结论：changelog 是给用户看的全局历史，必须以远端 main 为准。**
+       读法：`git log origin/main`，本地没有该 ref 时回退到 HEAD。
     """
     import subprocess as _sp
     try:
         cf = _sp.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-        # ⚠ 扫 300 条（不是 30）：数据刷新提交密度极高（每 30 分钟一批），
-        #   扫 300 条大约能覆盖最近 3~5 天的真功能改动。
-        r = _sp.run(['git', 'log', '--date=short', '--format=%h|%ad|%s', '-300'],
+
+        # ⚠ 先确认 origin/main 存在（服务器 shallow clone 或未 fetch 时没有）
+        #   没有就退回本地 HEAD —— 宁可少收录，也不能整个失败（静默停更）。
+        def _has_ref(ref):
+            try:
+                return _sp.run(['git', 'rev-parse', '--verify', ref],
+                               capture_output=True, text=True,
+                               cwd=DATA_DIR, creationflags=cf).returncode == 0
+            except Exception:
+                return False
+
+        ref = 'origin/main' if _has_ref('origin/main') else 'HEAD'
+        if ref == 'HEAD':
+            print('[CL] origin/main 不可用，退回本地 HEAD（收录范围会偏窄）')
+
+        # ⚠ 扫 800 条（不是 300）：数据刷新提交密度极高 ——
+        #   实测 2026-10-07 一天就87 条（86 条 wip/chore + 1 条 feat），
+        #   扫 300 条**只够今天一天**，前几天的真改动全被挤出窗口。
+        #   800 条约覆盖 1~2 周，能保证「最近 20 条有效提交」跨到上周。
+        r = _sp.run(['git', 'log', '--date=short', '--format=%h|%ad|%s', '-800', ref],
                     capture_output=True, text=True, encoding='utf-8', cwd=DATA_DIR, creationflags=cf)
-        if r.returncode != 0:
-            return
+        if r.returncode != 0 or not r.stdout.strip():
+            if ref != 'HEAD':
+                r = _sp.run(['git', 'log', '--date=short', '--format=%h|%ad|%s', '-800', 'HEAD'],
+                            capture_output=True, text=True, encoding='utf-8', cwd=DATA_DIR, creationflags=cf)
+            if r.returncode != 0 or not r.stdout.strip():
+                return
         entries = []
         seen_titles = set()
         for line in r.stdout.strip().split('\n'):
@@ -3323,6 +3366,17 @@ def sync_changelog():
             if low.startswith(_CL_DROP_PREFIX):
                 continue
             if any(p in low for p in _CL_DROP_PATTERNS):
+                continue
+            # ⚠ 2026-10-07 加：`chore(kline): 刷新...` 这类「数据产物刷新」
+            #   也是噪音 —— 自采 + SteamDT 官方各每小时推一条，一天4+ 条，
+            #   会把真功能提交挤出 20 条窗口（实测今天 87 条提交里 86 条是噪音）。
+            #   但**不带 scope 的 chore 要保留**（那是结构性改动），
+            #   所以只丢「带 scope 且 scope 属于数据产物类」的。
+            #   ⚠ 复用已有的 _parse_conventional（它已处理 scope 里的 `+` 拆分），
+            #     不要自己再写一条正则 —— 两处解析规则不一致迟早会漏。
+            _ptag, _pscope, _ptitle = _parse_conventional(subject)
+            if _ptag == 'chore' and _pscope.lower() in (
+                    'kline', 'data', 'json', 'push', 'ci', 'name_map'):
                 continue
 
             # ── ① 解析 type(scope): title ──
