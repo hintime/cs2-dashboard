@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 803.28,
-    "change": -19.67,
-    "change_pct": -19.67,
-    "market_value": 246571107.75,
-    "total_items": 3892,
-    "updated": "2026-10-07T14:00:03+08:00",
+    "latest": 810.13,
+    "change": -18.99,
+    "change_pct": -18.99,
+    "market_value": 248673932.2,
+    "total_items": 3914,
+    "updated": "2026-10-07T16:00:02+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4363,8 +4363,8 @@
         "date": "2026-10-07",
         "dateFull": "2026-10-07 14:00",
         "open": 803.28,
-        "close": 803.28,
-        "high": 803.28,
+        "close": 810.13,
+        "high": 810.13,
         "low": 803.28
       }
     ],
@@ -13073,12 +13073,20 @@
         "index": 803.28,
         "change_pct": -19.67,
         "market_value": 246571107.75
+      },
+      {
+        "time": "16:00",
+        "date": "2026-10-07",
+        "timestamp": 1791360002,
+        "index": 810.13,
+        "change_pct": -18.99,
+        "market_value": 248673932.2
       }
     ],
     "selling": {
-      "total_selling": 1375404,
+      "total_selling": 1382643,
       "total_selling_prev": 0,
-      "total_selling_delta": 1375404,
+      "total_selling_delta": 1382643,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13086,7 +13094,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791352803059,
+  "index_updated": 1791360002930,
   "alerts": [
     {
       "name": "Sticker | HEROIC (Holo) | Shanghai 2024",
@@ -31786,7 +31794,7 @@
     "Negev | Dazzle (Minimal Wear)",
     "Negev | Infrastructure (Factory New)"
   ],
-  "updated": "2026-10-07T07:36:31Z",
+  "updated": "2026-10-07T08:06:46Z",
   "steam_market_items": 71,
   "steam_market_recs": {
     "momentum": [
