@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 794.13,
-    "change": -20.59,
-    "change_pct": -20.59,
-    "market_value": 243760497.47,
-    "total_items": 3851,
-    "updated": "2026-10-07T08:00:03+08:00",
+    "latest": 800.38,
+    "change": -19.96,
+    "change_pct": -19.96,
+    "market_value": 245681311.36,
+    "total_items": 3856,
+    "updated": "2026-10-07T10:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4350,6 +4350,14 @@
         "close": 794.13,
         "high": 794.13,
         "low": 793.81
+      },
+      {
+        "date": "2026-10-07",
+        "dateFull": "2026-10-07 10:00",
+        "open": 800.38,
+        "close": 800.38,
+        "high": 800.38,
+        "low": 800.38
       }
     ],
     "volBar": [],
@@ -13033,12 +13041,20 @@
         "index": 794.13,
         "change_pct": -20.59,
         "market_value": 243760497.47
+      },
+      {
+        "time": "10:00",
+        "date": "2026-10-07",
+        "timestamp": 1791338403,
+        "index": 800.38,
+        "change_pct": -19.96,
+        "market_value": 245681311.36
       }
     ],
     "selling": {
-      "total_selling": 1365989,
+      "total_selling": 1362426,
       "total_selling_prev": 0,
-      "total_selling_delta": 1365989,
+      "total_selling_delta": 1362426,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13046,7 +13062,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791331203846,
+  "index_updated": 1791338403485,
   "alerts": [
     {
       "name": "Prof. Shahmat | Elite Crew",
@@ -31748,7 +31764,7 @@
     "Negev | Infrastructure (Factory New)",
     "Negev | Infrastructure (Field-Tested)"
   ],
-  "updated": "2026-10-07T01:36:28Z",
+  "updated": "2026-10-07T02:06:27Z",
   "steam_market_items": 71,
   "steam_market_recs": {
     "momentum": [
