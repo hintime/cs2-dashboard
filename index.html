@@ -9271,7 +9271,10 @@ function renderList(){
   if (!window._priceSummaryLoaded && !window._priceSummaryLoading){
     window._priceSummaryLoading = true;
     window._priceSummary = {};
-    fetch('price_summary.json')
+    /* ★ 2026-10-07 加 ?v= 破缓存：项目里其他数据文件都带了缓存版本号，
+       只有这里没带 → 浏览器可能长期吃一份旧的/空的 price_summary.json，
+       表现就是「列表迷你走势图全是—」。口径与 kline 的 ?v= 一致（15 分钟粒度）。 */
+    fetch('price_summary.json?v=' + Math.floor(Date.now()/900000))
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(ps){
         window._priceSummary = ps || {};
@@ -9289,9 +9292,12 @@ function renderList(){
   var _klPre = klState();
   if (!(KL.loaded && KL.loaded[_klPre]) && !KL.loading[_klPre]){
     loadKline(_klPre).then(function () {
-      if (window._hpView === 'k'){
-        try { hpSelect(window._hpCur || 0); } catch(e) {}
-      }
+      /* ★ 2026-10-07：官方K线现在被 hpCurve 当作**兜底数据源**用了——
+         列表迷你走势图(hpSparkline) 和详情卡图(hpChart) 都读它。
+         所以到位后必须把「列表 + 当前详情」都重渲染，不能只在 K 线态重绘，
+         否则持仓页迷你图/详情图会一直停在空态（数据到了但没人重画）。 */
+      try { if (typeof renderList === 'function') renderList(); } catch(e) {}
+      try { if (window._hpCur != null) hpSelect(window._hpCur); } catch(e) {}
     });
   }
   var items;
