@@ -3,105 +3,9 @@
     "date": "2026-10-07",
     "tag": "feat",
     "scope": "kline",
-    "sha": "f310f0c",
-    "title": "接入 SteamDT 官方K线（1小时/日/周），双源回落+ 自采保底",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "perf",
-    "scope": "name_map",
-    "sha": "b7e3d76",
-    "title": "前端改用精简版中文名表 name_map_ui.json（41992->4063 条，3.81MB->0.33MB）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "fix",
-    "scope": "kline",
-    "sha": "8e14dd7",
-    "title": "同步三档 K线前端到服务器工作区后重推（首次 API 推送读的是旧文件）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "feat",
-    "scope": "kline",
-    "sha": "a05596d",
+    "sha": "487acf3",
     "title": "K线扩为三档粒度 2小时/日/周，日K周K 无上限 + 修跨平台价差污染振幅",
     "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "scope": "changelog",
-    "sha": "4178755",
-    "title": "用新规则重新生成日志（20 条 / 18 条带 scope）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "changelog",
-    "sha": "4331b9a",
-    "title": "更新日志六项修正（噪音 9/20 → 0/20）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "critical",
-    "sha": "c1d916e",
-    "title": "修复块1语法错误（4398行 forEach 未闭合 → 整个块1不执行，WEAR_MAP/cnName/switchView 等全部失效、页面核心功能瘫痪）+",
-    "desc": "补修 3 个低危项（滚动锁还原/无行情如实提示/卖出传 id）"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "style",
-    "scope": "holdings",
-    "sha": "7e67c7a",
-    "title": "去掉持仓列表的「重灾区/观察区/健康区」分区",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "holdings",
-    "sha": "d47eff3",
-    "title": "印花等小众品类现价全为 0（批量补录显示「—」、总盈亏虚高） - 根因：`h.p` 不是持仓自带字段，只在 csqaqData[hn] 命中时才被赋值（inde",
-    "desc": "x.html:4402），   而 csqaq_boards.json 里**没有印花/探员/武器箱/音乐盒** → 这些件 h.p 恒为 undefined - 影响面比想象的���：7 处直接 `Number(h.p)||0`，其中盈亏汇总与总市值把 0 当现价   → 32 件里 24 件现价被当成 0，总盈亏少算 ¥982（亏损被当成没亏） - 修法：新增 hpPrice() 作为唯一取值入口，回退链h.p → h.price → eco_platform_price   → eco_price → buff_sell（buff_sell 放最后：它是「在售价」不是成交价）   7 处调用点全部改用它；批量弹窗在完全无报价时显示「暂无报价」而非「—」"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "audit",
-    "sha": "d703360",
-    "title": "修复独立审计发现的 7 个缺陷 —— ①库存缓存跨SteamID/账号串号(加_lastInvSid校验+按账号隔离绑定) ②导入去重键与全站主键不一致(统一",
-    "desc": "market_hash) ③reload 掐掉云端同步防抖(新增 hpCloudSyncNow 立即推送) ④剪贴板预览渲染进隐藏弹窗 ⑤d.items 非数组污染 ⑥空库存提示自相矛盾 ⑦差异列表截断无提示"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "feat",
-    "scope": "ui",
-    "sha": "3050d11",
-    "title": "自建 Toast / Confirm 组件，替换全部 14 处原生 alert + 3 处 confirm —— 原生弹窗样式丑且不可定制；同时导入/补齐改为延",
-    "desc": "迟刷新，提示不再被 reload 刷掉"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "import",
-    "sha": "210336b",
-    "title": "合并方式默认值改为「仅新增」（原默认「增量合并」在库存重复导入时会数量翻倍）+ 三个选项文案加警示（整表替换会丢成本价）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "kronos",
-    "sha": "7630882",
-    "title": "就绪度门槛从训练 config 读，口径与实际训练对齐 - 原来硬编码 LOOKBACK=512，注释写「与 config 一致」但 config 实际是 33",
-    "desc": "6   → 看板按 561 算门槛、训练只要 385，「还差134点」是按错门槛算的 - 改为 _load_window() 从 configs/config_cs2_buff_1h.yaml 读 - 训练 config 纳入仓库 configs/（原先只在本机 E://cs2-kronos-ft//，服务器根本没有，/n  口径必然分叉） - 报告讲清 WINDOW 语义：段长 < WINDOW 切不出样本（每段样本数 = 段长-WINDOW+1），   所以「段长 >= lookback(336)」这种门槛无意义   → 校正后结论翻转：buff/yy 已达标（2721标的 / 117638 样本）"
   },
   {
     "date": "2026-10-05",
@@ -157,6 +61,102 @@
     "scope": "inventory",
     "sha": "efae6d7",
     "title": "bookmarklet 分页拉全库存 + 聚合传输（防 window.name 截断） + more_items 宽松比较 + 兜底路径统一聚合",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "wear",
+    "sha": "ea1ef64",
+    "title": "统一磨损中文译名并补全 datalist 翻译 - 新增 HP_WEAR_CN/cnWear()，datalist 自动补全不再出中英混杂条目   （截图里 F",
+    "desc": "ield-Tested 未翻译 → 现在 5 种磨损都有中文项） - WW 统一为官方「破损不堪」（原 cnName 译「战地风云」、下拉写「战火纷飞」、   上游数据是「破损不堪」，三处不一致） - eco_catalog/generate_correlation 的 WW 排除判据同时收「破旧不堪」"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "kronos",
+    "sha": "66da0c7",
+    "title": "独立环境探测从「路径存在」改为「真 import torch」+ Linux 候选路径兜底扫描；两种失败原因分开报错",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "cf1a606",
+    "title": "校正采样口径 4-6小时 → 30分钟/次（实测 cron */30、每天28个采样点，high/low 覆盖度远高于原描述）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "kline",
+    "sha": "a06290d",
+    "title": "刷新日K数据 2026-10-05 18:50（1200 件 / 68399 根）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "kline",
+    "sha": "3197b2a",
+    "title": "刷新日K数据 2026-10-05 18:47（1200 件 / 68399 根）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "rec",
+    "sha": "a9e7249",
+    "title": "周度记分卡 + 双体检 2026-10-05",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "kline",
+    "sha": "5019fce",
+    "title": "刷新日K数据 2026-10-05 04:41（1200 件 / 68208 根）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "",
+    "sha": "8b6932d",
+    "title": "删除临时 K线验证探针",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "",
+    "sha": "6911f51",
+    "title": "临时 K线线上验证探针（验证后删除）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "367b5fe",
+    "title": "持仓走势图加 K线视图（日K 由日内采样聚合）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "chart",
+    "sha": "0c5b2e6",
+    "title": "走势图全屏看大图（搬DOM不重画，viewBox不变，Esc/✕/双击退出，缩放与读数联动全部复用）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "feat",
+    "scope": "watchdog",
+    "sha": "7234a87",
+    "title": "生成物停更监控（41个产物/5档阈值，企微告警+6h重提醒，cron每小时第7分）",
     "desc": ""
   }
 ]
