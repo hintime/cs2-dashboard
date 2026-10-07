@@ -7299,24 +7299,28 @@ function hpCurve(h){
       if (!m || !h) return null;
       return (h.mh && m[h.mh]) || (h.market_hash && m[h.market_hash]) || m[h.n] || null;
     };
-    var _kk = _pickK(KL && KL.maps && KL.maps['kline_sd_1d.json'])
-           || _pickK(KL && KL.maps && KL.maps['kline_1d.json']);
-    if (_kk && Array.isArray(_kk.bars) && _kk.bars.length >= 8){
-      var p3 = [], d3 = [];
-      for (var m3 = _kk.bars.length - 1; m3 >= 0 && p3.length < 30; m3--){
-        var c3 = Number(_kk.bars[m3] && _kk.bars[m3].c);
-        if (c3 > 0){ p3.unshift(c3); d3.unshift(_kk.bars[m3].d || ''); }
+    /* ★★ 2026-10-07 二修：源顺序改为「小文件优先」。
+       为什么：整包日K 实测 6.83MB（kline_sd_1d）+ 5.48MB（kline_1d），
+       经 CF Worker 回源 raw.githubusercontent 只有 ~25KB/s —— 拉完要 4 分半。
+       而 loadKline('1d') 是 Promise.all 死等两源 → KL.loaded['1d'] 4 分钟内
+       一直是 false → 详情卡/列表迷你图**永远停在空态**（真实复现，非推断）。
+       为一张 30 点小图下 12MB 是不可接受的，所以新增持仓裁剪版
+       kline_hold_1d.json（只含持仓件 × 最近 120 根 × d/c，约 150KB），
+       它先到就先用；整包降级为后台兜底（见 hpEnsureKline / loadKline 延迟预载）。 */
+    var _K3 = ['kline_hold_1d.json', 'kline_sd_1d.json', 'kline_1d.json'];
+    for (var _s3 = 0; _s3 < _K3.length; _s3++){
+      var _kk = _pickK(KL && KL.maps && KL.maps[_K3[_s3]]);
+      if (_kk && Array.isArray(_kk.bars) && _kk.bars.length >= 8){
+        var p3 = [], d3 = [];
+        for (var m3 = _kk.bars.length - 1; m3 >= 0 && p3.length < 30; m3--){
+          var c3 = Number(_kk.bars[m3] && _kk.bars[m3].c);
+          if (c3 > 0){ p3.unshift(c3); d3.unshift(_kk.bars[m3].d || ''); }
+        }
+        if (p3.length >= 8) return { p: p3, d: d3 };
       }
-      if (p3.length >= 8) return { p: p3, d: d3 };
     }
-    /* 日K 还没到位 → 触发加载，完成后重绘当前详情卡（KL.loading/loaded 保证只触发一次） */
-    if (typeof loadKline === 'function'
-        && !(KL && KL.loading && KL.loading['1d'])
-        && !(KL && KL.loaded && KL.loaded['1d'])){
-      loadKline('1d').then(function () {
-        try { if (window._hpCur != null && typeof hpSelect === 'function') hpSelect(window._hpCur); } catch (e) {}
-      });
-    }
+    /* 三源都没到位 → 触发后台加载（先小文件，再整包），完成后重绘本卡 */
+    if (typeof hpEnsureKline === 'function') hpEnsureKline();
   } catch(e) {}
     /* ⚠ 2026-09-24：原本这里还有一个「数据源 3」——用成本→现价线性插值
        + 固定抖动 wob 给没有真实历史的物品"造"一条曲线。
@@ -7560,6 +7564,37 @@ function klOf(item, g){
   var m = klMap();
   return (item.mh && m[item.mh]) || (item.market_hash && m[item.market_hash])
       || m[item.n] || null;
+}
+/* ═══════════ 持仓日K「小文件」按需加载（2026-10-07）═══════════
+   背景：整包日K（kline_sd_1d 6.83MB + kline_1d 5.48MB）经 Worker 回源 GitHub
+   实测 ~25KB/s，拉完 4 分半。详情卡/列表迷你图只是要 30 个收盘价，
+   不该为它等 12MB。所以单独拉一份只含持仓件的裁剪版（~150KB，秒到）。
+   · 幂等：_klHoldLoading 保证只发一次，重复调用直接返回；
+   · 失败也置位（不重试风暴），留空态文案，不会卡住页面；
+   · 到位后 renderList() + hpSelect() 双刷新 —— 列表迷你图和详情卡都读 hpCurve。 */
+function hpEnsureKline(){
+  if (window._klHoldLoading) return;
+  if (KL && KL.maps && KL.maps['kline_hold_1d.json']) return;
+  window._klHoldLoading = true;
+  var _t0 = Math.floor(Date.now() / 900000);       // 与 kline 一致的破缓存口径
+  fetch('kline_hold_1d.json?v=' + _t0)
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .catch(function () { return null; })
+    .then(function (d) {
+      var m = {};
+      if (d && d.items) {
+        for (var i = 0; i < d.items.length; i++) {
+          var it = d.items[i];
+          if (it && it.hash_name) m[it.hash_name] = it;
+        }
+      }
+      KL.maps['kline_hold_1d.json'] = m;
+      KL.counts = KL.counts || {};
+      KL.counts['kline_hold_1d.json'] = Object.keys(m).length;
+      window._klHoldLoading = false;
+      try { if (typeof renderList === 'function') renderList(); } catch (e) {}
+      try { if (window._hpCur != null && typeof hpSelect === 'function') hpSelect(window._hpCur); } catch (e) {}
+    });
 }
 function hpSetGran(g){
   /* ⚠⚠ 2026-10-07 加诊断（义轩报「怎么都是一样的」时排查用的）。
@@ -9300,15 +9335,26 @@ function renderList(){
        另外的档位等用户点切档按钮时再按需拉，来回切档不会重复请求。
      加载完成后**只在当前正处于 K 线态时**才重渲染，避免白白重绘折线。 */
   var _klPre = klState();
+  /* ★ 2026-10-07：先把「持仓小文件」拉起来 —— 它只有 ~150KB，秒到，
+     详情卡/列表迷你图立刻有数据，不再等整包。 */
+  if (typeof hpEnsureKline === 'function') hpEnsureKline();
   if (!(KL.loaded && KL.loaded[_klPre]) && !KL.loading[_klPre]){
-    loadKline(_klPre).then(function () {
+    /* ★ 整包（6.83MB + 5.48MB）**延后 3 秒**再拉：实测回源 ~25KB/s 要 4 分半，
+       放在首屏会跟 holdings.json / price_summary.json 抢带宽，
+       也会让首屏一直有个 pending 的大请求。K 线态（切 1h/1w）本来就是
+       用户主动触发的次要路径，晚 3 秒起拉不影响任何可见功能。
+       若用户在这 3 秒内点了 K 线态，hpSetGran 里的 loadKline 会直接接手。 */
+    setTimeout(function () {
+      if (KL.loaded && KL.loaded[_klPre]) return;
+      loadKline(_klPre).then(function () {
       /* ★ 2026-10-07：官方K线现在被 hpCurve 当作**兜底数据源**用了——
          列表迷你走势图(hpSparkline) 和详情卡图(hpChart) 都读它。
          所以到位后必须把「列表 + 当前详情」都重渲染，不能只在 K 线态重绘，
          否则持仓页迷你图/详情图会一直停在空态（数据到了但没人重画）。 */
-      try { if (typeof renderList === 'function') renderList(); } catch(e) {}
-      try { if (window._hpCur != null) hpSelect(window._hpCur); } catch(e) {}
-    });
+        try { if (typeof renderList === 'function') renderList(); } catch(e) {}
+        try { if (window._hpCur != null) hpSelect(window._hpCur); } catch(e) {}
+      });
+    }, 3000);
   }
   var items;
   try {
