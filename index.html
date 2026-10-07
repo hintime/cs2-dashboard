@@ -2896,14 +2896,33 @@ window.__hpGetFiltered = function(){ try { return getFiltered(); } catch(e) { re
     });
   }
 
-  // ── Load Chinese name map from name_map.json (all 37k items) ──
+  // ── Load Chinese name map from name_map_ui.json（前端精简版）──
+  // ⚠ 为什么是 name_map_ui.json 而不是 name_map.json（2026-10-06）：
+  //   name_map.json 有 41992 条 / 3.81MB，是首屏最大一块（实测拉取 2416ms）。
+  //   但前端真正要翻译的标识只有约 4400 个 —— 实测把market/eco_tracked/
+  //   holdings/rec_tracks/price_summary/csqaq_boards 里出现的
+  //   hash_name/mh/market_hash 全收集也只有 4452 个，在全量表里命中 91.3%。
+  //   服务器每次生成时按**当前数据重算**并只导这部分（0.33MB，9%）。
+  //⚠ 为什么不能直接把 name_map.json 裁小：
+  //   ① 中文名必须与上游 GoodsName 逐字一致 ——「破损不堪」同时是
+  //      eco_catalog.py:89 与 generate_correlation.py:17 的排除判据，
+  //      改词会让 WW 饰品漏进追踪池、相关性算错 → 只能减条数不能改词；
+  //   ② 异动页迷你快照/相关性/scan 这些后端仍要全量表；
+  //   ③ 用到哪些会随持仓变化，必须每次重算，新买的饰品才译得出。
   window._cnNameMap = window._cnNameMap || {};
-  fetch('name_map.json?v='+t0).then(function(r){return r.ok?r.json():null;}).then(function(nm){
-    if(nm && typeof nm === 'object'){
-      window._cnNameMap = nm;
-      render();
-    }
-  }).catch(function(){});
+  fetch('name_map_ui.json?v='+t0)
+    .then(function(r){return r.ok?r.json():null;})
+    .catch(function(){return null;})
+    .then(function(nm){
+      if (nm && typeof nm === 'object') { window._cnNameMap = nm; render(); return; }
+      // 兜底：精简版拉不到（还没生成 / 404 / 网络失败）时退回全量表，
+      // 保证「表不存在」不会变成「全站显示英文名」。代价只是慢一点。
+      return fetch('name_map.json?v='+t0)
+        .then(function(r){return r.ok?r.json():null;})
+        .then(function(full){
+          if(full && typeof full === 'object'){ window._cnNameMap = full; render(); }
+        }).catch(function(){});
+    }).catch(function(){});
 
   // ── Process market ──
   if (marketR) {

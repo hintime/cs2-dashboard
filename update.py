@@ -1916,7 +1916,66 @@ def fetch_steam_news():
         print(f'[NEWS] Failed: {e}', file=sys.stderr)
         return None
 
-# ═══════════════ FILE I/O (track dirty state) ═══════════════
+# ═══════════════ 前端精简中文名表：需要哪些标识 ═══════════════
+# 这些文件名对应「前端会拿它渲染列表」的数据源。少一个 → 那一页的饰品
+# 显示英文名（不会崩，只是没中文名）；多一个 → 表变大一点，权衡很简单。
+_NAME_MAP_UI_SOURCES = (
+    'market.json',            # 主市场（全站列表）
+    'eco_tracked.json',       # ECO 追踪池（2835 件）
+    'holdings.json',          # 持仓
+    'rec_tracks.json',        # 记分卡追踪池
+    'price_summary.json',     # 价格摘要（tracking 页首屏）
+    'csqaq_boards.json',      # CSQAQ 盘口
+    'correlation_data.json',  # 相关性页
+)
+# 这些 key 名在不同数据源里表示「饰品标识」
+_NAME_KEY_FIELDS = ('hash_name', 'mh', 'market_hash', 'HashName', 'name', 'n')
+
+
+def _collect_ui_name_keys(name_map, _seen=None):
+    """收集前端真正需要中文名的标识集合。
+
+    做法：扫上面列的数据源，把出现过的标识字段收进集合，再与 name_map 取交集。
+    ⚠ 必须「按当前数据重算」而不是固化一份清单 —— 持仓会变、追踪池会扩容，
+      一次裁死的话新买的饰品就显示英文名了（不报错，只是不好看，很难发现）。
+    ⚠ 只取字符串且非空：name_map 的键是 HashName（英文标识），
+      而 'n' 字段在 holdings 里是**中文名**、在别的文件里可能是别的东西。
+      混进来会导致精简表里塞大量永远查不到的键（白占体积）。
+      所以收集时统一与 name_map 的键集取交集 —— 中文名不可能是 name_map 的键。
+
+    深度限制 4 层 + 每个数组取前 4000 条：这些文件最大的是 eco_tracked
+    （2835 件 × 十几字段），全量深扫没必要，且服务器只有 2G 内存。
+    """
+    keys = set()
+    for fn in _NAME_MAP_UI_SOURCES:
+        p = os.path.join(DATA_DIR, fn)
+        try:
+            if not os.path.exists(p):
+                continue
+            with open(p, encoding='utf-8') as f:
+                data = json.load(f)
+        except Exception:
+            continue
+        stack = [(data, 0)]
+        while stack:
+            o, d = stack.pop()
+            if d > 4:
+                continue
+            if isinstance(o, dict):
+                for k, v in o.items():
+                    if k in _NAME_KEY_FIELDS and isinstance(v, str) and v:
+                        keys.add(v)
+                    elif isinstance(v, (dict, list)):
+                        stack.append((v, d + 1))
+            elif isinstance(o, list):
+                for x in o[:4000]:
+                    if isinstance(x, (dict, list)):
+                        stack.append((x, d + 1))
+    # 与 name_map 的键取交集：过滤掉 'n' 这类误收的中文名
+    return {k for k in keys if k in name_map}
+
+
+
 def read_json(path):
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
@@ -4794,7 +4853,6 @@ def main():
 
     # ── 生成完整中文名映射（所有物品）──
     try:
-        import_namejs = lambda d: os.path.join(d)
         eco_cat_path = os.path.join(DATA_DIR, 'eco_catalog.json')
         name_map_path = os.path.join(DATA_DIR, 'name_map.json')
         catalog = json.load(open(eco_cat_path, 'r', encoding='utf-8'))
@@ -4805,6 +4863,33 @@ def main():
         json.dump(name_map, open(name_map_path, 'w', encoding='utf-8'), ensure_ascii=False)
         dirty_files.add('name_map.json')
         print(f'[NAME] Generated name_map.json: {len(name_map)} items')
+        # ── 前端精简版 name_map_ui.json（2026-10-06 加）────────────
+        # 为什么要单独出一个文件：
+        #   name_map.json 有 41992 条 / 3.81MB，是**首屏最大的一块**（实测拉取耗时
+        #   2416ms，CDN max-age=120）。但前端真正要翻译的标识只有约 4400 个 ——
+        #   实测把 market/eco_tracked/holdings/rec_tracks/price_summary/csqaq_boards
+        #   里出现的 hash_name/mh/market_hash 全收集起来也只有 4452 个，
+        #   在 name_map 里命中 4063 条（91.3%）。
+        #   裁到这些 = 0.33MB（9%），首屏少拉 3.5MB。
+        #
+        # ⚠ 为什么不能直接把 name_map.json 裁小（这是关键约束）：
+        #   ① 中文人名必须与上游 GoodsName **逐字一致** —— 「破损不堪」同时是
+        #      eco_catalog.py:89 与 generate_correlation.py:17 的**排除判据**，
+        #      改词会导致 WW 饰品漏进追踪池、相关性算错。所以只能减条数、不能改词。
+        #   ② 后端（异动页迷你快照、相关性、scan）仍要全量表，裁了就查不到中文名。
+        #   ③ 「用到哪些」会随持仓变化 —— 新买一件饰品就要能译出它的名字，
+        #      一次裁死会导致新持仓显示英文名。所以每次都按当前数据重算。
+        _ui_path = os.path.join(DATA_DIR, 'name_map_ui.json')
+        _need = _collect_ui_name_keys(name_map)
+        _ui = {k: name_map[k] for k in _need if k in name_map}
+        json.dump(_ui, open(_ui_path, 'w', encoding='utf-8'),
+                  ensure_ascii=False, separators=(',', ':'))
+        dirty_files.add('name_map_ui.json')
+        _full_sz = os.path.getsize(name_map_path)
+        _ui_sz = os.path.getsize(_ui_path)
+        print(f'[NAME] Generated name_map_ui.json: {len(_ui)} items'
+              f'（全量 {len(name_map)} / {_full_sz/1048576:.2f}MB -> '
+              f'{_ui_sz/1048576:.2f}MB，省 {100.0*(1-_ui_sz/max(1,_full_sz)):.0f}%）')
     except Exception as e:
         print(f'[NAME] name_map generation skipped: {e}', file=sys.stderr)
 
