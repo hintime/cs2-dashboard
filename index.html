@@ -1783,6 +1783,12 @@ html { scroll-behavior: smooth; }
 .hc-kempty{height:150px;display:flex;flex-direction:column;gap:6px;
   align-items:center;justify-content:center;color:var(--text3);font-size:12px;
   border:1px dashed var(--border);border-radius:8px;line-height:1.7}
+/* 空态里的「切到别的档位」按钮：空态只说「没有」没用，要给出下一步。
+   用button 而不是文字链接 —— 点了立刻出图，不需要用户自己找粒度按钮。 */
+.hc-kempty .hc-kalt{margin-top:2px;padding:4px 12px;border:1px solid var(--border);
+  border-radius:6px;background:var(--surface2);color:var(--text2);
+  font-size:11px;cursor:pointer;font-family:inherit}
+.hc-kempty .hc-kalt:hover{color:var(--text);border-color:var(--text3)}
 /* ── 全屏看大图（2026-10-04 义轩：加个按钮点开看一整个图）──
    实现方式：**把图表 DOM 整体搬进全屏层，用 CSS 放大，绝不重画、绝不改 viewBox**。
    这么做的三个理由：
@@ -7427,76 +7433,137 @@ function hpTech(v){
      · 数据只覆盖最近有成交的 1200 件，不是全站所有饰品。
    ══════════════════════════════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════════════════════════════
-   K 线视图 —— 三档粒度：2小时K / 日K / 周K
+   K 线视图 —— 四档粒度 × 双数据源（2026-10-07）
    ──────────────────────────────────────────────────────────────────────────
    为什么必须新建而不能改造折线：折线用的是「每天一个均价」（hpCurve → price_history），
    只有单值，K 线需要 open/high/low/close 四个值 —— 拿均价造影线等于编数据。
-   所以另走一路数据：kline_2h.json / kline_1d.json / kline_1w.json
-   （服务器 build_kline.py 从 price_history.db 的采样聚合）。
 
-   ★ 三个文件各管一档，**按需加载**（2026-10-06）
-     一次全拉三份会多花 2.6MB，而且用户通常只看其中一档。
-     每份独立 map，切档时只补拉缺的那份，已加载的留在内存里来回切不重拉。
+   ★ 双源设计（官方优先 + 自采保底），这是本项目的硬要求
+     自采（build_kline.py 从 price_history.db 的采样聚合）有两个硬伤，
+     都是实测结论不是推测：
+       ① 1 小时 K 做不出来：cron prices轮只在 :00/:30 跑、history 轮只在
+          每小时 :15 跑 → 每小时 1 个采样点 → 96.1% 的小时桶只有 1 个点
+          → open=high=low=close，影线完全退化。最小粒度只能退到 2 小时。
+       ② 历史太短：库里最早 2026-07-08（58 天）。日K 只 58 天、周K 只 12 周。
+     SteamDT 官方接口直接给成品 OHLC（type=1小时/2日/3周），实测：
+       1小时 90 天且每天 24 根整齐 / 日 365 天 / 周 4.3 年。
+     所以 **1 小时档只能靠官方**，而**自采是保底** —— 官方接口挂掉/被限频/
+     文件缺失时必须自动回落到自采 2 小时 K，不能让用户看到空白图。
+     → 每档都有 sources 列表，前端按优先级尝试，第一个有该件数据就用它，
+       并在口径提示里标明「本次用的是哪个源」。
 
-   ⚠ 粒度为什么最小是 2 小时、不是 1 小时（服务器实测，别改回去）：
-     采样集中在每个整点的前几分钟（cron 每 30 分钟一次的 prices 轮实际都落在 :15），
-     所以「1 小时桶」里 96.1% 只有 1 个点 → open=high=low=close，影线完全退化，
-     画出来是一堆竖线、实质只是折线。2 小时桶实测 64% 有 2-3 个点，影线才有意义。
-     这是数据决定的，不是偷懒 —— 真想要 1 小时K，得先把采集改成小时内多点。
+   ★ 粒度按需加载
+     每档独立 map + 独立 meta，已加载的留在内存里来回切不重拉。
 
-   ⚠ 口径边界（前端必须如实转达，别装成真实成交）：
-     · high/low 是「桶内采样到的极值」，非逐笔成交；
-     · 每根 K 线带 q（0稀疏/1一般/2充足，服务器按桶内采样点数分档），
-       前端据此给不同影线透明度 + 悬停提示，不笼统地说「可靠/不可靠」；
-     · 三个文件各自覆盖不同件/不同时间范围（见各文件 meta.source_note）。
+   ⚠ 两种源的口径不同，必须如实标注（别让用户以为是同一种东西）
+     · 官方（SteamDT）：成交口径，high/low 是该时段**真实成交**极值；
+       n（采样点数）无意义，服务器统一写 n=0 / q=2 表示「密度不适用」。
+       平台是 **BUFF**（实测同件 BUFF 与 Steam 价差可达 30%）。
+     · 自采：采样口径，high/low 是桶内采样极值（会偏窄），q 分三档提示密度。
    ══════════════════════════════════════════════════════════════════════════ */
-/* 粒度表：键=窗口状态，值=文件/标签/单位。改这里就能加第四档。 */
+/* 粒度表：每档带 sources（按优先级）。官方在前，自采在后当保底。 */
 var KL_GRANS = [
-  { g: '2h', file: 'kline_2h.json', label: '2小时', unit: '根' },
-  { g: '1d', file: 'kline_1d.json', label: '日K',   unit: '天' },
-  { g: '1w', file: 'kline_1w.json', label: '周K',   unit: '周' }
+  /* 1 小时档：只有官方能做，自采做不出（见上方硬伤①）。自采兜底用 2 小时档。 */
+  { g: '1h', label: '1小时', unit: '根',
+    sources: [
+      { f: 'kline_sd_1h.json', name: '官方成交', sd: true },
+      { f: 'kline_2h.json', name: '自采兜底', sd: false, note: '官方数据不可用，已回落到自采 2 小时采样' }
+    ] },
+  /* 2 小时档：自采原生（64% 有 2-3 点，影线可用），没有官方对应档。 */
+  { g: '2h', label: '2小时', unit: '根',
+    sources: [ { f: 'kline_2h.json', name: '自采采样', sd: false } ] },
+  /* 日 K：官方 365 天 vs 自采 58 天 —— 官方优先。 */
+  { g: '1d', label: '日K', unit: '天',
+    sources: [
+      { f: 'kline_sd_1d.json', name: '官方成交', sd: true },
+      { f: 'kline_1d.json', name: '自采采样', sd: false }
+    ] },
+  /* 周 K：官方 4.3 年 vs 自采 12 周 —— 官方优先。 */
+  { g: '1w', label: '周K', unit: '周',
+    sources: [
+      { f: 'kline_sd_1w.json', name: '官方成交', sd: true },
+      { f: 'kline_1w.json', name: '自采采样', sd: false }
+    ] }
 ];
 function klGranDef(g){
   for (var i = 0; i < KL_GRANS.length; i++) if (KL_GRANS[i].g === g) return KL_GRANS[i];
-  return KL_GRANS[1];
+  return KL_GRANS[2];
 }
-/*每档一份 map + meta，互不覆盖 —— 这样来回切档不用重新拉。 */
-var KL = { maps: {}, metas: {}, loading: {} };
+/* 每档一份 map + meta，互不覆盖 —— 这样来回切档不用重新拉。 */
+var KL = { maps: {}, metas: {}, loading: {}, used: {} };
 function klState(){
   if (!window._klGran) window._klGran = '1d';   // 默认日K：全量历史、最常用
   return window._klGran;
 }
+/* 当前生效的 map：按 sources 优先级合并 —— 高优先级源有的件用它，
+   它没有的件回落低优先级源。这样「官方只有 152 件、其余走自采」也能用。 */
 function klMap(){
-  return KL.maps[klState()] || {};
+  var def = klGranDef(klState());
+  var out = null;
+  for (var i = def.sources.length - 1; i >= 0; i--){   // 低优先级先铺底
+    var m = KL.maps[def.sources[i].f];
+    if (!m || !m.__count) continue;
+    if (!out){ out = {}; }
+    for (var k in m) out[k] = m[k];
+  }
+  return out || {};
+}
+/* 这件饰品最终用的是哪个源（口径提示要显示） */
+function klUsedSource(item, g){
+  var def = klGranDef(g || klState());
+  for (var i = 0; i < def.sources.length; i++){
+    var m = KL.maps[def.sources[i].f];
+    if (m && item) {
+      var hit = (item.mh && m[item.mh]) || (item.market_hash && m[item.market_hash]) || m[item.n];
+      if (hit) return def.sources[i];
+    }
+  }
+  return def.sources[def.sources.length - 1];
 }
 function klMeta(){
-  return KL.metas[klState()] || null;
+  var def = klGranDef(klState());
+  for (var i = 0; i < def.sources.length; i++){
+    var mt = KL.metas[def.sources[i].f];
+    if (mt) return mt;
+  }
+  return null;
 }
-/* 拉某档数据。已加载过直接resolve，不重复请求。 */
+/* 拉某档的全部候选源。已加载过直接 resolve，不重复请求。
+   ⚠ 不做「第一个成功就停」—— 要把所有源都拉齐，这样高优先级源没有的件
+     才能回落到低优先级源。只有全部失败才算这一档不可用。 */
 function loadKline(g){
   g = g || klState();
   var def = klGranDef(g);
-  if (KL.maps[g]) return Promise.resolve(KL.maps[g]);
+  if (KL.loaded && KL.loaded[g]) return Promise.resolve(KL.maps);
   if (KL.loading[g]) return KL.loading[g];
+  var todo = [];
+  for (var i = 0; i < def.sources.length; i++){
+    var f = def.sources[i].f;
+    if (!KL.maps[f]) todo.push(def.sources[i]);
+  }
+  if (!todo.length){ KL.loaded = KL.loaded || {}; KL.loaded[g] = true; return Promise.resolve(KL.maps); }
   var t0 = Math.floor(Date.now() / 900000);      // 破 CDN 缓存（max-age=120）
-  KL.loading[g] = fetch(def.file + '?v=' + t0)
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .catch(function () { return null; })
-    .then(function (d) {
-      var m = {};
-      if (d && d.items) {
-        for (var i = 0; i < d.items.length; i++) {
-          var it = d.items[i];
-          if (it && it.hash_name) m[it.hash_name] = it;
+  KL.loading[g] = Promise.all(todo.map(function(src){
+    return fetch(src.f + '?v=' + t0)
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; })
+      .then(function (d) {
+        var m = {};
+        if (d && d.items) {
+          for (var i2 = 0; i2 < d.items.length; i2++) {
+            var it = d.items[i2];
+            if (it && it.hash_name) m[it.hash_name] = it;
+          }
         }
-      }
-      KL.metas[g] = d || null;
-      /* 拉回来发现没有这个档的K 线 → 记空对象，避免反复重试（0 件是真实结论） */
-      KL.maps[g] = m;
-      delete KL.loading[g];
-      return m;
-    })
-    .catch(function () { delete KL.loading[g]; KL.maps[g] = {}; return null; });
+        m.__count = Object.keys(m).length;
+        KL.metas[src.f] = (m.__count ? d : null);
+        /* 拉回来发现没有这个源的K 线 → 记空对象，避免反复重试（0 件是真实结论） */
+        KL.maps[src.f] = m;
+        return m;
+      });
+  }))
+  .then(function () { delete KL.loading[g]; KL.loaded = KL.loaded || {}; KL.loaded[g] = true; return KL.maps; })
+  .catch(function () { delete KL.loading[g]; KL.loaded = KL.loaded || {}; KL.loaded[g] = true; return KL.maps; });
   return KL.loading[g];
 }
 function klOf(item, g){
@@ -7523,17 +7590,19 @@ function hpViewToggleHtml(){
     + '<button type="button" class="' + (window._hpView === 'k' ? 'on' : '')
     + '" onclick="hpSetView(\'k\')" title="K线图：开高低收，由服务器采样聚合，可切2小时/日/周">K线</button></div>';
 }
-/* K 线粒度切换（只在 K 线态出现；折线态没有 OHLC，粒度无意义） */
+/* K 线粒度切换（只在 K 线态出现；折线态没有 OHLC，粒度无意义）。
+   ⚠ 1 小时档只对「官方覆盖到的件」有数据（实测 152 件，含持仓 32件）；
+     没覆盖到的件会提示可切2 小时档，不静默给空图。 */
 function hpGranToggleHtml(){
   var cur = klState(), s = '<div class="hc-gt">';
   for (var i = 0; i < KL_GRANS.length; i++){
     var d = KL_GRANS[i];
+    var t = d.g === '1h' ? '1小时K：官方成交口径，每整点一根（90天）。需官方接口或自采兜底可用'
+            : d.g === '2h' ? '2小时K：自采采样口径，每 2 小时一根（14 天）'
+            : d.g === '1d' ? '日K：优先官方成交口径（365天），缺失时回落自采（58天）'
+            : '周K：优先官方成交口径（4.3年），缺失时回落自采（12周）';
     s += '<button type="button" class="' + (cur === d.g ? 'on' : '')
-      + '" onclick="hpSetGran(\'' + d.g + '\')" title="'
-      + (d.g === '2h' ? '2小时K：每2 小时一根，桶内 2-3 个采样点，影线可用（1小时粒度因采样集中拿不到影线）'
-        : d.g === '1d' ? '日K：每天一根，全量历史（无上限）'
-        : '周K：每周一根，全量历史（无上限）')
-      + '">' + d.label + '</button>';
+      + '" onclick="hpSetGran(\'' + d.g + '\')" title="' + t + '">' + d.label + '</button>';
   }
   return s + '</div>';
 }
@@ -7547,17 +7616,36 @@ function hpKline(vals, cost, reason, days, volName, h){
   var view = (nAll >= 2) ? bars.slice(-range) : bars;
 
   if (view.length < 2){
+    /* ⚠ 1 小时档只覆盖官方拉过的那部分件（实测 151 件，含持仓 32 件），
+       非持仓且不在覆盖范围内的饰品会走到这里。
+       这时**给一个可点的引导**（切到 2 小时档），而不是让用户对着空图发呆 ——
+       空态文案要说清「为什么没有」和「还能看什么」，这是最容易让人以为功能坏了的地方。 */
     var meta0 = klMeta();
     var why = (bars.length ? '该饰品 ' + def.label + ' 不足 2 ' + def.unit
       : '暂无' + def.label + ' 数据');
-    var sub = (bars.length ? '需要连续更多' + def.unit + '才能成图'
-      : (meta0 ? ('该档只覆盖 ' + meta0.n + ' 件饰品'
-         + (meta0.total_eligible ? '（合格 ' + meta0.total_eligible + ' 件里取的）' : '')
-         + '，覆盖 ' + (meta0.span || '-'))
-        : '只覆盖最近有成交的饰品'));
+    var sub;
+    if (bars.length){
+      sub = '需要连续更多' + def.unit + '才能成图';
+    } else if (g === '1h'){
+      sub = '1 小时档需要官方成交数据（当前覆盖 ' + ((meta0 && meta0.n) || '部分') + ' 件，'
+          + '持仓优先）；该饰品不在其中。可切到 2 小时档看自采数据。';
+    } else {
+      sub = (meta0 ? ('该档覆盖 ' + (meta0.n || '-') + ' 件，覆盖 ' + (meta0.span || '-'))
+        : '只覆盖最近有成交的饰品');
+    }
+    /* 有别的档位能看就给按钮（别让用户自己猜要切哪一档） */
+    var alt = '';
+    if (g === '1h'){
+      alt = '<button type="button" class="hc-kalt" onclick="hpSetGran(\'2h\')">'
+          + '切到 2 小时K</button>';
+    } else if (g === '2h'){
+      alt = '<button type="button" class="hc-kalt" onclick="hpSetGran(\'1d\')">'
+          + '切到日K</button>';
+    }
     return '<div class="hc-kempty"><div style="font-size:18px;opacity:.45">◌</div>'
       + '<span>' + esc(why) + '</span>'
-      + '<span style="font-size:11px;opacity:.75">' + esc(sub) + '</span></div>';
+      + '<span style="font-size:11px;opacity:.75">' + esc(sub) + '</span>'
+      + alt + '</div>';
   }
 
   var W = 780, H = 260, PT = 13, PB = 13;
@@ -7663,7 +7751,8 @@ function hpKline(vals, cost, reason, days, volName, h){
     ? ((lastBar.c / view[0].o - 1) * 100) : null;
   var col2 = chgAll === null ? 'var(--text2)' : (chgAll >= 0 ? 'var(--rise)' : 'var(--fall)');
   var chgTxt = (chgAll === null) ? null : ((chgAll >= 0 ? '+' : '') + chgAll.toFixed(1) + '%');
-  /* 区间切换：档位按粒度给（周K 没有「7日」这种说法，要按周算） */
+  /* 区间切换：档位按粒度给（周K 没有「7日」这种说法，要按周算）。
+     ⚠ 1小时档只有约 200 根（官方限 8 天），所以档位最多给到「7 天」。 */
   var rng2 = (function(){
       var opts = [];
       if (g === '1w'){
@@ -7671,6 +7760,10 @@ function hpKline(vals, cost, reason, days, volName, h){
         if (nAll >= 13) opts.push([13, '13 周']);
         if (nAll >= 26) opts.push([26, '26 周']);
         if (nAll >= 52) opts.push([52, '1 年']);
+      } else if (g === '1h'){
+        if (nAll >= 48) opts.push([48, '2 天']);
+        if (nAll >= 96) opts.push([96, '4 天']);
+        if (nAll >= 168) opts.push([168, '7 天']);
       } else if (g === '2h'){
         if (nAll >= 24) opts.push([24, '2 天']);
         if (nAll >= 48) opts.push([48, '4 天']);
@@ -7717,29 +7810,43 @@ function hpKline(vals, cost, reason, days, volName, h){
     + kIt('kchg', '区间涨跌', chgTxt, col2)
     + granTog + rng2 + viewTog + '</div>';
 
-  /* 口径提示：把不可信的部分说清楚，不能让用户误以为是真实成交。
-     文案按粒度走（NOTE/CAVEAT 来自服务器写在文件 meta 里的，口径以那边为准） */
+  /* 口径提示：如实说清「用的是什么源、源的口径是什么」，不能糊成一句。
+     ⚠ 两种源口径不同，必须分开显示：
+       官方（SteamDT）= 成交口径，high/low 是真实成交极值，平台 BUFF；
+       自采= 采样口径，high/low 是桶内采样极值（振幅偏窄），按桶内点数分密度级。
+     混成一句话会让用户把两种数据当同一种比较，得出错误结论。 */
   var meta = klMeta() || {};
+  var src = klUsedSource(h, g);
   var qc = { 0: 0, 1: 0, 2: 0 };
   for (var qi = 0; qi < view.length; qi++){
     var qq = (view[qi].q === undefined) ? (view[qi].r ? 1 : 0) : view[qi].q;
     qc[qq] = (qc[qq] || 0) + 1;
   }
-  var qTxt = [];
-  if (qc[0]) qTxt.push('<b>' + qc[0] + ' ' + def.unit + '</b>采样稀疏（影线最淡）');
-  if (qc[1]) qTxt.push('<b>' + qc[1] + ' ' + def.unit + '</b>采样一般');
-  if (qc[2]) qTxt.push('<b>' + qc[2] + ' ' + def.unit + '</b>采样充足');
+  var noteTxt;
+  if (src && src.sd){
+    noteTxt = '<b>' + esc(src.name) + '</b>（SteamDT 官方）· 高低为该时段'
+      + '<b>真实成交</b>极值、非采样近似；平台为 BUFF，'
+      + '与站内 eco/buff 主源略有价差（Steam 天然更贵）。覆盖 '
+      + esc(String(view[0].d).slice(0, 10)) + ' ~ '
+      + esc(String(view[view.length - 1].d).slice(0, 10)) + '。';
+  } else {
+    var qTxt = [];
+    if (qc[0]) qTxt.push('<b>' + qc[0] + ' ' + def.unit + '</b>采样稀疏');
+    if (qc[1]) qTxt.push('<b>' + qc[1] + ' ' + def.unit + '</b>采样一般');
+    if (qc[2]) qTxt.push('<b>' + qc[2] + ' ' + def.unit + '</b>采样充足');
+    noteTxt = '<b>自采采样</b>· 高低为该' + def.unit + '内'
+      + '<b>采样到的极值</b>（非成交价，振幅偏窄）'
+      + (src && src.note ? '。' + esc(src.note) : '')
+      + (qTxt.length ? '；本图密度：' + qTxt.join('、') : '') + '。';
+  }
   var note = '<div class="hc-knote"><b>口径</b>'
-    + '<span>' + (meta.label || def.label) + ' · '
-    + esc(meta.source_note || '') + '。'
-    + '高低点是<b>该' + def.unit + '内采样到的极值</b>而非逐笔成交'
-    + (qTxt.length ? '；本图密度：' + qTxt.join('、') : '') + '。</span></div>';
+    + '<span>' + noteTxt + '</span></div>';
 
   /* 底部日期轴 + 悬停读数用的 data
-     ⚠ 标签格式必须按粒度分：2小时K 一根代表 2 小时，光写 MM/DD 会让相邻刻度
-       看不出区别（48 根全是同一天）→ 必须带时分。日K/周K 写 MM/DD 即可，
-       周K 的 d 已经是「该周周一日期」，不用额外处理。 */
-  var fmtX = (g === '2h')
+     ⚠ 标签格式必须按粒度分：1小时/2小时K 一根代表 1~2 小时，光写 MM/DD 会让
+       相邻刻度看不出区别（几十根全是同一天）→ 必须带时分。
+       日K/周K 写 MM/DD 即可（周K 的 d 已经是「该周周一日期」）。 */
+  var fmtX = (g === '1h' || g === '2h')
     ? function (s) { var t = String(s);
         return t.length > 13 ? t.slice(5, 10).replace('-', '/') + ' ' + t.slice(11, 16)
                              : t.slice(5); }
@@ -7803,11 +7910,12 @@ function hpSetView(v){
   window._hpView = (v === 'k') ? 'k' : 'l';
   try { hpSelect(window._hpCur || 0); } catch (e) { renderList(); }
   if (window._hpView === 'k'){
-    /*按需拉当前粒度那一档。已拉过（KL.maps[g] 存在）就不再请求。
-      ⚠ 不要用「已加载」的单标志判断 —— 那是单文件时代的写法，
-        现在每档独立，必须看 KL.maps[当前档]。*/
+    /* 按需拉当前粒度。⚠ 判重必须看 KL.loaded[粒度]，
+       **不能看 KL.maps[粒度]** —— 双源设计后 maps 是按**文件名**存的
+       （kline_sd_1d.json / kline_1d.json），不再有 maps[粒度] 这个键。
+       用错判据的后果：KL.maps[g] 永远undefined → 每次切K 线都重新拉一遍。 */
     var g = klState();
-    if (!KL.maps[g]){
+    if (!(KL.loaded && KL.loaded[g]) && !KL.loading[g]){
       loadKline(g).then(function () {
         try { hpSelect(window._hpCur || 0); } catch (e) {}
       });
@@ -9085,13 +9193,12 @@ function renderList(){
   }
   /* ★ K 线数据后台预热（2026-10-04）。不预热的话用户第一次点「K线」
      会先看到空态，等几百毫秒才出图 —— 像是坏了。
-     ⚠ 2026-10-06：现在是三档独立文件，**只预热默认档（当前粒度）**，
-       不能三档全预热 —— 那是 2.6+5.2+2.6 = 10.4MB，会把首屏带宽吃光。
-       另外两档等用户点切档按钮时再按需拉（loadKline 内部有 maps 判重，
-       来回切档不会重复请求）。
+     ⚠ 2026-10-07：现在是「四档 × 双源」，**只预热当前粒度**（KL.loaded[g] 判重），
+       不能四档全预热 —— 每档都要拉官方 + 自采两个文件，会把首屏带宽吃光。
+       另外的档位等用户点切档按钮时再按需拉，来回切档不会重复请求。
      加载完成后**只在当前正处于 K 线态时**才重渲染，避免白白重绘折线。 */
   var _klPre = klState();
-  if (!KL.maps[_klPre] && !KL.loading[_klPre]){
+  if (!(KL.loaded && KL.loaded[_klPre]) && !KL.loading[_klPre]){
     loadKline(_klPre).then(function () {
       if (window._hpView === 'k'){
         try { hpSelect(window._hpCur || 0); } catch(e) {}
