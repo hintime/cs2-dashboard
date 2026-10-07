@@ -2,6 +2,38 @@
   {
     "date": "2026-10-08",
     "tag": "feat",
+    "scope": "kline",
+    "sha": "a805ba6",
+    "title": "日K采完自动重建持仓裁剪版",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "feat",
+    "scope": "kline",
+    "sha": "da90a42",
+    "title": "新增持仓日K裁剪版构建脚本(190KB)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "fix",
+    "scope": "chart",
+    "sha": "b9c14ef",
+    "title": "详情卡/迷你走势图空态 —— 新增持仓日K裁剪源(190KB)+整包延迟后台加载",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "feat",
+    "scope": "kline",
+    "sha": "fcf28ee",
+    "title": "新增持仓日K裁剪版(190KB) 解决详情卡/迷你图等12MB整包的空态问题",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "feat",
     "scope": "holdings",
     "sha": "96eb258",
     "title": "成本同步打通+详情卡就地改成本+心跳1分钟+统一WORKER_BASE",
@@ -126,37 +158,5 @@
     "sha": "c1d916e",
     "title": "修复块1语法错误（4398行 forEach 未闭合 → 整个块1不执行，WEAR_MAP/cnName/switchView 等全部失效、页面核心功能瘫痪）+",
     "desc": "补修 3 个低危项（滚动锁还原/无行情如实提示/卖出传 id）"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "style",
-    "scope": "holdings",
-    "sha": "7e67c7a",
-    "title": "去掉持仓列表的「重灾区/观察区/健康区」分区",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "holdings",
-    "sha": "d47eff3",
-    "title": "印花等小众品类现价全为 0（批量补录显示「—」、总盈亏虚高） - 根因：`h.p` 不是持仓自带字段，只在 csqaqData[hn] 命中时才被赋值（inde",
-    "desc": "x.html:4402），   而 csqaq_boards.json 里**没有印花/探员/武器箱/音乐盒** → 这些件 h.p 恒为 undefined - 影响面比想象的���：7 处直接 `Number(h.p)||0`，其中盈亏汇总与总市值把 0 当现价   → 32 件里 24 件现价被当成 0，总盈亏少算 ¥982（亏损被当成没亏） - 修法：新增 hpPrice() 作为唯一取值入口，回退链h.p → h.price → eco_platform_price   → eco_price → buff_sell（buff_sell 放最后：它是「在售价」不是成交价）   7 处调用点全部改用它；批量弹窗在完全无报价时显示「暂无报价」而非「—」"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "audit",
-    "sha": "d703360",
-    "title": "修复独立审计发现的 7 个缺陷 —— ①库存缓存跨SteamID/账号串号(加_lastInvSid校验+按账号隔离绑定) ②导入去重键与全站主键不一致(统一",
-    "desc": "market_hash) ③reload 掐掉云端同步防抖(新增 hpCloudSyncNow 立即推送) ④剪贴板预览渲染进隐藏弹窗 ⑤d.items 非数组污染 ⑥空库存提示自相矛盾 ⑦差异列表截断无提示"
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "feat",
-    "scope": "ui",
-    "sha": "3050d11",
-    "title": "自建 Toast / Confirm 组件，替换全部 14 处原生 alert + 3 处 confirm —— 原生弹窗样式丑且不可定制；同时导入/补齐改为延",
-    "desc": "迟刷新，提示不再被 reload 刷掉"
   }
 ]
