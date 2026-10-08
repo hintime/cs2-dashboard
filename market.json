@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 916.28,
-    "change": -8.37,
-    "change_pct": -8.37,
-    "market_value": 281255580.37,
-    "total_items": 4143,
-    "updated": "2026-10-08T08:00:03+08:00",
+    "latest": 880.2,
+    "change": -11.98,
+    "change_pct": -11.98,
+    "market_value": 270182108.59,
+    "total_items": 4053,
+    "updated": "2026-10-08T10:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4398,6 +4398,14 @@
         "close": 916.28,
         "high": 924.31,
         "low": 916.28
+      },
+      {
+        "date": "2026-10-08",
+        "dateFull": "2026-10-08 10:00",
+        "open": 880.2,
+        "close": 880.2,
+        "high": 880.2,
+        "low": 880.2
       }
     ],
     "volBar": [],
@@ -13177,12 +13185,20 @@
         "index": 916.28,
         "change_pct": -8.37,
         "market_value": 281255580.37
+      },
+      {
+        "time": "10:00",
+        "date": "2026-10-08",
+        "timestamp": 1791424803,
+        "index": 880.2,
+        "change_pct": -11.98,
+        "market_value": 270182108.59
       }
     ],
     "selling": {
-      "total_selling": 1384616,
+      "total_selling": 1381779,
       "total_selling_prev": 0,
-      "total_selling_delta": 1384616,
+      "total_selling_delta": 1381779,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13190,7 +13206,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791417603390,
+  "index_updated": 1791424803374,
   "alerts": [
     {
       "name": "M4A1-S | Moss Quartz (Factory New)",
@@ -32090,7 +32106,7 @@
     "MP9 | 焦油缠绕 (崭新出厂)",
     "MP9 | 焦油缠绕 (略有磨损)"
   ],
-  "updated": "2026-10-08T01:37:20Z",
+  "updated": "2026-10-08T02:07:38Z",
   "steam_market_items": 79,
   "steam_market_recs": {
     "momentum": [],
