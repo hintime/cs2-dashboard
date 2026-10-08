@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 878.95,
-    "change": -12.1,
-    "change_pct": -12.1,
-    "market_value": 269798649.13,
-    "total_items": 4074,
-    "updated": "2026-10-09T00:00:04+08:00",
+    "latest": 874.07,
+    "change": -12.59,
+    "change_pct": -12.59,
+    "market_value": 268299215.75,
+    "total_items": 4072,
+    "updated": "2026-10-09T02:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4430,6 +4430,14 @@
         "close": 878.95,
         "high": 1000.72,
         "low": 878.95
+      },
+      {
+        "date": "2026-10-09",
+        "dateFull": "2026-10-09 02:00",
+        "open": 874.07,
+        "close": 874.07,
+        "high": 874.07,
+        "low": 874.07
       }
     ],
     "volBar": [],
@@ -13273,12 +13281,20 @@
         "index": 878.95,
         "change_pct": -12.1,
         "market_value": 269798649.13
+      },
+      {
+        "time": "02:00",
+        "date": "2026-10-09",
+        "timestamp": 1791482403,
+        "index": 874.07,
+        "change_pct": -12.59,
+        "market_value": 268299215.75
       }
     ],
     "selling": {
-      "total_selling": 1383104,
+      "total_selling": 1371615,
       "total_selling_prev": 0,
-      "total_selling_delta": 1383104,
+      "total_selling_delta": 1371615,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13286,7 +13302,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791475204304,
+  "index_updated": 1791482403434,
   "alerts": [
     {
       "name": "P250 | Verdigris (Factory New)",
@@ -32196,7 +32212,7 @@
     "Markus Delrow | FBI HRT",
     "Maximus | Sabre"
   ],
-  "updated": "2026-10-08T17:36:58Z",
+  "updated": "2026-10-08T18:07:06Z",
   "steam_market_items": 69,
   "steam_market_recs": {
     "momentum": [],
