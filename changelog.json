@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-10-08",
+    "tag": "chore",
+    "scope": "",
+    "sha": "338545c",
+    "title": "Kronos 预测更新（本地 RTX 4060）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
     "tag": "feat",
     "scope": "kline",
     "sha": "a805ba6",
@@ -150,13 +158,5 @@
     "sha": "4331b9a",
     "title": "更新日志六项修正（噪音 9/20 → 0/20）",
     "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "critical",
-    "sha": "c1d916e",
-    "title": "修复块1语法错误（4398行 forEach 未闭合 → 整个块1不执行，WEAR_MAP/cnName/switchView 等全部失效、页面核心功能瘫痪）+",
-    "desc": "补修 3 个低危项（滚动锁还原/无行情如实提示/卖出传 id）"
   }
 ]
