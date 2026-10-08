@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 882.53,
-    "change": -11.75,
-    "change_pct": -11.75,
-    "market_value": 270897910.17,
-    "total_items": 4080,
-    "updated": "2026-10-08T14:00:02+08:00",
+    "latest": 887.52,
+    "change": -11.25,
+    "change_pct": -11.25,
+    "market_value": 272428192.04,
+    "total_items": 4054,
+    "updated": "2026-10-08T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4411,8 +4411,8 @@
         "date": "2026-10-08",
         "dateFull": "2026-10-08 14:00",
         "open": 882.53,
-        "close": 882.53,
-        "high": 882.53,
+        "close": 887.52,
+        "high": 887.52,
         "low": 882.53
       }
     ],
@@ -13217,12 +13217,20 @@
         "index": 882.53,
         "change_pct": -11.75,
         "market_value": 270897910.17
+      },
+      {
+        "time": "16:00",
+        "date": "2026-10-08",
+        "timestamp": 1791446403,
+        "index": 887.52,
+        "change_pct": -11.25,
+        "market_value": 272428192.04
       }
     ],
     "selling": {
-      "total_selling": 1388090,
+      "total_selling": 1370092,
       "total_selling_prev": 0,
-      "total_selling_delta": 1388090,
+      "total_selling_delta": 1370092,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13230,7 +13238,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791439202960,
+  "index_updated": 1791446403161,
   "alerts": [
     {
       "name": "Five-SeveN | Kami (Factory New)",
@@ -32130,7 +32138,7 @@
     "Name Tag",
     "Negev | Boroque Sand (Factory New)"
   ],
-  "updated": "2026-10-08T07:38:02Z",
+  "updated": "2026-10-08T08:37:37Z",
   "steam_market_items": 52,
   "steam_market_recs": {
     "momentum": [],
