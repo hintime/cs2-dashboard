@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-09 01:09",
+  "generated": "2026-10-09 07:11",
   "window": {
     "from": "2026-06-28",
     "to": "2026-10-09"
@@ -7,7 +7,7 @@
   "method": "同批对比：T-1 与 T+N 都出现的 buff 渠道物品（≥¥5）算涨跌中位数；同窗口中位 vs 非事件期同期基准；T±3 天容差",
   "data_quality": "⚠ 7 月价格更新稀疏，部分日期为重复落库（两日价格几乎全同）→ 该事件 有效=false 剔除；9/20 起才是真实高频数据，当前有效样本少，结论仅供弱先验",
   "note": "样本量=有效事件数（每事件内还有数千物品的同批样本）；n<5 时统计意义很弱",
-  "n_events": 15,
+  "n_events": 16,
   "n_valid_events": 8,
   "events": [
     {
@@ -312,10 +312,10 @@
       },
       "d14": {
         "day": "2026-10-08",
-        "n": 4559,
-        "med": -3.59,
-        "up": 21.0,
-        "dn3": 53.6,
+        "n": 4562,
+        "med": -3.77,
+        "up": 20.4,
+        "dn3": 54.4,
         "stale": false
       },
       "有效": true
@@ -451,11 +451,42 @@
       "base_day": "2026-10-04",
       "d3": {
         "day": "2026-10-08",
-        "n": 4581,
-        "med": -1.98,
-        "up": 18.5,
-        "dn3": 40.4,
+        "n": 4586,
+        "med": -2.12,
+        "up": 17.7,
+        "dn3": 41.7,
         "stale": false
+      },
+      "d7": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "d14": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
+      },
+      "有效": false
+    },
+    {
+      "date": "2026-10-08",
+      "title": "Counter-Strike 2 Update",
+      "cat": "routine",
+      "base_day": "2026-10-07",
+      "d3": {
+        "day": null,
+        "n": 0,
+        "med": null,
+        "up": null,
+        "dn3": null,
+        "stale": null
       },
       "d7": {
         "day": null,
@@ -498,13 +529,13 @@
       "dn3_pct": 32.11
     },
     "ret_14d": {
-      "event_mean": -2.98,
+      "event_mean": -3.01,
       "baseline_mean": -8.86,
-      "excess": 5.88,
+      "excess": 5.85,
       "n_base": 13,
       "n_events": 5,
-      "up_pct": 25.62,
-      "dn3_pct": 43.92
+      "up_pct": 25.5,
+      "dn3_pct": 44.08
     },
     "verdict": "历史上 8 个有效公告事件后 7 天，同批物品中位涨跌 -1.22%，同期基准 -7.06%，超额 +5.84%（上涨物品占比 30.1%）→ 历史方向性支撑：中等",
     "by_cat": {
