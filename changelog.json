@@ -2,6 +2,30 @@
   {
     "date": "2026-10-10",
     "tag": "fix",
+    "scope": "name_map",
+    "sha": "f1effc2",
+    "title": "Windows 本机不再推送 name_map.json / name_map_ui.json（服务器为权威源）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "",
+    "sha": "6e041ed",
+    "title": "ui(system): 全站视觉系统收口 —— 去渐变/去发光/去上浮/圆角统一/面板顶线去固定蓝/清 88 处装饰 emoji",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "",
+    "sha": "b8b3f3e",
+    "title": "ui(theme): 配色收口——边框/卡底去彩归中性，信号灯去emoji，按钮/tab统一主色",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
     "scope": "",
     "sha": "bc31134",
     "title": "ui(rec): 四套主题各自主色；推荐池质量改终端状态条；AI精选卡片去渐变/去emoji",
@@ -133,30 +157,6 @@
     "scope": "batch-B",
     "sha": "badba12",
     "title": "recommend.py — pipeline/repo hygiene fixes (2026-10-09)",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-09",
-    "tag": "fix",
-    "scope": "batch-B",
-    "sha": "2e78058",
-    "title": "update.py — pipeline/repo hygiene fixes (2026-10-09)",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-09",
-    "tag": "fix",
-    "scope": "batch-B",
-    "sha": "422c6c1",
-    "title": "worker.js — pipeline/repo hygiene fixes (2026-10-09)",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-09",
-    "tag": "fix",
-    "scope": "kline",
-    "sha": "d218268",
-    "title": "蜡烛加宽至占槽位72%/上限34px + 叠加MA5/10/20均线（参照CSQAQ优化稀疏）",
     "desc": ""
   }
 ]
