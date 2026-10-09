@@ -7736,9 +7736,15 @@ function hpKline(vals, cost, reason, days, volName, h){
     for (var i3 = 0; i3 < view.length; i3++) xs.push(i3 * (W / (view.length - 1)));
   }
 
-  /* 蜡烛宽度：按间距自适应 */
+  /* 蜡烛宽度：按间距自适应。
+     ★ 2026-10-09 参照 CSQAQ/主流行情软件（义轩反馈「太稀疏」）：
+       原公式 Math.min(11, gap*0.62) 的**硬上限 11px** 是病灶 —— 日K 14 日档
+       gap≈60px 时蜡烛只有 11px 宽、空隙 49px，整张图像散点不像 K 线。
+       行情软件的惯例是蜡烛体占槽位 ~70%（相邻蜡烛几乎相连），故改为
+       gap*0.72、绝对上限 34px（防周K 8 根这种极稀档位画出巨柱）。
+       14 日档 11→34px、1 个月档 11→19px，「全部」240 根档不受影响。 */
   var gap = view.length > 1 ? (xs[1] - xs[0]) : 20;
-  var bw = Math.max(2.2, Math.min(11, gap * 0.62));
+  var bw = Math.max(2.2, Math.min(gap * 0.72, 34));
   /* ★ 蜡烛是**居中**在 x 上画的（x = xs[b] - bw/2），所以首尾两根各有一半在
      viewBox 之外：实测 bodyMinX=-5、bodyMaxRight=786（W=780）→ 两端各被裁半个身位。
      折线是纯折线（只有 1px 线宽）看不出来，蜡烛实体宽 11px 就很明显。
@@ -7821,6 +7827,29 @@ function hpKline(vals, cost, reason, days, volName, h){
     dataPts.push([x.toFixed(1), yC.toFixed(1), yO.toFixed(1), yH.toFixed(1), yL.toFixed(1),
                   bar.d, bar.o, bar.h, bar.l, bar.c, bar.n, qv, (qv === 0) ? 1 : 0,
                   spike ? 1 : 0].join(','));
+  }
+
+  /* MA5/10/20 均线（2026-10-09 参照 CSQAQ，义轩要求）：
+     基于本图**可见桶**的收盘价真实计算（滑动平均，纯派生、不改任何数据），
+     样本不足 n 的前 n-1 根不画（断线而非补假值）。画在蜡烛之后 = 叠在蜡烛上层，
+     与 CSQAQ/TradingView 层级一致。配色走主题变量：MA5=--brand（与折线版 MA 同色）、
+     MA10=--blue、MA20=--fall；green 主题下 --blue 与 --fall 同色属该主题既有取舍。
+     maCur 记录各均线最新值供底部图例显示；hover 不联动（控制改动面，图例常显）。 */
+  var maDefs = [[5, 'var(--brand)'], [10, 'var(--blue)'], [20, 'var(--fall)']];
+  var maCur = {};
+  for (var mi2 = 0; mi2 < maDefs.length; mi2++){
+    var mN = maDefs[mi2][0], mPts = [], mSum = 0;
+    for (var mi3 = 0; mi3 < view.length; mi3++){
+      mSum += view[mi3].c;
+      if (mi3 >= mN) mSum -= view[mi3 - mN].c;
+      if (mi3 >= mN - 1) mPts.push(xs[mi3].toFixed(1) + ',' + Y(mSum / mN).toFixed(1));
+    }
+    if (mPts.length > 1){
+      parts.push('<polyline class="ma-line" fill="none" stroke="' + maDefs[mi2][1]
+        + '" stroke-width="1.4" opacity=".88" stroke-linejoin="round" '
+        + 'vector-effect="non-scaling-stroke" points="' + mPts.join(' ') + '"/>');
+    }
+    maCur[mN] = (view.length >= mN) ? (mSum / mN) : null;
   }
 
   /* 右侧价格轴 */
@@ -7954,6 +7983,18 @@ function hpKline(vals, cost, reason, days, volName, h){
     + '<span class="hc-lg" style="cursor:default"><i style="background:var(--rise)"></i>上涨</span>'
     + '<span class="hc-lg" style="cursor:default"><i style="background:var(--fall)"></i>下跌</span>'
     + '<span class="hc-lg" style="cursor:default"><i style="background:linear-gradient(var(--rise),var(--rise)) 0 50%,transparent 50%"></i>影线</span>'
+    /* MA 图例：色标 + 该均线在可见区间**最后一根**的值（真实计算，样本不足显示 —）。 */
+    + (function(){
+        var s = '';
+        for (var li = 0; li < maDefs.length; li++){
+          var mV = maCur[maDefs[li][0]];
+          s += '<span class="hc-lg" style="cursor:default" title="收盘价 '
+            + maDefs[li][0] + ' 桶移动平均（基于本图可见区间计算）">'
+            + '<i style="background:' + maDefs[li][1] + '"></i>MA' + maDefs[li][0]
+            + ' ' + (typeof mV === 'number' ? '¥' + hpAxisNum(mV) : '—') + '</span>';
+        }
+        return s;
+      })()
     /* B1 异常振幅标记的图例：只在真有这种K 线时才出现，避免常驻占位 */
     + (nSpike ? '<span class="hc-lg" style="cursor:default" title="振幅超过 30% 的'
         + def.unit + '，多为桶内采样点少导致一天内报价变动被单根吃掉；数据未做任何修改">'
