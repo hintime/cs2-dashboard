@@ -20,6 +20,7 @@
   --border:rgba(125,135,155,.16);--border-hi:rgba(150,160,180,.30);
   --text:#e8edf4;--text2:#9aa5b5;--text3:#6b7686;
   --rise:#f6465d;--fall:#2ebd85;--blue:#3b82f6;--brand:#f0b429;--amber:#f0b429;
+  --brand-soft:rgba(240,180,41,.10);--brand-line:rgba(240,180,41,.26);--bg-glow:rgba(240,180,41,.055);
   --glow-rise:rgba(246,70,93,.14);--glow-fall:rgba(46,189,133,.14);--glow-brand:rgba(240,180,41,.14);--glow-blue:rgba(59,130,246,.14);
   --accent:var(--brand);--radius:6px;--radius-sm:8px;--shadow:0 0 0 1px var(--border);
   --f-num:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;--f-ui:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;--f-brand:var(--f-ui);
@@ -28,26 +29,29 @@
   --bg:#0a1628;--surface:rgba(18,30,48,.92);--surface2:rgba(24,38,56,.74);
   --border:rgba(59,130,246,.22);--border-hi:rgba(96,165,250,.40);
   --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
-  --rise:#f6465d;--fall:#2ebd85;--blue:#3b82f6;--brand:#f0b429;--amber:#f0b429;
-  --glow-rise:rgba(246,70,93,.14);--glow-fall:rgba(46,189,133,.14);--glow-brand:rgba(240,180,41,.14);
-  --accent:#3b82f6;--radius:6px;--radius-sm:8px;--shadow:0 0 0 1px var(--border);
+  --rise:#f6465d;--fall:#2ebd85;--blue:#3b82f6;--brand:#58a6ff;--amber:#f0b429;
+  --brand-soft:rgba(88,166,255,.10);--brand-line:rgba(88,166,255,.28);--bg-glow:rgba(88,166,255,.07);
+  --glow-rise:rgba(246,70,93,.14);--glow-fall:rgba(46,189,133,.14);--glow-brand:rgba(88,166,255,.16);
+  --accent:#58a6ff;--radius:6px;--radius-sm:8px;--shadow:0 0 0 1px var(--border);
   --f-num:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;--f-ui:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;--f-brand:var(--f-ui);
 }
 [data-theme="green"]{
   --bg:#0a1a10;--surface:rgba(16,36,22,.92);--surface2:rgba(22,48,30,.74);
   --border:rgba(46,189,133,.22);--border-hi:rgba(46,189,133,.40);
   --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
-  --rise:#f6465d;--fall:#2ebd85;--blue:#2ebd85;--brand:#f0b429;--amber:#f0b429;
-  --glow-rise:rgba(246,70,93,.14);--glow-fall:rgba(46,189,133,.14);--glow-brand:rgba(240,180,41,.14);
-  --accent:#2ebd85;--radius:6px;--radius-sm:8px;--shadow:0 0 0 1px var(--border);
+  --rise:#f6465d;--fall:#2ebd85;--blue:#2ebd85;--brand:#2dd4bf;--amber:#f0b429;
+  --brand-soft:rgba(45,212,191,.10);--brand-line:rgba(45,212,191,.28);--bg-glow:rgba(45,212,191,.06);
+  --glow-rise:rgba(246,70,93,.14);--glow-fall:rgba(46,189,133,.14);--glow-brand:rgba(45,212,191,.16);
+  --accent:#2dd4bf;--radius:6px;--radius-sm:8px;--shadow:0 0 0 1px var(--border);
   --f-num:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;--f-ui:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;--f-brand:var(--f-ui);
 }
 [data-theme="purple"]{
   --bg:#0f0a1a;--surface:rgba(24,16,40,.92);--surface2:rgba(32,22,52,.74);
   --border:rgba(167,139,250,.22);--border-hi:rgba(167,139,250,.40);
   --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
-  --rise:#f6465d;--fall:#2ebd85;--blue:#a78bfa;--brand:#f0b429;--amber:#f0b429;
-  --glow-rise:rgba(246,70,93,.14);--glow-fall:rgba(46,189,133,.14);--glow-brand:rgba(240,180,41,.14);
+  --rise:#f6465d;--fall:#2ebd85;--blue:#a78bfa;--brand:#a78bfa;--amber:#f0b429;
+  --brand-soft:rgba(167,139,250,.10);--brand-line:rgba(167,139,250,.28);--bg-glow:rgba(167,139,250,.07);
+  --glow-rise:rgba(246,70,93,.14);--glow-fall:rgba(46,189,133,.14);--glow-brand:rgba(167,139,250,.16);
   --accent:#a78bfa;--radius:6px;--radius-sm:8px;--shadow:0 0 0 1px var(--border);
   --f-num:'DM Mono','JetBrains Mono',ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;--f-ui:'Noto Sans SC','PingFang SC','Inter',system-ui,-apple-system,sans-serif;--f-brand:var(--f-ui);
 }
@@ -58,8 +62,8 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-v
   font-family:var(--f-ui);
   background:var(--bg);color:var(--text);min-height:100vh;
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -20%,rgba(240,180,41,.06),transparent),
-    radial-gradient(ellipse 40% 40% at 80% 80%,rgba(240,180,41,.04),transparent),
+    radial-gradient(ellipse 80% 50% at 50% -20%,var(--bg-glow),transparent),
+    radial-gradient(ellipse 40% 40% at 80% 80%,var(--bg-glow),transparent),
     radial-gradient(ellipse 30% 30% at 20% 50%,rgba(52,211,153,.03),transparent);
   background-attachment:fixed;
 }
@@ -595,7 +599,7 @@ body.logged-in #loginLanding{display:none!important}
 }
 .pager .pg:hover,.pager button:hover,.pager a:hover{color:var(--text);border-color:rgba(255,255,255,.08)!important}
 .pager .pg.on,.pager button.on,.pager a.on{
-  color:var(--amber)!important;font-weight:700;background:transparent!important;
+  color:var(--brand)!important;font-weight:700;background:transparent!important;
   border-color:transparent!important;
 }
 .pager .pg:disabled,.pager button:disabled{opacity:.28;cursor:default;background:transparent!important}
@@ -915,6 +919,107 @@ html { scroll-behavior: smooth; }
 #aiRecLessons{line-height:1.75}
 #aiRecLessons div{font-size:12.5px!important;line-height:1.75!important}
 #aiRecLessons>div{margin-bottom:6px}
+
+/* ══ 2026-10-09 UI 收口 · 推荐池质量 + AI 推荐精选 重做 ══
+   原则：去渐变 / 去 emoji / 无上浮位移 / 只留发丝分隔 / 数字 DM Mono 等宽
+   ── 推荐池质量：由「彩色药丸堆」改为终端状态条 ── */
+.rcq{background:transparent!important;border:0!important;border-bottom:1px solid var(--border)!important;
+  border-radius:0!important;padding:0 0 9px!important;
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.rcq-head{display:flex;align-items:baseline;gap:9px;margin-bottom:0!important;flex:0 0 auto}
+.rcq-title{font-size:10.5px!important;font-weight:700!important;color:var(--text3)!important;letter-spacing:.9px!important}
+.rcq-sub{font-size:10px!important;color:var(--text3)!important;opacity:.7}
+.rcq-chips{display:flex;flex-wrap:wrap;align-items:baseline;gap:0!important;margin-top:0!important;flex:1 1 auto}
+.rcq-chip{display:inline-flex;align-items:baseline;gap:5px;padding:0 12px!important;
+  border:0!important;border-left:1px solid var(--border)!important;border-radius:0!important;background:transparent!important;
+  font-size:10px!important;color:var(--text3)!important;font-variant-numeric:tabular-nums;line-height:1.5}
+.rcq-chip:first-child{padding-left:0!important;border-left:0!important}
+.rcq-chip b{font-family:var(--f-num);font-size:12.5px!important;font-weight:700!important;color:var(--text)!important}
+.rcq-chip .rcq-hi{color:var(--brand)!important}
+.rcq-chip .rcq-up{color:var(--rise)!important}
+.rcq-rars{margin-top:7px;padding-top:7px;border-top:1px solid var(--border)!important;gap:5px!important}
+.rcq-rar{background:transparent!important;border:1px solid var(--border)!important;border-radius:3px!important;
+  font-size:9.5px!important;color:var(--text3)!important;padding:2px 7px!important}
+.rcq-rar b{color:var(--text2)!important;font-family:var(--f-num)}
+
+/* ── AI 推荐精选：整块去渐变、去发光、去上浮 ── */
+.ai-sec{border:1px solid var(--border)!important;border-radius:var(--radius)!important;
+  background:var(--surface2)!important;background-image:none!important;box-shadow:none!important;overflow:hidden}
+.ai-head{display:flex;align-items:center;gap:10px;padding:9px 14px!important;flex-wrap:wrap;
+  border-bottom:1px solid var(--border)!important;background:transparent!important;background-image:none!important}
+.ai-ttl{font-size:12.5px!important;font-weight:700!important;letter-spacing:.6px!important;white-space:nowrap;
+  color:var(--text)!important;background:none!important;-webkit-background-clip:border-box!important;
+  background-clip:border-box!important;-webkit-text-fill-color:var(--text)!important}
+.ai-bd{font-size:8.5px!important;font-weight:600!important;color:var(--text3)!important;white-space:nowrap;
+  background:transparent!important;border:1px solid var(--border)!important;padding:1px 6px!important;
+  border-radius:3px!important;letter-spacing:.4px}
+.ai-date{font-size:10.5px!important;color:var(--text3)!important;white-space:nowrap;
+  font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.ai-sum{font-size:11.5px!important;color:var(--text2)!important;flex:1;min-width:200px;line-height:1.6;
+  padding-left:10px!important;border-left:1px solid var(--border)!important;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-sum b{color:var(--text2)!important;font-weight:700!important}
+.ai-more{font-size:11px!important;color:var(--text3)!important;white-space:nowrap;cursor:pointer;opacity:1!important}
+.ai-more:hover{color:var(--brand)!important;text-decoration:none!important}
+.ai-picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr))!important;gap:8px!important;padding:12px 14px!important}
+.aip{position:relative;border-radius:var(--radius)!important;padding:10px 12px!important;cursor:pointer;
+  border:1px solid var(--border)!important;background:var(--surface)!important;background-image:none!important;
+  transform:none!important;box-shadow:none!important;
+  transition:border-color .15s ease,background .15s ease}
+.aip:hover{transform:none!important;border-color:var(--border-hi)!important;
+  background:rgba(255,255,255,.035)!important;box-shadow:none!important}
+.aip.sel{border-color:var(--brand-line)!important;background:var(--brand-soft)!important}
+.aip.sel::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:2px;border-radius:0;
+  background:var(--brand)!important}
+.aip-head{display:flex;align-items:center;gap:6px;margin-bottom:6px!important}
+.aip-rk{font-family:var(--f-num);font-size:10px!important;color:var(--text3)!important;flex:none;letter-spacing:.3px}
+.aip.sel .aip-rk{color:var(--brand)!important}
+.aip-nm{font-size:12.5px!important;font-weight:700!important;color:var(--text)!important;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aip-prow{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+.aip-price{font-family:var(--f-num);font-size:13.5px!important;font-weight:700!important;color:var(--text)!important;
+  margin-right:auto;font-variant-numeric:tabular-nums}
+.aip-sent{font-size:9.5px!important;font-weight:600!important;padding:1px 6px!important;
+  border-radius:3px!important;white-space:nowrap;letter-spacing:.2px}
+.s-strong{color:var(--fall)!important;background:rgba(34,197,94,.10)!important}
+.s-bull{color:var(--fall)!important;background:rgba(74,222,128,.10)!important}
+.s-neutral{color:var(--text3)!important;background:rgba(148,163,184,.08)!important}
+.s-bear{color:var(--amber)!important;background:rgba(240,180,41,.10)!important}
+.s-sbear{color:var(--rise)!important;background:rgba(239,68,68,.10)!important}
+.aip-sigs{display:flex;gap:4px;margin-top:7px!important;flex-wrap:wrap}
+.aip-sigs .sg{font-size:9.5px!important;padding:1px 5px!important;border-radius:3px!important;line-height:1.5;
+  background:transparent!important;border:1px solid var(--border)!important;white-space:nowrap}
+.aip-sigs .sg.p{color:var(--fall)!important;border-color:rgba(46,189,133,.30)!important}
+.aip-sigs .sg.n{color:var(--rise)!important;border-color:rgba(246,70,93,.30)!important}
+.aip-sigs .sg.e{color:var(--text3)!important;border-color:var(--border)!important}
+.ai-detail{margin:0 14px 12px!important;padding:12px 14px!important;border-radius:var(--radius)!important;
+  border:1px solid var(--border)!important;background:var(--surface)!important;background-image:none!important;
+  box-shadow:none!important;text-align:left}
+.ai-detail .dh{font-size:11.5px!important;color:var(--text2);margin-bottom:10px!important;padding-bottom:8px!important;
+  border-bottom:1px solid var(--border)!important;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ai-detail .dh b{color:var(--text)!important;font-size:12.5px!important;letter-spacing:.2px}
+.ai-row{font-size:11.5px!important;color:var(--text2)!important;line-height:1.8;text-align:left}
+.ai-row i{font-style:normal;display:block;font-size:9.5px!important;font-weight:700!important;color:var(--text3)!important;
+  margin-bottom:4px!important;letter-spacing:.7px}
+.ai-row .txt{color:var(--text2)!important}
+.ai-row.warn{background:transparent!important;border:0!important;border-left:2px solid rgba(246,70,93,.5)!important;
+  border-radius:0!important;padding:2px 0 2px 9px!important;color:var(--rise)!important;line-height:1.8}
+.ai-row.plan{background:transparent!important;border:0!important;border-left:2px solid rgba(46,189,133,.5)!important;
+  border-radius:0!important;padding:2px 0 2px 9px!important;color:var(--fall)!important;line-height:1.8}
+.ai-foot{display:flex;gap:14px;flex-wrap:wrap;padding:9px 14px!important;align-items:center;
+  color:var(--text3)!important;line-height:1.7;border-top:1px solid var(--border)!important;background:transparent!important}
+.ai-foot b{color:var(--text2)!important;font-weight:600}
+.ai-foot .lk{color:var(--text2)!important}
+.ai-foot details summary{color:var(--text2)!important;cursor:pointer}
+.ai-foot details summary:hover{color:var(--brand)!important}
+/* 同病根的两处内联渐变 AI 框（扫描洞察 / 资讯空投监控）：一并去渐变 */
+#aiInsightBar,#aiNewsImpact{background:var(--surface2)!important;background-image:none!important;
+  border:1px solid var(--border)!important;border-radius:var(--radius)!important}
+@media(max-width:900px){
+  .ai-picks{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important}
+  .rcq{flex-direction:column;align-items:stretch;gap:6px}
+  .rcq-chips .rcq-chip:first-child{padding-left:0!important}
+}
 </style>
 </head>
 <body>
@@ -979,10 +1084,10 @@ html { scroll-behavior: smooth; }
         <span>主题</span>
       </div>
       <div class="theme-menu" style="display:none;position:absolute;top:110%;right:0;background:var(--surface);border:1px solid var(--border-hi);border-radius:12px;padding:8px;box-shadow:none;z-index:999;min-width:140px;backdrop-filter:blur(16px)">
-        <div onclick="applyTheme('dark');document.getElementById('themePicker').classList.remove('open')" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:var(--blue);flex-shrink:0"></span>🌙 暗色</div>
-        <div onclick="applyTheme('blue');document.getElementById('themePicker').classList.remove('open')" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:var(--blue);flex-shrink:0"></span>💧 清新蓝</div>
-        <div onclick="applyTheme('green');document.getElementById('themePicker').classList.remove('open')" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:var(--fall);flex-shrink:0"></span>🌿 自然绿</div>
-        <div onclick="applyTheme('purple');document.getElementById('themePicker').classList.remove('open')" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:var(--brand);flex-shrink:0"></span>💜 薄雾紫</div>
+        <div onclick="applyTheme('dark');document.getElementById('themePicker').classList.remove('open')" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#f0b429;flex-shrink:0"></span>暗色 · 暗金</div>
+        <div onclick="applyTheme('blue');document.getElementById('themePicker').classList.remove('open')" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#58a6ff;flex-shrink:0"></span>清新蓝 · 钢蓝</div>
+        <div onclick="applyTheme('green');document.getElementById('themePicker').classList.remove('open')" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#2dd4bf;flex-shrink:0"></span>自然绿 · 青绿</div>
+        <div onclick="applyTheme('purple');document.getElementById('themePicker').classList.remove('open')" style="padding:8px 12px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#a78bfa;flex-shrink:0"></span>薄雾紫</div>
       </div>
     </div>
     <style>
@@ -1954,7 +2059,7 @@ body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
   <div id="scanContent" style="padding:0 20px 16px">
     <div id="scanKpis" class="scan-kpis"></div>
     <div id="aiInsightBar" style="display:none;margin:8px 0 12px;padding:10px 16px;background:linear-gradient(135deg,rgba(240,180,41,.08),rgba(59,130,246,.05));border:1px solid rgba(240,180,41,.2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.6">
-      <span style="color:var(--brand);font-weight:700">⚡ AI</span> · <span id="aiInsightText">分析中...</span> <span id="aiInsightTime" style="font-size:10px;color:var(--text3)"></span>
+      <span style="color:var(--brand);font-weight:700">AI</span> · <span id="aiInsightText">分析中...</span> <span id="aiInsightTime" style="font-size:10px;color:var(--text3)"></span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
       <div class="scan-list-card" id="scanGainers"></div>
@@ -1973,7 +2078,7 @@ body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
     </div>
     <div id="newsContent" style="padding:16px 20px">
       <div id="aiNewsImpact" style="display:none;margin:0 0 14px;padding:10px 14px;background:linear-gradient(135deg,rgba(240,180,41,.08),rgba(234,179,8,.05));border:1px solid rgba(234,179,8,.2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.8">
-        <div style="margin-bottom:6px"><span style="color:var(--brand);font-weight:700">🪂 AI 空投监控</span> · <span style="font-size:10px;color:var(--text3)">AI 注记 · 数字来自统计引擎</span></div>
+        <div style="margin-bottom:6px"><span style="color:var(--brand);font-weight:700">AI 空投监控</span> · <span style="font-size:10px;color:var(--text3)">AI 注记 · 数字来自统计引擎</span></div>
         <div id="aiNewsImpactText" style="white-space:pre-line">加载中...</div>
         <div id="aiNewsPrior" style="display:none;font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px dashed rgba(148,163,184,.18);line-height:1.7"></div>
       </div>
@@ -3458,14 +3563,14 @@ function renderAIRecBody(data) {
   window._aiPicks = picks;
   if (dateEl) dateEl.textContent = data.date || '';
   if (sumEl) {
-    if (data.summary) sumEl.innerHTML = '<b>📋 策略：</b>' + esc(data.summary);
-    else if (data.strategy) sumEl.innerHTML = '<b>策略</b>' + esc(data.strategy);
+    if (data.summary) sumEl.innerHTML = '<b>策略</b> ' + esc(data.summary);
+    else if (data.strategy) sumEl.innerHTML = '<b>策略</b> ' + esc(data.strategy);
     else sumEl.innerHTML = '';
     sumEl.title = [data.summary, data.strategy].filter(Boolean).join(' ｜ ');
   }
   banner.style.display = '';
 
-  var rankIcons = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+  var rankIcons = ['#1', '#2', '#3', '#4', '#5'];
   picksEl.innerHTML = picks.map(function(p, i) {
     var se = p.sentiment || '';
     var cls = AI_SENT_CLS[se] || 's-neutral';
