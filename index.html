@@ -125,32 +125,21 @@ body::before{
   background:var(--brand)!important;
   box-shadow:0 0 6px var(--brand)!important;
 }
-/* ── AlphaTrack 金属流光 ── */
+/* ── AlphaTrack 品牌（2026-10-09 重设计：银→香槟金缓慢流光。
+      旧版 metalSheen/lightSweep keyframes 被清空 → 动画卡死，斜扫光条
+      ::after 永远停在标题左侧像一块卡住的亮斑；整体替换为
+      background-position 驱动的无缝缓速流光，无覆盖层、不会卡。── */
 .shimmer-text {
   position: relative;
   display: inline-block;
-  color: var(--text);
-  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 30%, #ffffff 50%, #e8e8e8 70%, #c0c0c0 100%);
+  background: linear-gradient(100deg, #8f98a8 0%, #dfe5ee 22%, #f0b429 40%, #fff7e0 50%, #f0b429 60%, #dfe5ee 78%, #8f98a8 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: metalSheen 4s ease-in-out infinite;
+  animation: metalSheen 7s linear infinite;
 }
-@keyframes metalSheen {}
-.shimmer-text::after {
-  content: '';
-  position: absolute;
-  top: -2px; left: -30%;
-  width: 80px;
-  height: calc(100% + 4px);
-  background: linear-gradient(105deg, transparent 40%, rgba(240,180,41,.7) 48%, rgba(255,255,255,.9) 50%, rgba(240,180,41,.7) 52%, transparent 60%);
-  transform: skewX(-20deg);
-  animation: lightSweep 3s ease-in-out infinite;
-  pointer-events: none;
-  filter: blur(.5px);
-}
-@keyframes lightSweep {}
+@keyframes metalSheen { to { background-position: -200% center; } }
 @keyframes ai-spin { to { transform: rotate(360deg); } }
 .ai-spinner { width: 14px; height: 14px; border: 2px solid rgba(240,180,41,.3); border-top-color: var(--brand); border-radius: 50%; animation: ai-spin .8s linear infinite; display: inline-block; }
 .nav-btn.active::after,.nav-btn.on::after{
@@ -186,7 +175,10 @@ body::before{
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
 .header h1{font-size:22px;font-weight:900;letter-spacing:-.03em;background:linear-gradient(135deg,#f0f0f0 0%,var(--blue) 50%,var(--brand) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .header .sub{font-size:11px;color:var(--text3);margin-top:4px;letter-spacing:.05em;text-transform:uppercase;font-weight:500}
-.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);background:linear-gradient(135deg,var(--surface),var(--surface2));border:1px solid var(--border);padding:4px 16px;border-radius:16px;backdrop-filter:blur(16px);box-shadow:none;height:6px;border-radius:50%;background:var(--fall);box-shadow:0 0 8px var(--fall),0 0 20px var(--fall);animation:blink 2.5s ease-in-out infinite}
+/* 2026-10-09 修复：旧规则末尾被混入一段指示灯样式
+   （height:6px;border-radius:50%;background:var(--fall);box-shadow:…;animation:blink），
+   把「更新时间/持仓计数」徽章变成 6px 红色发光椭圆狂闪、文字无法阅读。已还原为正常胶囊。 */
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);padding:4px 14px;border-radius:999px;box-shadow:none;font-variant-numeric:tabular-nums}
 .badge.ai-powered{
   background:linear-gradient(135deg,rgba(240,180,41,.15),rgba(59,130,246,.1));
   border-color:rgba(240,180,41,.35);
@@ -195,10 +187,8 @@ body::before{
 .badge.ai-powered .ai-dot{
   width:6px;height:6px;border-radius:50%;
   background:var(--brand);box-shadow:0 0 8px var(--brand),0 0 16px var(--brand);
-  animation:aiBlink 3s ease-in-out infinite;
 }
-@keyframes aiBlink{}
-@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 8px var(--fall),0 0 20px var(--fall)}50%{opacity:.3;box-shadow:0 0 2px var(--fall)}}
+/* 2026-10-09 清理：aiBlink / blink 两个动画的 keyframes 均为空壳或已无使用者，连同 .ai-dot 的动画引用一并删除。 */
 
 /* ── Glassmorphism card base ── */
 .glass{
