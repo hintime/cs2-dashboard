@@ -2,6 +2,14 @@
   {
     "date": "2026-10-09",
     "tag": "fix",
+    "scope": "ui",
+    "sha": "6f3ee1e",
+    "title": "修复时间/计数徽章被混入指示灯样式狂闪看不清；logo 流光重设计（银→香槟金缓速，替换卡死扫光）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
     "scope": "batch-B",
     "sha": "1199c9e",
     "title": "index.html — KPI/exportCSV/30s refresh/sync-key/MA+kline (2026-10-09)",
@@ -149,14 +157,6 @@
     "scope": "holdings",
     "sha": "1f966d9",
     "title": "页面加载后立即推送持仓（不等首个心跳）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "chore",
-    "scope": "holdings",
-    "sha": "baf34e0",
-    "title": "删除「同步到服务器」手动按钮 —— 同步已全自动",
     "desc": ""
   }
 ]
