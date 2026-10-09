@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "",
+    "sha": "bc31134",
+    "title": "ui(rec): 四套主题各自主色；推荐池质量改终端状态条；AI精选卡片去渐变/去emoji",
+    "desc": ""
+  },
+  {
     "date": "2026-10-09",
     "tag": "refactor",
     "scope": "ui",
@@ -149,14 +157,6 @@
     "scope": "kline",
     "sha": "d218268",
     "title": "蜡烛加宽至占槽位72%/上限34px + 叠加MA5/10/20均线（参照CSQAQ优化稀疏）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-09",
-    "tag": "fix",
-    "scope": "kline",
-    "sha": "35aeb3f",
-    "title": "默认1h官方K线+2h稀疏标注；修成本录入漏刷列表；删numFlash死代码",
     "desc": ""
   }
 ]

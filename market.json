@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 910.49,
-    "change": -8.95,
-    "change_pct": -8.95,
-    "market_value": 279478780.48,
-    "total_items": 4194,
-    "updated": "2026-10-10T00:00:03+08:00",
+    "latest": 838.01,
+    "change": -16.2,
+    "change_pct": -16.2,
+    "market_value": 257229336.05,
+    "total_items": 3973,
+    "updated": "2026-10-10T02:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4478,6 +4478,14 @@
         "close": 910.49,
         "high": 1000.72,
         "low": 910.49
+      },
+      {
+        "date": "2026-10-10",
+        "dateFull": "2026-10-10 02:00",
+        "open": 838.01,
+        "close": 838.01,
+        "high": 838.01,
+        "low": 838.01
       }
     ],
     "volBar": [],
@@ -13417,12 +13425,20 @@
         "index": 910.49,
         "change_pct": -8.95,
         "market_value": 279478780.48
+      },
+      {
+        "time": "02:00",
+        "date": "2026-10-10",
+        "timestamp": 1791568803,
+        "index": 838.01,
+        "change_pct": -16.2,
+        "market_value": 257229336.05
       }
     ],
     "selling": {
-      "total_selling": 1421595,
+      "total_selling": 1425624,
       "total_selling_prev": 0,
-      "total_selling_delta": 1421595,
+      "total_selling_delta": 1425624,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13430,7 +13446,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791561603608,
+  "index_updated": 1791568803477,
   "alerts": [
     {
       "name": "Music Kit | DRYDEN, Feel The Power",
@@ -32338,7 +32354,7 @@
     "MP9 | 红宝石毒镖 (略有磨损)",
     "MP9 | 绿色格纹 (久经沙场)"
   ],
-  "updated": "2026-10-09T17:38:36Z",
+  "updated": "2026-10-09T18:07:16Z",
   "steam_market_items": 0,
   "steam_market_recs": {
     "momentum": [],
