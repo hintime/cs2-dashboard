@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 863.48,
-    "change": -13.65,
-    "change_pct": -13.65,
-    "market_value": 265047846.39,
-    "total_items": 4020,
-    "updated": "2026-10-09T08:00:03+08:00",
+    "latest": 868.67,
+    "change": -13.13,
+    "change_pct": -13.13,
+    "market_value": 266641027.24,
+    "total_items": 4039,
+    "updated": "2026-10-09T10:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4446,6 +4446,14 @@
         "close": 863.48,
         "high": 867.07,
         "low": 863.48
+      },
+      {
+        "date": "2026-10-09",
+        "dateFull": "2026-10-09 10:00",
+        "open": 868.67,
+        "close": 868.67,
+        "high": 868.67,
+        "low": 868.67
       }
     ],
     "volBar": [],
@@ -13321,12 +13329,20 @@
         "index": 863.48,
         "change_pct": -13.65,
         "market_value": 265047846.39
+      },
+      {
+        "time": "10:00",
+        "date": "2026-10-09",
+        "timestamp": 1791511203,
+        "index": 868.67,
+        "change_pct": -13.13,
+        "market_value": 266641027.24
       }
     ],
     "selling": {
-      "total_selling": 1368351,
+      "total_selling": 1382528,
       "total_selling_prev": 0,
-      "total_selling_delta": 1368351,
+      "total_selling_delta": 1382528,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13334,7 +13350,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791504003844,
+  "index_updated": 1791511203109,
   "alerts": [
     {
       "name": "P250 | Verdigris (Factory New)",
@@ -32233,7 +32249,7 @@
     "Negev | Infrastructure (Minimal Wear)",
     "Negev | Lionfish (Factory New)"
   ],
-  "updated": "2026-10-09T01:37:05Z",
+  "updated": "2026-10-09T02:07:25Z",
   "steam_market_items": 69,
   "steam_market_recs": {
     "momentum": [],
