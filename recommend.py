@@ -452,6 +452,12 @@ def generate_recommendations(csqaq_alerts, eco_items):
             entry['eco_qg_total'] = int(eco_match.get('QGTotal') or 0)
             entry['eco_qg_max'] = float(eco_match.get('QGMaxPrice') or 0)
             entry['hash_name'] = eco_match.get('HashName', '')
+        else:
+            # ★ 2026-10-09 修正：非 ECO 标的（CSQAQ 直出）原本不写 hash_name，
+            #   导致 get_change()（recommend.py:390）因缺键返回 None，被价格类推荐档
+            #   静默丢弃。alert['name'] 即 SteamDT marketHashName，与 price_summary/
+            #   DB 的 HashName 同口径，用作涨跌幅匹配回退键。
+            entry['hash_name'] = alert.get('name', '')
         merged.append(entry)
 
     # Also add ECO items not in CSQAQ (for scarce/undervalued)
