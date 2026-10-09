@@ -1,6 +1,30 @@
 [
   {
     "date": "2026-10-09",
+    "tag": "chore",
+    "scope": "",
+    "sha": "efc72d8",
+    "title": "误删仓库根垃圾 C: 目录（api_push_all 绝对路径当 rel 的产物，2026-10-09）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "pull",
+    "sha": "bb1806a",
+    "title": "落地固化 — 拉完自动落地消费库(integrity_check+MAX(ts)+.prev)，新增 --land-only/--no-land",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "rec",
+    "sha": "e606990",
+    "title": "删 updateWatchCount 漏网顶层调用（ReferenceError 打断 script 块致 loadAll 不执行、页面永久骨架屏）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
     "tag": "fix",
     "scope": "rec",
     "sha": "cf0772e",
@@ -133,30 +157,6 @@
     "scope": "kline",
     "sha": "a805ba6",
     "title": "日K采完自动重建持仓裁剪版",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-08",
-    "tag": "feat",
-    "scope": "kline",
-    "sha": "da90a42",
-    "title": "新增持仓日K裁剪版构建脚本(190KB)",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-08",
-    "tag": "fix",
-    "scope": "chart",
-    "sha": "b9c14ef",
-    "title": "详情卡/迷你走势图空态 —— 新增持仓日K裁剪源(190KB)+整包延迟后台加载",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-08",
-    "tag": "feat",
-    "scope": "kline",
-    "sha": "fcf28ee",
-    "title": "新增持仓日K裁剪版(190KB) 解决详情卡/迷你图等12MB整包的空态问题",
     "desc": ""
   }
 ]
