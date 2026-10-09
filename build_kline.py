@@ -88,7 +88,13 @@ import sys
 import time
 
 REPO = os.path.dirname(os.path.abspath(__file__))
-DB = os.environ.get('PRICE_HIST_DB') or os.path.join(REPO, 'price_history.db')
+# 2026-10-09 修正：统一走 price_db.DB_PATH（尊重 PRICE_HIST_DB；win32 回落 E:\cs2-data，
+# 其他平台回落脚本目录），避免与 update.py/价格管道读到的 price_history.db 不是同一文件。
+try:
+    import price_db
+    DB = price_db.DB_PATH
+except Exception:
+    DB = os.environ.get('PRICE_HIST_DB') or os.path.join(REPO, 'price_history.db')
 HOLDINGS = os.environ.get('KRONOS_HOLDINGS') or os.path.join(REPO, 'holdings.json')
 
 # 采样天数门槛：低于此天数的标的直接不输出（K线需要连续性才读得出趋势）
