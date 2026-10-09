@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-10-09",
+    "tag": "refactor",
+    "scope": "ui",
+    "sha": "b2047b7",
+    "title": "推荐表改专业交易终端风格（合并比价列/等宽数字右对齐/去emoji/极简分页器）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
     "tag": "feat",
     "scope": "kronos",
     "sha": "abca539",
@@ -149,14 +157,6 @@
     "scope": "kline",
     "sha": "35aeb3f",
     "title": "默认1h官方K线+2h稀疏标注；修成本录入漏刷列表；删numFlash死代码",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-08",
-    "tag": "chore",
-    "scope": "",
-    "sha": "338545c",
-    "title": "Kronos 预测更新（本地 RTX 4060）",
     "desc": ""
   }
 ]
