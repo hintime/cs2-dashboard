@@ -23,11 +23,17 @@ matplotlib.use('Agg')
 matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'Arial Unicode MS']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-KRONOS = os.environ.get('KRONOS_HOME') or r'C:\Users\Lenovo\cs2-kronos'
+KRONOS = os.environ.get('KRONOS_HOME') or r'E:\cs2-kronos'
 REPO = os.path.dirname(os.path.abspath(__file__))
 # 价格历史库已迁 E 盘（与 price_db.py 保持一致）：默认 E:\cs2-data\price_history.db，
 # 可用 PRICE_HIST_DB 覆盖。
-DB = os.environ.get('PRICE_HIST_DB') or os.path.join(r'E:\cs2-data', 'price_history.db')
+# 2026-10-09 修正：统一走 price_db.DB_PATH（尊重 PRICE_HIST_DB；win32 回落 E:\cs2-data，
+# Linux 回落脚本目录），去掉硬编码 E:\cs2-data（服务器 Linux 上该路径无效会找不到 DB）。
+try:
+    import price_db
+    DB = price_db.DB_PATH
+except Exception:
+    DB = os.environ.get('PRICE_HIST_DB') or os.path.join(r'E:\cs2-data', 'price_history.db')
 
 sys.path.insert(0, KRONOS)
 os.chdir(KRONOS)
