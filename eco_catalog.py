@@ -144,7 +144,30 @@ def build():
             print(f'  BUFF prices enriched for {len(buff_prices)} items')
 
     # 6. write tracked file
+    # ★ 2026-10-09 修正：build() 每轮从 ECO 全量目录重建 tracked，默认不采集 BUFF
+    #   （ENRICH_BUFF 关闭）。但 update.py 的 SteamDT 块会用实时买盘/卖盘补全并写回
+    #   eco_tracked.json；若 build() 单独跑会整文件覆盖，把那些实时 BUFF 字段抹掉。
+    #   改为「合并保留」：已有文件里同 HashName 的 BUFF 字段，本轮回合未采集到时沿用旧值
+    #   （本轮回合若通过 ENRICH_BUFF 采到新值则保留新的）。
     out_path = os.path.join(DATA_DIR, 'eco_tracked.json')
+    _prev = {}
+    if os.path.exists(out_path):
+        try:
+            for _p in json.load(open(out_path, encoding='utf-8')):
+                if isinstance(_p, dict) and _p.get('HashName'):
+                    _prev[_p['HashName']] = _p
+        except Exception:
+            _prev = {}
+    if _prev:
+        _buff_keys = ('buff_sell', 'buff_buy', 'buff_sell_num', 'buff_buy_num', 'buff_source', 'platforms')
+        for it in tracked:
+            _ex = _prev.get(it.get('HashName', ''))
+            if not _ex:
+                continue
+            for _k in _buff_keys:
+                _cur = it.get(_k)
+                if (_cur is None or _cur == 0 or _cur == {}) and _ex.get(_k) not in (None, 0, {}):
+                    it[_k] = _ex[_k]
     with open(out_path, 'w', encoding='utf-8') as f:
         json.dump(tracked, f, ensure_ascii=False, indent=2)
     t4 = time.time()
