@@ -1062,20 +1062,20 @@ html { scroll-behavior: smooth; }
 
   <!-- ══════════ 主导航（真标签页切换）══════════ -->
   <div class="quick-nav" id="quickNav">
-    <button class="nav-btn on" data-view="recPanel" onclick="switchView('recPanel')">✦ 推荐</button>
+    <button class="nav-btn on" data-view="recPanel" onclick="switchView('recPanel')">推荐</button>
     <button class="nav-btn" data-view="holdingsPanel" onclick="switchView('holdingsPanel')">◈ 持仓</button>
-    <button class="nav-btn" data-view="scanPanel" onclick="switchView('scanPanel')">🔍 扫描</button>
-    <button class="nav-btn" data-view="newsSection" onclick="switchView('newsSection')">📰 资讯</button>
-    <button class="nav-btn" data-view="changelogPanel" onclick="switchView('changelogPanel')" id="changelogNavBtn" style="display:none">📋 变动</button>
+    <button class="nav-btn" data-view="scanPanel" onclick="switchView('scanPanel')">扫描</button>
+    <button class="nav-btn" data-view="newsSection" onclick="switchView('newsSection')">资讯</button>
+    <button class="nav-btn" data-view="changelogPanel" onclick="switchView('changelogPanel')" id="changelogNavBtn" style="display:none">变动</button>
     <span style="width:2px;height:24px;background:var(--text3);border-radius:1px;margin:0 10px;opacity:.35"></span>
     <span style="font-size:9px;color:var(--text3);font-weight:500;letter-spacing:1px;text-transform:uppercase;opacity:.5;align-self:center">子页</span>
     <div id="subPagesArea" style="display:flex;gap:1px;flex-wrap:wrap">
     <a href="backtest.html" class="nav-btn sub-page" style="text-decoration:none">◷ 回测</a>
-    <a href="revenue.html" class="nav-btn sub-page" style="text-decoration:none">💰 收入</a>
-    <a href="fluctuation.html" class="nav-btn sub-page" style="text-decoration:none">📡 异动</a>
+    <a href="revenue.html" class="nav-btn sub-page" style="text-decoration:none">收入</a>
+    <a href="fluctuation.html" class="nav-btn sub-page" style="text-decoration:none">异动</a>
     <a href="tracking.html" class="nav-btn sub-page" style="text-decoration:none">◉ 追踪</a>
-    <a href="changelog.html" class="nav-btn sub-page" style="text-decoration:none">📝 日志</a>
-    <a href="report.html" class="nav-btn sub-page" style="text-decoration:none">📈 日报</a>
+    <a href="changelog.html" class="nav-btn sub-page" style="text-decoration:none">日志</a>
+    <a href="report.html" class="nav-btn sub-page" style="text-decoration:none">日报</a>
     <a href="status.html" class="nav-btn sub-page" style="text-decoration:none">ℹ️ 状态</a>
     </div>
     <div class="theme-picker" id="themePicker" onclick="event.stopPropagation()">
@@ -2026,11 +2026,58 @@ body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
   background:var(--text3);box-shadow:none}
 /* ⑧ 市场大盘「板块条」：去掉彩色描边，只靠中性面板色分层 */
 #fpSectors>div{background:var(--surface2)!important;border:1px solid var(--border)!important}
+
+/* ══════════════════════════════════════════════════════════════════════
+   2026-10-10 全站视觉系统收口（义轩：「不是只有一个板块丑，是全都丑」）
+   扫描基线：渐变 44 处 / 彩色发光阴影 12 处 / 上浮位移 10 处 /
+             硬编码彩色 105 行 / 装饰 emoji 334 个 —— 全站没有设计系统。
+   铁律：① 一屏两个色相（主题基调 + 红涨绿跌）
+        ② 无渐变、无发光、无上浮、无装饰 emoji
+        ③ 圆角只有 3 档：4 / 8 / 12
+   保留：骨架屏 shimmer（功能性）、图表遮罩（功能性）、body 极淡光晕（空间感）
+   ══════════════════════════════════════════════════════════════════════ */
+/* ① 面板顶部的固定蓝 2px 线 —— 全站每个面板都有的外来蓝，改中性发丝线 */
+.panel{border-top:1px solid var(--border)!important;border-top-color:var(--border)!important}
+/* ② 容器渐变底 → 纯色 */
+.panel{background:var(--surface)!important;background-image:none!important}
+.nav-btn,.glass,.kpi,.ai-card,.scan-list-card{
+  background:var(--surface2)!important;background-image:none!important}
+.nav-btn.active,.nav-btn.on,.sub-page.active{
+  background:var(--brand-soft)!important;background-image:none!important;
+  color:var(--brand)!important;border-color:var(--brand-line)!important}
+.badge.ai-powered{background:var(--brand-soft)!important;background-image:none!important;
+  color:var(--brand)!important}
+/* ③ 装饰性光斑 / 顶部高光线（::before ::after）→ 删掉 */
+.ai-card::before,.ai-card::after,.kpi::after{display:none!important}
+/* ④ 渐变文字（站名 AlphaTrack 流光 / 大标题 / AI 标题）→ 纯色 */
+.shimmer-text,.header h1,.ai-ttl{
+  background:none!important;-webkit-background-clip:border-box!important;
+  background-clip:border-box!important;-webkit-text-fill-color:currentColor!important;
+  color:var(--text)!important;animation:none!important}
+/* ⑤ 排名徽章的金属渐变 → 纯色（金/银/铜三档，不再有高光） */
+.rt-rk.t1{background:var(--brand)!important;color:#0a0d12!important}
+.rt-rk.t2{background:var(--text3)!important;color:#0a0d12!important}
+.rt-rk.t3{background:#8a5a2b!important;color:#fff!important}
+/* ⑥ 进度条渐变 → 纯色（条形本身就是信息，不需要渐变） */
+.pnl-bar-fill.profit,.scan-bar-fill.rise{background:var(--rise)!important}
+.pnl-bar-fill.loss,.scan-bar-fill.fall{background:var(--fall)!important}
+.scan-bar-fill.sell{background:var(--amber)!important}
+/* ⑦ 上浮位移 → 只留边框/底色反馈（.hc-yaxis 的 -50% 是定位，不动） */
+.nav-btn:hover,.news-card:hover,.mi-item:hover,.kpi:hover,.kpi-card:hover,
+.analysis-card:hover,.aip:hover{transform:none!important}
+/* ⑧ 聚焦发光 → 无发光，只换边框 */
+.cost-input:focus,#searchInput:focus,.page-jump input:focus,
+.modal input[type=password]:focus{box-shadow:none!important;
+  border-color:var(--border-hi)!important;outline:none}
+/* ⑨ 圆角档位统一：胶囊 999px → 4px 方角（终端语言） */
+.badge,.ai-bd,.aip-sent,.aip-sigs .sg,.fc-chip{border-radius:4px!important}
+/* ⑩ 卡片/面板一律 8px，不再出现 16/14/11 这种随手值 */
+.modal,.ai-card,.scan-list-card{border-radius:8px!important}
 </style>
   </div>
 
 <div id="loginLanding" style="text-align:center;padding:80px 20px 60px;max-width:560px;margin:0 auto">
-  <div style="font-size:64px;margin-bottom:20px">🎯</div>
+  
   <h1 class="shimmer-text" style="font-size:28px;font-weight:800;margin-bottom:8px;letter-spacing:-.02em;font-family:'Georgia',serif">AlphaTrack</h1>
   <p style="font-size:14px;color:var(--text2);margin-bottom:24px">CS2 市场情报 · 智能持仓管理</p>
   <p style="font-size:14px;color:var(--text3);line-height:1.7;margin-bottom:40px">
@@ -2038,27 +2085,27 @@ body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
     登录即可使用全部功能
   </p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:48px">
-    <button onclick="document.getElementById('authModal').style.display='flex'" style="padding:12px 32px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:none">👤 登录账号</button>
+    <button onclick="document.getElementById('authModal').style.display='flex'" style="padding:12px 32px;background:var(--brand);color:#0a0d12;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;box-shadow:none">登录账号</button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center">
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px;transition:all .25s;cursor:default"
          onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='var(--blue)';this.style.background='linear-gradient(135deg,rgba(96,165,250,.1),var(--surface2))'"
          onmouseout="this.style.transform='';this.style.borderColor='';this.style.background=''">
-      <div style="font-size:28px;margin-bottom:8px">📊</div>
+      
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">全市场扫描</div>
       <div style="font-size:10px;color:var(--text3)">覆盖 4800+ 饰品<br>实时价格与涨跌幅</div>
     </div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px;transition:all .25s;cursor:default"
          onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='#f472b6';this.style.background='linear-gradient(135deg,rgba(244,114,182,.1),var(--surface2))'"
          onmouseout="this.style.transform='';this.style.borderColor='';this.style.background=''">
-      <div style="font-size:28px;margin-bottom:8px">💡</div>
+      
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">智能推荐</div>
       <div style="font-size:10px;color:var(--text3)">多源交叉验证<br>挑出被低估的潜力款</div>
     </div>
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 12px;transition:all .25s;cursor:default"
          onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='var(--brand)';this.style.background='linear-gradient(135deg,rgba(251,146,60,.1),var(--surface2))'"
          onmouseout="this.style.transform='';this.style.borderColor='';this.style.background=''">
-      <div style="font-size:28px;margin-bottom:8px">📦</div>
+      
       <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">持仓管理</div>
       <div style="font-size:10px;color:var(--text3)">导入 Steam 库存<br>实时算成本与盈亏</div>
     </div>
@@ -2181,7 +2228,7 @@ body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
   <!-- ══════════ 更新日志 ══════════ -->
   <div class="panel" id="changelogPanel" style="display:none">
     <div class="panel-head">
-      <h2>📋 本次刷新变动</h2>
+      <h2>本次刷新变动</h2>
       <div style="display:flex;align-items:center;gap:8px">
         <span id="changelogTime" style="font-size:10px;color:var(--text3)"></span>
         <button class="tab" id="changelogClose" style="cursor:pointer">✕ 关闭</button>
@@ -2344,7 +2391,7 @@ body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
     <div style="margin-top:8px;opacity:.65">数据来源 ECO · CSQAQ · SteamDT · BUFF ｜ 持仓与自选仅存于你的本地浏览器</div></div>
 
 <div class="modal-overlay" id="tokenModal">
-    <h3>⚙️ GitHub 自动同步设置</h3>
+    <h3>GitHub 自动同步设置</h3>
     <p>配置 GitHub Token 后，编辑购入价会自动同步到仓库，换浏览器也不丢数据。<br>
     Token 只需要 <b>repo</b> 权限（Fine-grained token 推荐，仅授权 cs2-dashboard 仓库）。<br>
     <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--blue)">点此创建 Token →</a></p>
@@ -2359,14 +2406,14 @@ body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
 </div>
 <!-- AI 页脚 -->
 <div id="aiFooter" style="display:none;text-align:center;padding:8px 0 20px;font-size:10px;color:var(--text3);letter-spacing:.5px">
-  🤖 AI 推荐与持仓分析由 <span style="color:var(--brand);font-weight:600">智谱 GLM-4</span> 驱动 · 仅供参考，不构成投资建议
+  AI 推荐与持仓分析由 <span style="color:var(--brand);font-weight:600">智谱 GLM-4</span> 驱动 · 仅供参考，不构成投资建议
 </div>
 </div><!-- end mainContent -->
 
 <!-- ════════ 添加饰品 Modal ════════ -->
 <div class="modal-overlay" id="addItemOverlay">
   <div class="modal">
-    <h3>✏️ 添加饰品</h3>
+    <h3>添加饰品</h3>
     <p style="margin-bottom:14px;font-size:12px;color:var(--text2)">手动记录你买入的饰品，会显示在持仓表中</p>
     <label style="display:block;font-size:11px;color:var(--text3);margin-bottom:4px">饰品名称</label>
     <input type="text" id="addItemName" placeholder="如: AK-47 | 红线 (自动补齐)" list="nameDatalist" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;box-sizing:border-box;outline:none;margin-bottom:12px" />
@@ -2441,7 +2488,7 @@ body:not(.hp-fs-off) .hp-fs-body .hp-chart .hc-svg{
 
 // ── 主题切换 ──
 var THEMES = ['dark','blue','green','purple'];
-var THEME_LABELS = {'dark':'🌙 暗色','blue':'💧 清新蓝','green':'🌿 自然绿','purple':'💜 薄雾紫'};
+var THEME_LABELS = {'dark':'暗色','blue':'清新蓝','green':'自然绿','purple':'薄雾紫'};
 function applyTheme(name) {
   document.documentElement.setAttribute('data-theme', name);
   localStorage.setItem('cs2_theme', name);
@@ -3351,9 +3398,9 @@ async function renderNews() {
     var el = document.getElementById('aiNewsPrior');
     if (!el || !es) return;
     var s = es.summary || {};
-    if (!s.n_events) { el.innerHTML = '📊 历史先验（统计引擎）：暂无有效样本（价格库 ' + ((es.window||{}).from || '') + ' 起）'; el.style.display = ''; return; }
+    if (!s.n_events) { el.innerHTML = '历史先验（统计引擎）：暂无有效样本（价格库 ' + ((es.window||{}).from || '') + ' 起）'; el.style.display = ''; return; }
     var r7 = s.ret_7d || {}, r3 = s.ret_3d || {}, r14 = s.ret_14d || {};
-    el.innerHTML = '📊 <b style="color:var(--text2)">历史先验</b>（统计引擎算出的真数字，非 AI 叙述）· '
+    el.innerHTML = '<b style="color:var(--text2)">历史先验</b>（统计引擎算出的真数字，非 AI 叙述）· '
       + '有效事件 <b>' + s.n_events + '</b> 个 · 标的池 ≈' + (s.n_pool || 0).toLocaleString() + ' 件<br>'
       + '公告后 3 日：事件 <b>' + r3.event_mean + '%</b> vs 同期基准 ' + r3.baseline_mean + '%（超额 ' + r3.excess + '%）　'
       + '7 日：事件 <b>' + r7.event_mean + '%</b> vs 同期基准 ' + r7.baseline_mean + '%（超额 ' + r7.excess + '%）　'
@@ -3386,7 +3433,7 @@ function renderNewsTab(tab) {
     var itemsToShow = items.slice(0, 15);
     itemsToShow.forEach(function(n) {
       var isUpdate = n.type === 'update';
-      var srcLabel = isUpdate ? '🔧 更新' : '📰 新闻';
+      var srcLabel = isUpdate ? '更新' : '新闻';
       var srcColor = isUpdate ? 'var(--brand)' : 'var(--blue)';
       // 关键词分类利好利空
       var sentiment = classifyNews(n.title,n.body);
@@ -3686,7 +3733,7 @@ function renderAILessons(lessons, data) {
     var ra = latest.reason_analysis;
     if (ra.right_reasons || ra.wrong_reasons) {
       adjHtml += '<div style="font-size:9px;color:var(--text2);line-height:1.5;margin-top:4px">';
-      adjHtml += '💬 理由优化: ';
+      adjHtml += '理由优化: ';
       if (ra.right_reasons) adjHtml += '<span style="color:var(--fall)">✅' + esc(ra.right_reasons).slice(0, 40) + '</span> ';
       if (ra.wrong_reasons) adjHtml += '<span style="color:var(--rise)">❌' + esc(ra.wrong_reasons).slice(0, 40) + '</span>';
       adjHtml += '</div>';
@@ -3990,7 +4037,7 @@ function render() {
     const pnlPctClamped = Math.max(-20, Math.min(30, h.pnlPct));
     const barPct = Math.abs(pnlPctClamped) / 30 * 100;
     const barCls = isProfit ? 'profit' : 'loss';
-    const barIcon = isProfit ? '🔼' : '🔽';
+    const barIcon = isProfit ? '▲' : '▼';
     const tr = document.createElement('tr');
     tr.className = rowCls + ' hold-row';
     tr.dataset.idx = realIdx;
@@ -4283,7 +4330,7 @@ function renderChangelog(changes) {
 
   // 价格变动
   if (changes.prices.length) {
-    html += '<div class="cl-section"><div class="cl-section-title">💰 持仓价格变动 <span class="cl-count">' + changes.prices.length + '</span></div>';
+    html += '<div class="cl-section"><div class="cl-section-title">持仓价格变动 <span class="cl-count">' + changes.prices.length + '</span></div>';
     changes.prices.slice(0, 20).forEach(c => {
       const cls = c.pct > 0 ? 'up' : 'dn';
       const sign = c.pct > 0 ? '+' : '';
@@ -4295,12 +4342,12 @@ function renderChangelog(changes) {
 
   // 推荐变动
   if (changes.recs.length) {
-    html += '<div class="cl-section"><div class="cl-section-title">🎯 推荐变化 <span class="cl-count">' + changes.recs.length + '</span></div>';
+    html += '<div class="cl-section"><div class="cl-section-title">推荐变化 <span class="cl-count">' + changes.recs.length + '</span></div>';
     changes.recs.forEach(r => {
       const label = REC_CAT_LABELS[r.cat] || r.cat;
       r.items.slice(0, 5).forEach(name => {
         const tag = r.type === 'added' ? 'new' : 'alert';
-        const prefix = r.type === 'added' ? '➕' : '➖';
+        const prefix = r.type === 'added' ? '+' : '-';
         html += '<div class="cl-item"><span class="cl-tag ' + tag + '">' + label + '</span><span class="cl-name">' + prefix + ' ' + esc(name) + '</span></div>';
       });
       if (r.items.length > 5) html += '<div class="cl-empty">...还有 ' + (r.items.length - 5) + ' 项</div>';
@@ -4403,7 +4450,7 @@ btn.onclick = async function() {
     DOM.updateTime.textContent = '刷新 ' + loadTs;
     $('refreshStatus').textContent = '加载中';
     $('refreshStatus').style.color = '';
-    showToast('📊 已加载本地数据，开始全量扫描...', 2000);
+    showToast('已加载本地数据，开始全量扫描...', 2000);
   } catch (e) {
     console.error('Load failed:', e);
     $('refreshStatus').textContent = '❌ 失败';
@@ -4411,7 +4458,7 @@ btn.onclick = async function() {
   }
   
   // 阶段2：触发全量扫描（持仓价格 + 异动 + 推荐）
-  btn.textContent = '🧠 扫描全量数据...';
+  btn.textContent = '扫描全量数据...';
   $('refreshStatus').textContent = '扫描中';
   
   try {
@@ -4481,7 +4528,7 @@ if (tokenCancel) tokenCancel.onclick = () => DOM.tokenModal.classList.remove('sh
 const tokenClear = $('tokenClear');
 if (tokenClear) tokenClear.onclick = function() {
   ghToken = ''; localStorage.removeItem(LS_TOKEN_KEY);
-  DOM.tokenInput.value = ''; DOM.tokenStatus.textContent = '🗑️ Token 已清除';
+  DOM.tokenInput.value = ''; DOM.tokenStatus.textContent = 'Token 已清除';
 };
 const tokenSave = $('tokenSave');
 if (tokenSave) tokenSave.onclick = async function() {
@@ -4559,9 +4606,9 @@ async function fetchLivePrices(items, holdNames) {
     if (srcBadge) {
       var hasYyyp = (H || []).some(function(h) { return (h.yyyp_sell || 0) > 0; });
       var hasBuff = (H || []).some(function(h) { return (h.buff_sell || 0) > 0; });
-      if (hasYyyp && hasBuff) srcBadge.textContent = '📡CSQAQ+SteamDT';
-      else if (hasYyyp) srcBadge.textContent = '📡CSQAQ';
-      else if (hasBuff) srcBadge.textContent = '📡SteamDT';
+      if (hasYyyp && hasBuff) srcBadge.textContent = 'CSQAQ+SteamDT';
+      else if (hasYyyp) srcBadge.textContent = 'CSQAQ';
+      else if (hasBuff) srcBadge.textContent = 'SteamDT';
       srcBadge.style.display = '';
     }
     if ((holdNames || []).length) {
@@ -4677,7 +4724,7 @@ window.showPriceChart = async function(itemName, curPrice) {
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
   var box = document.createElement('div');
   box.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:660px;width:92%;position:relative;box-shadow:0 16px 48px rgba(0,0,0,.5)';
-  box.innerHTML = '<div style="font-size:15px;font-weight:700;margin-bottom:10px;color:var(--text);display:flex;align-items:center;gap:8px"><span>📈</span>' + esc(cnName(itemName)) + '</div><div id="chartLoading" style="text-align:center;color:var(--text3);padding:48px 0">⏳ 加载数据...</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.background=\'var(--surface)\'" onmouseout="this.style.background=\'none\'">✕</button>';
+  box.innerHTML = '<div style="font-size:15px;font-weight:700;margin-bottom:10px;color:var(--text);display:flex;align-items:center;gap:8px">' + esc(cnName(itemName)) + '</div><div id="chartLoading" style="text-align:center;color:var(--text3);padding:48px 0">加载数据...</div><button onclick="this.closest(\'.modal-overlay\').remove()" style="position:absolute;top:10px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.background=\'var(--surface)\'" onmouseout="this.style.background=\'none\'">✕</button>';
   overlay.appendChild(box);
   document.body.appendChild(overlay);
   
@@ -5021,7 +5068,7 @@ function renderAllRecs() {
 
   const allItems = (recData.all || []).slice();
   if (!allItems.length) {
-    grid.innerHTML = '<tr><td colspan="15" style="text-align:center;padding:36px 0;color:var(--text3)"><div style="font-size:26px">🧠</div>暂无推荐<br><span style="font-size:11px">数据更新后自动生成</span></td></tr>';
+    grid.innerHTML = '<tr><td colspan="15" style="text-align:center;padding:36px 0;color:var(--text3)">暂无推荐<br><span style="font-size:11px">数据更新后自动生成</span></td></tr>';
     var pz = document.getElementById('recPager'); if (pz) pz.innerHTML = '';
     var cz = document.getElementById('recCount'); if (cz) cz.textContent = '';
     return;
@@ -5476,10 +5523,10 @@ function renderAnalysis() {
     // ── Future outlook ──
     let outlook = '';
     let outlookColor = 'var(--text3)';
-    if (trend === 'strong_up') { outlook = '📈 强势上升'; outlookColor = 'var(--rise)'; }
+    if (trend === 'strong_up') { outlook = '强势上升'; outlookColor = 'var(--rise)'; }
     else if (trend === 'up') { outlook = '↗ 温和上涨'; outlookColor = 'var(--fall)'; }
     else if (trend === 'rebound') { outlook = '↙ 超跌反弹'; outlookColor = 'var(--amber)'; }
-    else if (trend === 'weak') { outlook = '📉 下行通道'; outlookColor = 'var(--fall)'; }
+    else if (trend === 'weak') { outlook = '下行通道'; outlookColor = 'var(--fall)'; }
     else { outlook = '→ 横盘整理'; outlookColor = 'var(--text3)'; }
 
     // ── Target price range (基于实际波动率) ──
@@ -5607,7 +5654,7 @@ function renderAnalysis() {
       </div>
       <div class="ac-row">
         <span class="ac-label">走势 · ${a.outlook}</span>
-        <span style="color:${a.outlookColor};font-size:12px;font-weight:600">${a.isRec ? '📌 推荐' : ''}</span>
+        <span style="color:${a.outlookColor};font-size:12px;font-weight:600">${a.isRec ? '推荐' : ''}</span>
       </div>
       ${a.sellReason ? '<div class="' + reasonCls + '">' + a.sellReason + '</div>' : ''}
     </div>`;
@@ -5647,7 +5694,7 @@ function renderScan() {
     // ═══ 涨跌榜 ───
     if (gainers && scan.movers && scan.movers.gainers) {
       var maxR = Math.max.apply(null, scan.movers.gainers.map(function(g){return g.r7||0;})) || 1;
-      var html = '<div class="scan-card-head rise">📈 24h涨幅 TOP ' + scan.movers.gainers.length + '</div>';
+      var html = '<div class="scan-card-head rise">24h涨幅 TOP ' + scan.movers.gainers.length + '</div>';
       scan.movers.gainers.forEach(function(g, i) {
         var barW = Math.max(8, (g.r7 / maxR * 100).toFixed(0));
         html += '<div class="scan-row">' +
@@ -5661,7 +5708,7 @@ function renderScan() {
     }
     if (losers && scan.movers && scan.movers.losers) {
       var maxR = Math.abs(Math.min.apply(null, scan.movers.losers.map(function(l){return l.r7||0;}))) || 1;
-      var html = '<div class="scan-card-head fall">📉 24h跌幅 TOP ' + scan.movers.losers.length + '</div>';
+      var html = '<div class="scan-card-head fall">24h跌幅 TOP ' + scan.movers.losers.length + '</div>';
       scan.movers.losers.forEach(function(l, i) {
         var barW = Math.max(8, (Math.abs(l.r7) / maxR * 100).toFixed(0));
         html += '<div class="scan-row">' +
@@ -5857,12 +5904,12 @@ function buildItemAnalysisHTML(item) {
 
   // ── Trend ──
   var trend = 'neutral', trendLabel = '→ 横盘整理', trendColor = 'var(--text3)';
-  if (r7 >= 5 && r1 >= 1) { trend = 'strong_up'; trendLabel = '📈 强势上升'; trendColor = 'var(--rise)'; }
+  if (r7 >= 5 && r1 >= 1) { trend = 'strong_up'; trendLabel = '强势上升'; trendColor = 'var(--rise)'; }
   else if (r7 >= 2 && r1 >= 0.5) { trend = 'up'; trendLabel = '↗ 温和上涨'; trendColor = 'var(--fall)'; }
-  else if (r7 <= -5) { trend = 'weak'; trendLabel = '📉 下行通道'; trendColor = 'var(--fall)'; }
+  else if (r7 <= -5) { trend = 'weak'; trendLabel = '下行通道'; trendColor = 'var(--fall)'; }
   else if (r7 >= -1 && r1 <= -1) { trend = 'rebound'; trendLabel = '↙ 超跌反弹'; trendColor = 'var(--amber)'; }
   // 趋势 + 流动性修正
-  if (trend === 'weak' && liq === '活跃') { trendLabel = '📉 缩量下跌'; }
+  if (trend === 'weak' && liq === '活跃') { trendLabel = '缩量下跌'; }
   if (trend === 'up' && liq === '较差') { trendLabel = '↗ 有价无市'; trendColor = 'var(--amber)'; }
 
   // ── 智能信号判断 ──
@@ -5904,7 +5951,7 @@ function buildItemAnalysisHTML(item) {
     if (liq === '活跃') hints.push('交投活跃');
     if (pnlPct > 10) hints.push('浮盈可观');
     if (isRec) hints.push('推荐品类');
-    sellReason = hints.length > 0 ? '📊 ' + hints.join('，') + '，暂时持有观察' : '📊 基本面正常，继续持有';
+    sellReason = hints.length > 0 ? '' + hints.join('，') + '，暂时持有观察' : '基本面正常，继续持有';
   } else if (score >= -1) {
     sellSignal = '观望';
     if (pnlPct < -5 && r7 < -3) sellReason = '⏳ 短期承压，但观察是否有资金回补，暂不建议割肉';
@@ -6061,7 +6108,7 @@ function buildItemAnalysisHTML(item) {
         '<div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">' +
           // 理由
           (reason ? '<div style="display:flex;gap:8px;align-items:flex-start">' +
-            '<span style="font-size:14px;flex-shrink:0;margin-top:1px">💡</span>' +
+            '' +
             '<div style="flex:1"><div style="font-size:10px;color:var(--text3);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">分析理由</div>' +
             '<div style="font-size:12px;color:var(--text);line-height:1.6">' + reason + '</div></div>' +
           '</div>' : '') +
@@ -6382,7 +6429,7 @@ window.fcLine = fcLine;
       var scores = parts[1] || '';
       var dataPart = parts[2] || '';
       var advicePart = '';
-      // Find the 💡 advice section
+      // Find the advice section
       for (var pi = 3; pi < parts.length; pi++) {
         if (parts[pi].indexOf('💡') >= 0) {
           advicePart = parts[pi].substring(parts[pi].indexOf('💡'));
@@ -6392,7 +6439,7 @@ window.fcLine = fcLine;
       // Build modal content
       var modalHtml = '';
       // Score line
-      modalHtml += '<div style="font-size:12px;color:var(--text2);margin-bottom:8px">📊 <span style="font-weight:600">' + scores.trim() + '</span></div>';
+      modalHtml += '<div style="font-size:12px;color:var(--text2);margin-bottom:8px"><span style="font-weight:600">' + scores.trim() + '</span></div>';
       // Data reason line
       if (dataPart.trim()) {
         modalHtml += '<div style="font-size:12px;color:var(--text);background:var(--surface2);border-radius:8px;padding:10px 12px;margin-bottom:10px;line-height:1.6">' + dataPart.trim() + '</div>';
@@ -6469,7 +6516,7 @@ window.fcLine = fcLine;
         var ut = data.updated || '';
         if (!ut) return;
         var t = new Date(ut).getTime();
-        if (t > _lastUpdate) { _lastUpdate = t; if (typeof showToast === 'function') showToast('📊 数据已更新', 3000); if (typeof loadAll === 'function') loadAll(); else if (typeof window.__hpReload === 'function') window.__hpReload(); }
+        if (t > _lastUpdate) { _lastUpdate = t; if (typeof showToast === 'function') showToast('数据已更新', 3000); if (typeof loadAll === 'function') loadAll(); else if (typeof window.__hpReload === 'function') window.__hpReload(); }
       })
       .catch(function(){});
   }, 30000);
@@ -6772,7 +6819,7 @@ function refreshInventory(){
       renderInventoryDiff(d.items || [], d.total_inventory_count || 0);
     })
     .catch(function(e){ say('出错了：' + e2(e.message), 'var(--amber)'); })
-    .then(function(){ if(btn){ btn.disabled = false; btn.textContent = '🔄 刷新库存'; } });
+    .then(function(){ if(btn){ btn.disabled = false; btn.textContent = '刷新库存'; } });
 }
 function renderInventoryDiff(items, totalCount){
   var panel = document.getElementById('steamDiffPanel');
@@ -6801,7 +6848,7 @@ function renderInventoryDiff(items, totalCount){
       + '<span style="color:' + color + ';font-family:monospace;white-space:nowrap">' + qtyText + '</span></div>';
   }
   var h = '';
-  h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">🔍 库存 vs 持仓对比'
+  h += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">库存 vs 持仓对比'
      + '<span style="font-weight:400;color:var(--text3);font-size:10px">（仅供参考，不会改动你的持仓和成本价）</span></div>';
   h += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:11px">'
      + '<span style="color:var(--text2)">库存 <b>' + totalCount + '</b> 件 / <b>' + Object.keys(inv).length + '</b> 类</span>'
@@ -6907,10 +6954,10 @@ function importBySteamId(){
 function syncInventoryToHoldings(){
   var items = Array.isArray(window._lastInvItems) ? window._lastInvItems : [];
   // ① 从没刷过
-  if(!window._lastInvSid){ appToast('请先点「🔄 刷新库存」拉一次最新库存，再点补齐。', 'warn'); return; }
+  if(!window._lastInvSid){ appToast('请先点「刷新库存」拉一次最新库存，再点补齐。', 'warn'); return; }
   // ② 缓存属于别的 SteamID（换号/改了输入框）→ 拒绝，防止把 A 的库存写进 B 的持仓
   if(window._lastInvSid !== getBoundSteamId()){
-    appToast('这份库存属于另一个 SteamID（' + window._lastInvSid + '），请先重新点「🔄 刷新库存」。', 'warn');
+    appToast('这份库存属于另一个 SteamID（' + window._lastInvSid + '），请先重新点「刷新库存」。', 'warn');
     return;
   }
   // ③ 刷过了但库存为空（与①区分开，避免提示自相矛盾）
@@ -7208,13 +7255,13 @@ function openItemDetail(h) {
     /* ★ 没录入成本，盈亏无意义 —— 不用「持有观望」这类像样的结论糊弄 */
     verdict = '◌ 未录入成本'; vColor = 'var(--text3)'; confidence = 0;
   }
-  else if (pnlPct > 15) { verdict = '🔥 建议减仓'; vColor = 'var(--rise)'; confidence = 78; }
-  else if (pnlPct > 5 && r7 > 0) { verdict = '📈 继续持有'; vColor = 'var(--rise)'; confidence = 65; }
-  else if (pnlPct < -15) { verdict = '❄ 观望不动'; vColor = 'var(--fall)'; confidence = 40; }
-  else if (pnlPct < -5 && r7 < 0) { verdict = '📉 谨慎持有'; vColor = 'var(--fall)'; confidence = 45; }
+  else if (pnlPct > 15) { verdict = '建议减仓'; vColor = 'var(--rise)'; confidence = 78; }
+  else if (pnlPct > 5 && r7 > 0) { verdict = '继续持有'; vColor = 'var(--rise)'; confidence = 65; }
+  else if (pnlPct < -15) { verdict = '观望不动'; vColor = 'var(--fall)'; confidence = 40; }
+  else if (pnlPct < -5 && r7 < 0) { verdict = '谨慎持有'; vColor = 'var(--fall)'; confidence = 45; }
   else if (r7 > 3) { verdict = '✅ 可加仓'; vColor = 'var(--rise)'; confidence = 62; }
   else if (r30 < -10) { verdict = '⏳ 等待企稳'; vColor = 'var(--fall)'; confidence = 55; }
-  else { verdict = '👀 持有观望'; vColor = 'var(--amber)'; confidence = 50; }
+  else { verdict = '持有观望'; vColor = 'var(--amber)'; confidence = 50; }
   // 风险
   var risks = [];
   if (r7 > 10) risks.push('短期拉升过快，警惕回调');
@@ -7227,19 +7274,19 @@ function openItemDetail(h) {
     (h.w ? '<div style="font-size:11px;color:var(--text3)">' + (window.WEAR_MAP[h.w]||h.w) + '</div>' : '') + '</div>' +
     '<div style="text-align:center;margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:10px"><div style="font-size:24px;font-weight:800;color:' + vColor + '">' + verdict + '</div>' +
     '<div style="font-size:11px;color:var(--text3);margin-top:4px">置信度 ' + confidence + '/100</div></div>' +
-    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">💰 多平台价格</div>' +
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">多平台价格</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">' +
     '<div style="background:var(--surface2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">ECO</div><div style="font-size:14px;font-weight:700;color:var(--blue)">' + (ecoPrice>0?'¥'+ecoPrice.toFixed(2):'--') + '</div></div>' +
     '<div style="background:var(--surface2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">BUFF</div><div style="font-size:14px;font-weight:700;color:var(--amber)">' + (buffPrice>0?'¥'+buffPrice.toFixed(2):'--') + '</div></div>' +
     '<div style="background:var(--surface2);border-radius:8px;padding:8px;text-align:center"><div style="font-size:10px;color:var(--text3)">悠悠</div><div style="font-size:14px;font-weight:700;color:var(--text)">' + (yyypPrice>0?'¥'+yyypPrice.toFixed(2):'--') + '</div></div></div>' +
-    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">📊 多周期趋势</div>' +
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">多周期趋势</div>' +
     '<div style="display:flex;gap:12px;margin-bottom:14px">' +
     '<span style="font-size:12px;color:' + (r7>=0?'var(--rise)':'var(--fall)') + ';font-weight:600">7日 ' + (r7>=0?'+':'') + r7.toFixed(1) + '%</span>' +
     '<span style="font-size:12px;color:' + (r30>=0?'var(--rise)':'var(--fall)') + ';font-weight:600">30日 ' + (r30>=0?'+':'') + r30.toFixed(1) + '%</span>' +
     '<span style="font-size:12px;color:' + (pnlPct>=0?'var(--rise)':'var(--fall)') + ';font-weight:600">持仓 ' + (pnlPct>=0?'+':'') + pnlPct.toFixed(1) + '%</span></div>' +
     '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">⚠ 风险提示</div>' +
     '<div style="margin-bottom:14px;padding:8px 12px;background:rgba(248,113,113,.06);border-radius:8px;border-left:3px solid var(--rise)">' + riskHtml + '</div>' +
-    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">🛡️ 推荐入手区间</div>' +
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">推荐入手区间</div>' +
     '<div style="text-align:center;padding:10px;background:var(--surface2);border-radius:8px;font-size:14px;font-weight:700;color:var(--fall)">¥' + entryLow.toFixed(0) + ' — ¥' + entryHigh.toFixed(0) + '</div>' +
     '<div style="font-size:9px;color:var(--text3);text-align:center;margin-top:12px">基于当前价格-8%~-2%保守区间 · 个人决策，仅供参考</div>';
   overlay.style.display = 'flex';
@@ -7263,7 +7310,7 @@ window.addEventListener('focus', function(){
 <!-- Steam 库存导入弹窗 -->
 <div id="steamImportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center" onclick="if(event.target===this)closeSteamImport()">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto">
-    <h3 style="font-size:16px;margin-bottom:6px;color:var(--text)">🚀 导入 Steam 库存</h3>
+    <h3 style="font-size:16px;margin-bottom:6px;color:var(--text)">导入 Steam 库存</h3>
     <p style="font-size:10px;color:var(--text3);margin-bottom:12px">所有用户可用 · 数据只存你本地浏览器</p>
 
     <!-- ① 最省事：输 SteamID 直接拉 -->
@@ -7281,19 +7328,19 @@ window.addEventListener('focus', function(){
       <!-- 已绑定 SteamID → 一键刷新库存（只对比差异，绝不改动持仓） -->
       <div id="steamRefreshBar" style="display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;align-items:center;gap:8px">
         <span style="font-size:11px;color:var(--text3);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">已绑定 <b id="steamBoundId" style="color:var(--text2);font-family:monospace"></b></span>
-        <button id="steamRefreshBtn" onclick="refreshInventory()" style="padding:6px 14px;background:var(--fall);color:#000;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">🔄 刷新库存</button>
+        <button id="steamRefreshBtn" onclick="refreshInventory()" style="padding:6px 14px;background:var(--fall);color:#000;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">刷新库存</button>
       </div>
       <div id="steamDiffPanel" style="display:none;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;max-height:290px;overflow:auto"></div>
 
       <!-- 获取 SteamID64 指引（常驻可折叠，无弹窗） -->
       <details id="steamIdGuide" style="margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px">
-        <summary style="font-size:11px;color:var(--blue);cursor:pointer;font-weight:600;user-select:none;outline:none">❓ 怎么找我的 SteamID64？点开看步骤</summary>
+        <summary style="font-size:11px;color:var(--blue);cursor:pointer;font-weight:600;user-select:none;outline:none">怎么找我的 SteamID64？点开看步骤</summary>
         <div style="margin-top:9px;font-size:11px;line-height:1.9;color:var(--text2)">
           <div>① 先登录 Steam，然后点开 <a href="https://steamcommunity.com/my/inventory/" target="_blank" style="color:var(--blue);text-decoration:none">我的 Steam 库存</a>（或任意个人资料页）</div>
           <div>② 页面打开后看浏览器<b style="color:var(--amber)">地址栏</b>，它会自动变成这样：</div>
           <div style="font-family:monospace;font-size:10px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 7px;margin:4px 0;color:var(--text3);word-break:break-all">steamcommunity.com/profiles/<b style="color:var(--amber)">76561198xxxxxxxxx</b>/inventory/</div>
           <div>③ <b style="color:var(--amber)">profiles/</b> 后面那串 <b>17 位数字</b>就是 SteamID64，复制它填到上面的输入框</div>
-          <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--border);color:var(--text3)">💡 懒人办法：把整条资料页网址直接粘进输入框，会自动提取 ID。</div>
+          <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--border);color:var(--text3)">懒人办法：把整条资料页网址直接粘进输入框，会自动提取 ID。</div>
         </div>
       </details>
     </div>
@@ -7305,7 +7352,7 @@ window.addEventListener('focus', function(){
         装一个浏览器书签 → 在 Steam 库存页点一下 → 自动跳回并导入。<br>
         <b style="color:var(--amber)">需先开 Steam++ 能访问社区</b>，书签只在 steamcommunity.com 上生效。
       </p>
-      <button onclick="window.open('bookmarklet.html','_blank')" style="padding:7px 16px;background:var(--amber);color:#000;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600">🔖 安装书签</button>
+      <button onclick="window.open('bookmarklet.html','_blank')" style="padding:7px 16px;background:var(--brand);color:#0a0d12;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:600">安装书签</button>
     </div>
 
     <!-- ③ 兜底：粘贴 JSON -->
@@ -7315,7 +7362,7 @@ window.addEventListener('focus', function(){
     </p>
     <textarea id="steamJson" placeholder="去 Steam 库存页面复制后切回来，自动识别剪贴板..." style="width:100%;height:150px;padding:10px;background:var(--surface2);color:var(--text);border:2px solid var(--border);border-radius:8px;font-size:11px;resize:vertical;font-family:monospace"></textarea>
     <div style="display:flex;gap:6px;margin-top:6px">
-      <button onclick="checkClipboard()" style="padding:5px 12px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px">📋 检测剪贴板</button>
+      <button onclick="checkClipboard()" style="padding:5px 12px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px">检测剪贴板</button>
       <button onclick="doSteamImport()" style="padding:5px 16px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">解析并预览</button>
     </div>
 
@@ -7351,10 +7398,10 @@ window.addEventListener('focus', function(){
     <h3 style="font-size:16px;color:var(--text);margin-bottom:12px">关于 AlphaTrack</h3>
     <p style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:12px">一个 CS2 饰品市场情报看板：实时追踪行情、多源交叉验证智能推荐潜力饰品、管理你的持仓盈亏。</p>
     <div style="font-size:12px;color:var(--text3);line-height:1.9;margin-bottom:12px">
-      <div>🔒 <b style="color:var(--text2)">数据只在你本地</b>：持仓、自选、GitHub Token 仅存于本浏览器（localStorage），不上传任何服务器。</div>
-      <div>📡 <b style="color:var(--text2)">数据来源</b>：ECO / CSQAQ / SteamDT / BUFF / Steam 市场。</div>
-      <div>⚡ <b style="color:var(--text2)">AI 分析</b>：智谱 GLM-4 生成市场点评与空投监控（仅供参考）。</div>
-      <div>🔥 <b style="color:var(--text2)">价格源</b>：FirePulse 提供饰品报价。</div>
+      <div><b style="color:var(--text2)">数据只在你本地</b>：持仓、自选、GitHub Token 仅存于本浏览器（localStorage），不上传任何服务器。</div>
+      <div><b style="color:var(--text2)">数据来源</b>：ECO / CSQAQ / SteamDT / BUFF / Steam 市场。</div>
+      <div><b style="color:var(--text2)">AI 分析</b>：智谱 GLM-4 生成市场点评与空投监控（仅供参考）。</div>
+      <div><b style="color:var(--text2)">价格源</b>：FirePulse 提供饰品报价。</div>
     </div>
     <p style="font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:16px">⚠️ 本站为个人研究项目，所有内容仅供参考，不构成任何投资建议。</p>
     <button onclick="closeAbout()" style="width:100%;padding:10px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">知道了</button>
@@ -7362,29 +7409,29 @@ window.addEventListener('focus', function(){
 </div>
 
 <nav class="mobile-tabbar" aria-label="底部导航">
-  <button class="nav-btn mtab" data-view="recPanel" onclick="switchView('recPanel')"><span class="mi">✦</span><span>推荐</span></button>
-  <button class="nav-btn mtab" data-view="scanPanel" onclick="switchView('scanPanel')"><span class="mi">🔍</span><span>扫描</span></button>
-  <button class="nav-btn mtab" data-view="newsSection" onclick="switchView('newsSection')"><span class="mi">📰</span><span>资讯</span></button>
+  <button class="nav-btn mtab" data-view="recPanel" onclick="switchView('recPanel')"><span>推荐</span></button>
+  <button class="nav-btn mtab" data-view="scanPanel" onclick="switchView('scanPanel')"><span>扫描</span></button>
+  <button class="nav-btn mtab" data-view="newsSection" onclick="switchView('newsSection')"><span>资讯</span></button>
   <button class="nav-btn mtab" onclick="toggleMobileMore()"><span class="mi">☰</span><span>更多</span></button>
 </nav>
 <div class="mm-backdrop" onclick="toggleMobileMore()"></div>
 <div class="mobile-more" id="mobileMore">
   <div style="font-size:12px;color:var(--text3);margin-bottom:8px;padding:0 4px">更多功能</div>
   <div class="mm-item" onclick="switchView('holdingsPanel');toggleMobileMore()">◈ 持仓</div>
-  <div class="mm-item" onclick="switchView('changelogPanel');toggleMobileMore()">📋 变动</div>
+  <div class="mm-item" onclick="switchView('changelogPanel');toggleMobileMore()">变动</div>
   <div style="height:1px;background:var(--border);margin:8px 0"></div>
   <a class="mm-item" href="backtest.html" style="text-decoration:none;color:var(--text)">◷ 回测</a>
-  <a class="mm-item" href="revenue.html" style="text-decoration:none;color:var(--text)">💰 收入</a>
-  <a class="mm-item" href="fluctuation.html" style="text-decoration:none;color:var(--text)">📡 异动</a>
+  <a class="mm-item" href="revenue.html" style="text-decoration:none;color:var(--text)">收入</a>
+  <a class="mm-item" href="fluctuation.html" style="text-decoration:none;color:var(--text)">异动</a>
   <a class="mm-item" href="tracking.html" style="text-decoration:none;color:var(--text)">◉ 追踪</a>
-  <a class="mm-item" href="changelog.html" style="text-decoration:none;color:var(--text)">📝 日志</a>
-  <a class="mm-item" href="report.html" style="text-decoration:none;color:var(--text)">📈 日报</a>
+  <a class="mm-item" href="changelog.html" style="text-decoration:none;color:var(--text)">日志</a>
+  <a class="mm-item" href="report.html" style="text-decoration:none;color:var(--text)">日报</a>
   <a class="mm-item" href="status.html" style="text-decoration:none;color:var(--text)">ℹ️ 状态</a>
   <div style="height:1px;background:var(--border);margin:8px 0"></div>
-  <div class="mm-item" onclick="applyTheme('dark');toggleMobileMore()">🌙 暗色</div>
-  <div class="mm-item" onclick="applyTheme('blue');toggleMobileMore()">💧 清新蓝</div>
-  <div class="mm-item" onclick="applyTheme('green');toggleMobileMore()">🌿 自然绿</div>
-  <div class="mm-item" onclick="applyTheme('purple');toggleMobileMore()">💜 薄雾紫</div>
+  <div class="mm-item" onclick="applyTheme('dark');toggleMobileMore()">暗色</div>
+  <div class="mm-item" onclick="applyTheme('blue');toggleMobileMore()">清新蓝</div>
+  <div class="mm-item" onclick="applyTheme('green');toggleMobileMore()">自然绿</div>
+  <div class="mm-item" onclick="applyTheme('purple');toggleMobileMore()">薄雾紫</div>
 </div>
 
 <script>
@@ -9902,7 +9949,7 @@ window.autoSyncHoldings = async function () {
 window._autoSyncTimer = setInterval(function () {
   if (document.visibilityState === 'visible') window.autoSyncHoldings();
 }, 60000);
-// ⚡ 页面加载后立即推一次（不等首个心跳）—— 新加/导入的条目最快同步
+// 页面加载后立即推一次（不等首个心跳）—— 新加/导入的条目最快同步
 setTimeout(function () {
   if (document.visibilityState === 'visible') window.autoSyncHoldings();
 }, 800);
