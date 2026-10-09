@@ -2,6 +2,78 @@
   {
     "date": "2026-10-09",
     "tag": "fix",
+    "scope": "batch-B",
+    "sha": "1199c9e",
+    "title": "index.html — KPI/exportCSV/30s refresh/sync-key/MA+kline (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "289cdcc",
+    "title": ".gitignore — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "c0432c8",
+    "title": "run_update.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "b4602a7",
+    "title": "kronos_forecast.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "27665c6",
+    "title": "build_kline.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "0b6ada6",
+    "title": "eco_catalog.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "badba12",
+    "title": "recommend.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "2e78058",
+    "title": "update.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "422c6c1",
+    "title": "worker.js — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
     "scope": "kline",
     "sha": "d218268",
     "title": "蜡烛加宽至占槽位72%/上限34px + 叠加MA5/10/20均线（参照CSQAQ优化稀疏）",
@@ -85,78 +157,6 @@
     "scope": "holdings",
     "sha": "baf34e0",
     "title": "删除「同步到服务器」手动按钮 —— 同步已全自动",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "feat",
-    "scope": "holdings",
-    "sha": "edd34b2",
-    "title": "全自动同步（心跳推送 + 卖出自动移除，无需改 Worker）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "fix",
-    "scope": "holdings",
-    "sha": "2e2155b",
-    "title": "一键同步改走 Worker KV（免 token）—— GitHub 通道实测 401",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "feat",
-    "scope": "holdings",
-    "sha": "f2b8943",
-    "title": "一键同步持仓到服务器 + 自动合并（成本价红线：0 不覆盖）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "fix",
-    "scope": "changelog",
-    "sha": "fbbdc8d",
-    "title": "读远端 main + 排除数据刷新噪音，今日功能提交 1 条补回 4 条",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "fix",
-    "scope": "kline",
-    "sha": "12be992",
-    "title": "切档诊断日志 + 异常振幅标记(B1)，数据源计数移出 map",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "feat",
-    "scope": "kline",
-    "sha": "f310f0c",
-    "title": "接入 SteamDT 官方K线（1小时/日/周），双源回落+ 自采保底",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "perf",
-    "scope": "name_map",
-    "sha": "b7e3d76",
-    "title": "前端改用精简版中文名表 name_map_ui.json（41992->4063 条，3.81MB->0.33MB）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "fix",
-    "scope": "kline",
-    "sha": "8e14dd7",
-    "title": "同步三档 K线前端到服务器工作区后重推（首次 API 推送读的是旧文件）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "feat",
-    "scope": "kline",
-    "sha": "a05596d",
-    "title": "K线扩为三档粒度 2小时/日/周，日K周K 无上限 + 修跨平台价差污染振幅",
     "desc": ""
   }
 ]
