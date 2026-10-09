@@ -2,6 +2,30 @@
   {
     "date": "2026-10-09",
     "tag": "fix",
+    "scope": "rec",
+    "sha": "cf0772e",
+    "title": "删 updateWatchCount 漏网顶层调用 — ReferenceError 打断 script 块致 loadAll 不执行、页面永久骨架屏",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "",
+    "sha": "e5d1390",
+    "title": "kronos: 服务器兜底推理（本机 ONIDLE 未接管期间的 failover）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "",
+    "sha": "85c13d1",
+    "title": "cs2_pull: 落地固化 — 拉完自动把镜像库复制/校验到本地消费库 (PRAGMA integrity_check + MAX(ts) 比对 + .pre",
+    "desc": "v 旧库备份)，新增 --land-only/--no-land"
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
     "scope": "ui",
     "sha": "6f3ee1e",
     "title": "修复时间/计数徽章被混入指示灯样式狂闪看不清；logo 流光重设计（银→香槟金缓速，替换卡死扫光）",
@@ -133,30 +157,6 @@
     "scope": "kline",
     "sha": "fcf28ee",
     "title": "新增持仓日K裁剪版(190KB) 解决详情卡/迷你图等12MB整包的空态问题",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-08",
-    "tag": "feat",
-    "scope": "holdings",
-    "sha": "96eb258",
-    "title": "成本同步打通+详情卡就地改成本+心跳1分钟+统一WORKER_BASE",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "chore",
-    "scope": "holdings",
-    "sha": "fb3c2cc",
-    "title": "删除「↑同步」「↓恢复」两个 GitHub 跨设备死按钮 + 相关函数/CSS",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-07",
-    "tag": "perf",
-    "scope": "holdings",
-    "sha": "1f966d9",
-    "title": "页面加载后立即推送持仓（不等首个心跳）",
     "desc": ""
   }
 ]
