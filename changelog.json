@@ -1,5 +1,21 @@
 [
   {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "d218268",
+    "title": "蜡烛加宽至占槽位72%/上限34px + 叠加MA5/10/20均线（参照CSQAQ优化稀疏）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "35aeb3f",
+    "title": "默认1h官方K线+2h稀疏标注；修成本录入漏刷列表；删numFlash死代码",
+    "desc": ""
+  },
+  {
     "date": "2026-10-08",
     "tag": "chore",
     "scope": "",
@@ -141,22 +157,6 @@
     "scope": "kline",
     "sha": "a05596d",
     "title": "K线扩为三档粒度 2小时/日/周，日K周K 无上限 + 修跨平台价差污染振幅",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "chore",
-    "scope": "changelog",
-    "sha": "4178755",
-    "title": "用新规则重新生成日志（20 条 / 18 条带 scope）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-05",
-    "tag": "fix",
-    "scope": "changelog",
-    "sha": "4331b9a",
-    "title": "更新日志六项修正（噪音 9/20 → 0/20）",
     "desc": ""
   }
 ]
