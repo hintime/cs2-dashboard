@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 883.2,
-    "change": -11.68,
-    "change_pct": -11.68,
-    "market_value": 271102384.93,
-    "total_items": 4072,
-    "updated": "2026-10-09T12:00:03+08:00",
+    "latest": 883.37,
+    "change": -11.66,
+    "change_pct": -11.66,
+    "market_value": 271153643.47,
+    "total_items": 4088,
+    "updated": "2026-10-09T14:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4454,6 +4454,14 @@
         "close": 883.2,
         "high": 883.2,
         "low": 868.67
+      },
+      {
+        "date": "2026-10-09",
+        "dateFull": "2026-10-09 14:00",
+        "open": 883.37,
+        "close": 883.37,
+        "high": 883.37,
+        "low": 883.37
       }
     ],
     "volBar": [],
@@ -13345,12 +13353,20 @@
         "index": 883.2,
         "change_pct": -11.68,
         "market_value": 271102384.93
+      },
+      {
+        "time": "14:00",
+        "date": "2026-10-09",
+        "timestamp": 1791525603,
+        "index": 883.37,
+        "change_pct": -11.66,
+        "market_value": 271153643.47
       }
     ],
     "selling": {
-      "total_selling": 1388076,
+      "total_selling": 1392115,
       "total_selling_prev": 0,
-      "total_selling_delta": 1388076,
+      "total_selling_delta": 1392115,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13358,7 +13374,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791518403481,
+  "index_updated": 1791525603205,
   "alerts": [
     {
       "name": "P250 | Verdigris (Factory New)",
@@ -32263,7 +32279,7 @@
     "Negev | Bratatat (Field-Tested)",
     "Negev | Bratatat (Minimal Wear)"
   ],
-  "updated": "2026-10-09T05:14:05Z",
+  "updated": "2026-10-09T06:08:08Z",
   "steam_market_items": 0,
   "steam_market_recs": {
     "momentum": [],
