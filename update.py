@@ -4049,15 +4049,12 @@ def _align_with_remote(branch='main'):
     rc, out, err = _git_run(['merge', '--no-edit', f'origin/{branch}'], timeout=300)
     if rc != 0:
         _abort_merge()
-        print(f'[GIT][WARN] 常规合并冲突，改用 -X ours（冲突处保留本机数据）: '
-              f'{(err or out).strip()[:160]}', file=sys.stderr)
-        rc, out, err = _git_run(['merge', '--no-edit', '-X', 'ours', f'origin/{branch}'],
-                                timeout=300)
-        if rc != 0:
-            _abort_merge()
-            print('[GIT][WARN] 与远端合并失败，本轮不推送（避免覆盖远端提交）', file=sys.stderr)
-            return False
-        print('[GIT] 已用 -X ours 合并完成')
+        # ★ 2026-10-09 修正：不再用 `-X ours` 强制以本机数据覆盖冲突方。
+        #   本机若跑的是冻结数据（post-2026-09-20），强制覆盖会抹掉服务器新鲜结果；
+        #   即便在服务器上，强制选边也可能丢掉本轮新生成的数据。
+        #   正确做法：冲突即放弃本轮推送，下轮（push_retry）再试，绝不覆盖远端提交。
+        print('[GIT][WARN] 与远端常规合并冲突，本轮不推送（避免覆盖远端提交，等下一轮重试）', file=sys.stderr)
+        return False
     else:
         print('[GIT] 合并完成（无冲突）')
     return True
@@ -4706,6 +4703,14 @@ def main():
                                 print(f'[HISTORY] Save failed: {e}', file=sys.stderr)
         except Exception as e:
             print(f'[SteamDT] Full-catalog fetch failed: {e}', file=sys.stderr)
+        # ★ 2026-10-09 修正：推荐依赖 price_summary.json（recommend._load_price_summary，
+        #   line 355/393/408 用于涨跌幅与相邻采样跳变检查），而该文件原本在 AI 分析段（5130）
+        #   才由 generate_price_summary() 从 price_history.db 重建——即推荐吃的是**上一轮**的
+        #   陈旧 summary。本轮回合采集价已写入 DB，故在此先重建，让推荐吃当轮数据。
+        try:
+            generate_price_summary()
+        except Exception as _pe:
+            print(f'[SUMMARY] 推荐前预生成失败（推荐将退用旧 summary）: {_pe}', file=sys.stderr)
         try:
             recs = generate_recommendations(alerts=alerts_data, steamdt_prices=buff_prices)
             total = len(recs.get('all', []))
@@ -5129,8 +5134,7 @@ def main():
         except Exception as e:
             print(f'[META] Failed to update market.json timestamp: {e}', file=sys.stderr)
 
-    # ── 衍生 price_summary + AI 分析 ──
-    generate_price_summary()
+    # ── 衍生（price_summary 已提前到推荐生成前重建，确保推荐与 AI 均吃当轮数据）+ AI 分析 ──
     build_track_view()   # tracking 页首屏轻量数据（~20KB 替代 6MB，30min 轮随价格刷新）
     
     # ═══════════════ AI 分析（限流保护：每次调用间隔≥8秒） ═══════════════
