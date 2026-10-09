@@ -4920,7 +4920,13 @@ def main():
             if x.get('HashName') and x.get('GoodsName'):
                 name_map[x['HashName']] = x['GoodsName']
         json.dump(name_map, open(name_map_path, 'w', encoding='utf-8'), ensure_ascii=False)
-        dirty_files.add('name_map.json')
+        # ⚠ 2026-10-10：Windows 本机**永不推送** name_map.json / name_map_ui.json。
+        #   服务器（Linux）每轮 all 都会重新生成并推送，是权威源：
+        #   远端 42,006 条 vs 本机 18,992 条（本机那份由 09-20 的 eco_catalog.json 生成）。
+        #   本机推上去会把线上中文名腰斩一半（约 55% 饰品失去中文名）。
+        #   本机仍照常生成这两个文件，只用于派生 name_map_ui.json 和本地预览。
+        if sys.platform != 'win32':
+            dirty_files.add('name_map.json')
         print(f'[NAME] Generated name_map.json: {len(name_map)} items')
         # ── 前端精简版 name_map_ui.json（2026-10-06 加）────────────
         # 为什么要单独出一个文件：
@@ -4943,7 +4949,8 @@ def main():
         _ui = {k: name_map[k] for k in _need if k in name_map}
         json.dump(_ui, open(_ui_path, 'w', encoding='utf-8'),
                   ensure_ascii=False, separators=(',', ':'))
-        dirty_files.add('name_map_ui.json')
+        if sys.platform != 'win32':
+            dirty_files.add('name_map_ui.json')
         _full_sz = os.path.getsize(name_map_path)
         _ui_sz = os.path.getsize(_ui_path)
         print(f'[NAME] Generated name_map_ui.json: {len(_ui)} items'
