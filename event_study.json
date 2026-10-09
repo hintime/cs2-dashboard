@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-09 07:11",
+  "generated": "2026-10-09 13:05",
   "window": {
     "from": "2026-06-28",
     "to": "2026-10-09"
@@ -8,7 +8,7 @@
   "data_quality": "⚠ 7 月价格更新稀疏，部分日期为重复落库（两日价格几乎全同）→ 该事件 有效=false 剔除；9/20 起才是真实高频数据，当前有效样本少，结论仅供弱先验",
   "note": "样本量=有效事件数（每事件内还有数千物品的同批样本）；n<5 时统计意义很弱",
   "n_events": 16,
-  "n_valid_events": 8,
+  "n_valid_events": 9,
   "events": [
     {
       "date": "2026-07-09",
@@ -313,9 +313,9 @@
       "d14": {
         "day": "2026-10-08",
         "n": 4562,
-        "med": -3.77,
-        "up": 20.4,
-        "dn3": 54.4,
+        "med": -3.79,
+        "up": 20.2,
+        "dn3": 54.6,
         "stale": false
       },
       "有效": true
@@ -342,12 +342,12 @@
         "stale": false
       },
       "d14": {
-        "day": null,
-        "n": 0,
-        "med": null,
-        "up": null,
-        "dn3": null,
-        "stale": null
+        "day": "2026-10-09",
+        "n": 4524,
+        "med": -4.53,
+        "up": 19.3,
+        "dn3": 58.8,
+        "stale": false
       },
       "有效": true
     },
@@ -427,12 +427,12 @@
         "stale": false
       },
       "d7": {
-        "day": null,
-        "n": 0,
-        "med": null,
-        "up": null,
-        "dn3": null,
-        "stale": null
+        "day": "2026-10-09",
+        "n": 4535,
+        "med": -3.48,
+        "up": 18.5,
+        "dn3": 53.2,
+        "stale": false
       },
       "d14": {
         "day": null,
@@ -442,7 +442,7 @@
         "dn3": null,
         "stale": null
       },
-      "有效": false
+      "有效": true
     },
     {
       "date": "2026-10-05",
@@ -452,9 +452,9 @@
       "d3": {
         "day": "2026-10-08",
         "n": 4586,
-        "med": -2.12,
+        "med": -2.13,
         "up": 17.7,
-        "dn3": 41.7,
+        "dn3": 41.8,
         "stale": false
       },
       "d7": {
@@ -508,36 +508,36 @@
     }
   ],
   "summary": {
-    "n_events": 8,
-    "n_pool": 4644.5,
+    "n_events": 9,
+    "n_pool": 4640,
     "ret_3d": {
-      "event_mean": -0.42,
+      "event_mean": -0.47,
       "baseline_mean": -4.43,
-      "excess": 4.01,
+      "excess": 3.96,
       "n_base": 9,
-      "n_events": 8,
-      "up_pct": 33.75,
-      "dn3_pct": 21.27
+      "n_events": 9,
+      "up_pct": 32.94,
+      "dn3_pct": 21.94
     },
     "ret_7d": {
-      "event_mean": -1.22,
+      "event_mean": -1.47,
       "baseline_mean": -7.06,
-      "excess": 5.84,
+      "excess": 5.59,
       "n_base": 11,
-      "n_events": 8,
-      "up_pct": 30.12,
-      "dn3_pct": 32.11
+      "n_events": 9,
+      "up_pct": 28.83,
+      "dn3_pct": 34.46
     },
     "ret_14d": {
-      "event_mean": -3.01,
+      "event_mean": -3.27,
       "baseline_mean": -8.86,
-      "excess": 5.85,
+      "excess": 5.59,
       "n_base": 13,
-      "n_events": 5,
-      "up_pct": 25.5,
-      "dn3_pct": 44.08
+      "n_events": 6,
+      "up_pct": 24.43,
+      "dn3_pct": 46.57
     },
-    "verdict": "历史上 8 个有效公告事件后 7 天，同批物品中位涨跌 -1.22%，同期基准 -7.06%，超额 +5.84%（上涨物品占比 30.1%）→ 历史方向性支撑：中等",
+    "verdict": "历史上 9 个有效公告事件后 7 天，同批物品中位涨跌 -1.47%，同期基准 -7.06%，超额 +5.59%（上涨物品占比 28.8%）→ 历史方向性支撑：中等",
     "by_cat": {
       "major": {
         "n": 1,
@@ -548,9 +548,9 @@
         "n": 0
       },
       "routine": {
-        "n": 7,
-        "med7": -1.0,
-        "up7": 30.33
+        "n": 8,
+        "med7": -1.31,
+        "up7": 28.85
       },
       "other": {
         "n": 0

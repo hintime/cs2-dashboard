@@ -1,7 +1,7 @@
 {
   "version": 1,
   "accumulated_since": "2026-06-16",
-  "total_analyses": 56,
+  "total_analyses": 57,
   "lessons": [
     {
       "id": "L-GAP",
@@ -12,7 +12,7 @@
       "action": "因子类结论一律标注\"样本不足\"；维度数据攒到 200 条以上再据此改权重",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 43,
+      "confirmed": 44,
       "last_seen": "2026-10-09"
     },
     {
@@ -23,7 +23,7 @@
       "action": "BUFF 在每个推荐月都赢 ECO，不是批次假象 → ECO 通道降权、名额向 BUFF 倾斜",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 46,
+      "confirmed": 47,
       "last_seen": "2026-10-09"
     },
     {
@@ -34,7 +34,7 @@
       "action": "先不动 真实存世量 的权重，等维度数据攒够 200 条再判",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 46,
+      "confirmed": 47,
       "last_seen": "2026-10-09"
     },
     {
@@ -45,7 +45,7 @@
       "action": "覆盖率不影响收益，不必为它牺牲覆盖面",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 46,
+      "confirmed": 47,
       "last_seen": "2026-10-09"
     },
     {
@@ -56,7 +56,7 @@
       "action": "跨批次比收益必须先固定推荐日；复盘只在同批次内横向比",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 46,
+      "confirmed": 47,
       "last_seen": "2026-10-09"
     },
     {
@@ -67,7 +67,7 @@
       "action": "推荐池向 ¥200+ 区间倾斜",
       "auto": true,
       "added_at": "2026-09-25",
-      "confirmed": 46,
+      "confirmed": 47,
       "last_seen": "2026-10-09"
     }
   ],
@@ -153,41 +153,8 @@
       "last_seen": "2026-06-16"
     }
   ],
-  "last_updated": "2026-10-08T23:22:26Z",
+  "last_updated": "2026-10-09T05:19:05Z",
   "analysis_history": [
-    {
-      "seq": 37,
-      "ts": "2026-10-02T17:18:16Z",
-      "overview": {
-        "verdict": "基准组 1266 条：涨了就算赢 58.0%，平均 +43.82%；跑赢大盘 81.4%（大盘中位 -15.31%）；BUFF 通道 62.0% vs ECO 通道 24.8%",
-        "ai_verdict": "跑赢大盘83.9%，但ECO通道胜率仅21.1%",
-        "success_pattern": "BUFF通道n=917胜率74.6%，均值+69.98%",
-        "failure_pattern": "ECO通道n=109胜率21.1%，均值-18.18%",
-        "confidence_trend": "下降",
-        "market_signal": "大盘中位-13.42%，推荐抗跌"
-      },
-      "scoring_feedback": {
-        "eco_weight_advice": "-5%/ECO通道胜率21.1%",
-        "buff_weight_advice": "+5%/BUFF通道胜率74.6%",
-        "flow_weight_advice": "不变/区分度不足3%",
-        "yy_weight_advice": "+2%/悠悠溢价门槛有效",
-        "premium_threshold_advice": "只推BUFF溢价<0的，n=52但均值-1.96%，暂不加",
-        "liquidity_advice": "覆盖率<0.7的排除，占比n见统计"
-      },
-      "reason_analysis": {
-        "right_reasons": "BUFF通道n=917胜率74.6%，均值+69.98%",
-        "wrong_reasons": "ECO通道n=109胜率21.1%，均值-18.18%",
-        "reason_keywords_use": "BUFF溢价",
-        "reason_keywords_avoid": "真实存世量、BUFF在售单、7日供给变化"
-      },
-      "prompt_tweak": "优化建议：\n- 引用数字：基准组胜率58.0%，均值43.82%，BUFF溢价维度有效\n- 删除套话：重视流动性、多平台信号\n- 避免编造数字\n- 严格遵守字段长度",
-      "stats": {
-        "total": 1453,
-        "priced": 1446,
-        "profitable": 799,
-        "rate": 55.3
-      }
-    },
     {
       "seq": 38,
       "ts": "2026-10-02T23:20:25Z",
@@ -813,6 +780,39 @@
         "priced": 1626,
         "profitable": 693,
         "rate": 42.6
+      }
+    },
+    {
+      "seq": 57,
+      "ts": "2026-10-09T05:19:05Z",
+      "overview": {
+        "verdict": "基准组 1446 条：涨了就算赢 44.8%，平均 +35.03%；跑赢大盘 72.5%（大盘中位 -8.52%）；BUFF 通道 49.0% vs ECO 通道 13.0%",
+        "ai_verdict": "跑赢大盘83.9%，但ECO通道胜率仅21.1%",
+        "success_pattern": "BUFF通道n=917胜率74.6%，均值+69.98%",
+        "failure_pattern": "ECO通道n=109胜率21.1%，均值-18.18%",
+        "confidence_trend": "下降",
+        "market_signal": "大盘中位-13.42%，推荐抗跌"
+      },
+      "scoring_feedback": {
+        "eco_weight_advice": "-5%/ECO通道胜率21.1%",
+        "buff_weight_advice": "+5%/BUFF通道胜率74.6%",
+        "flow_weight_advice": "不变/区分度不足3%",
+        "yy_weight_advice": "+2%/悠悠溢价门槛有效",
+        "premium_threshold_advice": "只推BUFF溢价<0的，n=52但均值-1.96%，暂不加",
+        "liquidity_advice": "覆盖率<0.7的排除，占比n见统计"
+      },
+      "reason_analysis": {
+        "right_reasons": "BUFF通道n=917胜率74.6%，均值+69.98%",
+        "wrong_reasons": "ECO通道n=109胜率21.1%，均值-18.18%",
+        "reason_keywords_use": "",
+        "reason_keywords_avoid": "真实存世量、BUFF在售单、7日供给变化"
+      },
+      "prompt_tweak": "基准组胜率44.8%，均值35.03%，优化建议：引用胜率数据，删除“重视流动性”等无法执行建议。",
+      "stats": {
+        "total": 1633,
+        "priced": 1626,
+        "profitable": 673,
+        "rate": 41.4
       }
     }
   ],
