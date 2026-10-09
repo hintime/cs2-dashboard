@@ -2,9 +2,19 @@
 Silent update runner — runs every 10 min via Windows Task Scheduler
 Keeps price_history.json growing for charts & scoring
 """
-import os, subprocess, time
+import os, subprocess, sys, time
 
-DATA_DIR = r'C:\Users\Lenovo\WorkBuddy\Claw\cs2-dashboard'
+# ★ 2026-10-09 废弃：本机 updater_daemon 已于 2026-09-21 禁用（updater_daemon.py 内 sys.exit），
+#   且本文件所用 Bearer 认证已被 update.py 的 Basic 认证取代（见下方 run_git 注释，勿在服务器用）。
+#   保留仅作历史参考——运行时直接退出，避免用错误路径/旧认证把冻结的本机数据误推上远端。
+#   如需临时恢复：将 DEPRECATED 置 False（并先恢复 daemon）即可。
+DEPRECATED = True
+if DEPRECATED:
+    sys.stderr.write('[DEPRECATED] run_update.py 已废弃（本机 daemon 自 2026-09-21 禁用，'
+                     'Bearer 认证已废弃），直接退出。请勿使用。\n')
+    sys.exit(0)
+
+DATA_DIR = os.path.dirname(os.path.abspath(__file__))
 PYTHON = r'C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\python.exe'
 PYTHONW = r'C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\pythonw.exe'
 
