@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 880.07,
-    "change": -11.99,
-    "change_pct": -11.99,
-    "market_value": 270141255.44,
-    "total_items": 4110,
-    "updated": "2026-10-09T18:00:04+08:00",
+    "latest": 924.62,
+    "change": -7.54,
+    "change_pct": -7.54,
+    "market_value": 283816434.35,
+    "total_items": 4298,
+    "updated": "2026-10-09T20:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4467,8 +4467,8 @@
         "date": "2026-10-09",
         "dateFull": "2026-10-09 18:00",
         "open": 880.07,
-        "close": 880.07,
-        "high": 880.07,
+        "close": 924.62,
+        "high": 924.62,
         "low": 880.07
       }
     ],
@@ -13385,12 +13385,20 @@
         "index": 880.07,
         "change_pct": -11.99,
         "market_value": 270141255.44
+      },
+      {
+        "time": "20:00",
+        "date": "2026-10-09",
+        "timestamp": 1791547203,
+        "index": 924.62,
+        "change_pct": -7.54,
+        "market_value": 283816434.35
       }
     ],
     "selling": {
-      "total_selling": 1406008,
+      "total_selling": 1460987,
       "total_selling_prev": 0,
-      "total_selling_delta": 1406008,
+      "total_selling_delta": 1460987,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13398,7 +13406,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791540004103,
+  "index_updated": 1791547203706,
   "alerts": [
     {
       "name": "Dual Berettas | Heist (Factory New)",
@@ -32308,7 +32316,7 @@
     "Negev | Bratatat (Minimal Wear)",
     "Negev | CaliCamo (Factory New)"
   ],
-  "updated": "2026-10-09T11:37:23Z",
+  "updated": "2026-10-09T12:08:08Z",
   "steam_market_items": 52,
   "steam_market_recs": {
     "momentum": [],

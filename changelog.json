@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-10-09",
+    "tag": "feat",
+    "scope": "kronos",
+    "sha": "abca539",
+    "title": "本机 RTX4060 推理预测（ONIDLE）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
     "tag": "chore",
     "scope": "",
     "sha": "efc72d8",
@@ -149,14 +157,6 @@
     "scope": "",
     "sha": "338545c",
     "title": "Kronos 预测更新（本地 RTX 4060）",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-08",
-    "tag": "feat",
-    "scope": "kline",
-    "sha": "a805ba6",
-    "title": "日K采完自动重建持仓裁剪版",
     "desc": ""
   }
 ]
