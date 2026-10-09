@@ -4053,7 +4053,7 @@ function render() {
       }
     };
     tr.innerHTML =
-      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+(h.w && h.w !== 'other' ? '<span class="wear-tag">'+h.w+'</span>' : '')+'<span class="ai-badge-inline" id="aib-'+realIdx+'"></span> <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\', '+(h.buff_sell || h.eco_price || h.yyyp_sell || 0)+')" title="查看价格走势">📈</span>'+(typeof fcChip === 'function' ? fcChip(h) : '')+'</div></td>'+
+      '<td><div class="item-name"><button class="row-star" data-gid="'+h.gid+'">'+(h.gid&&starred[h.gid]?'★':'☆')+'</button>'+esc(cnName(h.n))+(h.w && h.w !== 'other' ? '<span class="wear-tag">'+h.w+'</span>' : '')+'<span class="ai-badge-inline" id="aib-'+realIdx+'"></span> <span class="chart-btn" onclick="event.stopPropagation();showPriceChart(\''+esc(h.n).replace(/'/g,"\\'")+'\', '+(h.buff_sell || h.eco_price || h.yyyp_sell || 0)+')" title="查看价格走势">走势</span>'+(typeof fcChip === 'function' ? fcChip(h) : '')+'</div></td>'+
       '<td class="text-r mono" style="font-size:11px">'+(h.rate_1 !== undefined && !isNaN(h.rate_1) ? '<span class="'+(h.rate_1>=0?'clr-rise':'clr-fall')+'">'+(h.rate_1>=0?'+':'')+h.rate_1.toFixed(1)+'%</span>' : '<span class="text-muted">--</span>')+'</td>'+
       '<td class="text-r mono"><span class="cost-val" data-idx="'+realIdx+'" title="点击编辑">¥'+h.c.toFixed(2)+'</span><span class="edit-cost" data-idx="'+realIdx+'"></span>'+(edited?'<span class="cost-edited">已改</span>':'')+'</td>'+
       '<td class="text-r mono">'+(h.eco_price > 0 ? '¥'+h.eco_price.toFixed(2) : '<span class="text-muted">--</span>')+'</td>'+
