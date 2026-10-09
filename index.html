@@ -2648,8 +2648,7 @@ async function loadOverrides() {
 //   持仓同步已全自动（autoSyncHoldings 心跳 + 服务器 cron），不再走 GitHub 通道。
 
 // ═══════════════ STAR SYSTEM ═══════════════
-function saveStars() { localStorage.setItem(LS_STARRED, JSON.stringify(starred)); updateWatchCount(); }
-function updateWatchCount() { }
+function saveStars() { localStorage.setItem(LS_STARRED, JSON.stringify(starred)); }
 function toggleStar(goodId) {
   starred[goodId] = !starred[goodId];
   saveStars();
@@ -2917,41 +2916,45 @@ window.__hpGetFiltered = function(){ try { return getFiltered(); } catch(e) { re
   initDashboard();
   // 初始视图：读 URL hash，无则默认「推荐」（真标签页，只显示一个面板）
   if (typeof initView === 'function') initView();
-  // 加载 ECO 基础价格用于持仓（兜底）
-  fetch('eco_tracked.json?v=' + t0).then(function(r){ return r.ok ? r.json() : []; }).then(function(ecoItems){
-    // 建立双索引：HashName→Price 和 GoodsName→Price
-    var ecoMap = {};
-    ecoItems.forEach(function(e){
-      if(e.HashName && e.Price>0) ecoMap[e.HashName] = e.Price;
-      if(e.GoodsName && e.Price>0 && !ecoMap[e.GoodsName]) ecoMap[e.GoodsName] = e.Price;
-    });
-    window._ecoPrices = ecoMap;
-    if (H && H.length) {
-      H.forEach(function(h){
-        var hn = h.mh || h.n;
-        var ecoP = ecoMap[hn];
-        if (!ecoP && h.n) ecoP = ecoMap[h.n]; // 也试中文名
-        if (ecoP > 0) { h.eco_price = ecoP; if (!h.p) { h.p = ecoP; h.pnl = ecoP - h.c; h.pnlPct = h.c>0?(ecoP-h.c)/h.c*100:0; } }
+  // 加载 ECO 基础价格用于持仓（兜底）—— 仅当存在缺现价的持仓时才拉这个 6.5MB 文件
+  if ((H || []).some(function(h){ return !(h.p > 0); })) {
+    fetch('eco_tracked.json?v=' + t0).then(function(r){ return r.ok ? r.json() : []; }).then(function(ecoItems){
+      // 建立双索引：HashName→Price 和 GoodsName→Price
+      var ecoMap = {};
+      ecoItems.forEach(function(e){
+        if(e.HashName && e.Price>0) ecoMap[e.HashName] = e.Price;
+        if(e.GoodsName && e.Price>0 && !ecoMap[e.GoodsName]) ecoMap[e.GoodsName] = e.Price;
       });
-    }
-  }).catch(function(){});
-  // 加载 BUFF 历史数据（用于持仓折线图）
-  fetch('buff_recent.json?v=' + t0).then(function(r){ return r.ok ? r.json() : {}; }).then(function(bh){
-    window._buffHistory = bh || {};
-    // 用 buff_history 补充持仓物品的 BUFF/悠悠价格
-    if (H && H.length) {
-      var latest = Object.keys(bh).sort().pop();
-      if (latest && bh[latest]) {
+      window._ecoPrices = ecoMap;
+      if (H && H.length) {
         H.forEach(function(h){
           var hn = h.mh || h.n;
-          if (!hn || !bh[latest][hn]) return;
-          var dp = bh[latest][hn];
-          if (dp.buff_sell > 0 && !h.buff_sell) { h.buff_sell = dp.buff_sell; h.buff_sell_num = dp.buff_sell_num || 0; }
-          if (dp.yyyp_sell > 0 && !h.yyyp_sell) { h.yyyp_sell = dp.yyyp_sell; h.yyyp_sell_num = dp.yyyp_sell_num || 0; }
+          var ecoP = ecoMap[hn];
+          if (!ecoP && h.n) ecoP = ecoMap[h.n]; // 也试中文名
+          if (ecoP > 0) { h.eco_price = ecoP; if (!h.p) { h.p = ecoP; h.pnl = ecoP - h.c; h.pnlPct = h.c>0?(ecoP-h.c)/h.c*100:0; } }
         });
       }
-    }
-  }).catch(function(){});
+    }).catch(function(){});
+  }
+  // 加载 BUFF 历史数据（用于持仓折线图）—— 延后到首屏绘制后，避免与关键资源争带宽
+  setTimeout(function(){
+    fetch('buff_recent.json?v=' + t0).then(function(r){ return r.ok ? r.json() : {}; }).then(function(bh){
+      window._buffHistory = bh || {};
+      // 用 buff_history 补充持仓物品的 BUFF/悠悠价格
+      if (H && H.length) {
+        var latest = Object.keys(bh).sort().pop();
+        if (latest && bh[latest]) {
+          H.forEach(function(h){
+            var hn = h.mh || h.n;
+            if (!hn || !bh[latest][hn]) return;
+            var dp = bh[latest][hn];
+            if (dp.buff_sell > 0 && !h.buff_sell) { h.buff_sell = dp.buff_sell; h.buff_sell_num = dp.buff_sell_num || 0; }
+            if (dp.yyyp_sell > 0 && !h.yyyp_sell) { h.yyyp_sell = dp.yyyp_sell; h.yyyp_sell_num = dp.yyyp_sell_num || 0; }
+          });
+        }
+      }
+    }).catch(function(){});
+  }, 1500);
   renderNews();
   loadFirePulseOverview();
   setTimeout(hideSkeleton, 80);
@@ -3636,11 +3639,11 @@ function updateKPI() {
   var worstEl = document.getElementById('worstPerformer');
   if (bestEl && best) {
     bestEl.textContent = best.n + ' ' + (best.pnlPct>=0?'+':'') + best.pnlPct.toFixed(1) + '%';
-    bestEl.style.color = best.pnlPct >= 0 ? 'var(--fall)' : 'var(--rise)';
+    bestEl.style.color = best.pnlPct >= 0 ? 'var(--rise)' : 'var(--fall)';
   }
   if (worstEl && worst) {
     worstEl.textContent = worst.n + ' ' + (worst.pnlPct>=0?'+':'') + worst.pnlPct.toFixed(1) + '%';
-    worstEl.style.color = worst.pnlPct >= 0 ? 'var(--fall)' : 'var(--rise)';
+    worstEl.style.color = worst.pnlPct >= 0 ? 'var(--rise)' : 'var(--fall)';
   }
   
   if (costEl) costEl.textContent = '¥' + tc.toLocaleString();
@@ -3653,13 +3656,13 @@ function updateKPI() {
   var subEl = document.getElementById('signalSub');
   if (iconEl && textEl) {
     if (pnlPct2 > 10 && winRate2 > 60) {
-      iconEl.textContent = '▲'; textEl.textContent = '强势'; textEl.style.color = 'var(--fall)';
+      iconEl.textContent = '▲'; textEl.textContent = '强势'; textEl.style.color = 'var(--rise)';
       if(subEl) subEl.textContent = '盈利率' + winRate2.toFixed(0) + '%';
     } else if (pnlPct2 > 0 && winRate2 > 40) {
       iconEl.textContent = '🟡'; textEl.textContent = '观望'; textEl.style.color = 'var(--brand)';
       if(subEl) subEl.textContent = (pnlPct2>0?'+':'') + pnlPct2.toFixed(1) + '%';
     } else if (pnlPct2 < -5) {
-      iconEl.textContent = '▼'; textEl.textContent = '注意'; textEl.style.color = 'var(--rise)';
+      iconEl.textContent = '▼'; textEl.textContent = '注意'; textEl.style.color = 'var(--fall)';
       if(subEl) subEl.textContent = (pnlPct2>0?'+':'') + pnlPct2.toFixed(1) + '%';
     } else {
       iconEl.textContent = '⚪'; textEl.textContent = '平稳'; textEl.style.color = 'var(--text2)';
@@ -3987,11 +3990,12 @@ if (DOM.tbody) {
 }
 
 function exportCSV() {
-  var rows=[['名称','成本','当前价','盈亏%','类型','品名']];
-  H.forEach(function(s){
-    var cost=getCost(s.name,true);
-    var pnlPct=cost>0?((s.price-cost)/cost*100):0;
-    rows.push([s.name,cost.toFixed(2),s.price.toFixed(2),pnlPct.toFixed(1)+'%',s.listed?'在售':'持仓',s.type||'']);
+  var rows=[['名称','成本','当前价','盈亏%','类型','磨损']];
+  (H||[]).forEach(function(s){
+    var cost = Number(s.c) || 0;
+    var price = Number(s.p) || 0;
+    var pnlPct = cost>0 ? ((price-cost)/cost*100) : 0;
+    rows.push([s.n||'', cost.toFixed(2), price.toFixed(2), pnlPct.toFixed(1)+'%', s.t||'', s.w||'']);
   });
   var csv=rows.map(function(r){return r.map(function(v){var s=String(v);return s.includes(',')||s.includes('"')?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\n');
   var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
@@ -3999,6 +4003,8 @@ function exportCSV() {
   a.download='cs2_portfolio_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
   URL.revokeObjectURL(a.href);
 }
+// 暴露到全局，供内联 onclick="exportCSV()" 调用（本函数定义在主 IIFE 作用域内）
+window.exportCSV = exportCSV;
 
 
 // ═══════════════ REFRESH BUTTON ═══════════════
@@ -6249,7 +6255,7 @@ window.fcLine = fcLine;
         var ut = data.updated || '';
         if (!ut) return;
         var t = new Date(ut).getTime();
-        if (t > _lastUpdate) { _lastUpdate = t; showToast('📊 数据已更新', 3000); loadAll(); }
+        if (t > _lastUpdate) { _lastUpdate = t; if (typeof showToast === 'function') showToast('📊 数据已更新', 3000); if (typeof loadAll === 'function') loadAll(); else if (typeof window.__hpReload === 'function') window.__hpReload(); }
       })
       .catch(function(){});
   }, 30000);
@@ -7598,7 +7604,6 @@ function hpSetGran(g){
     var _m = KL.maps[_f];
     _states.push(_f + '=' + (KL.counts && KL.counts[_f] ? KL.counts[_f] + '件' : (_m ? '空' : '未加载')));
   }
-  console.log('[KL] 切档 ' + klState() + ' -> ' + g + ' | 源状态: ' + _states.join(', '));
   if (!g || g === klState()) return;
   window._klGran = g;
   /* 粒度换了，区间选择的语义也变了（天 vs 根）→ 区间重置回默认 */
@@ -7611,7 +7616,6 @@ function hpSetGran(g){
       var _m2 = KL.maps[_f2];
       _after.push(_f2 + '=' + (KL.counts && KL.counts[_f2] ? KL.counts[_f2] + '件' : (_m2 ? '空' : '未加载')));
     }
-    console.log('[KL] 加载完成，当前档 ' + klState() + ' | ' + _after.join(', '));
     hpRenderKlineHost();
   });
 }
@@ -9620,6 +9624,9 @@ function _normQty(it){
   var q = Number(it.qty);
   return (q && q > 0) ? q : 1;
 }
+// 持仓同步共享密钥（轻量网关）：与 CF Worker 环境变量 SYNC_KEY 一致即启用；留空=不启用（向后兼容）。
+// 启用步骤：① CF Worker 环境变量加 SYNC_KEY=你的密钥；② 把下面这行改成同一密钥。
+window.__SYNC_KEY = '';
 window.autoSyncHoldings = async function () {
   try {
     var key = (typeof getMyKey === 'function') ? getMyKey() : 'admin';
@@ -9664,13 +9671,13 @@ window.autoSyncHoldings = async function () {
     var sold = items.filter(function (it) { return _normQty(it) <= 0; });
     // ① 持有中 → KV（服务器 cron 每 15 分钟并入持仓）
     await fetch(WORKER_BASE + '/api/holdings-sync', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-sync-key': (window.__SYNC_KEY || '') },
       body: JSON.stringify({ items: live }),
     }).catch(function(){});
     // ② 卖出件 → /api/sold（留痕；服务器据它把持仓里的对应件移除）
     sold.forEach(function (s) {
       fetch(WORKER_BASE + '/api/sold', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-sync-key': (window.__SYNC_KEY || '') },
         body: JSON.stringify({ market_hash: s.market_hash || s.mh || s.n || '', name: s.name || s.n || '', qty: _normQty(s), ts: new Date().toISOString() }),
       }).catch(function(){});
     });
