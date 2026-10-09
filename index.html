@@ -5460,7 +5460,9 @@ function renderScan() {
 }
 
 // ═══════════════ START ═══════════════
-updateWatchCount();
+// （updateWatchCount 已随空桩清理删除；此处旧调用若保留会在顶层抛
+//   ReferenceError、打断整个 script 块 → loadAll 不执行 → 页面永远骨架屏，
+//   2026-10-09 线上实测踩坑，勿再回填）
 loadAll().catch(err => { console.error(err); hideSkeleton(); });
 
 // ═══════════════ 自定义持仓管理 ═══════════════
