@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 739.48,
-    "change": -26.05,
-    "change_pct": -26.05,
-    "market_value": 226985921.63,
-    "total_items": 3478,
-    "updated": "2026-10-10T14:00:03+08:00",
+    "latest": 745.96,
+    "change": -25.4,
+    "change_pct": -25.4,
+    "market_value": 228976248.6,
+    "total_items": 3520,
+    "updated": "2026-10-10T16:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4507,8 +4507,8 @@
         "date": "2026-10-10",
         "dateFull": "2026-10-10 14:00",
         "open": 739.48,
-        "close": 739.48,
-        "high": 739.48,
+        "close": 745.96,
+        "high": 745.96,
         "low": 739.48
       }
     ],
@@ -13505,12 +13505,20 @@
         "index": 739.48,
         "change_pct": -26.05,
         "market_value": 226985921.63
+      },
+      {
+        "time": "16:00",
+        "date": "2026-10-10",
+        "timestamp": 1791619203,
+        "index": 745.96,
+        "change_pct": -25.4,
+        "market_value": 228976248.6
       }
     ],
     "selling": {
-      "total_selling": 1298464,
+      "total_selling": 1318098,
       "total_selling_prev": 0,
-      "total_selling_delta": 1298464,
+      "total_selling_delta": 1318098,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13518,7 +13526,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791612003267,
+  "index_updated": 1791619203434,
   "alerts": [
     {
       "name": "FAMAS | Commemoration (Factory New)",
@@ -32428,7 +32436,7 @@
     "Name Tag",
     "Negev | Boroque Sand (Factory New)"
   ],
-  "updated": "2026-10-10T07:39:06Z",
+  "updated": "2026-10-10T08:09:50Z",
   "steam_market_items": 60,
   "steam_market_recs": {
     "momentum": [
