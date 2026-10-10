@@ -2,6 +2,22 @@
   {
     "date": "2026-10-10",
     "tag": "fix",
+    "scope": "news",
+    "sha": "f829d1a",
+    "title": "资讯卡改读 AI 逐条研判(n.impact.sentiment)，修正利好红色/利空绿色配色，理由作悬停提示",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "news",
+    "sha": "38a1629",
+    "title": "方案C——AI 逐条研判回填 news.json 每条 impact(利好/利空/理由)，前端读 n.impact 渲染并修正红涨绿跌配色；Kronos 预测漏",
+    "desc": "跑自检留痕"
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
     "scope": "kronos",
     "sha": "7803892",
     "title": "预测自检留痕——调用后置 marker(_tmp/kronos_last_run.json) 含 status: ok/skipped/failed + 入参/",
@@ -157,6 +173,630 @@
     "scope": "batch-B",
     "sha": "c0432c8",
     "title": "run_update.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "b4602a7",
+    "title": "kronos_forecast.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "27665c6",
+    "title": "build_kline.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "0b6ada6",
+    "title": "eco_catalog.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "badba12",
+    "title": "recommend.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "2e78058",
+    "title": "update.py — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "batch-B",
+    "sha": "422c6c1",
+    "title": "worker.js — pipeline/repo hygiene fixes (2026-10-09)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "d218268",
+    "title": "蜡烛加宽至占槽位72%/上限34px + 叠加MA5/10/20均线（参照CSQAQ优化稀疏）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-09",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "35aeb3f",
+    "title": "默认1h官方K线+2h稀疏标注；修成本录入漏刷列表；删numFlash死代码",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "chore",
+    "scope": "",
+    "sha": "338545c",
+    "title": "Kronos 预测更新（本地 RTX 4060）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "feat",
+    "scope": "kline",
+    "sha": "a805ba6",
+    "title": "日K采完自动重建持仓裁剪版",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "feat",
+    "scope": "kline",
+    "sha": "da90a42",
+    "title": "新增持仓日K裁剪版构建脚本(190KB)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "fix",
+    "scope": "chart",
+    "sha": "b9c14ef",
+    "title": "详情卡/迷你走势图空态 —— 新增持仓日K裁剪源(190KB)+整包延迟后台加载",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "feat",
+    "scope": "kline",
+    "sha": "fcf28ee",
+    "title": "新增持仓日K裁剪版(190KB) 解决详情卡/迷你图等12MB整包的空态问题",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-08",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "96eb258",
+    "title": "成本同步打通+详情卡就地改成本+心跳1分钟+统一WORKER_BASE",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "chore",
+    "scope": "holdings",
+    "sha": "fb3c2cc",
+    "title": "删除「↑同步」「↓恢复」两个 GitHub 跨设备死按钮 + 相关函数/CSS",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "perf",
+    "scope": "holdings",
+    "sha": "1f966d9",
+    "title": "页面加载后立即推送持仓（不等首个心跳）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "chore",
+    "scope": "holdings",
+    "sha": "baf34e0",
+    "title": "删除「同步到服务器」手动按钮 —— 同步已全自动",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "edd34b2",
+    "title": "全自动同步（心跳推送 + 卖出自动移除，无需改 Worker）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "fix",
+    "scope": "holdings",
+    "sha": "2e2155b",
+    "title": "一键同步改走 Worker KV（免 token）—— GitHub 通道实测 401",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "f2b8943",
+    "title": "一键同步持仓到服务器 + 自动合并（成本价红线：0 不覆盖）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "fix",
+    "scope": "changelog",
+    "sha": "fbbdc8d",
+    "title": "读远端 main + 排除数据刷新噪音，今日功能提交 1 条补回 4 条",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "12be992",
+    "title": "切档诊断日志 + 异常振幅标记(B1)，数据源计数移出 map",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "kline",
+    "sha": "f310f0c",
+    "title": "接入 SteamDT 官方K线（1小时/日/周），双源回落+ 自采保底",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "perf",
+    "scope": "name_map",
+    "sha": "b7e3d76",
+    "title": "前端改用精简版中文名表 name_map_ui.json（41992->4063 条，3.81MB->0.33MB）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "8e14dd7",
+    "title": "同步三档 K线前端到服务器工作区后重推（首次 API 推送读的是旧文件）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-07",
+    "tag": "feat",
+    "scope": "kline",
+    "sha": "a05596d",
+    "title": "K线扩为三档粒度 2小时/日/周，日K周K 无上限 + 修跨平台价差污染振幅",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "changelog",
+    "sha": "4178755",
+    "title": "用新规则重新生成日志（20 条 / 18 条带 scope）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "changelog",
+    "sha": "4331b9a",
+    "title": "更新日志六项修正（噪音 9/20 → 0/20）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "critical",
+    "sha": "c1d916e",
+    "title": "修复块1语法错误（4398行 forEach 未闭合 → 整个块1不执行，WEAR_MAP/cnName/switchView 等全部失效、页面核心功能瘫痪）+",
+    "desc": "补修 3 个低危项（滚动锁还原/无行情如实提示/卖出传 id）"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "style",
+    "scope": "holdings",
+    "sha": "7e67c7a",
+    "title": "去掉持仓列表的「重灾区/观察区/健康区」分区",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "holdings",
+    "sha": "d47eff3",
+    "title": "印花等小众品类现价全为 0（批量补录显示「—」、总盈亏虚高） - 根因：`h.p` 不是持仓自带字段，只在 csqaqData[hn] 命中时才被赋值（inde",
+    "desc": "x.html:4402），   而 csqaq_boards.json 里**没有印花/探员/武器箱/音乐盒** → 这些件 h.p 恒为 undefined - 影响面比想象的���：7 处直接 `Number(h.p)||0`，其中盈亏汇总与总市值把 0 当现价   → 32 件里 24 件现价被当成 0，总盈亏少算 ¥982（亏损被当成没亏） - 修法：新增 hpPrice() 作为唯一取值入口，回退链h.p → h.price → eco_platform_price   → eco_price → buff_sell（buff_sell 放最后：它是「在售价」不是成交价）   7 处调用点全部改用它；批量弹窗在完全无报价时显示「暂无报价」而非「—」"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "audit",
+    "sha": "d703360",
+    "title": "修复独立审计发现的 7 个缺陷 —— ①库存缓存跨SteamID/账号串号(加_lastInvSid校验+按账号隔离绑定) ②导入去重键与全站主键不一致(统一",
+    "desc": "market_hash) ③reload 掐掉云端同步防抖(新增 hpCloudSyncNow 立即推送) ④剪贴板预览渲染进隐藏弹窗 ⑤d.items 非数组污染 ⑥空库存提示自相矛盾 ⑦差异列表截断无提示"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "ui",
+    "sha": "3050d11",
+    "title": "自建 Toast / Confirm 组件，替换全部 14 处原生 alert + 3 处 confirm —— 原生弹窗样式丑且不可定制；同时导入/补齐改为延",
+    "desc": "迟刷新，提示不再被 reload 刷掉"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "import",
+    "sha": "210336b",
+    "title": "合并方式默认值改为「仅新增」（原默认「增量合并」在库存重复导入时会数量翻倍）+ 三个选项文案加警示（整表替换会丢成本价）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "kronos",
+    "sha": "7630882",
+    "title": "就绪度门槛从训练 config 读，口径与实际训练对齐 - 原来硬编码 LOOKBACK=512，注释写「与 config 一致」但 config 实际是 33",
+    "desc": "6   → 看板按 561 算门槛、训练只要 385，「还差134点」是按错门槛算的 - 改为 _load_window() 从 configs/config_cs2_buff_1h.yaml 读 - 训练 config 纳入仓库 configs/（原先只在本机 E://cs2-kronos-ft//，服务器根本没有，/n  口径必然分叉） - 报告讲清 WINDOW 语义：段长 < WINDOW 切不出样本（每段样本数 = 段长-WINDOW+1），   所以「段长 >= lookback(336)」这种门槛无意义   → 校正后结论翻转：buff/yy 已达标（2721标的 / 117638 样本）"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "inventory",
+    "sha": "595823a",
+    "title": "差异面板新增「⬇ 补齐新增（写入持仓）」按钮 —— 显式点击才写入，只补「库存有、持仓没记」的项；不删任何记录、不改已有成本价",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "import",
+    "sha": "d563a97",
+    "title": "弹窗加 max-height/overflow 使其可滚动 + 预览出现后自动滚过去 —— 此前预览表(含「确认导入」按钮)在弹窗底部被裁掉，用户根本够不着",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "inventory",
+    "sha": "0f25f91",
+    "title": "绑定 SteamID 后可一键「刷新库存」，与持仓对比差异（新增 / 已不在库存(可能已卖出) / 数量不符），只读不改动持仓与成本价",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "import",
+    "sha": "abe1644",
+    "title": "修复三条导入路径全部报 \"cnName is not defined\" —— 块1是IIFE，cnName/overrideKey/wearCN 是局部函数未挂",
+    "desc": "window，块3的 parseSteamJson 跨块调用必然 ReferenceError；显式挂载 + 加防御兜底"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "import",
+    "sha": "5171cb0",
+    "title": "① 直接导入区新增「如何获取 SteamID64」可折叠指引 + 输入框支持粘贴资料页 URL 自动提取 ID",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "buff_history",
+    "sha": "ef67934",
+    "title": "hour_key 保留分钟 + 就绪度口径澄清 - save_buff_history 的 hour_key 从 T%H:00 改 T%H:%M：   cron",
+    "desc": "prices 轮 */30（:15/:45）两轮原本写进同一 key，后一轮覆盖前一轮，   30 分钟采集实际只落了一半 - 保留上限 12 → 24 个时点（半小时粒度下= 12 小时，够异动页 6h/12h 跨期） - kronos_ready.py：1.00 h/点经实测确认正确（prices 表由 history 轮每小时   :15 写入，不是 prices 轮）。报告新增 cadence_evidence() 直接打出证据   （:45 出现 0 次），并删除已失效的「eco 节奏慢 4.5 倍」注释"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "inventory",
+    "sha": "efae6d7",
+    "title": "bookmarklet 分页拉全库存 + 聚合传输（防 window.name 截断） + more_items 宽松比较 + 兜底路径统一聚合",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "wear",
+    "sha": "ea1ef64",
+    "title": "统一磨损中文译名并补全 datalist 翻译 - 新增 HP_WEAR_CN/cnWear()，datalist 自动补全不再出中英混杂条目   （截图里 F",
+    "desc": "ield-Tested 未翻译 → 现在 5 种磨损都有中文项） - WW 统一为官方「破损不堪」（原 cnName 译「战地风云」、下拉写「战火纷飞」、   上游数据是「破损不堪」，三处不一致） - eco_catalog/generate_correlation 的 WW 排除判据同时收「破旧不堪」"
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "kronos",
+    "sha": "66da0c7",
+    "title": "独立环境探测从「路径存在」改为「真 import torch」+ Linux 候选路径兜底扫描；两种失败原因分开报错",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "fix",
+    "scope": "kline",
+    "sha": "cf1a606",
+    "title": "校正采样口径 4-6小时 → 30分钟/次（实测 cron */30、每天28个采样点，high/low 覆盖度远高于原描述）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "rec",
+    "sha": "a9e7249",
+    "title": "周度记分卡 + 双体检 2026-10-05",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "",
+    "sha": "8b6932d",
+    "title": "删除临时 K线验证探针",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "chore",
+    "scope": "",
+    "sha": "6911f51",
+    "title": "临时 K线线上验证探针（验证后删除）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "367b5fe",
+    "title": "持仓走势图加 K线视图（日K 由日内采样聚合）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-05",
+    "tag": "feat",
+    "scope": "chart",
+    "sha": "0c5b2e6",
+    "title": "走势图全屏看大图（搬DOM不重画，viewBox不变，Esc/✕/双击退出，缩放与读数联动全部复用）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "feat",
+    "scope": "watchdog",
+    "sha": "7234a87",
+    "title": "生成物停更监控（41个产物/5档阈值，企微告警+6h重提醒，cron每小时第7分）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "fix",
+    "scope": "update",
+    "sha": "5d3649d",
+    "title": "删 main() 内多余 import json（污染局部变量致 name_map 自 9-22 停更）+ 补齐 name_map 18992→41977 条",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "09fae28",
+    "title": "Kronos 预测按钮+弹层，修复 fcOf 闭包不可见与 series 缺历史点",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "fix",
+    "scope": "",
+    "sha": "375ddb0",
+    "title": "ui: 持仓走势图放大（viewBox 780:260，max-height 210→320）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "feat",
+    "scope": "",
+    "sha": "5c3d864",
+    "title": "Kronos 训练语料 buff 1h（2000段/31822样本，window 385）+ 构建器",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "chore",
+    "scope": "",
+    "sha": "87a9c19",
+    "title": "迁移准备工具（API fetch / bootstrap / RUNBOOK / crontab 模板）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "fix",
+    "scope": "",
+    "sha": "adf39cd",
+    "title": "test cleanup",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "test",
+    "scope": "",
+    "sha": "4ed748f",
+    "title": "api push self-test",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "feat",
+    "scope": "ux",
+    "sha": "518cd30",
+    "title": "持仓页自动刷新 60s→30s 智能轮询（新数据上线≤30s 自动重载，不丢滚动/面板状态）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-04",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "02f83a0",
+    "title": "挂单量副图在售量改折线图 + 随鼠标联动(竖准线+蓝/琥珀双点+实时读数)",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "import",
+    "sha": "689391c",
+    "title": "持仓导入重做(方案A)——书签设主路径、砍失效一键导入tab、导入弹预览表(逐件填成本/磨损)+合并策略(增量/替换/仅新增)，修¥0成本与磨损丢失",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "scope": "",
+    "sha": "9d4eef8",
+    "title": "ux(chart): 删除走势图浮动 tooltip——信息与顶部读数行完全冗余且遮挡曲线；保留十字准线+数据点+右轴跟随标签（TradingView lege",
+    "desc": "nd 模式）"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "scope": "kronos",
+    "sha": "d5e7699",
+    "title": "预测加载完后重渲染 AI 精选横幅（补 Kronos 徽章 + 保留选中项 aiSelectPick 记录 _aiSelIdx）",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "kronos",
+    "sha": "7439ced",
+    "title": "持仓纳入 14日预测——ai_forecast.json 新增 holdings 标的（推荐池前10 + AI精选 + 持仓共 30 件，生成端 kronos_",
+    "desc": "forecast_srv.py 读 holdings.json）"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "kronos",
+    "sha": "7119e4c",
+    "title": "持仓列表显示 14日预测徽章——生成端纳入持仓(targets+holdings.json)、H 补 hash_name、行模板调 fcChip、预测加载后重渲",
+    "desc": "染"
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "8d76f82",
+    "title": "走势图顶部指标条跟随鼠标——悬停联动现价/MA5/MA20/布林带/区间涨跌，移出还原",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "3d29b84",
+    "title": "走势图瘦身 + 新增挂单量副图——顶部指标条精简/底部两行合一/图表高度 252→180",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "style",
+    "scope": "revenue",
+    "sha": "09222fa",
+    "title": "口径说明重做——六条结构化清单替代裸文本",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "holdings",
+    "sha": "82c4532",
+    "title": "走势图重做——右侧价格轴/十字光标/可点图例/区间切换",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "style",
+    "scope": "holdings",
+    "sha": "8e5aa48",
+    "title": "详情区取消面板内滚动，改为整段自然高度撑开",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "docs",
+    "scope": "kronos",
+    "sha": "5dfde9a",
+    "title": "更正 CPU 基线实测值 + 补记 CUDA 落地/口径部署/上游缺陷修复",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "docs",
+    "scope": "kronos",
+    "sha": "6d4b07c",
+    "title": "更正微调门槛口径为窗口561步 + 记录 B 方案落地",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "scope": "kronos",
+    "sha": "816291f",
+    "title": "update.py Windows 路径改按存在性探测(消除 C/E 盘分叉) + 纳入 news_history.json [api-push]",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "fix",
+    "scope": "kronos",
+    "sha": "5101fd2",
+    "title": "update.py Windows 路径改按存在性探测(消除 C/E 盘分叉) + 纳入 news_history.json",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "news",
+    "sha": "6c242bc",
+    "title": "历史先验数字逐字锚定(防flash改写) + 5条历史对照要求",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "event-study",
+    "sha": "edbdfbe",
+    "title": "事件研究实现(同批对比+同期基准+stale过滤+公告缓存回退)",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "news",
+    "sha": "b05f674",
+    "title": "资讯中心展示历史先验真数字(与AI叙述分离)",
+    "desc": ""
+  },
+  {
+    "date": "2026-09-26",
+    "tag": "feat",
+    "scope": "news",
+    "sha": "47bf5a8",
+    "title": "AI空投监控接入历史先验(逐字锚定数字)",
     "desc": ""
   }
 ]
