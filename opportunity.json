@@ -1,0 +1,2184 @@
+{
+  "generated": "2026-10-11 01:49",
+  "thresholds": {
+    "min_price": 5.0,
+    "min_sell_num": 3,
+    "min_buy_num": 1,
+    "min_spread_pct": 3.0,
+    "low_pctile": 25.0
+  },
+  "caveat": "套利为挂牌价毛空间，未扣平台手续费/提现成本；Steam 余额不可提现，BUFF→Steam 仅作价差参考。捡漏『低估』指相对自身 30 日区间低位，不等于必涨。",
+  "undervalued": [
+    {
+      "hash_name": "UMP-45 | Blaze (Factory New)",
+      "name": "UMP-45 | 炽烈之炎 (崭新出厂)",
+      "current": 94.71,
+      "low30": 94.71,
+      "high30": 126.8,
+      "pctile": 0.0,
+      "kronos_pct": 13.86,
+      "sell_num": 184,
+      "buy_num": 17,
+      "score": 63.86,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +13.9%"
+    },
+    {
+      "hash_name": "Prof. Shahmat | Elite Crew",
+      "name": "沙哈马特教授 | 精锐分子",
+      "current": 34.24,
+      "low30": 34.24,
+      "high30": 41.16,
+      "pctile": 0.0,
+      "kronos_pct": 10.52,
+      "sell_num": 772,
+      "buy_num": 47,
+      "score": 60.52,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +10.5%"
+    },
+    {
+      "hash_name": "MP9 | Airlock (Field-Tested)",
+      "name": "MP9 | 气密 (久经沙场)",
+      "current": 70.94,
+      "low30": 70.81,
+      "high30": 85.0,
+      "pctile": 0.9,
+      "kronos_pct": 11.76,
+      "sell_num": 107,
+      "buy_num": 28,
+      "score": 59.93,
+      "reason": "价格处于 30 日区间 1% 低位，且 Kronos 14 日看涨 +11.8%"
+    },
+    {
+      "hash_name": "AUG | Syd Mead (Field-Tested)",
+      "name": "AUG | 席德.米德 (久经沙场)",
+      "current": 71.05,
+      "low30": 71.05,
+      "high30": 84.83,
+      "pctile": 0.0,
+      "kronos_pct": 9.91,
+      "sell_num": 115,
+      "buy_num": 14,
+      "score": 59.91,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +9.9%"
+    },
+    {
+      "hash_name": "Lieutenant 'Tree Hugger' Farlow | SWAT",
+      "name": "中尉法洛（抱树人） | 特警",
+      "current": 72.79,
+      "low30": 71.59,
+      "high30": 104.0,
+      "pctile": 3.7,
+      "kronos_pct": 19.36,
+      "sell_num": 176,
+      "buy_num": 25,
+      "score": 57.59,
+      "reason": "价格处于 30 日区间 4% 低位，且 Kronos 14 日看涨 +19.4%"
+    },
+    {
+      "hash_name": "MAG-7 | Justice (Field-Tested)",
+      "name": "MAG-7 | 正义 (久经沙场)",
+      "current": 33.59,
+      "low30": 33.59,
+      "high30": 38.26,
+      "pctile": 0.0,
+      "kronos_pct": 7.55,
+      "sell_num": 107,
+      "buy_num": 62,
+      "score": 57.55,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +7.5%"
+    },
+    {
+      "hash_name": "M4A4 | Spider Lily (Minimal Wear)",
+      "name": "M4A4 | 彼岸花 (略有磨损)",
+      "current": 73.05,
+      "low30": 72.74,
+      "high30": 88.37,
+      "pctile": 2.0,
+      "kronos_pct": 10.68,
+      "sell_num": 650,
+      "buy_num": 56,
+      "score": 56.71,
+      "reason": "价格处于 30 日区间 2% 低位，且 Kronos 14 日看涨 +10.7%"
+    },
+    {
+      "hash_name": "Five-SeveN | Fowl Play (Field-Tested)",
+      "name": "FN57 | 狩猎利器 (久经沙场)",
+      "current": 121.39,
+      "low30": 121.39,
+      "high30": 136.85,
+      "pctile": 0.0,
+      "kronos_pct": 6.32,
+      "sell_num": 43,
+      "buy_num": 14,
+      "score": 56.32,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +6.3%"
+    },
+    {
+      "hash_name": "PP-Bizon | High Roller (Field-Tested)",
+      "name": "PP-野牛 | 买定离手 (久经沙场)",
+      "current": 65.21,
+      "low30": 65.21,
+      "high30": 74.48,
+      "pctile": 0.0,
+      "kronos_pct": 6.25,
+      "sell_num": 73,
+      "buy_num": 6,
+      "score": 56.25,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +6.2%"
+    },
+    {
+      "hash_name": "R8 Revolver | Llama Cannon (Field-Tested)",
+      "name": "R8左轮手枪 | 美洲驼炮 (久经沙场)",
+      "current": 66.22,
+      "low30": 66.22,
+      "high30": 73.24,
+      "pctile": 0.0,
+      "kronos_pct": 3.31,
+      "sell_num": 48,
+      "buy_num": 17,
+      "score": 53.31,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +3.3%"
+    },
+    {
+      "hash_name": "M4A4 | Urban DDPAT (Factory New)",
+      "name": "M4A4 | 都市 DDPAT (崭新出厂)",
+      "current": 116.75,
+      "low30": 116.75,
+      "high30": 196.56,
+      "pctile": 0.0,
+      "kronos_pct": 3.04,
+      "sell_num": 104,
+      "buy_num": 10,
+      "score": 53.04,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +3.0%"
+    },
+    {
+      "hash_name": "Blackwolf | Sabre",
+      "name": "黑狼 | 军刀",
+      "current": 36.01,
+      "low30": 36.01,
+      "high30": 41.95,
+      "pctile": 0.0,
+      "kronos_pct": 2.76,
+      "sell_num": 616,
+      "buy_num": 19,
+      "score": 52.76,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +2.8%"
+    },
+    {
+      "hash_name": "UMP-45 | Primal Saber (Field-Tested)",
+      "name": "UMP-45 | 野蛮剑齿虎 (久经沙场)",
+      "current": 74.06,
+      "low30": 74.06,
+      "high30": 86.48,
+      "pctile": 0.0,
+      "kronos_pct": 2.34,
+      "sell_num": 123,
+      "buy_num": 36,
+      "score": 52.34,
+      "reason": "价格处于 30 日区间 0% 低位，且 Kronos 14 日看涨 +2.3%"
+    },
+    {
+      "hash_name": "FAMAS | Djinn (Field-Tested)",
+      "name": "法玛斯 | 爱神 (久经沙场)",
+      "current": 74.32,
+      "low30": 74.01,
+      "high30": 87.91,
+      "pctile": 2.2,
+      "kronos_pct": 4.73,
+      "sell_num": 69,
+      "buy_num": 23,
+      "score": 50.27,
+      "reason": "价格处于 30 日区间 2% 低位，且 Kronos 14 日看涨 +4.7%"
+    },
+    {
+      "hash_name": "AK-47 | Aphrodite (Minimal Wear)",
+      "name": "AK-47 | 爱神 (略有磨损)",
+      "current": 137.73,
+      "low30": 137.73,
+      "high30": 173.0,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 1725,
+      "buy_num": 37,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Asiimov (Field-Tested)",
+      "name": "AK-47 | 二西莫夫 (久经沙场)",
+      "current": 247.21,
+      "low30": 247.21,
+      "high30": 266.96,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 1237,
+      "buy_num": 41,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Asiimov (Minimal Wear)",
+      "name": "AK-47 | 二西莫夫 (略有磨损)",
+      "current": 305.71,
+      "low30": 305.71,
+      "high30": 349.5,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 1268,
+      "buy_num": 70,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Baroque Purple (Minimal Wear)",
+      "name": "AK-47 | 巴洛克之紫 (略有磨损)",
+      "current": 38.58,
+      "low30": 38.58,
+      "high30": 49.8,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 334,
+      "buy_num": 8,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Black Laminate (Minimal Wear)",
+      "name": "AK-47 | 黑色层压板 (略有磨损)",
+      "current": 271.36,
+      "low30": 271.36,
+      "high30": 298.56,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 199,
+      "buy_num": 5,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Cartel (Minimal Wear)",
+      "name": "AK-47 | 卡特尔 (略有磨损)",
+      "current": 114.82,
+      "low30": 114.82,
+      "high30": 126.98,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 669,
+      "buy_num": 18,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Crane Flight (Minimal Wear)",
+      "name": "AK-47 | 翔鹤 (略有磨损)",
+      "current": 130.28,
+      "low30": 130.28,
+      "high30": 155.3,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 742,
+      "buy_num": 76,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Crossfade (Factory New)",
+      "name": "AK-47 | 交叉渐变 (崭新出厂)",
+      "current": 21.24,
+      "low30": 21.24,
+      "high30": 31.39,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 1231,
+      "buy_num": 17,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Elite Build (Factory New)",
+      "name": "AK-47 | 精英之作 (崭新出厂)",
+      "current": 42.95,
+      "low30": 42.95,
+      "high30": 57.26,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 774,
+      "buy_num": 33,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Frontside Misty (Minimal Wear)",
+      "name": "AK-47 | 前线迷雾 (略有磨损)",
+      "current": 149.39,
+      "low30": 149.39,
+      "high30": 176.99,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 576,
+      "buy_num": 19,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Head Shot (Field-Tested)",
+      "name": "AK-47 | 一发入魂 (久经沙场)",
+      "current": 180.97,
+      "low30": 180.97,
+      "high30": 214.73,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 567,
+      "buy_num": 38,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Head Shot (Minimal Wear)",
+      "name": "AK-47 | 一发入魂 (略有磨损)",
+      "current": 296.61,
+      "low30": 296.61,
+      "high30": 317.28,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 394,
+      "buy_num": 39,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Hydroponic (Factory New)",
+      "name": "AK-47 | 水栽竹 (崭新出厂)",
+      "current": 24333.33,
+      "low30": 24333.33,
+      "high30": 27198.5,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 122,
+      "buy_num": 3,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Ice Coaled (Factory New)",
+      "name": "AK-47 | 可燃冰 (崭新出厂)",
+      "current": 77.32,
+      "low30": 77.32,
+      "high30": 96.2,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 1226,
+      "buy_num": 57,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Inheritance (Factory New)",
+      "name": "AK-47 | 传承 (崭新出厂)",
+      "current": 619.58,
+      "low30": 619.58,
+      "high30": 774.5,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 734,
+      "buy_num": 21,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    },
+    {
+      "hash_name": "AK-47 | Jaguar (Minimal Wear)",
+      "name": "AK-47 | 美洲猛虎 (略有磨损)",
+      "current": 693.97,
+      "low30": 693.97,
+      "high30": 849.0,
+      "pctile": 0.0,
+      "kronos_pct": null,
+      "sell_num": 63,
+      "buy_num": 6,
+      "score": 50.0,
+      "reason": "价格处于 30 日区间 0% 低位"
+    }
+  ],
+  "arbitrage": [
+    {
+      "hash_name": "MAC-10 | Malachite (Factory New)",
+      "name": "MAC-10 | 孔雀石 (崭新出厂)",
+      "buff_sell": 29.05,
+      "buff_buy": 27.2,
+      "yyyp_sell": 43.5,
+      "steam_sell": 62.59,
+      "sell_num": 185,
+      "best_route": "BUFF→悠悠",
+      "spread": 14.45,
+      "spread_pct": 49.74,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 29.05,
+          "sell": 43.5,
+          "spread": 14.45,
+          "spread_pct": 49.74,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 43.5,
+          "reject": "价差 50% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Dual Berettas | Dualing Dragons (Factory New)",
+      "name": "双持贝瑞塔 | 龙之双子 (崭新出厂)",
+      "buff_sell": 19.19,
+      "buff_buy": 18.6,
+      "yyyp_sell": 28.7,
+      "steam_sell": 47.52,
+      "sell_num": 96,
+      "best_route": "BUFF→悠悠",
+      "spread": 9.51,
+      "spread_pct": 49.56,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 19.19,
+          "sell": 28.7,
+          "spread": 9.51,
+          "spread_pct": 49.56,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 28.7,
+          "reject": "价差 50% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "USP-S | Lead Conduit (Factory New)",
+      "name": "USP消音版 | 铅管 (崭新出厂)",
+      "buff_sell": 62.89,
+      "buff_buy": 57.0,
+      "yyyp_sell": 93.89,
+      "steam_sell": 137.55,
+      "sell_num": 120,
+      "best_route": "BUFF→悠悠",
+      "spread": 31.0,
+      "spread_pct": 49.29,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 62.89,
+          "sell": 93.89,
+          "spread": 31.0,
+          "spread_pct": 49.29,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 93.89,
+          "reject": "价差 49% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "PP-Bizon | Fuel Rod (Factory New)",
+      "name": "PP-野牛 | 核燃料棒 (崭新出厂)",
+      "buff_sell": 22.78,
+      "buff_buy": 21.0,
+      "yyyp_sell": 34.0,
+      "steam_sell": 50.45,
+      "sell_num": 145,
+      "best_route": "BUFF→悠悠",
+      "spread": 11.22,
+      "spread_pct": 49.25,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 22.78,
+          "sell": 34.0,
+          "spread": 11.22,
+          "spread_pct": 49.25,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 34.0,
+          "reject": "价差 49% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Sawed-Off | Jungle Thicket (Minimal Wear)",
+      "name": "截短霰弹枪 | 灌木丛 (略有磨损)",
+      "buff_sell": 32.59,
+      "buff_buy": null,
+      "yyyp_sell": 48.5,
+      "steam_sell": 38.8,
+      "sell_num": 46,
+      "best_route": "BUFF→悠悠",
+      "spread": 15.91,
+      "spread_pct": 48.82,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 32.59,
+          "sell": 48.5,
+          "spread": 15.91,
+          "spread_pct": 48.82,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 38.8,
+          "reject": "价差 49% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "P2000 | Chainmail (Minimal Wear)",
+      "name": "P2000 | 坚固链甲 (略有磨损)",
+      "buff_sell": 349.48,
+      "buff_buy": null,
+      "yyyp_sell": 519.48,
+      "steam_sell": 506.39,
+      "sell_num": 25,
+      "best_route": "BUFF→悠悠",
+      "spread": 170.0,
+      "spread_pct": 48.64,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 349.48,
+          "sell": 519.48,
+          "spread": 170.0,
+          "spread_pct": 48.64,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 506.39,
+          "reject": "价差 49% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Nova | Ghost Camo (Factory New)",
+      "name": "新星 | 幽灵迷彩 (崭新出厂)",
+      "buff_sell": 15.89,
+      "buff_buy": null,
+      "yyyp_sell": 23.32,
+      "steam_sell": 28.41,
+      "sell_num": 24,
+      "best_route": "BUFF→悠悠",
+      "spread": 7.43,
+      "spread_pct": 46.76,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 15.89,
+          "sell": 23.32,
+          "spread": 7.43,
+          "spread_pct": 46.76,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 23.32,
+          "reject": "价差 47% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Glock-18 | Ironwork (Minimal Wear)",
+      "name": "格洛克18型 | 铁之作 (略有磨损)",
+      "buff_sell": 20.24,
+      "buff_buy": 17.3,
+      "yyyp_sell": 29.66,
+      "steam_sell": 40.89,
+      "sell_num": 263,
+      "best_route": "BUFF→悠悠",
+      "spread": 9.42,
+      "spread_pct": 46.54,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 20.24,
+          "sell": 29.66,
+          "spread": 9.42,
+          "spread_pct": 46.54,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 29.66,
+          "reject": "价差 47% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "CZ75-Auto | Army Sheen (Field-Tested)",
+      "name": "CZ75自动型 | 军队之辉 (久经沙场)",
+      "buff_sell": 17.07,
+      "buff_buy": null,
+      "yyyp_sell": 24.92,
+      "steam_sell": 23.14,
+      "sell_num": 18,
+      "best_route": "BUFF→悠悠",
+      "spread": 7.85,
+      "spread_pct": 45.99,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 17.07,
+          "sell": 24.92,
+          "spread": 7.85,
+          "spread_pct": 45.99,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 23.14,
+          "reject": "价差 46% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Negev | Loudmouth (Minimal Wear)",
+      "name": "内格夫 | 大嘴巴 (略有磨损)",
+      "buff_sell": 65.0,
+      "buff_buy": null,
+      "yyyp_sell": 94.88,
+      "steam_sell": 116.79,
+      "sell_num": 18,
+      "best_route": "BUFF→悠悠",
+      "spread": 29.88,
+      "spread_pct": 45.97,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 65.0,
+          "sell": 94.88,
+          "spread": 29.88,
+          "spread_pct": 45.97,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 94.88,
+          "reject": "价差 46% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "SSG 08 | Carbon Fiber (Minimal Wear)",
+      "name": "SSG 08 | 碳素纤维 (略有磨损)",
+      "buff_sell": 20.0,
+      "buff_buy": null,
+      "yyyp_sell": 29.17,
+      "steam_sell": 30.16,
+      "sell_num": 48,
+      "best_route": "BUFF→悠悠",
+      "spread": 9.17,
+      "spread_pct": 45.85,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 20.0,
+          "sell": 29.17,
+          "spread": 9.17,
+          "spread_pct": 45.85,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 29.17,
+          "reject": "价差 46% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "G3SG1 | The Executioner (Minimal Wear)",
+      "name": "G3SG1 | 行刑者 (略有磨损)",
+      "buff_sell": 284.0,
+      "buff_buy": null,
+      "yyyp_sell": 411.26,
+      "steam_sell": 441.42,
+      "sell_num": 14,
+      "best_route": "BUFF→悠悠",
+      "spread": 127.26,
+      "spread_pct": 44.81,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 284.0,
+          "sell": 411.26,
+          "spread": 127.26,
+          "spread_pct": 44.81,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 411.26,
+          "reject": "价差 45% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Sawed-Off | Mosaico (Field-Tested)",
+      "name": "截短霰弹枪 | 马赛克 (久经沙场)",
+      "buff_sell": 48.84,
+      "buff_buy": null,
+      "yyyp_sell": 70.5,
+      "steam_sell": 57.44,
+      "sell_num": 7,
+      "best_route": "BUFF→悠悠",
+      "spread": 21.66,
+      "spread_pct": 44.35,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 48.84,
+          "sell": 70.5,
+          "spread": 21.66,
+          "spread_pct": 44.35,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 57.44,
+          "reject": "价差 44% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Negev | Phoenix Stencil (Field-Tested)",
+      "name": "内格夫 | 凤凰徽记 (久经沙场)",
+      "buff_sell": 90.35,
+      "buff_buy": null,
+      "yyyp_sell": 129.79,
+      "steam_sell": 125.0,
+      "sell_num": 20,
+      "best_route": "BUFF→悠悠",
+      "spread": 39.44,
+      "spread_pct": 43.65,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 90.35,
+          "sell": 129.79,
+          "spread": 39.44,
+          "spread_pct": 43.65,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 125.0,
+          "reject": "价差 44% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "PP-Bizon | Rust Coat (Field-Tested)",
+      "name": "PP-野牛 | 外表生锈 (久经沙场)",
+      "buff_sell": 76.0,
+      "buff_buy": null,
+      "yyyp_sell": 108.99,
+      "steam_sell": 140.59,
+      "sell_num": 8,
+      "best_route": "BUFF→悠悠",
+      "spread": 32.99,
+      "spread_pct": 43.41,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 76.0,
+          "sell": 108.99,
+          "spread": 32.99,
+          "spread_pct": 43.41,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 108.99,
+          "reject": "价差 43% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "SG 553 | Candy Apple (Field-Tested)",
+      "name": "SG 553 | 红苹果 (久经沙场)",
+      "buff_sell": 25.8,
+      "buff_buy": null,
+      "yyyp_sell": 36.97,
+      "steam_sell": 37.66,
+      "sell_num": 32,
+      "best_route": "BUFF→悠悠",
+      "spread": 11.17,
+      "spread_pct": 43.29,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 25.8,
+          "sell": 36.97,
+          "spread": 11.17,
+          "spread_pct": 43.29,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 36.97,
+          "reject": "价差 43% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Glock-18 | Red Tire (Factory New)",
+      "name": "格洛克18型 | 红色轮胎 (崭新出厂)",
+      "buff_sell": 58.0,
+      "buff_buy": 51.0,
+      "yyyp_sell": 83.04,
+      "steam_sell": 176.45,
+      "sell_num": 74,
+      "best_route": "BUFF→悠悠",
+      "spread": 25.04,
+      "spread_pct": 43.17,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 58.0,
+          "sell": 83.04,
+          "spread": 25.04,
+          "spread_pct": 43.17,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 83.04,
+          "reject": "价差 43% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "P250 | Hive (Factory New)",
+      "name": "P250 | 红巢 (崭新出厂)",
+      "buff_sell": 40.5,
+      "buff_buy": 35.5,
+      "yyyp_sell": 57.78,
+      "steam_sell": 93.78,
+      "sell_num": 97,
+      "best_route": "BUFF→悠悠",
+      "spread": 17.28,
+      "spread_pct": 42.67,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 40.5,
+          "sell": 57.78,
+          "spread": 17.28,
+          "spread_pct": 42.67,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 57.78,
+          "reject": "价差 43% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "CZ75-Auto | Poison Dart (Minimal Wear)",
+      "name": "CZ75自动型 | 毒镖 (略有磨损)",
+      "buff_sell": 21.73,
+      "buff_buy": null,
+      "yyyp_sell": 31.0,
+      "steam_sell": 32.37,
+      "sell_num": 23,
+      "best_route": "BUFF→悠悠",
+      "spread": 9.27,
+      "spread_pct": 42.66,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 21.73,
+          "sell": 31.0,
+          "spread": 9.27,
+          "spread_pct": 42.66,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 31.0,
+          "reject": "价差 43% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "M4A4 | Griffin (Minimal Wear)",
+      "name": "M4A4 | 狮鹫 (略有磨损)",
+      "buff_sell": 30.32,
+      "buff_buy": 27.7,
+      "yyyp_sell": 43.2,
+      "steam_sell": 71.76,
+      "sell_num": 345,
+      "best_route": "BUFF→悠悠",
+      "spread": 12.88,
+      "spread_pct": 42.48,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 30.32,
+          "sell": 43.2,
+          "spread": 12.88,
+          "spread_pct": 42.48,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 43.2,
+          "reject": "价差 42% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "M4A1-S | Boreal Forest (Factory New)",
+      "name": "M4A1消音版 | 北方森林 (崭新出厂)",
+      "buff_sell": 54.5,
+      "buff_buy": 47.7,
+      "yyyp_sell": 77.64,
+      "steam_sell": 131.92,
+      "sell_num": 99,
+      "best_route": "BUFF→悠悠",
+      "spread": 23.14,
+      "spread_pct": 42.46,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 54.5,
+          "sell": 77.64,
+          "spread": 23.14,
+          "spread_pct": 42.46,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 77.64,
+          "reject": "价差 42% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "★ Bloodhound Gloves | Charred (Factory New)",
+      "name": "血猎手套（★） | 焦炭 (崭新出厂)",
+      "buff_sell": 3200.0,
+      "buff_buy": null,
+      "yyyp_sell": 4554.5,
+      "steam_sell": 4738.01,
+      "sell_num": 3,
+      "best_route": "BUFF→悠悠",
+      "spread": 1354.5,
+      "spread_pct": 42.33,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 3200.0,
+          "sell": 4554.5,
+          "spread": 1354.5,
+          "spread_pct": 42.33,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 4554.5,
+          "reject": "价差 42% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "M4A4 | Dark Blossom (Minimal Wear)",
+      "name": "M4A4 | 暗之绽放 (略有磨损)",
+      "buff_sell": 69.03,
+      "buff_buy": 59.0,
+      "yyyp_sell": 97.86,
+      "steam_sell": 152.73,
+      "sell_num": 48,
+      "best_route": "BUFF→悠悠",
+      "spread": 28.83,
+      "spread_pct": 41.76,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 69.03,
+          "sell": 97.86,
+          "spread": 28.83,
+          "spread_pct": 41.76,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 97.86,
+          "reject": "价差 42% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "AK-47 | First Class (Factory New)",
+      "name": "AK-47 | 至高皮革 (崭新出厂)",
+      "buff_sell": 1400.0,
+      "buff_buy": null,
+      "yyyp_sell": 1983.95,
+      "steam_sell": 1964.74,
+      "sell_num": 19,
+      "best_route": "BUFF→悠悠",
+      "spread": 583.95,
+      "spread_pct": 41.71,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 1400.0,
+          "sell": 1983.95,
+          "spread": 583.95,
+          "spread_pct": 41.71,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 1964.74,
+          "reject": "价差 42% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "★ Driver Gloves | Plum Quill (Factory New)",
+      "name": "驾驶手套（★） | 蓝紫点子 (崭新出厂)",
+      "buff_sell": 4665.5,
+      "buff_buy": null,
+      "yyyp_sell": 6600.0,
+      "steam_sell": null,
+      "sell_num": 6,
+      "best_route": "BUFF→悠悠",
+      "spread": 1934.5,
+      "spread_pct": 41.46,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 4665.5,
+          "sell": 6600.0,
+          "spread": 1934.5,
+          "spread_pct": 41.46,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 6600.0,
+          "reject": "价差 41% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "★ StatTrak™ Paracord Knife | Scorched (Field-Tested)",
+      "name": "系绳匕首（★ StatTrak™） | 枯焦之色 (久经沙场)",
+      "buff_sell": 410.0,
+      "buff_buy": null,
+      "yyyp_sell": 579.5,
+      "steam_sell": 521.26,
+      "sell_num": 4,
+      "best_route": "BUFF→悠悠",
+      "spread": 169.5,
+      "spread_pct": 41.34,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 410.0,
+          "sell": 579.5,
+          "spread": 169.5,
+          "spread_pct": 41.34,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 521.26,
+          "reject": "价差 41% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "M4A4 | Eye of Horus (Minimal Wear)",
+      "name": "M4A4 | 荷鲁斯之眼 (略有磨损)",
+      "buff_sell": 1800.0,
+      "buff_buy": 1720.0,
+      "yyyp_sell": 2537.5,
+      "steam_sell": 4064.81,
+      "sell_num": 143,
+      "best_route": "BUFF→悠悠",
+      "spread": 737.5,
+      "spread_pct": 40.97,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 1800.0,
+          "sell": 2537.5,
+          "spread": 737.5,
+          "spread_pct": 40.97,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 2537.5,
+          "reject": "价差 41% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "★ Falchion Knife | Ultraviolet (Minimal Wear)",
+      "name": "弯刀（★） | 致命紫罗兰 (略有磨损)",
+      "buff_sell": 679.5,
+      "buff_buy": null,
+      "yyyp_sell": 955.0,
+      "steam_sell": 973.84,
+      "sell_num": 11,
+      "best_route": "BUFF→悠悠",
+      "spread": 275.5,
+      "spread_pct": 40.54,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 679.5,
+          "sell": 955.0,
+          "spread": 275.5,
+          "spread_pct": 40.54,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 955.0,
+          "reject": "价差 41% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "SCAR-20 | Army Sheen (Field-Tested)",
+      "name": "SCAR-20 | 军队之辉 (久经沙场)",
+      "buff_sell": 13.54,
+      "buff_buy": null,
+      "yyyp_sell": 19.0,
+      "steam_sell": 24.97,
+      "sell_num": 4,
+      "best_route": "BUFF→悠悠",
+      "spread": 5.46,
+      "spread_pct": 40.32,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 13.54,
+          "sell": 19.0,
+          "spread": 5.46,
+          "spread_pct": 40.32,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 19.0,
+          "reject": "价差 40% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "★ Driver Gloves | Diamondback (Factory New)",
+      "name": "驾驶手套（★） | 菱背蛇纹 (崭新出厂)",
+      "buff_sell": 5500.0,
+      "buff_buy": null,
+      "yyyp_sell": 7700.0,
+      "steam_sell": 11952.54,
+      "sell_num": 6,
+      "best_route": "BUFF→悠悠",
+      "spread": 2200.0,
+      "spread_pct": 40.0,
+      "can_cash": true,
+      "note": "悠悠可提现，是真正可执行的搬砖方向",
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 5500.0,
+          "sell": 7700.0,
+          "spread": 2200.0,
+          "spread_pct": 40.0,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 7700.0,
+          "reject": "价差 40% 超出合理上限"
+        }
+      ]
+    }
+  ],
+  "suspicious": [
+    {
+      "hash_name": "R8 Revolver | Phoenix Marker (Factory New)",
+      "name": "R8左轮手枪 | 凤凰手迹 (崭新出厂)",
+      "buff_sell": 43.99,
+      "yyyp_sell": 68.33,
+      "steam_sell": 112.15,
+      "anchor": 68.33,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 43.99,
+          "sell": 68.33,
+          "spread": 24.34,
+          "spread_pct": 55.33,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 68.33,
+          "reject": "价差 55% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 43.99,
+          "sell": 112.15,
+          "spread": 68.16,
+          "spread_pct": 154.94,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 68.33,
+          "reject": "价差 155% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "P2000 | Turf (Minimal Wear)",
+      "name": "P2000 | 草皮 (略有磨损)",
+      "buff_sell": 20.17,
+      "yyyp_sell": 30.64,
+      "steam_sell": 41.35,
+      "anchor": 30.64,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 20.17,
+          "sell": 30.64,
+          "spread": 10.47,
+          "spread_pct": 51.91,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 30.64,
+          "reject": "价差 52% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 20.17,
+          "sell": 41.35,
+          "spread": 21.18,
+          "spread_pct": 105.01,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 30.64,
+          "reject": "价差 105% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "AK-47 | Jungle Spray (Minimal Wear)",
+      "name": "AK-47 | 丛林涂装 (略有磨损)",
+      "buff_sell": 85.61,
+      "yyyp_sell": 144.95,
+      "steam_sell": 233.72,
+      "anchor": 144.95,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 85.61,
+          "sell": 144.95,
+          "spread": 59.34,
+          "spread_pct": 69.31,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 144.95,
+          "reject": "价差 69% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 85.61,
+          "sell": 233.72,
+          "spread": 148.11,
+          "spread_pct": 173.01,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 144.95,
+          "reject": "价差 173% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "M4A4 | Faded Zebra (Field-Tested)",
+      "name": "M4A4 | 渐变斑纹 (久经沙场)",
+      "buff_sell": 32.7,
+      "yyyp_sell": 54.49,
+      "steam_sell": 60.15,
+      "anchor": 54.49,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 32.7,
+          "sell": 54.49,
+          "spread": 21.79,
+          "spread_pct": 66.64,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 54.49,
+          "reject": "价差 67% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 32.7,
+          "sell": 60.15,
+          "spread": 27.45,
+          "spread_pct": 83.94,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 54.49,
+          "reject": "价差 84% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Desert Eagle | Mudder (Factory New)",
+      "name": "沙漠之鹰 | 泥地杀手 (崭新出厂)",
+      "buff_sell": 32.88,
+      "yyyp_sell": 50.85,
+      "steam_sell": 80.2,
+      "anchor": 50.85,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 32.88,
+          "sell": 50.85,
+          "spread": 17.97,
+          "spread_pct": 54.65,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 50.85,
+          "reject": "价差 55% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 32.88,
+          "sell": 80.2,
+          "spread": 47.32,
+          "spread_pct": 143.92,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 50.85,
+          "reject": "价差 144% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "XM1014 | Grassland (Minimal Wear)",
+      "name": "XM1014 | 工业牧草 (略有磨损)",
+      "buff_sell": 31.9,
+      "yyyp_sell": 50.0,
+      "steam_sell": 53.59,
+      "anchor": 50.0,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 31.9,
+          "sell": 50.0,
+          "spread": 18.1,
+          "spread_pct": 56.74,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 50.0,
+          "reject": "价差 57% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 31.9,
+          "sell": 53.59,
+          "spread": 21.69,
+          "spread_pct": 67.99,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 50.0,
+          "reject": "价差 68% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "P90 | Schematic (Field-Tested)",
+      "name": "P90 | 解视图 (久经沙场)",
+      "buff_sell": 21.99,
+      "yyyp_sell": 36.66,
+      "steam_sell": 34.65,
+      "anchor": 34.65,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 21.99,
+          "sell": 36.66,
+          "spread": 14.67,
+          "spread_pct": 66.71,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 34.65,
+          "reject": "价差 67% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 21.99,
+          "sell": 34.65,
+          "spread": 12.66,
+          "spread_pct": 57.57,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 34.65,
+          "reject": "价差 58% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "CZ75-Auto | Twist (Factory New)",
+      "name": "CZ75自动型 | 螺形扭转 (崭新出厂)",
+      "buff_sell": 17.99,
+      "yyyp_sell": 28.78,
+      "steam_sell": 39.96,
+      "anchor": 28.78,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 17.99,
+          "sell": 28.78,
+          "spread": 10.79,
+          "spread_pct": 59.98,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 28.78,
+          "reject": "价差 60% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 17.99,
+          "sell": 39.96,
+          "spread": 21.97,
+          "spread_pct": 122.12,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 28.78,
+          "reject": "价差 122% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "SG 553 | Wave Spray (Field-Tested)",
+      "name": "SG 553 | 浪花喷漆 (久经沙场)",
+      "buff_sell": 34.8,
+      "yyyp_sell": 71.67,
+      "steam_sell": 61.75,
+      "anchor": 61.75,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 34.8,
+          "sell": 71.67,
+          "spread": 36.87,
+          "spread_pct": 105.95,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 61.75,
+          "reject": "价差 106% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 34.8,
+          "sell": 61.75,
+          "spread": 26.95,
+          "spread_pct": 77.44,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 61.75,
+          "reject": "价差 77% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "P250 | Bone Mask (Minimal Wear)",
+      "name": "P250 | 骸骨外罩 (略有磨损)",
+      "buff_sell": 13.86,
+      "yyyp_sell": 34.58,
+      "steam_sell": 22.04,
+      "anchor": 22.04,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 13.86,
+          "sell": 34.58,
+          "spread": 20.72,
+          "spread_pct": 149.49,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 22.04,
+          "reject": "悠悠报价高于 Steam 57%"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 13.86,
+          "sell": 22.04,
+          "spread": 8.18,
+          "spread_pct": 59.02,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 22.04,
+          "reject": "价差 59% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "★ StatTrak™ Nomad Knife | Night Stripe (Minimal Wear)",
+      "name": "流浪者匕首（★ StatTrak™） | 夜色 (略有磨损)",
+      "buff_sell": 808.9,
+      "yyyp_sell": 1364.9,
+      "steam_sell": 1241.74,
+      "anchor": 1241.74,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 808.9,
+          "sell": 1364.9,
+          "spread": 556.0,
+          "spread_pct": 68.74,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 1241.74,
+          "reject": "价差 69% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 808.9,
+          "sell": 1241.74,
+          "spread": 432.84,
+          "spread_pct": 53.51,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 1241.74,
+          "reject": "价差 54% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Galil AR | Black Sand (Minimal Wear)",
+      "name": "加利尔AR | 黑砂 (略有磨损)",
+      "buff_sell": 19.99,
+      "yyyp_sell": 30.72,
+      "steam_sell": 42.35,
+      "anchor": 30.72,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 19.99,
+          "sell": 30.72,
+          "spread": 10.73,
+          "spread_pct": 53.68,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 30.72,
+          "reject": "价差 54% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 19.99,
+          "sell": 42.35,
+          "spread": 22.36,
+          "spread_pct": 111.86,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 30.72,
+          "reject": "价差 112% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Galil AR | Sandstorm (Minimal Wear)",
+      "name": "加利尔AR | 沙尘暴 (略有磨损)",
+      "buff_sell": 31.76,
+      "yyyp_sell": 47.8,
+      "steam_sell": 85.69,
+      "anchor": 47.8,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 31.76,
+          "sell": 47.8,
+          "spread": 16.04,
+          "spread_pct": 50.5,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 47.8,
+          "reject": "价差 50% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 31.76,
+          "sell": 85.69,
+          "spread": 53.93,
+          "spread_pct": 169.8,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 47.8,
+          "reject": "价差 170% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Nova | Plume (Factory New)",
+      "name": "新星 | 风卷残云 (崭新出厂)",
+      "buff_sell": 20.0,
+      "yyyp_sell": 34.0,
+      "steam_sell": 32.34,
+      "anchor": 32.34,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 20.0,
+          "sell": 34.0,
+          "spread": 14.0,
+          "spread_pct": 70.0,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 32.34,
+          "reject": "价差 70% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 20.0,
+          "sell": 32.34,
+          "spread": 12.34,
+          "spread_pct": 61.7,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 32.34,
+          "reject": "价差 62% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "USP-S | Black Lotus (Factory New)",
+      "name": "USP消音版 | 黑莲花 (崭新出厂)",
+      "buff_sell": 123.93,
+      "yyyp_sell": 187.8,
+      "steam_sell": 283.02,
+      "anchor": 187.8,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 123.93,
+          "sell": 187.8,
+          "spread": 63.87,
+          "spread_pct": 51.54,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 187.8,
+          "reject": "价差 52% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 123.93,
+          "sell": 283.02,
+          "spread": 159.09,
+          "spread_pct": 128.37,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 187.8,
+          "reject": "价差 128% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "R8 Revolver | Memento (Factory New)",
+      "name": "R8左轮手枪 | 记忆碎片 (崭新出厂)",
+      "buff_sell": 28.0,
+      "yyyp_sell": 80.5,
+      "steam_sell": 96.94,
+      "anchor": 80.5,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 28.0,
+          "sell": 80.5,
+          "spread": 52.5,
+          "spread_pct": 187.5,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 80.5,
+          "reject": "价差 188% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 28.0,
+          "sell": 96.94,
+          "spread": 68.94,
+          "spread_pct": 246.21,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 80.5,
+          "reject": "价差 246% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "SCAR-20 | Storm (Minimal Wear)",
+      "name": "SCAR-20 | 暴风呼啸 (略有磨损)",
+      "buff_sell": 16.71,
+      "yyyp_sell": 31.6,
+      "steam_sell": 26.12,
+      "anchor": 26.12,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 16.71,
+          "sell": 31.6,
+          "spread": 14.89,
+          "spread_pct": 89.11,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 26.12,
+          "reject": "价差 89% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 16.71,
+          "sell": 26.12,
+          "spread": 9.41,
+          "spread_pct": 56.31,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 26.12,
+          "reject": "价差 56% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "P2000 | Panther Camo (Factory New)",
+      "name": "P2000 | 豹纹迷彩 (崭新出厂)",
+      "buff_sell": 21.83,
+      "yyyp_sell": 38.8,
+      "steam_sell": 64.26,
+      "anchor": 38.8,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 21.83,
+          "sell": 38.8,
+          "spread": 16.97,
+          "spread_pct": 77.74,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 38.8,
+          "reject": "价差 78% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 21.83,
+          "sell": 64.26,
+          "spread": 42.43,
+          "spread_pct": 194.37,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 38.8,
+          "reject": "价差 194% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "P250 | Mint Kimono (Field-Tested)",
+      "name": "P250 | 日式薄荷涂装 (久经沙场)",
+      "buff_sell": 29.36,
+      "yyyp_sell": 57.46,
+      "steam_sell": 65.78,
+      "anchor": 57.46,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 29.36,
+          "sell": 57.46,
+          "spread": 28.1,
+          "spread_pct": 95.71,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 57.46,
+          "reject": "价差 96% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 29.36,
+          "sell": 65.78,
+          "spread": 36.42,
+          "spread_pct": 124.05,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 57.46,
+          "reject": "价差 124% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "PP-Bizon | Forest Leaves (Minimal Wear)",
+      "name": "PP-野牛 | 森林之叶 (略有磨损)",
+      "buff_sell": 24.89,
+      "yyyp_sell": 38.88,
+      "steam_sell": 43.78,
+      "anchor": 38.88,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 24.89,
+          "sell": 38.88,
+          "spread": 13.99,
+          "spread_pct": 56.21,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 38.88,
+          "reject": "价差 56% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 24.89,
+          "sell": 43.78,
+          "spread": 18.89,
+          "spread_pct": 75.89,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 38.88,
+          "reject": "价差 76% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "SCAR-20 | Brass (Field-Tested)",
+      "name": "SCAR-20 | 黄铜 (久经沙场)",
+      "buff_sell": 479.0,
+      "yyyp_sell": 718.65,
+      "steam_sell": 734.43,
+      "anchor": 718.65,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 479.0,
+          "sell": 718.65,
+          "spread": 239.65,
+          "spread_pct": 50.03,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 718.65,
+          "reject": "价差 50% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 479.0,
+          "sell": 734.43,
+          "spread": 255.43,
+          "spread_pct": 53.33,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 718.65,
+          "reject": "价差 53% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "★ Kukri Knife | Urban Masked (Factory New)",
+      "name": "廓尔喀刀（★） | 都市伪装 (崭新出厂)",
+      "buff_sell": 900.0,
+      "yyyp_sell": 1549.9,
+      "steam_sell": 1469.02,
+      "anchor": 1469.02,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 900.0,
+          "sell": 1549.9,
+          "spread": 649.9,
+          "spread_pct": 72.21,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 1469.02,
+          "reject": "价差 72% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 900.0,
+          "sell": 1469.02,
+          "spread": 569.02,
+          "spread_pct": 63.22,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 1469.02,
+          "reject": "价差 63% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "SG 553 | Triarch (Factory New)",
+      "name": "SG 553 | 三巨头 (崭新出厂)",
+      "buff_sell": 21.73,
+      "yyyp_sell": 35.49,
+      "steam_sell": 53.95,
+      "anchor": 35.49,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 21.73,
+          "sell": 35.49,
+          "spread": 13.76,
+          "spread_pct": 63.32,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 35.49,
+          "reject": "价差 63% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 21.73,
+          "sell": 53.95,
+          "spread": 32.22,
+          "spread_pct": 148.27,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 35.49,
+          "reject": "价差 148% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "XM1014 | Bone Machine (Minimal Wear)",
+      "name": "XM1014 | 碾骨机 (略有磨损)",
+      "buff_sell": 79.5,
+      "yyyp_sell": 123.7,
+      "steam_sell": 121.18,
+      "anchor": 121.18,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 79.5,
+          "sell": 123.7,
+          "spread": 44.2,
+          "spread_pct": 55.6,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 121.18,
+          "reject": "价差 56% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 79.5,
+          "sell": 121.18,
+          "spread": 41.68,
+          "spread_pct": 52.43,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 121.18,
+          "reject": "价差 52% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "P2000 | Grassland Leaves (Field-Tested)",
+      "name": "P2000 | 草原落叶 (久经沙场)",
+      "buff_sell": 41.43,
+      "yyyp_sell": 72.6,
+      "steam_sell": 62.8,
+      "anchor": 62.8,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 41.43,
+          "sell": 72.6,
+          "spread": 31.17,
+          "spread_pct": 75.24,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 62.8,
+          "reject": "价差 75% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 41.43,
+          "sell": 62.8,
+          "spread": 21.37,
+          "spread_pct": 51.58,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 62.8,
+          "reject": "价差 52% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Nova | Plume (Minimal Wear)",
+      "name": "新星 | 风卷残云 (略有磨损)",
+      "buff_sell": 10.72,
+      "yyyp_sell": 17.88,
+      "steam_sell": 16.44,
+      "anchor": 16.44,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 10.72,
+          "sell": 17.88,
+          "spread": 7.16,
+          "spread_pct": 66.79,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 16.44,
+          "reject": "价差 67% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 10.72,
+          "sell": 16.44,
+          "spread": 5.72,
+          "spread_pct": 53.36,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 16.44,
+          "reject": "价差 53% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Dual Berettas | Urban Shock (Factory New)",
+      "name": "双持贝瑞塔 | 都市冲击 (崭新出厂)",
+      "buff_sell": 39.98,
+      "yyyp_sell": 63.89,
+      "steam_sell": 74.89,
+      "anchor": 63.89,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 39.98,
+          "sell": 63.89,
+          "spread": 23.91,
+          "spread_pct": 59.8,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 63.89,
+          "reject": "价差 60% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 39.98,
+          "sell": 74.89,
+          "spread": 34.91,
+          "spread_pct": 87.32,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 63.89,
+          "reject": "价差 87% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "FAMAS | Neural Net (Factory New)",
+      "name": "法玛斯 | 神经网 (崭新出厂)",
+      "buff_sell": 33.68,
+      "yyyp_sell": 52.59,
+      "steam_sell": 77.31,
+      "anchor": 52.59,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 33.68,
+          "sell": 52.59,
+          "spread": 18.91,
+          "spread_pct": 56.15,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 52.59,
+          "reject": "价差 56% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 33.68,
+          "sell": 77.31,
+          "spread": 43.63,
+          "spread_pct": 129.54,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 52.59,
+          "reject": "价差 130% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "P2000 | Woodsman (Minimal Wear)",
+      "name": "P2000 | 林间猎者 (略有磨损)",
+      "buff_sell": 150.99,
+      "yyyp_sell": 233.56,
+      "steam_sell": 230.0,
+      "anchor": 230.0,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 150.99,
+          "sell": 233.56,
+          "spread": 82.57,
+          "spread_pct": 54.69,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 230.0,
+          "reject": "价差 55% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 150.99,
+          "sell": 230.0,
+          "spread": 79.01,
+          "spread_pct": 52.33,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 230.0,
+          "reject": "价差 52% 超出合理上限"
+        }
+      ]
+    },
+    {
+      "hash_name": "Sawed-Off | Mosaico (Minimal Wear)",
+      "name": "截短霰弹枪 | 马赛克 (略有磨损)",
+      "buff_sell": 38.55,
+      "yyyp_sell": 86.45,
+      "steam_sell": 73.49,
+      "anchor": 73.49,
+      "routes": [
+        {
+          "route": "BUFF→悠悠",
+          "buy": 38.55,
+          "sell": 86.45,
+          "spread": 47.9,
+          "spread_pct": 124.25,
+          "can_cash": true,
+          "note": "悠悠可提现，是真正可执行的搬砖方向",
+          "anchor": 73.49,
+          "reject": "价差 124% 超出合理上限"
+        },
+        {
+          "route": "BUFF→Steam",
+          "buy": 38.55,
+          "sell": 73.49,
+          "spread": 34.94,
+          "spread_pct": 90.64,
+          "can_cash": false,
+          "note": "Steam 余额不可直接提现，仅作价差参考",
+          "anchor": 73.49,
+          "reject": "价差 91% 超出合理上限"
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "n_undervalued": 30,
+    "n_arbitrage": 30,
+    "n_suspicious": 30,
+    "n_summary": 5035,
+    "n_boards": 4838
+  }
+}
