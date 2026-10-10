@@ -402,8 +402,16 @@ function comboChart(series, totalCost) {
   });
   if (cur && cur.pts.length > 1) segs.push(cur);
   segs.forEach(function (seg) {
-    ddArea += '<path d="' + seg.pts.join(' ') + 'L' + seg.pts[seg.pts.length - 1].split(',')[0] + ',' + seg.top +
-              'L' + seg.pts[0].split(',')[1] * 0 + ',' + seg.top + 'Z" fill="var(--rise)" opacity=".12"/>';
+    /* 2026-10-10 修复回撤区闭合坐标：
+       旧版两个闭合点都解析错了 —— pts 元素形如 'L123.4,56.7' / 'M12.3,45.6'，
+       ① seg.pts[last].split(',')[0] 取到 'L123.4'（带命令前缀，靠 SVG 容错侥幸画对）；
+       ② seg.pts[0].split(',')[1] * 0 取到 **y 值**乘 0 → x 恒为 0，回撤多边形被
+         强行横跨到 SVG 左边缘，nonzero 填充叠加出横跨半个图的黑斑（截图实锤）。
+       现在显式 slice(1) 去掉命令前缀再取 x。 */
+    var startXY = seg.pts[0].slice(1).split(',');
+    var lastXY = seg.pts[seg.pts.length - 1].slice(1).split(',');
+    ddArea += '<path d="' + seg.pts.join(' ') + 'L' + lastXY[0] + ',' + seg.top +
+              'L' + startXY[0] + ',' + seg.top + 'Z" fill="var(--rise)" opacity=".12"/>';
   });
 
   /* 均线 polyline（跳过 null 前段） */
