@@ -3303,7 +3303,8 @@ async function fetchCS2News() {
       url: n.url || 'https://steamcommunity.com/app/730/',
       date: new Date(n.date * 1000),
       source: n.source || 'Steam',
-      type: 'news' }; });
+      type: 'news',
+      impact: n.impact || null }; });
   } catch(e) {}
   return [];
 }
@@ -3318,7 +3319,8 @@ async function fetchCS2Updates() {
       url: n.url || 'https://store.steampowered.com/news/app/730',
       date: new Date(n.date * 1000),
       source: n.source || 'CS2',
-      type: 'update' }; });
+      type: 'update',
+      impact: n.impact || null }; });
   } catch(e) {}
   return [];
 }
@@ -3468,11 +3470,14 @@ function renderNewsTab(tab) {
       var isUpdate = n.type === 'update';
       var srcLabel = isUpdate ? '更新' : '新闻';
       var srcColor = isUpdate ? 'var(--brand)' : 'var(--blue)';
-      // 关键词分类利好利空
-      var sentiment = classifyNews(n.title,n.body);
-      if(sentiment==='bull') sentiment='<span style="color:var(--fall);font-size:10px;padding:2px 6px;background:rgba(74,222,128,.12);border-radius:4px">▲ 利好</span>';
-      else if(sentiment==='bear') sentiment='<span style="color:var(--rise);font-size:10px;padding:2px 6px;background:rgba(248,113,113,.12);border-radius:4px">▼ 利空</span>';
-      else sentiment='';
+      // 利好利空：优先 AI 逐条研判结论（回填在 n.impact.sentiment），
+      // 缺失时退回关键词兜底（classifyNews）。颜色对齐设计系统：涨=红(--rise)/跌=绿(--fall)
+      var sRaw = (n.impact && n.impact.sentiment) || classifyNews(n.title, n.body);
+      var sReason = (n.impact && n.impact.reason) ? n.impact.reason : '';
+      var sentiment;
+      if (sRaw === 'bull') sentiment = '<span style="color:var(--rise);font-size:10px;padding:2px 6px;background:rgba(248,113,113,.12);border-radius:4px" title="'+esc(sReason)+'">▲ 利好</span>';
+      else if (sRaw === 'bear') sentiment = '<span style="color:var(--fall);font-size:10px;padding:2px 6px;background:rgba(74,222,128,.12);border-radius:4px" title="'+esc(sReason)+'">▼ 利空</span>';
+      else sentiment = '';
       var tm = n.date.toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
       html += '<div class="news-card" onclick="window.open(\''+esc(n.url||'')+'\',\'_blank\')">'+
         '<span class="nc-source" style="color:'+srcColor+'">'+esc(srcLabel)+' '+sentiment+'</span>'+
