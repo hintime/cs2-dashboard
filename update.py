@@ -2420,55 +2420,37 @@ def generate_ai_market_insight():
         print(f'[AI] Market insight failed: {e}')
 
 def generate_ai_news_impact():
-    """AI 空投监控 — 解读 CS2 最新公告对饰品市场的影响。
+    """AI 空投监控 — 逐条研判 CS2 公告/新闻对饰品二级市场的利好/利空，并回写 news.json 每条。
 
-    2026-09-26 透彻化（义轩：分析要透彻）：只喂"标题+100字"必然产出空话。
-    现在喂公告全文 + 统计引擎算好的市场事实，要求 AI 逐条公告分析、
-    每条结论必须引用具体数字/点名具体饰品，禁写"提升游戏热度"式空话。
-    红线：数字全部来自喂入的统计，AI 只做组织。
+    2026-10-10 改（义轩选方案C「最准」）：
+    - 不再只喂前 3 条做一段空话，而是把 news.json 全部条目（按序编号）一次性交给
+      glm-4-flash，要求返回结构化 JSON：每条 {idx, sentiment(bull/bear/neutral), reason, categories}。
+    - 解析后把 verdict 回写进每条 news 项的 `impact` 字段（news 与 updates 共享同一批 dict 对象，
+      故两处都会带上），前端资讯卡直接读 n.impact 渲染，不再用关键词 classifyNews 兜底误判。
+    - 仍是 1 次 glm-4-flash 调用（批量判全量），免费额度内。
+    红线：sentiment 仅取 bull/bear/neutral；reason 必须来自公告内容，AI 不得编造市场结论。
     """
     if not _ai_provider_ready(quality=False): return
     try:
         news_path = os.path.join(DATA_DIR, 'news.json')
         if not os.path.exists(news_path): return
         news_data = read_json(news_path)
-        news_items = (news_data.get('announcements', []) or news_data.get('news', []) or news_data) if isinstance(news_data, dict) else news_data
-        if isinstance(news_items, list):
-            items = news_items[:3]
-        elif isinstance(news_items, dict):
-            items = list(news_items.values())[:3]
-        else:
-            return
-        if not items: return
-        # 公告全文（深度优先于广度：3 条 × 800 字）
-        headlines = []
-        for n in items:
+        items = (news_data.get('announcements', []) or news_data.get('news', []) or news_data) if isinstance(news_data, dict) else news_data
+        if not isinstance(items, list) or not items: return
+        # 按序编号 + 截取正文，构造给 AI 的清单（全量逐条，不再只取前 3）
+        payload = []
+        for i, n in enumerate(items):
             if isinstance(n, dict):
-                title = n.get('title', '') or n.get('headline', '')
-                body = (n.get('contents', '') or n.get('body', '') or '')[:800]
-                headlines.append(f"- {title}\n  正文：{body}")
-            elif isinstance(n, str):
-                headlines.append(f"- {n[:400]}")
-        if not headlines: return
-        news_text = '\n'.join(headlines)
+                title = (n.get('title', '') or n.get('headline', ''))[:120]
+                body = (n.get('contents', '') or n.get('body', '') or '')[:300]
+            else:
+                title, body = str(n)[:120], ''
+            if not title and not body:
+                continue
+            payload.append({'idx': i, 'title': title, 'body': body})
+        if not payload: return
 
-        # 市场事实（统计引擎算好，AI 只引用）
-        scan = read_json(os.path.join(DATA_DIR, 'market_scan.json')) or {}
-        movers = scan.get('movers', {}) or {}
-        gainers = movers.get('gainers', [])[:5]
-        losers = movers.get('losers', [])[:5]
-        tiers = scan.get('tiers', {})
-        tiers_text = '，'.join('%s元:%s件' % (k, v) for k, v in tiers.items())
-        gainer_text = '；'.join([g.get('n','')[:22] + ' 7日' + ('+' if float(g.get('r7',0) or 0) >= 0 else '') + str(g.get('r7','')) + '%(现价¥' + str(g.get('p','')) + ')' for g in gainers])
-        loser_text = '；'.join([l.get('n','')[:22] + ' 7日' + str(l.get('r7','')) + '%(现价¥' + str(l.get('p','')) + ')' for l in losers])
-        dr = read_json(os.path.join(DATA_DIR, 'daily_report.json')) or {}
-        pf = dr.get('portfolio', {}) or {}
-        pnl = pf.get('pnl', 0); pnl_pct = pf.get('pnl_pct', 0); cnt = pf.get('count', 0)
-        held_txt = '持仓%d件，浮动盈亏%+.2f元(%+.2f%%)' % (cnt, pnl, pnl_pct) if cnt else '无持仓数据'
-
-        # 历史先验（事件研究，2026-09-26）：把"公告日效应"的真实统计喂给 AI，给判断定性
-        # ⚠ 实测 glm-4-flash 会改写数字（把 -1.03%/-7.06% 复述成 -1.28%/-2.28%）→
-        #   数字用竖线极简格式锚定，并要求逐字复制；前端另有 Python 真数字展示兜底。
+        # 历史先验（事件研究真数字，给判断定性；缺失则如实说明）
         es = read_json(os.path.join(DATA_DIR, 'event_study.json')) or {}
         es_sum = es.get('summary') or {}
         if es_sum.get('n_events'):
@@ -2476,57 +2458,98 @@ def generate_ai_news_impact():
             for _n in (3, 7, 14):
                 _k = 'ret_%dd' % _n
                 if es_sum.get(_k):
-                    _parts.append('%d日=【事件%s%% 基准%s%% 超额%s%%】' % (
-                        _n, es_sum[_k].get('event_mean'), es_sum[_k].get('baseline_mean'),
-                        es_sum[_k].get('excess')))
-            prior_txt = ('【历史先验·数字必须逐字复制，不得改写或四舍五入｜事件N=%s 标的池≈%s件】%s。%s' % (
-                es_sum['n_events'], es_sum.get('n_pool', 0), '；'.join(_parts),
-                es_sum.get('verdict', '')))
+                    _parts.append('%d日=事件%s%%/基准%s%%/超额%s%%' % (
+                        _n, es_sum[_k].get('event_mean'), es_sum[_k].get('baseline_mean'), es_sum[_k].get('excess')))
+            prior_txt = '【历史先验·数字必须逐字复制不得改写｜事件N=%s 标的池≈%s件】%s。%s' % (
+                es_sum['n_events'], es_sum.get('n_pool', 0), '；'.join(_parts), es_sum.get('verdict', ''))
         else:
-            prior_txt = '【历史先验】暂无（事件研究未生成或有效样本为 0）——本次判断缺乏历史数据支撑，必须如实说明，不得虚构历史数字。'
+            prior_txt = '【历史先验】暂无有效样本——本次判断缺乏历史支撑，必须如实说明，不得虚构数字。'
 
+        list_text = '\n'.join('%d. [%s] %s' % (p['idx'], p['title'], p['body']) for p in payload)
         prompt = (
-            '你是CS2饰品市场分析师。以下是 Steam CS2 最新公告全文，以及统计引擎算好的当前市场事实与历史先验。\n'
-            '【公告】\n%s\n\n'
-            '【市场事实（写作时必须直接引用，不得编造或改动数字）】\n'
-            '- 全市场 %d 件，均价 ¥%.2f，中位价 ¥%.2f，价格分布：%s\n'
-            '- 7日涨幅TOP：%s\n'
-            '- 7日跌幅TOP：%s\n'
-            '- %s\n'
-            '%s\n\n'
-            '请逐条公告深度分析（每条公告独立一小节），每节必须：\n'
-            '1) 核心影响：结合公告具体内容说明影响什么品类\n'
-            '2) 利好：点名涨幅榜里符合该主题的具体饰品及其真实涨幅数字\n'
-            '3) 利空：点名跌幅榜里可能受压的具体饰品及其真实跌幅数字\n'
-            '4) 持仓参考：结合当前浮动盈亏给一句可执行建议\n'
-            '5) 历史对照：必须**逐字复制**历史先验【】里的数字（例如"7日=【事件-1.03%% 基准-7.06%% 超额+6.03%%】"就照抄这三组数字，不得改写/四舍五入/自行合并），'
-            '再据此标注本次判断的历史支撑强度（强/弱/无）；不得只写"缺乏数据"而不引数字\n'
-            '禁止写"提升游戏热度""关注后续"之类不落地的话；公告与饰品市场无关的部分直接说明无直接影响。总计 500 字以内。'
-        ) % (news_text, scan.get('total', 0), scan.get('avg_p', 0), scan.get('median_p', 0),
-             tiers_text, gainer_text, loser_text, held_txt, prior_txt)
+            '你是 CS2 饰品二级市场分析师。以下是 Steam CS2 最新公告/新闻清单（已按序编号）。\n'
+            '请逐条研判每条对 CS2 饰品二级市场（皮肤/武器箱/探员/印花/收藏品）的实际影响，\n'
+            '按对市场的利好利空判定 sentiment，并给一句可落地的理由。\n\n'
+            '【公告清单】\n%s\n\n'
+            '【历史先验】%s\n\n'
+            '严格只返回如下 JSON（不要任何解释/前言/代码块标记）：\n'
+            '{\n'
+            '  "summary": "总体一句话研判（≤80字，可直接引用上面的历史数字）",\n'
+            '  "items": [\n'
+            '    {"idx": 0, "sentiment": "bull|bear|neutral", "reason": "≤40字理由，点名具体品类/饰品", "categories": ["武器箱"]},\n'
+            '    ...\n'
+            '  ]\n'
+            '}\n'
+            '规则：\n'
+            '1) sentiment 仅限 bull(利好)/bear(利空)/neutral(中性)；纯技术更新、与饰品市场无关、信息不足判 neutral。\n'
+            '2) items 必须按 idx 与上面清单一一对应，逐条返回，不得遗漏/合并/改 idx。\n'
+            '3) reason 必须基于该条公告内容，禁止编造市场结论或数字；categories 用中文品类词（武器箱/探员/印花/收藏品/地图/赛事 等）。\n'
+            '4) 只输出 JSON。'
+        ) % (list_text, prior_txt)
 
-        stats = {
-            'total': scan.get('total', 0), 'avg_p': scan.get('avg_p', 0), 'median_p': scan.get('median_p', 0),
-            'tiers': tiers, 'gainers': gainers, 'losers': losers,
-            'portfolio': {'count': cnt, 'pnl': pnl, 'pnl_pct': pnl_pct}
-        }
         data = json.dumps({
             'model': 'glm-4-flash',
             'messages': [{'role': 'user', 'content': prompt}],
-            'max_tokens': 1500, 'temperature': 0.4
+            'max_tokens': 2000, 'temperature': 0.3
         }).encode('utf-8')
-        r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=60)
-        impact = r['choices'][0]['message']['content'].strip()
+        r = _ai_post(json.loads(data.decode('utf-8')), quality=False, timeout=90)
+        raw = r['choices'][0]['message']['content'].strip()
+
+        # ── 解析 JSON（兼容 ```json 代码块 / 前后多余文字）──
+        verdicts = {}
+        summary = ''
+        try:
+            _t = raw
+            if '```' in _t:
+                _t = _t.split('```', 2)[1]
+                if _t.startswith('json'): _t = _t[4:]
+            _t = _t.strip()
+            if not _t.startswith('{'):
+                _s = _t.find('{'); _e = _t.rfind('}')
+                if _s >= 0 and _e > _s: _t = _t[_s:_e + 1]
+            obj = json.loads(_t)
+            summary = (obj.get('summary') or '').strip()
+            for it in (obj.get('items') or []):
+                try:
+                    idx = int(it.get('idx'))
+                    s = str(it.get('sentiment', '')).strip().lower()
+                    if s not in ('bull', 'bear', 'neutral'): s = 'neutral'
+                    verdicts[idx] = {
+                        'sentiment': s,
+                        'reason': str(it.get('reason', '') or '').strip()[:80],
+                        'categories': [str(c) for c in (it.get('categories') or [])][:4],
+                        'model': 'glm-4-flash',
+                    }
+                except Exception:
+                    continue
+        except Exception as _e:
+            print(f'[AI] News impact JSON 解析失败，降级为关键词: {_e}', file=sys.stderr)
+
+        # ── 回写 news.json 每条 impact（news 与 updates 共享同一批 dict，两处都带上）──
+        written = 0
+        for idx, v in verdicts.items():
+            if 0 <= idx < len(items):
+                if isinstance(items[idx], dict):
+                    items[idx]['impact'] = v
+                    written += 1
+        if written:
+            write_json(news_path, news_data)
+            dirty_files.add('news.json')
+
         result = {
             'date': time.strftime('%Y-%m-%d %H:%M'),
-            'impact': impact,
-            'headlines': [h.split('\n')[0][:80] for h in headlines],
-            'stats': stats
+            'impact': summary or ('已逐条研判 %d 条新闻，详见各资讯卡' % written),
+            'items': [{'idx': k, 'sentiment': verdicts[k]['sentiment'],
+                       'reason': verdicts[k]['reason'], 'categories': verdicts[k]['categories']}
+                      for k in sorted(verdicts.keys())],
+            'stats': {'judged': written, 'total': len(payload)},
         }
         write_json(os.path.join(DATA_DIR, 'ai_news_impact.json'), result)
-        print(f'[AI] News impact generated ({len(impact)} chars)')
+        dirty_files.add('ai_news_impact.json')
+        print(f'[AI] News impact: 逐条研判 {written}/{len(payload)} 条，summary {len(summary)} 字')
     except Exception as e:
         print(f'[AI] News impact failed: {e}')
+
 
 def _get_tracking_feedback():
     """从追踪数据分析中获取教训，注入推荐Prompt"""
