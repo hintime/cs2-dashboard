@@ -3357,6 +3357,9 @@ def sync_changelog():
        读法：`git log origin/main`，本地没有该 ref 时回退到 HEAD。
     """
     import subprocess as _sp
+    # 2026-10-10 义轩问「为什么一直都是20条」→ 上限 20→100（页面本身无限制，是这里截断的）。
+    #   100 条约 25KB，对加载无感；有效提交密度约 1~5 条/天，100 条 ≈ 最近 1~2 个月真改动。
+    _CL_MAX = 100
     try:
         cf = _sp.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
 
@@ -3374,15 +3377,14 @@ def sync_changelog():
         if ref == 'HEAD':
             print('[CL] origin/main 不可用，退回本地 HEAD（收录范围会偏窄）')
 
-        # ⚠ 扫 800 条（不是 300）：数据刷新提交密度极高 ——
-        #   实测 2026-10-07 一天就87 条（86 条 wip/chore + 1 条 feat），
-        #   扫 300 条**只够今天一天**，前几天的真改动全被挤出窗口。
-        #   800 条约覆盖 1~2 周，能保证「最近 20 条有效提交」跨到上周。
-        r = _sp.run(['git', 'log', '--date=short', '--format=%h|%ad|%s', '-800', ref],
+        # ⚠ 扫 3000 条（原 800 配 20 条上限）：有效提交密度约 1~5 条/天，噪音占 95%+，
+        #   上限放大到 100 条后，800 条扫描窗只够 1~2 周、凑不满 100 条，故加深到 3000
+        #   （约覆盖最近 1~2 个月；shallow clone 时 git log 有多少给多少，不会报错）。
+        r = _sp.run(['git', 'log', '--date=short', '--format=%h|%ad|%s', '-3000', ref],
                     capture_output=True, text=True, encoding='utf-8', cwd=DATA_DIR, creationflags=cf)
         if r.returncode != 0 or not r.stdout.strip():
             if ref != 'HEAD':
-                r = _sp.run(['git', 'log', '--date=short', '--format=%h|%ad|%s', '-800', 'HEAD'],
+                r = _sp.run(['git', 'log', '--date=short', '--format=%h|%ad|%s', '-3000', 'HEAD'],
                             capture_output=True, text=True, encoding='utf-8', cwd=DATA_DIR, creationflags=cf)
             if r.returncode != 0 or not r.stdout.strip():
                 return
@@ -3440,14 +3442,14 @@ def sync_changelog():
                 'title': t_short,
                 'desc': t_desc,
             })
-            # ── ③ 数量：取够 20 条「有效」提交就停 ──
-            if len(entries) >= 20:
+            # ── ③ 数量：取够 _CL_MAX 条「有效」提交就停 ──
+            if len(entries) >= _CL_MAX:
                 break
 
         if entries:
             changelog_path = os.path.join(DATA_DIR, 'changelog.json')
-            write_json(changelog_path, entries[:20])  # 最多20条
-            print(f'[CHANGELOG] Auto-generated {len(entries[:20])} entries')
+            write_json(changelog_path, entries[:_CL_MAX])  # 最多 _CL_MAX 条
+            print(f'[CHANGELOG] Auto-generated {len(entries[:_CL_MAX])} entries')
     except Exception as e:
         print(f'[CHANGELOG] Failed: {e}', file=sys.stderr)
 
