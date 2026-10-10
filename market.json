@@ -1,11 +1,11 @@
 {
   "index": {
-    "latest": 727.78,
-    "change": -27.22,
-    "change_pct": -27.22,
-    "market_value": 223396586.14,
-    "total_items": 3444,
-    "updated": "2026-10-10T08:00:03+08:00",
+    "latest": 744.38,
+    "change": -25.56,
+    "change_pct": -25.56,
+    "market_value": 228490223.69,
+    "total_items": 3509,
+    "updated": "2026-10-10T10:00:03+08:00",
     "ohlc": [
       {
         "date": "2026-08-08",
@@ -4494,6 +4494,14 @@
         "close": 727.78,
         "high": 738.45,
         "low": 727.78
+      },
+      {
+        "date": "2026-10-10",
+        "dateFull": "2026-10-10 10:00",
+        "open": 744.38,
+        "close": 744.38,
+        "high": 744.38,
+        "low": 744.38
       }
     ],
     "volBar": [],
@@ -13465,12 +13473,20 @@
         "index": 727.78,
         "change_pct": -27.22,
         "market_value": 223396586.14
+      },
+      {
+        "time": "10:00",
+        "date": "2026-10-10",
+        "timestamp": 1791597602,
+        "index": 744.38,
+        "change_pct": -25.56,
+        "market_value": 228490223.69
       }
     ],
     "selling": {
-      "total_selling": 1306132,
+      "total_selling": 1321761,
       "total_selling_prev": 0,
-      "total_selling_delta": 1306132,
+      "total_selling_delta": 1321761,
       "total_selling_delta_pct": 0
     },
     "trending": {
@@ -13478,7 +13494,7 @@
       "cold": []
     }
   },
-  "index_updated": 1791590403466,
+  "index_updated": 1791597603056,
   "alerts": [
     {
       "name": "Dual Berettas | Heist (Factory New)",
@@ -32387,7 +32403,7 @@
     "Name Tag",
     "Negev | Boroque Sand (Factory New)"
   ],
-  "updated": "2026-10-10T01:38:39Z",
+  "updated": "2026-10-10T02:38:12Z",
   "steam_market_items": 0,
   "steam_market_recs": {
     "momentum": [],
