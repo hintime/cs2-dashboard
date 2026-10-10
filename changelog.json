@@ -2,6 +2,54 @@
   {
     "date": "2026-10-10",
     "tag": "fix",
+    "scope": "backtest",
+    "sha": "f15c21a",
+    "title": "组合市值大图黑斑真凶——主线 path 缺 fill=none 致 SVG 默认黑填充+自动闭合弦(07-13峰值后整块糊黑)，上轮 ddArea 修复非主因",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "",
+    "sha": "54a10c8",
+    "title": "data(changelog): 100 条有效提交（2026-10-10 → 09-26）",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "changelog",
+    "sha": "a835533",
+    "title": "全部条目上限 20→100（义轩问为什么一直20条），扫描窗 800→3000 保证凑满",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "",
+    "sha": "1891f41",
+    "title": "data(news): 逐条研判结果(12/12) + 总体一句话研判",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "",
+    "sha": "610e428",
+    "title": "data(news): AI 逐条研判已回填每条 impact(利好/利空/理由)，供资讯卡直接渲染",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "news",
+    "sha": "8eee14c",
+    "title": "方案C——AI 逐条研判回填 news.json 每条 impact(利好/利空/理由/品类)，前端读 n.impact 渲染并修正红涨绿跌配色；Kronos",
+    "desc": "预测漏跑自检留痕；summary 模板占位兜底"
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
     "scope": "news",
     "sha": "f829d1a",
     "title": "资讯卡改读 AI 逐条研判(n.impact.sentiment)，修正利好红色/利空绿色配色，理由作悬停提示",
@@ -749,54 +797,6 @@
     "scope": "kronos",
     "sha": "6d4b07c",
     "title": "更正微调门槛口径为窗口561步 + 记录 B 方案落地",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "scope": "kronos",
-    "sha": "816291f",
-    "title": "update.py Windows 路径改按存在性探测(消除 C/E 盘分叉) + 纳入 news_history.json [api-push]",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "fix",
-    "scope": "kronos",
-    "sha": "5101fd2",
-    "title": "update.py Windows 路径改按存在性探测(消除 C/E 盘分叉) + 纳入 news_history.json",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "feat",
-    "scope": "news",
-    "sha": "6c242bc",
-    "title": "历史先验数字逐字锚定(防flash改写) + 5条历史对照要求",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "feat",
-    "scope": "event-study",
-    "sha": "edbdfbe",
-    "title": "事件研究实现(同批对比+同期基准+stale过滤+公告缓存回退)",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "feat",
-    "scope": "news",
-    "sha": "b05f674",
-    "title": "资讯中心展示历史先验真数字(与AI叙述分离)",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "feat",
-    "scope": "news",
-    "sha": "47bf5a8",
-    "title": "AI空投监控接入历史先验(逐字锚定数字)",
     "desc": ""
   }
 ]
