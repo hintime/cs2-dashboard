@@ -1,5 +1,53 @@
 [
   {
+    "date": "2026-10-11",
+    "tag": "feat",
+    "scope": "opportunity",
+    "sha": "f132d33",
+    "title": "机会扫描页 + 捡漏/套利/流动性引擎",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "feat",
+    "scope": "",
+    "sha": "cff44bb",
+    "title": "multi-horizon forecast (7/14/30d) + portfolio risk analysis",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "feat",
+    "scope": "forecast",
+    "sha": "a8d5499",
+    "title": "show Kronos confidence interval + multi-horizon comparison",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "holdings",
+    "sha": "9d25efa",
+    "title": "load Kronos forecast on entering holdings/recommend view",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "backtest",
+    "sha": "a1ddc65",
+    "title": "fix hover index mapping + add crosshair",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "",
+    "sha": "ec3ba44",
+    "title": "frontend: remove gradient-text + fixed-amber AI-taste violations",
+    "desc": ""
+  },
+  {
     "date": "2026-10-10",
     "tag": "fix",
     "scope": "backtest",
@@ -749,54 +797,6 @@
     "scope": "holdings",
     "sha": "8d76f82",
     "title": "走势图顶部指标条跟随鼠标——悬停联动现价/MA5/MA20/布林带/区间涨跌，移出还原",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "feat",
-    "scope": "holdings",
-    "sha": "3d29b84",
-    "title": "走势图瘦身 + 新增挂单量副图——顶部指标条精简/底部两行合一/图表高度 252→180",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "style",
-    "scope": "revenue",
-    "sha": "09222fa",
-    "title": "口径说明重做——六条结构化清单替代裸文本",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "feat",
-    "scope": "holdings",
-    "sha": "82c4532",
-    "title": "走势图重做——右侧价格轴/十字光标/可点图例/区间切换",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "style",
-    "scope": "holdings",
-    "sha": "8e5aa48",
-    "title": "详情区取消面板内滚动，改为整段自然高度撑开",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "docs",
-    "scope": "kronos",
-    "sha": "5dfde9a",
-    "title": "更正 CPU 基线实测值 + 补记 CUDA 落地/口径部署/上游缺陷修复",
-    "desc": ""
-  },
-  {
-    "date": "2026-09-26",
-    "tag": "docs",
-    "scope": "kronos",
-    "sha": "6d4b07c",
-    "title": "更正微调门槛口径为窗口561步 + 记录 B 方案落地",
     "desc": ""
   }
 ]
