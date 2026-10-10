@@ -2,6 +2,22 @@
   {
     "date": "2026-10-10",
     "tag": "fix",
+    "scope": "status",
+    "sha": "b9643da",
+    "title": "timeline used buff_recent.json (12h mini) instead of buff_history.json -> span a",
+    "desc": "lways 0 days"
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
+    "scope": "backtest",
+    "sha": "60655cc",
+    "title": "drawdown area closure coords (x=0 bug caused giant black blob)",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
     "scope": "",
     "sha": "f147391",
     "title": "redesign: header brand mark + wordmark (no gradient/glow), favicon neutral rings",
@@ -141,22 +157,6 @@
     "scope": "batch-B",
     "sha": "b4602a7",
     "title": "kronos_forecast.py — pipeline/repo hygiene fixes (2026-10-09)",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-09",
-    "tag": "fix",
-    "scope": "batch-B",
-    "sha": "27665c6",
-    "title": "build_kline.py — pipeline/repo hygiene fixes (2026-10-09)",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-09",
-    "tag": "fix",
-    "scope": "batch-B",
-    "sha": "0b6ada6",
-    "title": "eco_catalog.py — pipeline/repo hygiene fixes (2026-10-09)",
     "desc": ""
   }
 ]
