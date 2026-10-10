@@ -2,6 +2,14 @@
   {
     "date": "2026-10-10",
     "tag": "fix",
+    "scope": "",
+    "sha": "f147391",
+    "title": "redesign: header brand mark + wordmark (no gradient/glow), favicon neutral rings",
+    "desc": ""
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
     "scope": "name_map",
     "sha": "f1effc2",
     "title": "Windows 本机不再推送 name_map.json / name_map_ui.json（服务器为权威源）",
@@ -149,14 +157,6 @@
     "scope": "batch-B",
     "sha": "0b6ada6",
     "title": "eco_catalog.py — pipeline/repo hygiene fixes (2026-10-09)",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-09",
-    "tag": "fix",
-    "scope": "batch-B",
-    "sha": "badba12",
-    "title": "recommend.py — pipeline/repo hygiene fixes (2026-10-09)",
     "desc": ""
   }
 ]
