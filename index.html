@@ -9598,6 +9598,16 @@ function hpKronos(idx){
         v = Number(ss[i][1]);
         if (isFinite(v)){ if (v<lo) lo=v; if (v>hi) hi=v; }
       }
+      /* 2026-10-10 置信带：把 ci.band 的 P10/P90 也纳入 y 轴范围，
+         否则置信区间超出预测线时阴影会被裁掉/压扁，读数失真。*/
+      var band = (f.ci && Array.isArray(f.ci.band)) ? f.ci.band : null;
+      if (band) {
+        for (i=0;i<band.length;i++){
+          var b2 = Number(band[i][1]), b3 = Number(band[i][2]);
+          if (isFinite(b2) && b2<lo) lo=b2;
+          if (isFinite(b3) && b3>hi) hi=b3;
+        }
+      }
       if (!isFinite(lo)){ lo = 0; hi = 1; }
       var rng = (hi - lo) || 1;
       function px(i, n){ return (n<=1 ? 0 : (i/(n-1)*VW)).toFixed(1); }
@@ -9611,8 +9621,22 @@ function hpKronos(idx){
       for (i=hl;i<total;i++) fp.push(px(i,total)+','+py(Number(ss[i][1])));
       fp = fp.join(' ');
       var lastX = px(total-1,total), lastY = py(Number(ss[total-1][1]));
+      /* 置信带多边形：预测段横向铺开，上下沿包住预测线。
+         band 的点数应等于预测段点数；不一致时跳过（宁可无带也不画错）。*/
+      var bandSvg = '';
+      if (band && band.length === futPts.length && hl > 0) {
+        var upPts = [], dnPts = [], bi = hl;
+        for (bi=0; bi<band.length; bi++){
+          var bx = px(hl + bi, total);
+          upPts.push(bx + ',' + py(Number(band[bi][2])));
+          dnPts.push(bx + ',' + py(Number(band[bi][1])));
+        }
+        bandSvg = '<polygon fill="'+col+'" fill-opacity=".13" stroke="none" points="'
+          + upPts.join(' ') + ' ' + dnPts.reverse().join(' ') + '"/>';
+      }
       return '<div class="hp-kchart"><svg viewBox="0 0 '+VW+' '+VH+'" preserveAspectRatio="none">'
         + (hp ? '<polyline fill="none" stroke="var(--blue)" stroke-width="1.6" vector-effect="non-scaling-stroke" points="'+hp+'"/>' : '')
+        + bandSvg
         + '<polyline fill="none" stroke="'+col+'" stroke-width="1.6" stroke-dasharray="3 2.5"'
         + ' vector-effect="non-scaling-stroke" points="'+fp+'"/>'
         + '<circle cx="'+lastX+'" cy="'+lastY+'" r="2.6" fill="'+col+'"/>'
@@ -9621,7 +9645,10 @@ function hpKronos(idx){
         + (hp ? '<span><i style="display:inline-block;width:11px;height:2px;background:var(--blue);'
           + 'vertical-align:middle;margin-right:4px"></i>历史 ' + hl + ' 天</span>' : '')
         + '<span><i style="display:inline-block;width:11px;height:0;border-top:2px dashed '+col+';'
-        + 'vertical-align:middle;margin-right:4px"></i>预测（虚线）</span></div>';
+        + 'vertical-align:middle;margin-right:4px"></i>预测（虚线）</span>'
+        + (bandSvg ? '<span><i style="display:inline-block;width:11px;height:8px;background:'+col+';'
+          + 'opacity:.22;vertical-align:middle;margin-right:4px"></i>P10–P90 置信区间</span>' : '')
+        + '</div>';
     })();
 
   box.innerHTML = '<div class="hp-kcard">'
@@ -9641,8 +9668,57 @@ function hpKronos(idx){
     +   '</div></div>'
     + '</div>'
     + chart
+    /* ── 置信区间（2026-10-10 新增）──
+       samples 多次采样的 P10–P90。samples<3 时 n=1，分位数退化等于均值，
+       此时明确标注「采样不足」而不是假装有区间 —— 否则是自欺欺人的置信度。*/
+    + (function(){
+        var ci = f.ci;
+        if (!ci || typeof ci.lo !== 'number' || typeof ci.hi !== 'number') return '';
+        var weak = (ci.n || 0) < 3;
+        var pn = (typeof ci.up_prob === 'number') ? ci.up_prob : null;
+        return '<div style="margin:-2px 0 10px;padding:9px 11px;background:var(--surface2);'
+          + 'border:1px solid var(--border);border-radius:8px">'
+          + '<div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);margin-bottom:6px">'
+          + '模型置信区间'
+          + (weak ? '<span style="color:var(--amber)">· 采样不足（n=' + (ci.n||0) + '），区间仅供参考</span>'
+                  : '<span>· 基于 ' + ci.n + ' 次采样</span>')
+          + '</div>'
+          + '<div style="display:flex;align-items:baseline;gap:10px;font-size:12px">'
+          + '<span style="font-family:DM Mono,monospace">P10 ¥' + ci.lo
+          + '</span><span style="color:var(--text3)">→</span>'
+          + '<span style="font-family:DM Mono,monospace;color:'+col+'">P50 ¥' + (ci.mid != null ? ci.mid : f.forecast) + '</span>'
+          + '<span style="color:var(--text3)">→</span>'
+          + '<span style="font-family:DM Mono,monospace">P90 ¥' + ci.hi + '</span>'
+          + (pn != null ? '<span style="margin-left:auto;color:var(--text3)">上涨概率 '
+              + (pn >= 50 ? '<b style="color:var(--rise)">' + pn + '%</b>'
+                          : '<b style="color:var(--fall)">' + pn + '%</b>') + '</span>' : '')
+          + '</div>'
+          + (ci.disp != null ? '<div style="font-size:10px;color:var(--text3);margin-top:5px">'
+              + '采样离散度 ' + ci.disp + '%（越低越稳定）</div>' : '')
+          + '</div>';
+      })()
+    /* ── 多周期对比（仅当后端跑了多个周期）── */
+    + (function(){
+        var hz = f.horizons;
+        if (!hz || typeof hz !== 'object') return '';
+        var ks = Object.keys(hz).filter(function(k){ return !hz[k] || !hz[k].error; });
+        if (ks.length < 2) return '';
+        ks.sort(function(a,b){ return (+a) - (+b); });
+        var cells = ks.map(function(k){
+          var o = hz[k], p = o.change_pct, u = p >= 0;
+          return '<div class="c"><div class="k">' + k + ' 日后</div>'
+            + '<div class="v" style="color:' + (u ? 'var(--rise)' : 'var(--fall)') + '">'
+            + (u?'+':'') + p + '%</div>'
+            + '<div class="s" style="font-size:10px;color:var(--text3)">¥' + o.forecast
+            + (o.lo != null ? ' (' + o.lo + '–' + o.hi + ')' : '') + '</div></div>';
+        }).join('');
+        return '<div style="margin:0 0 10px"><div style="font-size:10px;color:var(--text3);margin-bottom:5px">'
+          + '多周期对比（同一模型外推，越长周期不确定性越大）</div>'
+          + '<div class="hp-kgrid" style="margin:0">' + cells + '</div></div>';
+      })()
     + '<div class="hp-kfoot">'
-    + '<b>怎么读：</b>虚线是模型对未来 '+days+' 天的外推，不是已发生的价格。<br>'
+    + '<b>怎么读：</b>虚线是模型对未来 '+days+' 天的外推，不是已发生的价格；'
+    + '阴影带是多次采样的 P10–P90 区间，越宽说明模型对该件越没把握。<br>'
     + '<b>局限：</b>Kronos 是金融 K 线基础模型迁移到饰品市场的域外预测，'
     + '对「哪件会涨」的判断没有胜率保证；<b>不参与站内推荐评分，不构成买卖依据</b>。<br>'
     + '<b>覆盖：</b>目前仅推荐池前10 + AI 精选 + 持仓，不是全市场每件都有。'
