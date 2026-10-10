@@ -93,7 +93,11 @@ var t0 = Math.floor(Date.now() / 900000);
     market:     fetch('market.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     holdings:   fetch('holdings.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     ecoTracked: fetch('eco_tracked.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
-    buffHistory:fetch('buff_recent.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
+    /* 2026-10-10 修复：这里原来 fetch 的是 buff_recent.json（只含最近 12 个小时快照的迷你文件），
+       拿它当全量历史算「监控跨度」→ 永远显示「0天·12小时·跨度0天」。
+       正确数据源是 buff_history.json（16 日键 + 24 小时键，09-25 起）。
+       代价：该文件约 4.3MB，但本页是低频诊断页 + 浏览器缓存键 15 分钟窗口 + CF edge cache，可接受。 */
+    buffHistory:fetch('buff_history.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     dataStatus: fetch('data_status.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     marketScan: fetch('market_scan.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
     dailyReport:fetch('daily_report.json?v=' + t0).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
