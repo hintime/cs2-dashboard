@@ -2474,7 +2474,7 @@ def generate_ai_news_impact():
             '【历史先验】%s\n\n'
             '严格只返回如下 JSON（不要任何解释/前言/代码块标记）：\n'
             '{\n'
-            '  "summary": "总体一句话研判（≤80字，可直接引用上面的历史数字）",\n'
+            '  "summary": "（在此写一句话总体研判，必须自己生成、禁止照抄本提示任何示例文字）",\n'
             '  "items": [\n'
             '    {"idx": 0, "sentiment": "bull|bear|neutral", "reason": "≤40字理由，点名具体品类/饰品", "categories": ["武器箱"]},\n'
             '    ...\n'
@@ -2484,7 +2484,8 @@ def generate_ai_news_impact():
             '1) sentiment 仅限 bull(利好)/bear(利空)/neutral(中性)；纯技术更新、与饰品市场无关、信息不足判 neutral。\n'
             '2) items 必须按 idx 与上面清单一一对应，逐条返回，不得遗漏/合并/改 idx。\n'
             '3) reason 必须基于该条公告内容，禁止编造市场结论或数字；categories 用中文品类词（武器箱/探员/印花/收藏品/地图/赛事 等）。\n'
-            '4) 只输出 JSON。'
+            '4) 只输出 JSON。\n'
+            '5) summary 必须是你自行生成的总体研判；若与示例占位文字相同或为空，视为无效输出。'
         ) % (list_text, prior_txt)
 
         data = json.dumps({
@@ -2536,9 +2537,15 @@ def generate_ai_news_impact():
             write_json(news_path, news_data)
             dirty_files.add('news.json')
 
+        # 兜底：若 summary 是模板占位文字（模型照抄示例）或为空，绝不把模板吐到面板
+        _tmpl_markers = ('总体一句话研判', '≤80字', '在此写一句话', '禁止照抄', '示例占位',
+                         '自己生成', '可直接引用上面的历史数字')
+        _clean_summary = summary
+        if not _clean_summary or any(m in _clean_summary for m in _tmpl_markers):
+            _clean_summary = '已逐条研判 %d 条新闻/公告，利好利空详见各资讯卡' % written
         result = {
             'date': time.strftime('%Y-%m-%d %H:%M'),
-            'impact': summary or ('已逐条研判 %d 条新闻，详见各资讯卡' % written),
+            'impact': _clean_summary,
             'items': [{'idx': k, 'sentiment': verdicts[k]['sentiment'],
                        'reason': verdicts[k]['reason'], 'categories': verdicts[k]['categories']}
                       for k in sorted(verdicts.keys())],
