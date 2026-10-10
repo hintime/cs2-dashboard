@@ -2,6 +2,14 @@
   {
     "date": "2026-10-10",
     "tag": "fix",
+    "scope": "kronos",
+    "sha": "7803892",
+    "title": "预测自检留痕——调用后置 marker(_tmp/kronos_last_run.json) 含 status: ok/skipped/failed + 入参/",
+    "desc": "子进程输出日志，杜绝推理静默失败；服务器 run_cycle.sh 兜底阈值 15h→2h"
+  },
+  {
+    "date": "2026-10-10",
+    "tag": "fix",
     "scope": "status",
     "sha": "b9643da",
     "title": "timeline used buff_recent.json (12h mini) instead of buff_history.json -> span a",
@@ -149,14 +157,6 @@
     "scope": "batch-B",
     "sha": "c0432c8",
     "title": "run_update.py — pipeline/repo hygiene fixes (2026-10-09)",
-    "desc": ""
-  },
-  {
-    "date": "2026-10-09",
-    "tag": "fix",
-    "scope": "batch-B",
-    "sha": "b4602a7",
-    "title": "kronos_forecast.py — pipeline/repo hygiene fixes (2026-10-09)",
     "desc": ""
   }
 ]
