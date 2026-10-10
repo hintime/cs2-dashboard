@@ -4020,6 +4020,14 @@ window.switchView = function(id) {
   // 切到推荐/持仓时触发一次重绘（尺寸变化后图表需重算）
   if (id === 'recPanel' && typeof renderAllRecs === 'function') { try { renderAllRecs(); } catch (e) {} }
   if (id === 'holdingsPanel' && typeof render === 'function') { try { render(); } catch (e) {} }
+  // ★ 2026-10-10 补：Kronos 预测兜底加载。
+  //   原来 loadForecast() 只在 AI 推荐板块内部被调用 → 用户若从未打开推荐页（或直接从
+  //   #holdingsPanel 进站），FC.map 一直是空，持仓表的 fcChip 恒返回 ''，预测徽章永不出现。
+  //   这里在切到持仓/推荐时按需补一次；loadForecast 内部有 FC.loaded 幂等 + 15 分钟
+  //   内存缓存，不会重复请求。加载完成后它自己会 render() 重绘持仓。
+  if ((id === 'holdingsPanel' || id === 'recPanel') && typeof loadForecast === 'function') {
+    try { if (!(window.FC && window.FC.loaded)) loadForecast(); } catch (e) {}
+  }
 };
 
 // 兼容旧调用（子页链接等仍可能用 scrollToPanel）
