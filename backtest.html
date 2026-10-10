@@ -111,6 +111,21 @@ function esc(s) {
 }
 function money(v) { return (v >= 0 ? '+' : '−') + '¥' + Math.abs(v).toFixed(2); }
 
+/* n 日简单均线；不足窗口的天数返回 null。
+   2026-10-10 提为顶层函数：原来埋在 comboChart() 里，而悬停 tooltip 在 render()
+   里也要用 MA 值 → 之前 render 里引用 ma5/ma10 直接 ReferenceError，
+   悬停只弹空框不显示数据（义轩实测反馈）。两处现在共用本函数。 */
+function ma(series, n) {
+  var out = [];
+  for (var i = 0; i < series.length; i++) {
+    if (i < n - 1) { out.push(null); continue; }
+    var s = 0;
+    for (var k = i - n + 1; k <= i; k++) s += series[k].value;
+    out.push(s / n);
+  }
+  return out;
+}
+
 /* price_summary 的 {prices,days} → [{date,price}]；已是数组则原样 */
 function normalizeHistory(ph) {
   if (Array.isArray(ph) && ph.length && ph[0] && typeof ph[0] === 'object' && 'price' in ph[0]) return ph;
@@ -326,22 +341,68 @@ function render(series, items, totalCost, last, retPct, maxDD, vol, samples, ful
   var act = container.querySelector('th[data-sort="' + state.sort.key + '"]');
   if (act) act.classList.add('act');
 
-  /* 悬停 tooltip */
+  /* 悬停 tooltip + 十字光标。
+     ★ 2026-10-10 二次修复：旧版用 (clientX-left)/rect.width 映射索引，但绘图区只占
+       viewBox 的 [pad.l, cw-pad.r]（64~946），左右留白被算进宽度 → 靠两侧悬停取到
+       偏后 4~6 天的数据；且无光标，看不出对应哪一点。现按 data-geo 精确反算，
+       并用最近点吸附（画面 960 宽对应约 60 个交易日，点距 ~15px 必须吸附）。 */
+  var ma5 = ma(series, 5), ma10 = ma(series, 10);
   var svg = container.querySelector('.bt-chart-svg');
   var tip = container.querySelector('.bt-tip');
+  var cross = container.querySelector('.bt-cross');
+  var crossL = container.querySelector('.bt-cross-l');
+  var crossC = container.querySelector('.bt-cross-c');
   if (svg && tip) {
+    var geo = null;
+    try { geo = JSON.parse(svg.getAttribute('data-geo') || 'null'); } catch (e) { geo = null; }
+    /* viewBox 单位 → CSS px：svg 宽高都是 100%/auto，按 X 比例换算 */
+    var rect = svg.getBoundingClientRect();
+    var vbW = (geo && geo.vbW) || 960;
+    var kx = rect.width / vbW;
+    function pick(e) {
+      if (!geo || !geo.n) return -1;
+      /* clientX → viewBox x */
+      var vx = (e.clientX - rect.left) / (rect.width / vbW);
+      var span = geo.vbW - geo.padL - geo.padR;
+      if (span <= 0) return -1;
+      /* 绘图区内才响应；留白区直接隐藏，避免"贴左边却显示最后一天"的错觉 */
+      if (vx < geo.padL - 6 || vx > geo.vbW - geo.padR + 6) return -1;
+      var i = Math.round((vx - geo.padL) / span * (geo.n - 1));
+      return Math.max(0, Math.min(geo.n - 1, i));
+    }
     svg.addEventListener('mousemove', function (e) {
-      var rect = svg.getBoundingClientRect();
-      var frac = (e.clientX - rect.left) / rect.width;
-      var i = Math.max(0, Math.min(series.length - 1, Math.round(frac * (series.length - 1))));
+      var i = pick(e);
+      if (i < 0) { tip.style.display = 'none'; if (cross) cross.style.display = 'none'; return; }
       var s = series[i];
       tip.style.display = 'block';
-      tip.style.left = (e.clientX - rect.left) + 'px';
-      tip.innerHTML = s.d + ' · 市值 <b>¥' + s.value.toFixed(0) + '</b> · 浮盈 ' + money(s.pnl) +
+      /* tooltip 定位：跟随鼠标，但贴边时夹住不溢出（左右各留 8px） */
+      var tw = tip.offsetWidth || 220;
+      var lx = e.clientX - rect.left;
+      lx = Math.max(tw / 2 + 8, Math.min(rect.width - tw / 2 - 8, lx));
+      tip.style.left = lx + 'px';
+      /* 纵向避让：默认贴顶；光标太靠上时改贴底，避免 tooltip 盖住曲线与 y 轴顶部 */
+      var th = tip.offsetHeight || 44;
+      var mouseY = e.clientY - rect.top;
+      tip.style.top = (mouseY < th + 16 ? Math.min(rect.height - th - 8, mouseY + 18) : 8) + 'px';
+      tip.innerHTML = '<b>' + s.d + '</b> · 市值 <b>¥' + s.value.toFixed(0) + '</b> · 浮盈 ' + money(s.pnl) +
         '<br>MA5 ' + (ma5[i] !== null && ma5[i] !== undefined ? '¥' + ma5[i].toFixed(0) : '—') +
-        ' · MA10 ' + (ma10[i] !== null && ma10[i] !== undefined ? '¥' + ma10[i].toFixed(0) : '—');
+        ' · MA10 ' + (ma10[i] !== null && ma10[i] !== undefined ? '¥' + ma10[i].toFixed(0) : '—') +
+        ' · 回撤 ' + (s.dd * 100).toFixed(1) + '%';
+      /* 十字光标 */
+      if (cross && geo) {
+        var px = geo.X[i] * (rect.width / vbW);
+        var py = geo.Y[i] * (rect.height / geo.h);
+        cross.style.display = '';
+        crossL.setAttribute('x1', px.toFixed(1));
+        crossL.setAttribute('x2', px.toFixed(1));
+        crossC.setAttribute('cx', px.toFixed(1));
+        crossC.setAttribute('cy', py.toFixed(1));
+      }
     });
-    svg.addEventListener('mouseleave', function () { tip.style.display = 'none'; });
+    svg.addEventListener('mouseleave', function () {
+      tip.style.display = 'none';
+      if (cross) cross.style.display = 'none';
+    });
   }
 }
 
@@ -349,17 +410,7 @@ function render(series, items, totalCost, last, retPct, maxDD, vol, samples, ful
    均线颜色：MA5 橙、MA10 紫（与成本线 amber 虚线、市值线蓝区分） */
 function comboChart(series, totalCost) {
   var cw = 960, ch = 300, pad = { t: 16, r: 14, b: 28, l: 64 }, pW = cw - pad.l - pad.r, pH = ch - pad.t - pad.b;
-  /* 均线：MA5 / MA10（不足窗口的天数不画） */
-  function ma(series, n) {
-    var out = [];
-    for (var i = 0; i < series.length; i++) {
-      if (i < n - 1) { out.push(null); continue; }
-      var s = 0;
-      for (var k = i - n + 1; k <= i; k++) s += series[k].value;
-      out.push(s / n);
-    }
-    return out;
-  }
+  /* 均线：MA5 / MA10（不足窗口的天数不画）。ma() 为顶层函数，render() 悬停提示共用 */
   var ma5 = ma(series, 5), ma10 = ma(series, 10);
   var vals = series.map(function (s) { return s.value; })
     .concat(ma5.filter(function (v) { return v !== null; }))
@@ -427,10 +478,23 @@ function comboChart(series, totalCost) {
 
   var costY = Y(totalCost).toFixed(1);
   var last = series[series.length - 1];
-  return '<svg class="bt-chart-svg" viewBox="0 0 ' + cw + ' ' + ch + '" style="height:280px">' +
+  /* 悬停几何数据交给 JS：viewBox 宽度 + 绘图区 padding + 每点实际绘制坐标。
+     悬停索引必须按「绘图区」映射，不能按整个 SVG 宽度——否则 pad.l=64 左侧空白
+     会让靠左的悬停取到偏后的日期（实测偏 4~6 天）。 */
+  var geo = JSON.stringify({
+    vbW: cw, padL: pad.l, padR: pad.r, n: series.length,
+    X: series.map(function (s, i) { return +X(i).toFixed(1); }),
+    Y: series.map(function (s) { return +Y(s.value).toFixed(1); }),
+    h: ch
+  });
+  return '<svg class="bt-chart-svg" viewBox="0 0 ' + cw + ' ' + ch + '" data-geo="' + esc(geo) + '" style="height:280px">' +
     '<defs><linearGradient id="btG" x1="0" y1="0" x2="0" y2="1">' +
     '<stop offset="0%" stop-color="var(--blue)" stop-opacity=".18"/><stop offset="100%" stop-color="var(--blue)" stop-opacity=".02"/>' +
     '</linearGradient></defs>' +
+    '<g class="bt-cross" style="display:none">' +
+      '<line class="bt-cross-l" y1="' + pad.t + '" y2="' + (pad.t + pH) + '" stroke="var(--text3)" stroke-width="1" stroke-dasharray="3 3"/>' +
+      '<circle class="bt-cross-c" r="4" fill="var(--blue)" stroke="var(--surface2)" stroke-width="1.5"/>' +
+    '</g>' +
     yL + xL +
     ddArea +
     '<path d="' + path + 'L' + (pad.l + pW).toFixed(1) + ',' + (pad.t + pH).toFixed(1) + 'L' + pad.l + ',' + (pad.t + pH).toFixed(1) + 'Z" fill="url(#btG)"/>' +
