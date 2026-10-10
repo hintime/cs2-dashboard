@@ -1043,6 +1043,7 @@ def run_kronos_forecast(top_n=10, days=14, samples=3):
         default_py = _existing[0] if _existing else _cands[0]
         default_local = '/home/ubuntu/cs2-run/kronos_forecast_srv.py'
     venv_py = os.environ.get('KRONOS_PY') or default_py
+    print('[Kronos] 入参 KRONOS_FORECAST=%s / venv=%s' % (os.environ.get('KRONOS_FORECAST', '未设置'), venv_py))
     _local_script = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                  'kronos_forecast.py' if os.name == 'nt' else 'kronos_forecast_srv.py')
     script = os.environ.get('KRONOS_SCRIPT') or (_local_script if os.path.exists(_local_script) else default_local)
@@ -1073,6 +1074,8 @@ def run_kronos_forecast(top_n=10, days=14, samples=3):
             encoding='utf-8', errors='replace', timeout=1200, **_kw)
         if r.returncode == 0:
             print('[Kronos] 预测完成（%.0fs）→ ai_forecast.json' % (time.time() - _t0))
+            if r.stdout:
+                print('[Kronos] 子进程输出(末8行):', ' | '.join((r.stdout or '').strip().splitlines()[-8:])[:500])
             return out
         print('[Kronos] 预测失败 rc=%d: %s' % (r.returncode, (r.stderr or '')[-160:]), file=sys.stderr)
     except Exception as e:
@@ -4834,8 +4837,38 @@ def main():
                     write_json(market_path, market)
                     print(f'[PRICE_HIST] Recorded ECO prices for {recorded}/{len(tracked)} items')
                     # ── Kronos 价格预测（推荐池前10 + AI 精选；频率 = 推荐板块更新频率）──
-                    if run_kronos_forecast() is not None:
-                        dirty_files.add('ai_forecast.json')
+                    # ★ 2026-10-10 自检留痕：调用后置 marker 文件 + 明确日志，
+                    #   无论成功/跳过/失败都留痕，杜绝「推理静默没跑/没生成」却无感知。
+                    print('[Kronos] 触发预测（推荐池前10 + AI 精选）...')
+                    _kf = run_kronos_forecast()
+                    # 判定本次实际状态：ok=跑了且落盘 / skipped=本机推理接管刻意不跑 / failed=兜底开了却没产出
+                    _kstat = 'ok' if _kf is not None else (
+                        'skipped' if str(os.environ.get('KRONOS_FORECAST', '1')).strip() == '0' else 'failed')
+                    try:
+                        import os as _os
+                        _dbg = {'ts': int(time.time()), 'status': _kstat,
+                                'out': _kf,
+                                'size': _os.path.getsize(_kf) if (_kf and _os.path.exists(_kf)) else 0,
+                                'n': None,
+                                'kronos_forecast_flag': os.environ.get('KRONOS_FORECAST', '未设置')}
+                        if _kf:
+                            try:
+                                _j = json.load(open(_kf, encoding='utf-8'))
+                                _dbg['n'] = len(_j.get('items') or [])
+                            except Exception:
+                                pass
+                        _ld = _os.path.join(DATA_DIR, '_tmp')
+                        _os.makedirs(_ld, exist_ok=True)
+                        open(_os.path.join(_ld, 'kronos_last_run.json'), 'w', encoding='utf-8').write(json.dumps(_dbg, ensure_ascii=False))
+                        if _kstat == 'ok':
+                            dirty_files.add('ai_forecast.json')
+                            print('[Kronos] ✓ 已落盘并登记推送（items=%s, %d bytes）' % (_dbg['n'], _dbg['size']))
+                        elif _kstat == 'skipped':
+                            print('[Kronos] ⊘ 本轮回避（KRONOS_FORECAST=%s，本机推理接管）→ 不写推送' % _dbg['kronos_forecast_flag'])
+                        else:
+                            print('[Kronos] ⚠ 兜底已开但未产出 ai_forecast.json → 跳过推送，请查上面 Kronos 日志', file=sys.stderr)
+                    except Exception as _e:
+                        print('[Kronos] 留痕失败(非致命): %s' % _e, file=sys.stderr)
                     # ── 事件研究（公告日效应；供 AI 空投监控引用真实先验）2026-09-26 ──
                     try:
                         import event_study
