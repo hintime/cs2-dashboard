@@ -1104,6 +1104,7 @@ html { scroll-behavior: smooth; }
     <a href="backtest.html" class="nav-btn sub-page" style="text-decoration:none">◷ 回测</a>
     <a href="revenue.html" class="nav-btn sub-page" style="text-decoration:none">收入</a>
     <a href="fluctuation.html" class="nav-btn sub-page" style="text-decoration:none">异动</a>
+    <a href="opportunity.html" class="nav-btn sub-page" style="text-decoration:none">机会</a>
     <a href="tracking.html" class="nav-btn sub-page" style="text-decoration:none">◉ 追踪</a>
     <a href="changelog.html" class="nav-btn sub-page" style="text-decoration:none">日志</a>
     <a href="report.html" class="nav-btn sub-page" style="text-decoration:none">日报</a>
@@ -4298,6 +4299,177 @@ function exportCSV() {
 }
 // 暴露到全局，供内联 onclick="exportCSV()" 调用（本函数定义在主 IIFE 作用域内）
 window.exportCSV = exportCSV;
+
+/* ═══════════════ 持仓战报图（分享用）═══════════════
+   纯 Canvas 生成 PNG，不引外部库、不上传任何数据（隐私优先）。
+   内容：总市值/总盈亏/盈亏率 + 品类分布条 + TOP 盈亏各5 件。
+   零成本件（赠送/活动入库）单独标注，避免把白嫖件算进收益率。
+   ⚠ 成本价只读，此处仅做展示，绝不回写任何数据。
+*/
+function exportShareCard(){
+  try{
+    var arr = H||[];
+    if(!arr.length){ appToast('还没有持仓数据可导出','warn'); return; }
+    var CJK = '"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif';
+    var MONO = '"DM Mono",Consolas,monospace';
+    var W = 900, PAD = 44;
+    var rows = arr.map(function(s){
+      var c = Number(s.c)||0, p = Number(s.p)||0;
+      return {n:String(s.n||'?'), c:c, p:p, w:s.w||'', t:s.t||'',
+              v:p, pnl:p-c, pct: c>0 ? (p-c)/c*100 : null, zero: c<=0};
+    });
+    var paid = rows.filter(function(r){ return !r.zero; });
+    var zeroN = rows.length - paid.length;
+    var totV = rows.reduce(function(a,r){ return a+r.v; },0);
+    var totC = paid.reduce(function(a,r){ return a+r.c; },0);
+    var totP = totV - totC;
+    var pct = totC>0 ? (totP/totC*100) : 0;
+
+    // 品类分布（从名字粗分类，前端做轻量统计；与后端 portfolio_risk 同口径）
+    var catOf = function(n){
+      if(/印花|贴纸|Sticker/i.test(n)) return '印花';
+      if(/手套|Glove/i.test(n)) return '手套';
+      if(/匕首|军刀|刀|Bayonet|Knife/i.test(n)) return '匕首';
+      if(/音乐盒|胶囊|Capsule/i.test(n)) return '音乐盒';
+      if(/探员|人物|Agent/i.test(n)) return '探员';
+      if(/步枪|Rifle|M4A4|M4A1|AWP|CT/i.test(n)) return '步枪';
+      if(/冲锋枪|SMG|UMP|MP9|MAC/i.test(n)) return '冲锋枪';
+      if(/手枪|Pistol|Glock|USP|Deagle/i.test(n)) return '手枪';
+      return '其他';
+    };
+    var byCat = {};
+    paid.forEach(function(r){ var k=catOf(r.n); byCat[k]=(byCat[k]||0)+r.c; });
+    var catArr = Object.keys(byCat).map(function(k){ return {k:k,v:byCat[k]}; })
+                    .sort(function(a,b){ return b.v-a.v; });
+
+    var topW = rows.slice().sort(function(a,b){ return b.pnl-a.pnl; }).slice(0,5);
+    var topL = rows.slice().sort(function(a,b){ return a.pnl-b.pnl; }).slice(0,5);
+
+    // ── 布局 ──
+    var H1 = 150;                       // 头部 + 总览
+    var H2 = 40 + catArr.length*26 + 20; // 品类分布
+    var H3 = 40 + Math.max(topW.length, topL.length)*24 + 30; // TOP 盈亏
+    var H4 = 70;                        // 脚注
+    var HT = H1 + H2 + H3 + H4;
+
+    var cv = document.createElement('canvas');
+    var dpr = Math.min(2, window.devicePixelRatio||1);
+    cv.width = W*dpr; cv.height = HT*dpr;
+    cv.style.width='100%'; cv.style.maxWidth=W+'px';
+    var g = cv.getContext('2d');
+    g.scale(dpr,dpr);
+
+    // 背景（跟随主题：用当前页面变量读不出来时用中性深色）
+    var cs = getComputedStyle(document.documentElement);
+    var V = function(n, fb){ return (cs.getPropertyValue(n)||'').trim() || fb; };
+    var bg = V('--bg','#0d1117'), surf = V('--surface','#161b22'),
+        bd = V('--border','#30363d'), tx = V('--text','#e6edf3'),
+        tx2 = V('--text3','#8b949e'),
+        rise = V('--rise','#ef4444'), fall = V('--fall','#22c55e'),
+        brand = V('--brand','#3b82f6');
+
+    g.fillStyle = bg; g.fillRect(0,0,W,HT);
+    // 卡片底
+    g.fillStyle = surf; roundRect(g, PAD*.5, PAD*.4, W-PAD, HT-PAD*.8, 12); g.fill();
+    g.strokeStyle = bd; g.lineWidth=1; roundRect(g, PAD*.5, PAD*.4, W-PAD, HT-PAD*.8, 12); g.stroke();
+
+    var y = PAD*.4 + 46;
+    // 标题
+    g.fillStyle = tx; g.font = '600 22px '+CJK; g.textBaseline='alphabetic';
+    g.fillText('CS2 持仓战报', PAD, y);
+    g.fillStyle = tx2; g.font = '12px '+CJK;
+    g.fillText(new Date().toLocaleString('zh-CN',{hour12:false}).slice(0,16), W-PAD-92, y);
+
+    y += 30;
+    // 总览三宫格
+    function big(label, val, col, yy){
+      g.fillStyle = tx2; g.font='11px '+CJK; g.fillText(label, PAD+6, yy);
+      g.fillStyle = col; g.font='600 26px '+MONO; g.fillText(val, PAD+6, yy+28);
+    }
+    big('总市值', '¥'+totV.toFixed(0), tx, y);
+    big('浮动盈亏', (totP>=0?'+':'')+'¥'+Math.abs(totP).toFixed(0), totP>=0?rise:fall, y);
+    big('盈亏率', (pct>=0?'+':'')+pct.toFixed(1)+'%', totP>=0?rise:fall, y);
+    // 件数
+    g.fillStyle = tx2; g.font='11px '+CJK;
+    g.fillText(paid.length+' 件有成本'+(zeroN?(' · '+zeroN+' 件零成本(不计盈亏)'):''), W-PAD-150, y+16);
+
+    // ── 品类分布 ──
+    y += 74; 
+    g.strokeStyle = bd; g.beginPath(); g.moveTo(PAD, y); g.lineTo(W-PAD, y); g.stroke();
+    y += 26;
+    g.fillStyle = tx; g.font='600 14px '+CJK; g.fillText('品类分布（按成本）', PAD+6, y);
+    y += 16;
+    var barW = W-PAD*2-12, maxV = catArr.length? catArr[0].v : 1;
+    catArr.forEach(function(c){
+      g.fillStyle = tx2; g.font='11px '+CJK;
+      g.fillText(c.k, PAD+6, y+12);
+      var bx = PAD+80, bw = barW-80-70;
+      g.fillStyle = bd; roundRect(g, bx, y+3, bw, 9, 4); g.fill();
+      g.fillStyle = brand; roundRect(g, bx, y+3, Math.max(3, bw*c.v/maxV), 9, 4); g.fill();
+      g.fillStyle = tx2; g.font='11px '+MONO;
+      g.fillText('¥'+c.v.toFixed(0)+'  '+(c.v/totC*100).toFixed(0)+'%', bx+bw+8, y+12);
+      y += 26;
+    });
+
+    // ── TOP 盈亏 ──
+    y += 6;
+    g.strokeStyle = bd; g.beginPath(); g.moveTo(PAD, y); g.lineTo(W-PAD, y); g.stroke();
+    y += 26;
+    g.fillStyle = tx; g.font='600 14px '+CJK; g.fillText('盈亏 TOP5 / 亏损 TOP5', PAD+6, y);
+    y += 20;
+    function col(list, x, title, updown){
+      var yy = y+12;
+      g.fillStyle = tx2; g.font='11px '+CJK; g.fillText(title, x, yy);
+      list.forEach(function(r, i){
+        var ly = yy + 20 + i*24;
+        g.fillStyle = tx2; g.font='11px '+MONO; g.fillText(String(i+1), x, ly);
+        g.fillStyle = tx; g.font='12px '+CJK;
+        var nm = r.n.length>14 ? r.n.slice(0,14)+'…' : r.n;
+        g.fillText(nm, x+16, ly);
+        var col2 = r.pnl>=0?rise:fall;
+        var s = (r.pnl>=0?'+':'')+r.pnl.toFixed(0)+(r.pct!=null?('  '+(r.pct>=0?'+':'')+r.pct.toFixed(0)+'%'):'');
+        g.fillStyle = col2; g.font='11px '+MONO; g.textAlign='right';
+        g.fillText(s, x+(W-PAD*2)/2-24, ly);
+        g.textAlign='left';
+      });
+    }
+    var halfW = (W-PAD*2-40)/2;
+    var yStart = y;
+    col(topW, PAD+6, '最赚', true);
+    col(topL, PAD+halfW+34, '最亏', false);
+    y = yStart + 20 + Math.max(topW.length, topL.length)*24 + 20;
+
+    // ── 脚注 ──
+    g.strokeStyle = bd; g.beginPath(); g.moveTo(PAD, y); g.lineTo(W-PAD, y); g.stroke();
+    y += 20;
+    g.fillStyle = tx2; g.font='10px '+CJK;
+    g.fillText('数据来源：cs2wyx.asia · 本地生成，未上传 · 仅供参考，不构成买卖依据', PAD+6, y);
+
+    // ── 导出 ──
+    cv.toBlob(function(blob){
+      if(!blob){ appToast('生成失败，请重试','warn'); return; }
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'cs2_持仓战报_'+new Date().toISOString().slice(0,10)+'.png';
+      a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+      appToast('战报图已生成，正在下载');
+    }, 'image/png');
+  }catch(e){
+    appToast('生成失败：'+String(e && e.message || e).slice(0,60), 'warn');
+  }
+}
+function roundRect(g,x,y,w,h,r){
+  if(w<r*2) r=w/2; if(h<r*2) r=h/2;
+  g.beginPath();
+  g.moveTo(x+r,y);
+  g.arcTo(x+w,y,x+w,y+h,r);
+  g.arcTo(x+w,y+h,x,y+h,r);
+  g.arcTo(x,y+h,x,y,r);
+  g.arcTo(x,y,x+w,y,r);
+  g.closePath();
+}
+window.exportShareCard = exportShareCard;
 
 
 // ═══════════════ REFRESH BUTTON ═══════════════
