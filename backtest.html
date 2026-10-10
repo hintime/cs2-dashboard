@@ -437,7 +437,7 @@ function comboChart(series, totalCost) {
     '<line x1="' + pad.l + '" y1="' + costY + '" x2="' + (cw - pad.r) + '" y2="' + costY + '" stroke="var(--amber)" stroke-width="1.2" stroke-dasharray="6 4" opacity=".85"/>' +
     '<path d="' + maPath(ma10) + '" fill="none" stroke="var(--purple,#a855f7)" stroke-width="1.5" opacity=".9"/>' +
     '<path d="' + maPath(ma5) + '" fill="none" stroke="#ff9f43" stroke-width="1.5" opacity=".9"/>' +
-    '<path d="' + path + '" class="bt-chart-line" stroke="var(--blue)"/>' +
+    '<path d="' + path + '" class="bt-chart-line" stroke="var(--blue)" fill="none"/>' +
     '<circle cx="' + X(series.length - 1).toFixed(1) + '" cy="' + Y(last.value).toFixed(1) + '" r="3.5" fill="var(--blue)"/>' +
     '</svg>' +
     '<div class="bt-tip"></div>';
